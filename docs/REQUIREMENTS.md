@@ -60,6 +60,9 @@ the audit baseline. The original idea is not promoted into an approved roadmap.
   Source inspection cannot establish runtime behavior or change an immutable package.
 - Do not run builds or install dependencies for this placeholder. Add actual setup and
   validation guidance only when implementation exists and its scope is confirmed.
-- Keep this audit PR unmerged pending independent coordinator approval. Shared-link
-  checks after the central conventions merge were completed on 2026-11-01 as recorded
-  above; recheck affected links when documentation targets change.
+- On 2026-11-01, GitHub merge metadata and Git ancestry inspection confirmed
+  [PR #1](https://github.com/rustcommons/rustup-offline-mirror/pull/1) merged at
+  [`d192d575217b33731c6a4f78fe946ede353a29f2`](https://github.com/rustcommons/rustup-offline-mirror/commit/d192d575217b33731c6a4f78fe946ede353a29f2),
+  preserving reviewed head `6706689c997ab1f442af857771aa98eb16c08a54`.
+- Shared-link checks after the central conventions merge were completed on
+  2026-11-01 as recorded above; recheck affected links when documentation targets change.
