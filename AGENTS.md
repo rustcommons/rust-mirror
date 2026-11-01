@@ -2,18 +2,28 @@
 
 ## Project scope
 
-The README describes a Rustup offline mirror project. The current remote repository contains only a README, license, and Git ignore rules; no implementation or build workflow is present. Treat the description as intended scope rather than verified shipped functionality.
+The README describes a possible Rustup offline mirror project. The repository contains documentation, a license, and Git ignore rules; no implementation or build workflow is present. Treat the original description as an idea rather than an approved functional requirement or verified shipped functionality.
 
 The owner is reviewing names and scope for Rust Commons' offline Rust development and package-management projects. Do not rename this repository, invent capabilities, or expand its public documentation without an explicit task.
 
 ## Repository layout and validation
 
-- `README.md`: current public introduction.
+- `README.md`: current public introduction and placeholder boundaries.
+- `docs/REQUIREMENTS.md`: confirmed requirements, sources, evidence, and documentation map.
 - `LICENSE`: existing license; preserve it.
 - `AGENTS.md`: primary agent guidance.
 - `CLAUDE.md`: compatibility pointer to this file.
 
 No manifest, automated test suite, or build command is currently defined. For documentation-only changes, check Markdown links, instruction-file consistency, and `git diff --check`. If implementation is added, document its actual setup and validation commands here.
+
+## Documentation and requirements traceability
+
+- Follow the [Rust Commons documentation conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md).
+- Maintain [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) as the repository's index of confirmed requirements, their sources, implementation or documentation, verification evidence, and gaps. Preserve stable repository-scoped IDs and existing identifiers; never renumber or reuse them.
+- Distinguish verified behavior, partial verification, planned work, deferred work, and scope exclusions. A source reference or passing test supports only the scope it actually checks; record missing evidence explicitly.
+- Keep the README focused on purpose, prerequisites, setup, and guide links. Keep detailed workflows in maintained guides, future work in the roadmap, and dated release or validation evidence identifiable as historical records.
+- Update affected requirements, documentation, and trace links together when behavior, scope, interfaces, prerequisites, or validation changes. Use exact versions or revisions for release evidence, and do not rewrite historical outcomes or treat repository edits as changes to an immutable published package.
+- Validate documentation changes with source and command checks, links, rendering, and a clean diff. Run additional builds or tests only when changed examples, package contents, or behavior require them.
 
 ## Working conventions
 
