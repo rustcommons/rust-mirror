@@ -19,6 +19,10 @@ Contents API confirmed the same file on `main` and at central revision
 with blob SHA `1b659ff536d43bcae5b09626069e89488058ba6f`. The initial audit
 observed a 404 before the central merge; that historical observation is now resolved.
 
+The shared [release documentation convention](https://github.com/rustcommons/.github/blob/a11ce9e8ab27848d5cf78cd0462a4d7182636c9a/docs/RELEASING.md)
+is the source for the release instructions adopted on 2026-11-02. This placeholder
+records release verification as Not applicable until its first authorized release.
+
 “Verified” below means only the named source inspection, not runtime verification.
 Other allowed statuses are “Implemented—partial verification”, “Planned”, “Deferred”,
 and “Not applicable”. Future ideas are not approved requirements.
@@ -33,6 +37,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-004 | Maintain a linked trace index with stable repository-scoped IDs, bounded evidence, and explicit gaps; update affected documentation together. Source: owner audit instructions and AGENTS.md, Documentation and requirements traceability. | This index; [README documentation](../README.md#documentation); [shared instructions](../AGENTS.md#documentation-and-requirements-traceability). | Source inspection: required table columns and headings present; README and AGENTS link this index and central conventions; IDs are unique. Shared central link returned HTTP 200 on 2026-11-01; Contents API confirmed the file at the central revision named above. | Verified; documentation structure and shared-link availability only. |
 | ROM-REQ-005 | Validate documentation using source/command claims, links, rendering, and diff checks; define actual setup/validation commands if implementation is added. Source: baseline AGENTS.md, Repository layout and validation; shared instructions. | [AGENTS validation](../AGENTS.md#repository-layout-and-validation); [maintenance](#maintenance). | Source inspection confirms documentation-only checks are specified and no build/setup commands are invented. | Verified; maintenance instructions only. This is not build or test evidence. |
 | ROM-REQ-006 | Runtime implementation and verification are outside the confirmed placeholder audit scope. Source: owner audit scope and baseline tracked-file inventory. | [README current state](../README.md#current-state). | No runtime verification performed; no implementation, binaries, manifest, test suite, or build workflow in the audited repository. | Not applicable; no functional requirements, runtime results, or compatibility claims established. |
+| ROM-REQ-007 | Adopt the exact shared release-documentation instructions; do not invent versions, features, changelog history or GitHub Releases for this placeholder. Source: owner request and central release convention at `a11ce9e8ab27848d5cf78cd0462a4d7182636c9a`, Adoption and instructions. | [AGENTS release documentation](../AGENTS.md#release-documentation). | On 2026-11-02, exact section comparison with the supplied shared text and source inspection of the central convention confirmed instruction adoption; pre-change repository revision `cfdbcb91a220ed7de6655cc22bd89354d05b707f` remains a documentation-only placeholder. | Verified; instruction adoption only. Release verification is Not applicable until the first authorized release; no release, implementation or runtime verification is claimed. |
 
 ## Documentation map
 
@@ -44,6 +49,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [docs/REQUIREMENTS.md](REQUIREMENTS.md) | Confirmed constraints, evidence boundaries, and gaps. |
 | [LICENSE](../LICENSE) | Existing license, unchanged. |
 | [Central conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md) | Live shared documentation policy; link verified 2026-11-01 as recorded above. |
+| [Central release convention](https://github.com/rustcommons/.github/blob/main/docs/RELEASING.md) | Shared release-documentation instructions; release verification is Not applicable for this placeholder. |
 
 No implementation guides, roadmap, release records, or validation reports exist in
 the audit baseline. The original idea is not promoted into an approved roadmap.
