@@ -28,6 +28,7 @@ its Git history. Existing `ROM-REQ` identifiers remain stable.
 
 ## Documentation
 
+- [Recovered prototype assessment](docs/evals/2026-11-09-prototype-assessment.md).
 - [Requirements and evidence index](docs/REQUIREMENTS.md).
 - [Contribution and maintenance instructions](AGENTS.md).
 - [Rust Commons documentation conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md).

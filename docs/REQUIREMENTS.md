@@ -42,6 +42,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-007 | Adopt the exact shared release-documentation instructions; do not invent versions, features, changelog history or GitHub Releases for this placeholder. Source: owner request and central release convention at `a11ce9e8ab27848d5cf78cd0462a4d7182636c9a`, Adoption and instructions. | [AGENTS release documentation](../AGENTS.md#release-documentation). | On 2026-11-02, exact section comparison with the supplied shared text and source inspection of the central convention confirmed instruction adoption; pre-change repository revision `cfdbcb91a220ed7de6655cc22bd89354d05b707f` remains a documentation-only placeholder. | Verified; instruction adoption only. Release verification is Not applicable until the first authorized release; no release, implementation or runtime verification is claimed. |
 | ROM-REQ-008 | Name the core tool/CLI rust-mirror and preserve existing work when renaming the repository. Source: owner decision, 2026-11-09. | [README](../README.md); [AGENTS project scope](../AGENTS.md#project-scope). | GitHub repository renamed with the same repository identity and Git history; earlier local uncommitted prototype left untouched. | Verified; naming and preservation only. No published crate or qualified implementation. |
 | ROM-REQ-009 | Plan rust-mirror-gui as a future graphical interface for rust-mirror workflows. Source: owner decision, 2026-11-09. | [README planned products](../README.md#planned-products). | Documentation records the selected name and planned relationship. | Planned; GUI framework, implementation, distribution and validation remain undefined. |
+| ROM-REQ-010 | Assess and preserve the recovered prototype before reuse. Source: owner request, 2026-11-09. | [Assessment](evals/2026-11-09-prototype-assessment.md); [source inventory](evals/2026-11-09-prototype-inventory.json). | Separate-copy Windows test run: 8 original integration passes; 7 defects reproduced; all 21 original file hashes and original Git status unchanged. | Verified; bounded prototype assessment only. No implementation import, release or end-to-end mirror qualification. |
 
 ## Documentation map
 
@@ -51,6 +52,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [AGENTS.md](../AGENTS.md) | Primary scope, validation, traceability, working, and Git instructions. |
 | [CLAUDE.md](../CLAUDE.md) | Unchanged import shim for AGENTS.md. |
 | [docs/REQUIREMENTS.md](REQUIREMENTS.md) | Confirmed constraints, evidence boundaries, and gaps. |
+| [Prototype assessment](evals/2026-11-09-prototype-assessment.md) | Dated source assessment, reproduced gaps and proposed milestones; not release qualification. |
 | [LICENSE](../LICENSE) | Existing license, unchanged. |
 | [Central conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md) | Live shared documentation policy; link verified 2026-11-01 as recorded above. |
 | [Central release convention](https://github.com/rustcommons/.github/blob/main/docs/RELEASING.md) | Shared release-documentation instructions; release verification is Not applicable for this placeholder. |

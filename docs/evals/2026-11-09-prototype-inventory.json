@@ -1,0 +1,128 @@
+{
+  "assessment_date": "2026-11-09",
+  "description": "Uncommitted Windows prototype; original bytes preserved and not imported into repository implementation.",
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "bytes": 1156,
+      "sha256": "45d300e8efba015ea17724937ee8697e473af3c103046ce5c33e7cddda510300"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 24934,
+      "sha256": "a22f3f69d02f95807e709860e2861d051c76148aca9f950a2ee09268c2adafb7"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1012,
+      "sha256": "c502606df9b8628161cc886992d399fa1b9a345fc6b90136eecec6eb62bf6ae8"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "mirror-config.toml",
+      "bytes": 429,
+      "sha256": "0a62cd80aaec6fa88d4e22d7f64e8b35f1e7bc09af773b9229ff4e33765004e6"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 684,
+      "sha256": "a38caa829ecdc7fdc18ad40bdb9d7e3da08b93cd712a558aabf524ac6e36037e"
+    },
+    {
+      "path": "src/config.rs",
+      "bytes": 4979,
+      "sha256": "139b5739346fd5a1115d0e0f16c57089169aa85088b6ac921c8541b571b0f8bd"
+    },
+    {
+      "path": "src/error.rs",
+      "bytes": 1765,
+      "sha256": "c2cb773e2f0bcf64cac70ae25f49222df185023b2e23561a73e16fb1405d4455"
+    },
+    {
+      "path": "src/lib.rs",
+      "bytes": 197,
+      "sha256": "202b1002bf2875b6dfe28f2a66b719f7c222006d5f9f0b7ba0b7bb9cabcd6f02"
+    },
+    {
+      "path": "src/main.rs",
+      "bytes": 997,
+      "sha256": "98c7c51fcb3db896c705b463a705151f123159ea93ab6a2e5ae9ee55b5406165"
+    },
+    {
+      "path": "src/channel/mod.rs",
+      "bytes": 246,
+      "sha256": "d6942fb5a316b3bb307d48986036a2eb6071908e5199d3453ff0dea7d302b026"
+    },
+    {
+      "path": "src/channel/pipeline.rs",
+      "bytes": 3401,
+      "sha256": "5cefdbfcd00b712fcdc4ea479f28686d69e7df5b4af85e434fa5778d4bc233de"
+    },
+    {
+      "path": "src/channel/rewrite.rs",
+      "bytes": 6543,
+      "sha256": "23dba1657a94adbe4eb46210c3e93d557737d0013b85ead76bbbc2a68a5f67c9"
+    },
+    {
+      "path": "src/net/http_client.rs",
+      "bytes": 3109,
+      "sha256": "e8696a1a13504233f783e5f14cbfa25e18ae0b98e6b0a932a80aa74e709172e9"
+    },
+    {
+      "path": "src/net/mod.rs",
+      "bytes": 233,
+      "sha256": "749637e2f20106e1256afa9c4de29d3fa1cd54cd78226c6a9c44c5be131b5288"
+    },
+    {
+      "path": "tests/channel_pipeline_tests.rs",
+      "bytes": 5009,
+      "sha256": "3a008217c74dffac86a68239a968743ff73ca4165b00e1aa057ff7449438136e"
+    },
+    {
+      "path": "tests/channel_rewrite_tests.rs",
+      "bytes": 847,
+      "sha256": "e45c9871fd7247704f17c5fedae172b8b21433854535cbb40fd75c1d6bd723c0"
+    },
+    {
+      "path": "tests/config_tests.rs",
+      "bytes": 3249,
+      "sha256": "c8d21c62b7144bde81068b5ed14b180edb9e126df448b33b3bd8a9daba84010e"
+    },
+    {
+      "path": "tests/http_client_tests.rs",
+      "bytes": 3543,
+      "sha256": "0e21c001917e7bc3c8dd897efdab1b660ec9110446c00ced3ac887459850a70d"
+    },
+    {
+      "path": "tests/fixtures/channel-rust-stable-minimal.toml",
+      "bytes": 861,
+      "sha256": "9a2cec0ea2d312f3444277c5be2eb8f03798f30d5bdd79abdbcf88c42ed7e326"
+    },
+    {
+      "path": "tests/fixtures/config.toml",
+      "bytes": 1253,
+      "sha256": "8be8053bfcb6e3baed1bb0162038646215fcdbfb6db12ef2dede033189cb06c0"
+    }
+  ],
+  "toolchain": "rustc/cargo 1.99.0 x86_64-pc-windows-msvc",
+  "official_manifest": {
+    "url": "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+    "bytes": 948974,
+    "sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  "checks": {
+    "existing_integration_tests": 8,
+    "existing_integration_pass": 8,
+    "assessment_defect_probes": 7,
+    "assessment_defects_reproduced": 7,
+    "doctests": 0,
+    "format_exit": 1,
+    "clippy_warnings_denied_exit": 101,
+    "cli_help_exit": 0,
+    "cli_help_observation": "Prints configuration; no argument parsing or help handling."
+  }
+}
