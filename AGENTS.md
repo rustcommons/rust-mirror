@@ -1,10 +1,15 @@
-# rustup-offline-mirror
+# rust-mirror
 
 ## Project scope
 
-The README describes a possible Rustup offline mirror project. The repository contains documentation, a license, and Git ignore rules; no implementation or build workflow is present. Treat the original description as an idea rather than an approved functional requirement or verified shipped functionality.
+The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
+future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
+mirroring for offline development, inspired by Panamax. This repository currently
+contains documentation only; do not describe planned functionality as implemented.
 
-The owner is reviewing names and scope for Rust Commons' offline Rust development and package-management projects. Do not rename this repository, invent capabilities, or expand its public documentation without an explicit task.
+Preserve the earlier Windows-local uncommitted prototype. Assess it before import
+or replacement; do not delete or overwrite it. Keep `ROM-REQ` identifiers stable
+across the rename. Do not publish placeholder crates merely to reserve names.
 
 ## Repository layout and validation
 
