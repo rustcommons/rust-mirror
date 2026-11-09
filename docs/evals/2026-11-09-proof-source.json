@@ -1,0 +1,30 @@
+{
+  "description": "Source identity after closing the Windows inventory handle; final library replay and namespace proof accepted",
+  "files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "55940d41c1c8a9bb237c037183ed1aca77a772af1990c22a7d2202f30353facf"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "870d143bd90da6eb52c26772c25c9d16ce3f40e595d002d2253f24b6af48cdb9"
+    },
+    {
+      "path": "scripts/prove_offline.py",
+      "sha256": "9eade4da550f88ffd222d902a699df2251a739deefe94473a9d0f1671ac7e5c2"
+    },
+    {
+      "path": "scripts/publish_raw.py",
+      "sha256": "252263c96928eb7cf7e6c35dde499257c2474a5d3c8d0e216b89d24637195d88"
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "60afeb718cbfc83bb2fa2974bc5e6931affb3d939c789dd2d61fdd02c0f58dd8"
+    },
+    {
+      "path": "src/main.rs",
+      "sha256": "cb713da455e23df3ec5387d420c917f3e3122c5f377f67834181553caaa95b6f"
+    }
+  ],
+  "proof_packet_sha256": "8a75f87e9c70dc6246d4449cd15c755ade8cce0b05a228f5a5d03a2cc51170e1"
+}

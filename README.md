@@ -1,35 +1,45 @@
 # rust-mirror
 
-Rust toolchain and crate mirroring for offline development.
-
-## Planned products
-
-- **rust-mirror**: the core mirroring tool and command-line interface, inspired by
-  [Panamax](https://github.com/panamax-rs/panamax). Planned scope covers Rustup
-  toolchain artifacts and Cargo crate mirroring.
-- **rust-mirror-gui**: a future graphical interface for the same mirroring workflows.
-  GUI implementation, framework, packaging, and release timing are not yet defined.
-
-The names were selected on 2026-11-09. Neither crate has been published or reserved
-on crates.io by this naming change.
+Prepare Rust toolchain snapshots for offline development and static hosting,
+including Nexus Repository Raw hosted repositories.
 
 ## Current state
 
-This repository currently contains documentation, a license, and ignore rules.
-The planned products are not implemented here. No installation commands or runtime
-compatibility guarantees are established.
+Experimental, unreleased CLI and reusable library. The first milestone prepares
+a pinned minimal-profile x86_64 Linux toolchain and preserves upstream metadata.
+A network-isolated proof bootstraps Rustup, installs Rust 1.90.0 and builds/runs a
+dependency-free program from a local Nexus-style HTTP path. Actual Nexus/TLS/auth
+integration has not been tested. See [hosting and limitations](docs/NEXUS-RAW.md)
+and the [proof record](docs/evals/2026-11-09-offline-toolchain.md).
 
-An earlier, uncommitted Rustup mirror prototype was located in the owner's Windows
-checkout on 2026-11-09. Its source, configuration, lockfile, and tests are preserved.
-It has not been imported or qualified; assess it before deciding what to reuse.
+Rust/Cargo 1.90+ is required to build. This project is not yet published on crates.io.
 
-The repository was renamed from `rustup-offline-mirror` to `rust-mirror`, preserving
-its Git history. Existing `ROM-REQ` identifiers remain stable.
+```sh
+cargo build --locked
+cargo run --locked -- fetch-toolchain --release 1.90.0 --host x86_64-unknown-linux-gnu --rustup-version 1.28.2 --output ./snapshot-1.90.0
+```
+
+The new output directory's parent must exist. The completed static tree is under
+`snapshot-1.90.0/mirror`. The [Nexus guide](docs/NEXUS-RAW.md) explains transfer,
+verified HTTP PUT publication and client setup.
+
+## Planned products
+
+- **rust-mirror**: core library and CLI, inspired by [Panamax](https://github.com/panamax-rs/panamax).
+  Broader Rustup workflows and Cargo crate/index mirroring remain planned.
+- **rust-mirror-gui**: future interface over the same core. No GUI implementation
+  or framework has been selected.
+
+The repository was renamed from `rustup-offline-mirror` on 2026-11-09, preserving
+Git history and stable `ROM-REQ` identifiers. The earlier Windows-local uncommitted
+prototype remains untouched and separately preserved; its assessment is historical.
 
 ## Documentation
 
+- [Nexus Raw hosting and offline installation](docs/NEXUS-RAW.md).
+- [Offline proof evidence](docs/evals/2026-11-09-offline-toolchain.md).
 - [Recovered prototype assessment](docs/evals/2026-11-09-prototype-assessment.md).
 - [Requirements and evidence index](docs/REQUIREMENTS.md).
-- [Contribution and maintenance instructions](AGENTS.md).
-- [Rust Commons documentation conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md).
+- [Changelog](CHANGELOG.md).
+- [Contribution and validation instructions](AGENTS.md).
 - [License](LICENSE).

@@ -4,8 +4,9 @@
 
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
-mirroring for offline development, inspired by Panamax. This repository currently
-contains documentation only; do not describe planned functionality as implemented.
+mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
+publication helper. No version is released. Describe only demonstrated functionality
+as implemented; broader mirroring and the GUI remain planned.
 
 Preserve the earlier Windows-local uncommitted prototype. Assess it before import
 or replacement; do not delete or overwrite it. Keep `ROM-REQ` identifiers stable
@@ -19,7 +20,27 @@ across the rename. Do not publish placeholder crates merely to reserve names.
 - `AGENTS.md`: primary agent guidance.
 - `CLAUDE.md`: compatibility pointer to this file.
 
-No manifest, automated test suite, or build command is currently defined. For documentation-only changes, check Markdown links, instruction-file consistency, and `git diff --check`. If implementation is added, document its actual setup and validation commands here.
+- `src/`: pinned minimal-toolchain planner/downloader and thin CLI; Rust 1.90+.
+- `scripts/publish_raw.py`: Python 3.11+ static-host HTTP PUT/GET helper.
+- `scripts/prove_offline.py`: Linux network-namespace proof, including negative controls.
+- `docs/NEXUS-RAW.md`: actual setup, publication behavior and limits.
+
+Run `cargo fmt -- --check`, `cargo test --locked`,
+`cargo clippy --locked --all-targets -- -D warnings`,
+`RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps` (set the equivalent
+PowerShell environment variable on Windows), and
+`python -m unittest discover -s tests -p "test_*.py"`.
+
+The real installation proof downloads about 100-150 MB, requires Linux namespace
+permissions and an isolated output/evidence directory. Run only the documented
+`sudo unshare --net python3 scripts/prove_offline.py ...` workflow; do not weaken
+network isolation or replace a clean home with the user's Rustup/Cargo home.
+Do not publish artifacts to a real Nexus endpoint without owner authorization.
+Never log credentials or turn off TLS verification. Preserve upstream manifest
+bytes; check byte/path budgets and hashes before exposing a completed snapshot.
+Record actual Nexus/TLS/auth testing separately from the local protocol fixture.
+No independent OpenPGP validation, shared-cache concurrency, cross-platform
+installation or general release qualification follows from the current proof.
 
 ## Documentation and requirements traceability
 

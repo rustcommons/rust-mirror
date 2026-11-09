@@ -1,0 +1,17 @@
+[package]
+name = "rust-mirror"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "Apache-2.0"
+description = "Prepare pinned Rust toolchain snapshots for offline static hosting"
+repository = "https://github.com/rustcommons/rust-mirror"
+publish = false
+
+[dependencies]
+hex = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+sha2 = "0.10"
+toml = "0.8"
+ureq = { version = "2.9", features = ["tls"] }
+tempfile = "3.10"

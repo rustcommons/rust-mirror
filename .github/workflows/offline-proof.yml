@@ -1,0 +1,27 @@
+name: Offline toolchain proof
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cargo build --locked
+      - run: target/debug/rust-mirror fetch-toolchain --release 1.90.0 --host x86_64-unknown-linux-gnu --rustup-version 1.28.2 --output "$RUNNER_TEMP/snapshot"
+      - run: sudo unshare --net python3 scripts/prove_offline.py --snapshot "$RUNNER_TEMP/snapshot/mirror" --evidence "$RUNNER_TEMP/proof"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-proof-logs
+          path: |
+            ${{ runner.temp }}/proof/*.json
+            ${{ runner.temp }}/proof/*.stdout
+            ${{ runner.temp }}/proof/*.stderr
+            ${{ runner.temp }}/snapshot/mirror/snapshot.toml
