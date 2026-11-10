@@ -57,6 +57,14 @@ class RawPreflight(unittest.TestCase):
             with self.assertRaises(ValueError):
                 publish_raw.publish(self.root, base)
 
+    def test_ca_file_requires_https(self):
+        with self.assertRaisesRegex(ValueError, "custom CA file requires HTTPS"):
+            publish_raw.publish(self.root, "http://127.0.0.1:9/raw", allow_loopback_http=True, ca_file=self.root / "not-a-ca.pem")
+
+    def test_missing_ca_refuses_before_network(self):
+        with self.assertRaises(FileNotFoundError):
+            publish_raw.publish(self.root, "https://127.0.0.1:9/raw", ca_file=self.root / "missing-ca.pem")
+
     def test_symlink_refuses(self):
         try:
             (self.root / "extra").symlink_to(self.root / "dist/file")

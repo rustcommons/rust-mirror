@@ -8,8 +8,10 @@ including Nexus Repository Raw hosted repositories.
 Experimental, unreleased CLI and reusable library. The first milestone prepares
 a pinned minimal-profile x86_64 Linux toolchain and preserves upstream metadata.
 A network-isolated proof bootstraps Rustup, installs Rust 1.90.0 and builds/runs a
-dependency-free program from a local Nexus-style HTTP path. Actual Nexus/TLS/auth
-integration has not been tested. See [hosting and limitations](docs/NEXUS-RAW.md)
+dependency-free program from a local Nexus-style HTTP path. A subsequent [Nexus OSS compatibility test](docs/NEXUS-INTEGRATION.md)
+verified authenticated upload, trusted HTTPS and read-only offline installation
+on a legacy OSS fixture with an explicit Raw MIME policy. Modern Community Edition
+testing is held for operator license onboarding; your deployed setup remains unqualified. See [hosting and limitations](docs/NEXUS-RAW.md)
 and the [proof record](docs/evals/2026-11-09-offline-toolchain.md).
 
 Rust/Cargo 1.90+ is required to build. This project is not yet published on crates.io.

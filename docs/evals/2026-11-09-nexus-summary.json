@@ -1,0 +1,223 @@
+{
+  "status": "passed",
+  "cases": [
+    {
+      "case": "actual_nexus_rest_ready",
+      "passed": true,
+      "server": "Nexus/3.76.1-01 (OSS)"
+    },
+    {
+      "case": "raw_hosted_no_redeploy",
+      "passed": true,
+      "policy": "ALLOW_ONCE"
+    },
+    {
+      "case": "scoped_publisher_and_read_only_anonymous_roles",
+      "passed": true
+    },
+    {
+      "case": "anonymous_upload_refused",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "case": "wrong_password_refused",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "case": "publisher_cross_repository_write_refused",
+      "passed": true,
+      "status": 403
+    },
+    {
+      "case": "untrusted_ca_refused",
+      "passed": true
+    },
+    {
+      "case": "wrong_hostname_refused",
+      "passed": true
+    },
+    {
+      "case": "strict_mime_rejects_unchanged_upstream_armored_signature",
+      "passed": true,
+      "status": 400
+    },
+    {
+      "case": "explicit_disposable_raw_mime_policy",
+      "passed": true,
+      "strictContentTypeValidation": false,
+      "writePolicy": "ALLOW_ONCE"
+    },
+    {
+      "case": "explicit_raw_policy_preserves_signature_bytes",
+      "passed": true,
+      "status": 201
+    },
+    {
+      "case": "authenticated_snapshot_publication_and_get_hashes",
+      "passed": true,
+      "files": 9
+    },
+    {
+      "case": "repeat_publication_refuses_before_put",
+      "passed": true
+    },
+    {
+      "case": "nexus_server_redeploy_refused_and_original_retained",
+      "passed": true,
+      "status": 400
+    },
+    {
+      "case": "missing_artifact_returns_404",
+      "passed": true,
+      "status": 404
+    },
+    {
+      "case": "anonymous_cross_repository_read_refused",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "case": "fresh_anonymous_rustup_bootstrap_and_install_over_trusted_https",
+      "passed": true
+    },
+    {
+      "case": "dependency_free_offline_cargo_build_and_run",
+      "passed": true
+    }
+  ],
+  "commands": [
+    {
+      "case": "bootstrap",
+      "exit": 0
+    },
+    {
+      "case": "disable-self-update",
+      "exit": 0
+    },
+    {
+      "case": "install",
+      "exit": 0
+    },
+    {
+      "case": "rustc-version",
+      "exit": 0
+    },
+    {
+      "case": "cargo-version",
+      "exit": 0
+    },
+    {
+      "case": "cargo-offline-build",
+      "exit": 0
+    },
+    {
+      "case": "run-program",
+      "exit": 0
+    }
+  ],
+  "scope": "Disposable actual Nexus Raw hosted, with a temporary TLS reverse proxy",
+  "network": {
+    "routes": [],
+    "interfaces": [
+      {
+        "ifindex": 1,
+        "ifname": "lo",
+        "flags": [
+          "LOOPBACK",
+          "UP",
+          "LOWER_UP"
+        ],
+        "mtu": 65536,
+        "qdisc": "noqueue",
+        "operstate": "UNKNOWN",
+        "group": "default",
+        "txqlen": 1000,
+        "link_type": "loopback",
+        "address": "00:00:00:00:00:00",
+        "broadcast": "00:00:00:00:00:00",
+        "addr_info": [
+          {
+            "family": "inet",
+            "local": "127.0.0.1",
+            "prefixlen": 8,
+            "scope": "host",
+            "label": "lo",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "::1",
+            "prefixlen": 128,
+            "scope": "host",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          }
+        ]
+      }
+    ]
+  },
+  "external_connection_refused": true,
+  "inventory_sha256": "2ce140e440288ed2fdf9b10ee81f6c8c4d820b46c52632a19c59c12836f79f05",
+  "nexus_server": "Nexus/3.76.1-01 (OSS)",
+  "configured_users": [
+    {
+      "userId": "rust-mirror-publisher",
+      "source": "default",
+      "status": "active",
+      "roles": [
+        "rust-mirror-publish"
+      ]
+    },
+    {
+      "userId": "rust-mirror-reader",
+      "source": "default",
+      "status": "active",
+      "roles": [
+        "rust-mirror-read"
+      ]
+    }
+  ],
+  "configured_publisher_role": {
+    "id": "rust-mirror-publish",
+    "source": "default",
+    "privileges": [
+      "nx-repository-view-raw-rust-mirror-proof-edit",
+      "nx-repository-view-raw-rust-mirror-proof-add",
+      "nx-repository-view-raw-rust-mirror-proof-browse",
+      "nx-repository-view-raw-rust-mirror-proof-read"
+    ],
+    "roles": []
+  },
+  "head_permission_diagnostics": {
+    "administrator": 404,
+    "publisher": 404,
+    "anonymous": 404
+  },
+  "direct_raw_diagnostic": {
+    "status": 404,
+    "body": "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <title>404 - Sonatype Nexus Repository</title>\n  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n\n\n  <link rel=\"icon\" type=\"image/png\" href=\"../../../../../static/rapture/resources/safari-favicon-32x32.png?3.76.1-01\" sizes=\"32x32\">\n  <link rel=\"mask-icon\" href=\"../../../../../static/rapture/resources/favicon-white.svg?3.76.1-01\" color=\"#00bb6c\">\n  <link rel=\"icon\" type=\"image/png\" href=\"../../../../../static/rapture/resources/favicon.svg?3.76.1-01\" sizes=\"16x16\">\n\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"../../../../../static/css/nexus-content.css?3.76.1-01\"/>\n</head>\n<body>\n<div class=\"nexus-header\">\n  <a href=\"../../../../..\">\n    <div class=\"product-logo\">\n      <img src=\"../../../../../static/rapture/resources/nxrm-reverse-icon.png?3.76.1-01\" alt=\"Product logo\"/>\n    </div>\n    <div class=\"product-id\">\n      <div class=\"product-id__line-1\">\n        <span class=\"product-name\">Sonatype Nexus Repository</span>\n      </div>\n      <div class=\"product-id__line-2\">\n        <span class=\"product-spec\">OSS 3.76.1-01</span>\n      </div>\n    </div>\n  </a>\n</div>\n\n<div class=\"nexus-body\">\n  <div class=\"content-header\">\n    <img src=\"../../../../../static/rapture/resources/icons/x32/exclamation.png?3.76.1-01\" alt=\"Exclamation point\" aria-role=\"presentation\"/>\n    <span class=\"title\">Error 404</span>\n    <span class=\"description\">Not Found</span>\n  </div>\n  <div class=\"content-body\">\n    <div class=\"content-section\">\n      /snapshots/proof-001/dist/absent.tar.xz\n    </div>\n  </div>\n</div>\n</body>\n</html>\n\n"
+  },
+  "proxy_raw_diagnostic": {
+    "status": 404,
+    "body": "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <title>404 - Sonatype Nexus Repository</title>\n  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n\n\n  <link rel=\"icon\" type=\"image/png\" href=\"../../../../../static/rapture/resources/safari-favicon-32x32.png?3.76.1-01\" sizes=\"32x32\">\n  <link rel=\"mask-icon\" href=\"../../../../../static/rapture/resources/favicon-white.svg?3.76.1-01\" color=\"#00bb6c\">\n  <link rel=\"icon\" type=\"image/png\" href=\"../../../../../static/rapture/resources/favicon.svg?3.76.1-01\" sizes=\"16x16\">\n\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"../../../../../static/css/nexus-content.css?3.76.1-01\"/>\n</head>\n<body>\n<div class=\"nexus-header\">\n  <a href=\"../../../../..\">\n    <div class=\"product-logo\">\n      <img src=\"../../../../../static/rapture/resources/nxrm-reverse-icon.png?3.76.1-01\" alt=\"Product logo\"/>\n    </div>\n    <div class=\"product-id\">\n      <div class=\"product-id__line-1\">\n        <span class=\"product-name\">Sonatype Nexus Repository</span>\n      </div>\n      <div class=\"product-id__line-2\">\n        <span class=\"product-spec\">OSS 3.76.1-01</span>\n      </div>\n    </div>\n  </a>\n</div>\n\n<div class=\"nexus-body\">\n  <div class=\"content-header\">\n    <img src=\"../../../../../static/rapture/resources/icons/x32/exclamation.png?3.76.1-01\" alt=\"Exclamation point\" aria-role=\"presentation\"/>\n    <span class=\"title\">Error 404</span>\n    <span class=\"description\">Not Found</span>\n  </div>\n  <div class=\"content-body\">\n    <div class=\"content-section\">\n      /snapshots/proof-001/dist/absent.tar.xz\n    </div>\n  </div>\n</div>\n</body>\n</html>\n\n"
+  },
+  "publication": {
+    "release": "1.90.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "files": 9
+  },
+  "release": "1.90.0",
+  "host": "x86_64-unknown-linux-gnu",
+  "rustup_version": "1.28.2",
+  "tls": "Temporary TLS reverse proxy; verified custom CA and IP SAN; HTTP backend on isolated loopback",
+  "limits": [
+    "Only recorded Nexus image and Linux/Rustup/Rust combination",
+    "Anonymous read-only Rustup downloads, not authenticated client downloads",
+    "Temporary CA/proxy, not production CA/proxy/SSO configuration",
+    "No production writes or independently verified OpenPGP signatures",
+    "No rolling channels, crate/index mirroring, GUI or extra platforms"
+  ]
+}

@@ -1,0 +1,30 @@
+name: Legacy Nexus OSS compatibility proof
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  nexus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - run: cargo build --locked
+      - run: target/debug/rust-mirror fetch-toolchain --release 1.90.0 --host x86_64-unknown-linux-gnu --rustup-version 1.28.2 --output "$RUNNER_TEMP/snapshot"
+      - name: Pull pinned official Nexus image
+        run: docker pull docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09
+      - name: Run disposable isolated Nexus proof
+        run: sudo python3 scripts/run_nexus_proof.py --runtime docker --image docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09 --allow-raw-mime-types --snapshot "$RUNNER_TEMP/snapshot/mirror" --evidence "$RUNNER_TEMP/nexus-proof"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nexus-proof-logs
+          path: |
+            ${{ runner.temp }}/nexus-proof/runner.json
+            ${{ runner.temp }}/nexus-proof/driver.stdout
+            ${{ runner.temp }}/nexus-proof/driver.stderr
+            ${{ runner.temp }}/nexus-proof/proof/*.json
+            ${{ runner.temp }}/nexus-proof/proof/*.stdout
+            ${{ runner.temp }}/nexus-proof/proof/*.stderr
+            ${{ runner.temp }}/nexus-proof/proof/test-ca.pem
