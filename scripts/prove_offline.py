@@ -22,7 +22,7 @@ import publish_raw
 PREFIX = "/repository/rust-offline/proof"
 
 
-def prove(snapshot, evidence, selected_host=None):
+def prove(snapshot, evidence, selected_host=None, selection_name=None, additional_selections=None):
     snapshot = snapshot.resolve()
     evidence.mkdir(parents=True, exist_ok=False)
     result = {"status": "running", "server": "local HTTP PUT/GET contract fixture; not Nexus", "commands": []}
@@ -43,6 +43,18 @@ def prove(snapshot, evidence, selected_host=None):
             result["external_connection_refused"] = type(error).__name__
         document, files = publish_raw.local_files(snapshot)
         expected = {n: sha for n, path, sha in files}
+        collection_records = document.get("toolchains", []) if document["schema"] == 3 else []
+        if additional_selections and not collection_records:
+            raise ValueError("--also-selection requires a collection snapshot")
+        if len(set(additional_selections or [])) != len(additional_selections or []):
+            raise ValueError("duplicate additional selection")
+        if document["schema"] == 3:
+            matches = [r for r in document["toolchains"] if r["selection"]["name"] == selection_name]
+            if len(matches) != 1:
+                raise ValueError("collection proof needs --selection naming exactly one retained record")
+            document = {**matches[0], "schema": 2, "rustup_version": document["rustup_version"]}
+        elif selection_name is not None:
+            raise ValueError("--selection is only for collection snapshots")
         release, rustup_version = document["release"], document["rustup_version"]
         if document["schema"] == 1:
             host = document["host"]
@@ -168,6 +180,33 @@ def prove(snapshot, evidence, selected_host=None):
             library = project / "wasm.rs"
             library.write_text("pub fn target_word_size() -> usize { std::mem::size_of::<usize>() }\n")
             invoke("wasm-metadata", [rustup, "run", install_label, "rustc", "--target", "wasm32-unknown-unknown", "--crate-type", "lib", "--emit=metadata", library, "-o", project / "wasm.rmeta"], env)
+        result["additional_selections"] = []
+        for index, name in enumerate(additional_selections or []):
+            matches = [r for r in collection_records if r["selection"]["name"] == name]
+            if len(matches) != 1 or host not in matches[0]["selection"]["hosts"]:
+                raise ValueError("additional selection must identify one record for the tested host")
+            record = matches[0]
+            selected = record["selection"]
+            label = record["pinned_toolchain"]
+            extra = ["toolchain", "install", label, "--profile", selected["profile"], "--no-self-update"]
+            if selected.get("components"):
+                extra.append("--component=" + ",".join(selected["components"]))
+            if selected.get("targets"):
+                extra.append("--target=" + ",".join(selected["targets"]))
+            invoke(f"additional-{index}-install", [rustup, *extra], env)
+            version = invoke(f"additional-{index}-version", [rustup, "run", label, "rustc", "--version"], env)
+            if not version.stdout.startswith(("rustc " + record["release"] + " ").encode()):
+                raise RuntimeError("wrong additional toolchain version")
+            invoke(f"additional-{index}-build", [rustup, "run", label, "cargo", "build", "--offline"], env, cwd=project)
+            run = invoke(f"additional-{index}-run", [project / "target/debug/offline-proof"], env)
+            if run.stdout != b"offline mirror proof ok\n":
+                raise RuntimeError("wrong additional toolchain program output")
+            result["additional_selections"].append({"name": name, "toolchain": label, "release": record["release"]})
+        if additional_selections:
+            invoke("restore-original-build", [rustup, "run", install_label, "cargo", "build", "--offline"], env, cwd=project)
+            version = invoke("restore-original-version", [rustup, "run", install_label, "rustc", "--version"], env)
+            if not version.stdout.startswith(f"rustc {release} ".encode()):
+                raise RuntimeError("original toolchain no longer selected correctly")
         result["positive_request_count"] = len(request_log) - client_request_start
 
         # Each negative control starts with another completely empty Rustup/Cargo home.
@@ -231,11 +270,13 @@ def prove(snapshot, evidence, selected_host=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--also-selection", action="append", default=[], help="Additional unique collection record installed in the same home")
+    parser.add_argument("--selection", help="Unambiguous collection record name")
     parser.add_argument("--host", help="Explicit native host for multi-host snapshots")
     parser.add_argument("--snapshot", type=Path, required=True)
     parser.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args()
-    prove(args.snapshot, args.evidence.resolve(), args.host)
+    prove(args.snapshot, args.evidence.resolve(), args.host, args.selection, args.also_selection)
 
 
 if __name__ == "__main__":

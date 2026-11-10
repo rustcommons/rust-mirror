@@ -88,6 +88,17 @@ class RawPreflight(unittest.TestCase):
         names = [f[0] for f in files]
         self.assertLess(names.index(archive.relative_to(self.root).as_posix()), names.index(metadata.relative_to(self.root).as_posix()))
 
+    def test_collection_inventory_accepts_records_and_keeps_inventory_last(self):
+        text = self.inventory.replace('schema = 1', 'schema = 3')
+        text += '\n[[toolchains]]\nrelease = "1.90.0"\n'
+        self.write_inventory(text)
+        document, files = publish_raw.local_files(self.root)
+        self.assertEqual(document["schema"], 3)
+        self.assertEqual(files[-1][0], "snapshot.toml")
+        self.write_inventory(text.replace('[[toolchains]]\nrelease = "1.90.0"', 'toolchains = []'))
+        with self.assertRaises(ValueError):
+            publish_raw.local_files(self.root)
+
     def test_symlink_refuses(self):
         try:
             (self.root / "extra").symlink_to(self.root / "dist/file")

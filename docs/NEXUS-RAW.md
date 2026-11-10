@@ -20,6 +20,8 @@ For named versions/channels, additional components, targets or multiple hosts,
 use the [selection workflow](SELECTIONS.md). Its schema 2 inventory is accepted
 by the same publisher. The legacy command below remains a schema 1 minimal example.
 Only the recorded original schema 1 case has actual Nexus server qualification.
+For a shared multi-version tree, [assemble a schema 3 generation](MULTI-VERSION.md)
+and publish it through the same helper to a new prefix.
 
 ## Prepare on the connected machine
 
@@ -156,12 +158,13 @@ and [tested Rustup 1.28.2 behavior](https://github.com/rust-lang/rustup/blob/1.2
 
 ## Scope limits
 
-Only pinned 1.90.0, minimal-profile x86_64 Linux installation with Rustup 1.28.2 has
-been demonstrated. The planner accepts numeric pinned releases but that does not
-qualify every release. Preferred compression is zstd, then xz, then gzip; it mirrors
-one variant per selected component. Other client versions/codecs, extra components,
-cross-target standard libraries, source packages, rolling channels, self-updates,
-Windows/macOS installation and existing-home upgrades need further tests.
+The legacy command/example in this guide is the recorded pinned 1.90.0 minimal
+GNU Linux case with Rustup 1.28.2. It selects one preferred format (zstd, xz, gzip).
+That historical proof does not qualify every release or client. The newer
+[selection workflow](SELECTIONS.md) downloads all selected advertised variants and
+has separate component/Wasm evidence; [multi-version generations](MULTI-VERSION.md)
+have a separate two-release Linux coexistence proof. Foreign-platform execution,
+old-system qualification, self-updates and deployed Nexus policy remain gaps.
 
 The untouched manifest lists components/targets that this subset snapshot does
 not contain. Requests for those artifacts will fail; the inventory, not the full

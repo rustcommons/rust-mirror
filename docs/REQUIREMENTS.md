@@ -61,6 +61,9 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-021 | Resume selected downloads from the same frozen plan with verified-file reuse and bounded range handling. Source: owner resumable-download iteration, 2026-11-09. | [Core](../src/resume.rs); [guide](RESUMING.md); [tests](../tests/resume.rs). | Protocol fixtures, hash/plan/corruption controls, twelve actual range probes and bounded killed-process proof in the [record](evals/2026-11-10-resumable-downloads.md). | Implemented—partial verification; explicit retry, selected schema 2 only; no global cache, resumable uploads or automatic synchronization. |
 | ROM-REQ-022 | Preserve incomplete progress privately and serialize writers without overwriting completed snapshots or unrelated files. Source: authorized safe-resume workflow. | [Session implementation](../src/resume.rs); [assembly](../src/selection.rs); [failure boundaries](RESUMING.md#failure-and-filesystem-boundaries). | Linux/Windows lock and killed-child tests, unexpected/link path refusal and completed-output integrity checks; final real snapshot equals prior verified bytes. | Implemented—partial verification; private trusted local filesystems only, no initial-setup/power-loss/NFS/hostile-race guarantee. |
 
+| ROM-REQ-023 | Combine completed frozen selections into one immutable multi-version mirror, preserving retained releases and explicit channel history. Source: owner continuation after resume merge, 2026-11-09. | [Assembly core](../src/selection/collection.rs); [guide](MULTI-VERSION.md); [tests](../tests/collection.rs). | Retention, deduplication, root-alias, immutable/conflicting-input and record/closure controls; [dated evidence](evals/2026-11-10-multi-version.md). | Implemented—partial verification; local generation assembly only, no automatic resolution/scheduling, pruning, in-place server switch or bootstrap migration. |
+| ROM-REQ-024 | Bound and verify combined output before publication; support multiple selected Rustup toolchains through one static root. Source: authorized Rustup-first workflow. | [Publisher](../scripts/publish_raw.py); [offline proof](../scripts/prove_offline.py); [generation guide](MULTI-VERSION.md#publish-and-install). | Schema 3 preflight, unchanged input bytes, Linux shared-home version-selection and missing/corrupt controls as scoped in the dated record. | Implemented—partial verification; recorded Linux/Rustup route only; actual Nexus schema 3, native foreign platforms and old-system execution remain unqualified. |
+
 ## Documentation map
 
 | Document | Role |
@@ -71,6 +74,8 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [docs/REQUIREMENTS.md](REQUIREMENTS.md) | Confirmed constraints, evidence boundaries, and gaps. |
 | [Prototype assessment](evals/2026-11-09-prototype-assessment.md) | Dated source assessment, reproduced gaps and proposed milestones; not release qualification. |
 | [Selection guide](SELECTIONS.md) | Current configuration, discovery, import, frozen plans and limits. |
+| [Multi-version guide](MULTI-VERSION.md) | Immutable generations, explicit alias updates, conflicts, budgets and shared hosting. |
+| [Multi-version evidence](evals/2026-11-10-multi-version.md) | Dated local/real multi-toolchain and preservation results. |
 | [Resume guide](RESUMING.md) | Current explicit retry, partial-state, locking, integrity and failure contracts. |
 | [Resume evidence](evals/2026-11-10-resumable-downloads.md) | Dated protocol matrix, termination tests and real-origin continuation. |
 | [Selection evidence](evals/2026-11-09-toolchain-selection.md) | Dated metadata matrix, native offline proof and Panamax reference boundary. |

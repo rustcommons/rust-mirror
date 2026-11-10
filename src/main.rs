@@ -9,6 +9,7 @@ rust-mirror list --toolchain TOOLCHAIN [--host HOST]
 rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustup-version VERSION --output FILE
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
 rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
+rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
 Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. No crates or GUI yet.";
@@ -71,6 +72,9 @@ fn run() -> Result<()> {
     }
     if command == "fetch-toolchain" {
         return legacy(args);
+    }
+    if command == "assemble" {
+        return assemble(args);
     }
     let allowed: &[&str] = match command.as_str() {
         "init" => &["--config"],
@@ -185,6 +189,42 @@ fn run() -> Result<()> {
         }
         _ => unreachable!(),
     }
+    Ok(())
+}
+
+fn assemble(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+    let mut inputs = Vec::new();
+    let mut values = BTreeMap::new();
+    while let Some(key) = args.next() {
+        let key = key.into_string().map_err(|_| "option must be UTF-8")?;
+        if !["--snapshot", "--previous", "--output", "--max-bytes"].contains(&key.as_str()) {
+            return Err(format!("unknown option: {key}").into());
+        }
+        let value = args.next().ok_or("missing option value")?;
+        if value.to_str().is_some_and(|v| v.starts_with("--")) {
+            return Err("missing option value".into());
+        }
+        if key == "--snapshot" {
+            inputs.push(PathBuf::from(value));
+        } else if values.insert(key, value).is_some() {
+            return Err("duplicate option".into());
+        }
+    }
+    let output = PathBuf::from(values.remove("--output").ok_or("--output is required")?);
+    new_output(&output)?;
+    let previous = values.remove("--previous").map(PathBuf::from);
+    let budget = values
+        .remove("--max-bytes")
+        .map(|v| -> Result<u64> { Ok(v.to_str().ok_or("byte count must be UTF-8")?.parse()?) })
+        .transpose()?
+        .unwrap_or(10 * 1024 * 1024 * 1024);
+    let path = rust_mirror::selection::collection::assemble(
+        &inputs,
+        previous.as_deref(),
+        &output,
+        budget,
+    )?;
+    writeln!(io::stdout().lock(), "{}", path.display())?;
     Ok(())
 }
 

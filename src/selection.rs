@@ -1,4 +1,5 @@
 //! Saved selections and metadata-only, replayable download plans.
+pub mod collection;
 use crate::{
     bytes, checksum, safe_path, sha256, valid_hash, version, Manifest, Result, SnapshotFile,
     Source, ARTIFACT_LIMIT, METADATA_LIMIT, ORIGIN,

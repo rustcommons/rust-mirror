@@ -1,0 +1,330 @@
+{
+  "status": "passed",
+  "server": "local HTTP PUT/GET contract fixture; not Nexus",
+  "commands": [
+    {
+      "case": "positive-bootstrap",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/rustup-init",
+        "-y",
+        "--no-modify-path",
+        "--default-host",
+        "x86_64-unknown-linux-gnu",
+        "--default-toolchain",
+        "none"
+      ]
+    },
+    {
+      "case": "positive-disable-self-update",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "set",
+        "auto-self-update",
+        "disable"
+      ]
+    },
+    {
+      "case": "positive-install",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "toolchain",
+        "install",
+        "1.89.0",
+        "--profile",
+        "minimal",
+        "--no-self-update"
+      ]
+    },
+    {
+      "case": "rustc-version",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.89.0",
+        "rustc",
+        "--version"
+      ]
+    },
+    {
+      "case": "cargo-version",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.89.0",
+        "cargo",
+        "--version"
+      ]
+    },
+    {
+      "case": "rustup-version",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "--version"
+      ]
+    },
+    {
+      "case": "cargo-offline-build",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.89.0",
+        "cargo",
+        "build",
+        "--offline"
+      ]
+    },
+    {
+      "case": "run-built-program",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/hello/target/debug/offline-proof"
+      ]
+    },
+    {
+      "case": "installed-components",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "component",
+        "list",
+        "--installed",
+        "--toolchain",
+        "1.89.0"
+      ]
+    },
+    {
+      "case": "installed-targets",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "target",
+        "list",
+        "--installed",
+        "--toolchain",
+        "1.89.0"
+      ]
+    },
+    {
+      "case": "additional-0-install",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "toolchain",
+        "install",
+        "1.90.0",
+        "--profile",
+        "minimal",
+        "--no-self-update",
+        "--component=clippy,rustfmt,rust-src",
+        "--target=wasm32-unknown-unknown"
+      ]
+    },
+    {
+      "case": "additional-0-version",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.90.0",
+        "rustc",
+        "--version"
+      ]
+    },
+    {
+      "case": "additional-0-build",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.90.0",
+        "cargo",
+        "build",
+        "--offline"
+      ]
+    },
+    {
+      "case": "additional-0-run",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/hello/target/debug/offline-proof"
+      ]
+    },
+    {
+      "case": "restore-original-build",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.89.0",
+        "cargo",
+        "build",
+        "--offline"
+      ]
+    },
+    {
+      "case": "restore-original-version",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/positive/cargo/bin/rustup",
+        "run",
+        "1.89.0",
+        "rustc",
+        "--version"
+      ]
+    },
+    {
+      "case": "missing-bootstrap",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/rustup-init",
+        "-y",
+        "--no-modify-path",
+        "--default-host",
+        "x86_64-unknown-linux-gnu",
+        "--default-toolchain",
+        "none"
+      ]
+    },
+    {
+      "case": "missing-disable-self-update",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/missing/cargo/bin/rustup",
+        "set",
+        "auto-self-update",
+        "disable"
+      ]
+    },
+    {
+      "case": "missing-artifact-install",
+      "exit": 1,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/missing/cargo/bin/rustup",
+        "toolchain",
+        "install",
+        "1.89.0",
+        "--profile",
+        "minimal",
+        "--no-self-update"
+      ]
+    },
+    {
+      "case": "corrupt-bootstrap",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/rustup-init",
+        "-y",
+        "--no-modify-path",
+        "--default-host",
+        "x86_64-unknown-linux-gnu",
+        "--default-toolchain",
+        "none"
+      ]
+    },
+    {
+      "case": "corrupt-disable-self-update",
+      "exit": 0,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/corrupt/cargo/bin/rustup",
+        "set",
+        "auto-self-update",
+        "disable"
+      ]
+    },
+    {
+      "case": "corrupt-artifact-install",
+      "exit": 1,
+      "args": [
+        "/tmp/rust-mirror-collection-proof-20261110/evidence/corrupt/cargo/bin/rustup",
+        "toolchain",
+        "install",
+        "1.89.0",
+        "--profile",
+        "minimal",
+        "--no-self-update"
+      ]
+    }
+  ],
+  "network": {
+    "routes": [],
+    "interfaces": [
+      {
+        "ifindex": 1,
+        "ifname": "lo",
+        "flags": [
+          "LOOPBACK",
+          "UP",
+          "LOWER_UP"
+        ],
+        "mtu": 65536,
+        "qdisc": "noqueue",
+        "operstate": "UNKNOWN",
+        "group": "default",
+        "txqlen": 1000,
+        "link_type": "loopback",
+        "address": "00:00:00:00:00:00",
+        "broadcast": "00:00:00:00:00:00",
+        "addr_info": [
+          {
+            "family": "inet",
+            "local": "127.0.0.1",
+            "prefixlen": 8,
+            "scope": "host",
+            "label": "lo",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "::1",
+            "prefixlen": 128,
+            "scope": "host",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          }
+        ]
+      }
+    ]
+  },
+  "external_connection_refused": "OSError",
+  "selection": {
+    "host": "x86_64-unknown-linux-gnu",
+    "toolchain": "1.89.0",
+    "profile": "minimal",
+    "components": [],
+    "targets": []
+  },
+  "published": {
+    "toolchains": 2,
+    "files": 35
+  },
+  "additional_selections": [
+    {
+      "name": "native-proof",
+      "toolchain": "1.90.0",
+      "release": "1.90.0"
+    }
+  ],
+  "positive_request_count": 15,
+  "negative_control_variants": [
+    "dist/2025-08-07/cargo-1.89.0-x86_64-unknown-linux-gnu.tar.gz",
+    "dist/2025-08-07/cargo-1.89.0-x86_64-unknown-linux-gnu.tar.xz"
+  ],
+  "release": "1.89.0",
+  "rustup_version": "1.28.2",
+  "snapshot_inventory_sha256": "5cf6cda5c4c82c053839b10f91f39a21f38c2a1059927cdb873d7c96e23d1cdc",
+  "limits": [
+    "Not a real Nexus instance or authentication/TLS test",
+    "Only the recorded Linux host, pinned release, selected profile/components/targets and Rustup bootstrap",
+    "No crates.io mirroring, channel update, Windows or macOS execution proof; wasm is metadata typechecking only",
+    "No independent OpenPGP signature verification",
+    "Toolchain requires existing system loader, linker and native libraries"
+  ]
+}
