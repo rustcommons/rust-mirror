@@ -64,6 +64,9 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-023 | Combine completed frozen selections into one immutable multi-version mirror, preserving retained releases and explicit channel history. Source: owner continuation after resume merge, 2026-11-09. | [Assembly core](../src/selection/collection.rs); [guide](MULTI-VERSION.md); [tests](../tests/collection.rs). | Retention, deduplication, root-alias, immutable/conflicting-input and record/closure controls; [dated evidence](evals/2026-11-10-multi-version.md). | Implemented—partial verification; local generation assembly only, no automatic resolution/scheduling, pruning, in-place server switch or bootstrap migration. |
 | ROM-REQ-024 | Bound and verify combined output before publication; support multiple selected Rustup toolchains through one static root. Source: authorized Rustup-first workflow. | [Publisher](../scripts/publish_raw.py); [offline proof](../scripts/prove_offline.py); [generation guide](MULTI-VERSION.md#publish-and-install). | Schema 3 preflight, unchanged input bytes, Linux shared-home version-selection and missing/corrupt controls as scoped in the dated record. | Implemented—partial verification; recorded Linux/Rustup route only; actual Nexus schema 3, native foreign platforms and old-system execution remain unqualified. |
 
+| ROM-REQ-025 | Run all saved selections through one resolve/freeze/download/verify/assemble command with previous-data reuse and explicit frozen-cohort resume. Source: owner one-shot synchronization request, 2026-11-10. | [Core](../src/selection/sync.rs); [guide](SYNC.md); [tests](../tests/sync.rs). | Lifecycle, no-op, killed-process, corruption/config/plan/lock/budget/report controls and the [dated evaluation](evals/2026-11-10-one-shot-sync.md). | Implemented—partial verification; one-shot local workflow only, no scheduler, publication, activation, pruning or global cache. |
+| ROM-REQ-026 | Provide runnable demonstrations and understandable results, separating fixtures, actual data and unqualified scope. Source: owner request to start testing and see demos, 2026-11-10. | [PowerShell demo](../scripts/demo-sync.ps1); [demo config](../examples/sync-demo.toml); [results/counters](SYNC.md#results-and-counter-meaning). | Quick synthetic create/interruption/resume/no-change demo; recorded real two-version incremental/no-op runs and live metadata cases in the dated evaluation. | Implemented—partial verification; actual-data native route is recorded GNU Linux only. No GUI implementation or new foreign-host/Nexus qualification. |
+
 ## Documentation map
 
 | Document | Role |
@@ -74,6 +77,8 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [docs/REQUIREMENTS.md](REQUIREMENTS.md) | Confirmed constraints, evidence boundaries, and gaps. |
 | [Prototype assessment](evals/2026-11-09-prototype-assessment.md) | Dated source assessment, reproduced gaps and proposed milestones; not release qualification. |
 | [Selection guide](SELECTIONS.md) | Current configuration, discovery, import, frozen plans and limits. |
+| [One-shot sync and demos](SYNC.md) | Primary testing workflow, saved cohort/reuse/report semantics and limits. |
+| [One-shot evidence](evals/2026-11-10-one-shot-sync.md) | Dated synthetic and actual-data demonstrations, identities and gaps. |
 | [Multi-version guide](MULTI-VERSION.md) | Immutable generations, explicit alias updates, conflicts, budgets and shared hosting. |
 | [Multi-version evidence](evals/2026-11-10-multi-version.md) | Dated local/real multi-toolchain and preservation results. |
 | [Resume guide](RESUMING.md) | Current explicit retry, partial-state, locking, integrity and failure contracts. |

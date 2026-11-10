@@ -1,0 +1,270 @@
+[
+  {
+    "name": "old-gnu",
+    "selector": "1.89.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.89.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.89.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.89.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "current-gnu",
+    "selector": "1.90.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "default-gnu",
+    "selector": "1.90.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "source-wasm",
+    "selector": "1.90.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "msvc",
+    "selector": "1.90.0",
+    "host": "x86_64-pc-windows-msvc",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-pc-windows-msvc/rustup-init.exe.sha256"
+    ]
+  },
+  {
+    "name": "windows-gnu",
+    "selector": "1.90.0",
+    "host": "x86_64-pc-windows-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-pc-windows-gnu/rustup-init.exe.sha256"
+    ]
+  },
+  {
+    "name": "apple-arm",
+    "selector": "1.90.0",
+    "host": "aarch64-apple-darwin",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/aarch64-apple-darwin/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "apple-intel",
+    "selector": "1.90.0",
+    "host": "x86_64-apple-darwin",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-apple-darwin/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "linux-arm",
+    "selector": "1.90.0",
+    "host": "aarch64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/aarch64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "stable",
+    "selector": "stable",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-stable.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-stable.toml",
+      "https://static.rust-lang.org/dist/channel-rust-stable.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "beta",
+    "selector": "beta",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-beta.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-beta.toml",
+      "https://static.rust-lang.org/dist/channel-rust-beta.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "nightly",
+    "selector": "nightly",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-nightly.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-nightly.toml",
+      "https://static.rust-lang.org/dist/channel-rust-nightly.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  },
+  {
+    "name": "missing-miri",
+    "selector": "1.90.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": false,
+    "metadata_requests": 3,
+    "payload_attempts": 0,
+    "frozen_before_payload": false,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "component miri-preview for x86_64-unknown-linux-gnu unavailable in 1.90.0",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc"
+    ]
+  },
+  {
+    "name": "missing-host",
+    "selector": "1.90.0",
+    "host": "unknown-host",
+    "valid_selection": false,
+    "metadata_requests": 3,
+    "payload_attempts": 0,
+    "frozen_before_payload": false,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "host unavailable for 1.90.0: unknown-host",
+    "urls": [
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.sha256",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+      "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml.asc"
+    ]
+  },
+  {
+    "name": "dated-nightly",
+    "selector": "nightly-2025-09-18",
+    "host": "x86_64-unknown-linux-gnu",
+    "valid_selection": true,
+    "metadata_requests": 4,
+    "payload_attempts": 1,
+    "frozen_before_payload": true,
+    "expected_result": true,
+    "mirror_exposed": false,
+    "error": "METADATA_ONLY_PAYLOAD_WITHHELD",
+    "urls": [
+      "https://static.rust-lang.org/dist/2025-09-18/channel-rust-nightly.toml.sha256",
+      "https://static.rust-lang.org/dist/2025-09-18/channel-rust-nightly.toml",
+      "https://static.rust-lang.org/dist/2025-09-18/channel-rust-nightly.toml.asc",
+      "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256"
+    ]
+  }
+]

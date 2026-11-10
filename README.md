@@ -11,6 +11,7 @@ preview a metadata-only plan, then download that frozen selection for static hos
 Interrupted selected downloads can [resume verified progress](docs/RESUMING.md).
 Combine completed selections into an [immutable multi-version mirror](docs/MULTI-VERSION.md).
 Rustup remains the installer. See the [selection guide](docs/SELECTIONS.md).
+Use [one-shot sync and runnable demos](docs/SYNC.md) to run the workflow with one command.
 
 Rust/Cargo 1.90+ is required to build. This project is not yet published on crates.io.
 
@@ -49,6 +50,7 @@ prototype remains untouched and separately preserved; its assessment is historic
 
 ## Documentation
 
+- [Start testing: one-shot sync and demos](docs/SYNC.md).
 - [Multi-version generations and explicit channel refresh](docs/MULTI-VERSION.md).
 - [Resumable downloads and recovery](docs/RESUMING.md).
 - [Toolchain selections, discovery, import and frozen plans](docs/SELECTIONS.md).

@@ -1,5 +1,6 @@
 //! Saved selections and metadata-only, replayable download plans.
 pub mod collection;
+pub mod sync;
 use crate::{
     bytes, checksum, safe_path, sha256, valid_hash, version, Manifest, Result, SnapshotFile,
     Source, ARTIFACT_LIMIT, METADATA_LIMIT, ORIGIN,
@@ -668,18 +669,28 @@ fn snapshot(plan: &Plan, files: Vec<SnapshotFile>) -> SelectionSnapshot {
 }
 /// Fetch a frozen plan into a new output; retain private progress if interrupted.
 pub fn fetch(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
-    fetch_with_resume(plan_dir, output, source, false)
+    fetch_with_resume(plan_dir, output, source, false, None)
 }
 /// Explicitly reopen an existing output for this exact frozen plan. Reuse requires
 /// whole-file verification; a valid completed snapshot is checked, never overwritten.
 pub fn fetch_resuming(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
-    fetch_with_resume(plan_dir, output, source, true)
+    fetch_with_resume(plan_dir, output, source, true, None)
+}
+fn fetch_limited(
+    plan: &Path,
+    output: &Path,
+    source: &impl Source,
+    resume: bool,
+    limit: u64,
+) -> Result<PathBuf> {
+    fetch_with_resume(plan, output, source, resume, Some(limit))
 }
 fn fetch_with_resume(
     plan_dir: &Path,
     output: &Path,
     source: &impl Source,
     resume: bool,
+    limit: Option<u64>,
 ) -> Result<PathBuf> {
     let resolved = load_plan(plan_dir)?;
     let plan = &resolved.plan;
@@ -700,7 +711,7 @@ fn fetch_with_resume(
             SMALL_LIMIT,
         )?)?)?;
         let mut files = Vec::new();
-        let mut remaining = plan.max_download_bytes;
+        let mut remaining = plan.max_download_bytes.min(limit.unwrap_or(u64::MAX));
         for a in &plan.artifacts {
             let (n, h) =
                 crate::resume::hash_file(&completed.join(&a.path), remaining.min(ARTIFACT_LIMIT))?;
@@ -736,7 +747,7 @@ fn fetch_with_resume(
     }
     let staging = session.stage(&expected)?;
     let mut files = Vec::new();
-    let mut remaining = plan.max_download_bytes;
+    let mut remaining = plan.max_download_bytes.min(limit.unwrap_or(u64::MAX));
     for a in &plan.artifacts {
         let limit = remaining.min(ARTIFACT_LIMIT);
         if limit == 0 {

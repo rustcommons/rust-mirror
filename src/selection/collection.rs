@@ -19,7 +19,7 @@ pub struct ToolchainRecord {
     pub date: String,
     pub pinned_toolchain: String,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct CollectionSnapshot {
     pub schema: u32,
@@ -30,18 +30,18 @@ pub struct CollectionSnapshot {
     pub files: Vec<SnapshotFile>,
 }
 #[derive(Clone)]
-struct Entry {
-    source: PathBuf,
-    sha256: String,
-    bytes: u64,
+pub(super) struct Entry {
+    pub(super) source: PathBuf,
+    pub(super) sha256: String,
+    pub(super) bytes: u64,
 }
-struct Input {
-    rustup: String,
-    records: Vec<ToolchainRecord>,
-    files: BTreeMap<String, Entry>,
-    identity: String,
+pub(super) struct Input {
+    pub(super) rustup: String,
+    pub(super) records: Vec<ToolchainRecord>,
+    pub(super) files: BTreeMap<String, Entry>,
+    pub(super) identity: String,
 }
-fn rolling(path: &str) -> bool {
+pub(super) fn rolling(path: &str) -> bool {
     ["stable", "beta", "nightly"].iter().any(|c| {
         [
             format!("dist/channel-rust-{c}.toml"),
@@ -52,7 +52,7 @@ fn rolling(path: &str) -> bool {
         .any(|p| p == path)
     })
 }
-fn read_input(root: &Path) -> Result<Input> {
+pub(super) fn read_input(root: &Path) -> Result<Input> {
     let raw = read_file(&root.join("snapshot.toml"), INVENTORY_LIMIT)?;
     let value: toml::Value = toml::from_str(std::str::from_utf8(&raw)?)?;
     let (rustup, records, files) =
@@ -257,6 +257,32 @@ pub fn assemble(
             return Err("output must not be inside an input snapshot".into());
         }
     }
+    let (inventory, files) = prepare(inputs, previous, max_bytes)?;
+    fs::create_dir(output)?;
+    let staging = tempfile::Builder::new()
+        .prefix(".assembling-")
+        .tempdir_in(output)?;
+    write_prepared(&inventory, &files, staging.path())?;
+    let completed = output.join("mirror");
+    if fs::symlink_metadata(&completed).is_ok() {
+        return Err("completed generation unexpectedly exists".into());
+    }
+    fs::rename(staging.path(), &completed)?;
+    Ok(completed)
+}
+
+pub(super) fn prepare(
+    inputs: &[PathBuf],
+    previous: Option<&Path>,
+    max_bytes: u64,
+) -> Result<(CollectionSnapshot, BTreeMap<String, Entry>)> {
+    if inputs.is_empty()
+        || inputs.len() > 32
+        || max_bytes == 0
+        || max_bytes > 100 * 1024 * 1024 * 1024
+    {
+        return Err("invalid collection input/budget".into());
+    }
     let old = previous.map(read_input).transpose()?;
     let sources: Vec<_> = inputs
         .iter()
@@ -333,12 +359,16 @@ pub fn assemble(
     if serialized.len() as u64 > INVENTORY_LIMIT {
         return Err("collection inventory exceeds 1 MiB".into());
     }
-    fs::create_dir(output)?;
-    let staging = tempfile::Builder::new()
-        .prefix(".assembling-")
-        .tempdir_in(output)?;
+    Ok((inventory, files))
+}
+pub(super) fn write_prepared(
+    inventory: &CollectionSnapshot,
+    files: &BTreeMap<String, Entry>,
+    staging: &Path,
+) -> Result<()> {
+    let serialized = toml::to_string_pretty(inventory)?;
     for (path, entry) in files {
-        let target = staging.path().join(path);
+        let target = staging.join(path);
         fs::create_dir_all(target.parent().ok_or("missing parent")?)?;
         let mut file = File::create_new(target)?;
         let mut writer = crate::HashWriter {
@@ -346,7 +376,7 @@ pub fn assemble(
             hash: sha2::Sha256::default(),
             bytes: 0,
         };
-        crate::copy_bounded(File::open(entry.source)?, &mut writer, entry.bytes)?;
+        crate::copy_bounded(File::open(&entry.source)?, &mut writer, entry.bytes)?;
         let count = writer.bytes;
         let hash = hex::encode(sha2::Digest::finalize(writer.hash));
         if count != entry.bytes || hash != entry.sha256 {
@@ -354,11 +384,6 @@ pub fn assemble(
         }
         file.sync_all()?;
     }
-    super::write_new(&staging.path().join("snapshot.toml"), serialized.as_bytes())?;
-    let completed = output.join("mirror");
-    if fs::symlink_metadata(&completed).is_ok() {
-        return Err("completed generation unexpectedly exists".into());
-    }
-    fs::rename(staging.path(), &completed)?;
-    Ok(completed)
+    super::write_new(&staging.join("snapshot.toml"), serialized.as_bytes())?;
+    Ok(())
 }

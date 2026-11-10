@@ -66,7 +66,7 @@ Validate cached-plan replay, aliases/global components, multi-host closure, byte
 budgets, path/hash/schema refusal and existing-output preservation. Exercise the
 publisher against both inventory schemas. The real-Nexus harness currently supports
 schema 1 only; do not describe schema 2 HTTP-fixture evidence as a new Nexus pass.
-Never touch the user's Rustup/Cargo homes. Keep unimplemented automatic synchronization/retention,
+Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
 independent signature validation and foreign-platform execution gaps explicit.
 
 ## Resume validation
@@ -98,6 +98,22 @@ payloads, budgets and symbolic-link refusal. Keep publisher/proof schemas and
 requirements aligned. Actual Nexus schema 2/3, scheduling, pruning and remote
 client switching remain unqualified or unimplemented as documented. Use bounded
 local fixtures and reused baseline files before downloading another toolchain.
+
+## One-shot sync and demos
+
+Keep `sync` one-shot and local: no implicit publication, activation, scheduler or
+pruning. Freeze the whole cohort before payload transfers; resume must use the same
+config/previous identity with no live metadata refresh. Reject incoherent roots and
+immutable conflicts. Unchanged runs revalidate the previous mirror, transfer no
+payloads and do not create output. Reports are diagnostics, never proof of freshness.
+
+Enforce selected-working-copy and final-generation budgets; retain and validate
+private workspace state, lock ownership and expected paths. Test killed-process
+recovery, no-op corruption refusal, changed identities, report recovery and untouched
+uninitialized directories. Preserve original fetched/assembled behavior when sharing
+helpers. Demo scripts must use new private output, distinguish synthetic fixtures
+from actual archives, and preserve user homes/inputs. Record counter semantics and
+resource/platform limits in `docs/SYNC.md`; no new dependencies without approval.
 
 ## Documentation and requirements traceability
 
