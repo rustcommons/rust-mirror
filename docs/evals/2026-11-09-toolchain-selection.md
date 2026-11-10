@@ -10,7 +10,7 @@ integration PR; the original recovered prototype is unchanged.
 
 [Source-file identities](toolchain-selection-source.json) cover the tested Rust,
 Python, fixtures, example and unchanged Cargo manifest/lock. Inventory SHA-256:
-`697100428b86b2f40f4ce41670a521f418a1e60f0f2559a5e0d28e994431012b`.
+`ce57d17ca4b7229c35a6a79745468860ebe4a0da25e61bc44b011b20fae6ac7a`.
 The final source commit and hosted results are recorded in the PR. There are no
 new dependencies, version changes, tags, crate publication or GUI work.
 
