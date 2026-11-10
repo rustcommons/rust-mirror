@@ -49,6 +49,8 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
         except OSError:
             result["external_connection_refused"] = True
         document, files = publish_raw.local_files(snapshot)
+        if document["schema"] != 1:
+            raise ValueError("this Nexus fixture qualifies legacy schema-1 minimal snapshots; use prove_offline.py for selection snapshots")
         result["inventory_sha256"] = publish_raw.digest(snapshot / "snapshot.toml")
         admin_password = password_file.read_text().strip()
         administrator = credentials("admin", admin_password)

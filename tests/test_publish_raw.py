@@ -65,6 +65,29 @@ class RawPreflight(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             publish_raw.publish(self.root, "https://127.0.0.1:9/raw", ca_file=self.root / "missing-ca.pem")
 
+    def test_selection_inventory_accepts_default_and_multiple_hosts(self):
+        selection = self.inventory.replace('schema = 1', 'schema = 2').replace('profile = "minimal"\n', '')
+        selection += '\n[selection]\nprofile = "default"\nhosts = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]\n'
+        self.write_inventory(selection)
+        document, files = publish_raw.local_files(self.root)
+        self.assertEqual(document["schema"], 2)
+        self.assertEqual(len(document["selection"]["hosts"]), 2)
+        self.assertEqual(files[-1][0], "snapshot.toml")
+
+    def test_dated_metadata_is_ordered_after_archives(self):
+        archive = self.root / "dist/2025-09-18/z-archive.tar.xz"
+        archive.parent.mkdir()
+        archive.write_bytes(b"data")
+        metadata = archive.with_name("channel-rust-stable.toml")
+        metadata.write_bytes(b"data")
+        extra = ''
+        for name in [archive, metadata]:
+            extra += '\n[[files]]\npath = "' + name.relative_to(self.root).as_posix() + '"\nsha256 = "' + hashlib.sha256(b"data").hexdigest() + '"\nbytes = 4\n'
+        self.write_inventory(self.inventory + extra)
+        _, files = publish_raw.local_files(self.root)
+        names = [f[0] for f in files]
+        self.assertLess(names.index(archive.relative_to(self.root).as_posix()), names.index(metadata.relative_to(self.root).as_posix()))
+
     def test_symlink_refuses(self):
         try:
             (self.root / "extra").symlink_to(self.root / "dist/file")

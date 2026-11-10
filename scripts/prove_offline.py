@@ -22,7 +22,7 @@ import publish_raw
 PREFIX = "/repository/rust-offline/proof"
 
 
-def prove(snapshot, evidence):
+def prove(snapshot, evidence, selected_host=None):
     snapshot = snapshot.resolve()
     evidence.mkdir(parents=True, exist_ok=False)
     result = {"status": "running", "server": "local HTTP PUT/GET contract fixture; not Nexus", "commands": []}
@@ -43,7 +43,28 @@ def prove(snapshot, evidence):
             result["external_connection_refused"] = type(error).__name__
         document, files = publish_raw.local_files(snapshot)
         expected = {n: sha for n, path, sha in files}
-        release, host, rustup_version = (document[k] for k in ("release", "host", "rustup_version"))
+        release, rustup_version = document["release"], document["rustup_version"]
+        if document["schema"] == 1:
+            host = document["host"]
+            if selected_host is not None and selected_host != host:
+                raise ValueError("host not included in snapshot")
+            profile, components, targets, install_label = "minimal", [], [], release
+        else:
+            selection = document["selection"]
+            hosts = selection["hosts"]
+            host = selected_host or (hosts[0] if len(hosts) == 1 else None)
+            if host not in hosts:
+                raise ValueError("select one explicit host included in a multi-host snapshot")
+            profile, components, targets = selection["profile"], selection.get("components", []), selection.get("targets", [])
+            install_label = document["pinned_toolchain"]
+        if host != "x86_64-unknown-linux-gnu":
+            raise ValueError("native proof currently qualifies only the x86_64 Linux GNU host")
+        result["selection"] = {"host": host, "toolchain": install_label, "profile": profile, "components": components, "targets": targets}
+        install_args = ["toolchain", "install", install_label, "--profile", profile, "--no-self-update"]
+        if components:
+            install_args.append("--component=" + ",".join(components))
+        if targets:
+            install_args.append("--target=" + ",".join(targets))
         os.environ.pop("NEXUS_USERNAME", None)
         os.environ.pop("NEXUS_PASSWORD", None)
         served = Path(tempfile.mkdtemp(prefix="rust-mirror-raw-fixture-"))
@@ -87,6 +108,7 @@ def prove(snapshot, evidence):
         worker.start()
         base = f"http://127.0.0.1:{server.server_port}{PREFIX}"
         result["published"] = publish_raw.publish(snapshot, base, allow_loopback_http=True)
+        client_request_start = len(request_log)
         bootstrap_path = f"rustup/archive/{rustup_version}/{host}/rustup-init"
         bootstrap = evidence / "rustup-init"
         with urlopen(base + "/" + bootstrap_path, timeout=10) as source, bootstrap.open("xb") as output:
@@ -116,53 +138,84 @@ def prove(snapshot, evidence):
             return client_root, env, rustup
 
         client_root, env, rustup = client("positive")
-        invoke("positive-install", [rustup, "toolchain", "install", release, "--profile", "minimal", "--no-self-update"], env)
-        versions = invoke("rustc-version", [rustup, "run", release, "rustc", "--version"], env)
+        invoke("positive-install", [rustup, *install_args], env)
+        versions = invoke("rustc-version", [rustup, "run", install_label, "rustc", "--version"], env)
         if not versions.stdout.startswith(f"rustc {release} ".encode()):
             raise RuntimeError("unexpected installed compiler")
-        invoke("cargo-version", [rustup, "run", release, "cargo", "--version"], env)
+        invoke("cargo-version", [rustup, "run", install_label, "cargo", "--version"], env)
         invoke("rustup-version", [rustup, "--version"], env)
         project = client_root / "hello"
         (project / "src").mkdir(parents=True)
         (project / "Cargo.toml").write_text('[package]\nname = "offline-proof"\nversion = "0.1.0"\nedition = "2021"\n')
-        (project / "src/main.rs").write_text('fn main() { println!("offline mirror proof ok"); }\n')
-        invoke("cargo-offline-build", [rustup, "run", release, "cargo", "build", "--offline"], env, cwd=project)
+        (project / "src/main.rs").write_text('fn main() {\n    println!("offline mirror proof ok");\n}\n')
+        invoke("cargo-offline-build", [rustup, "run", install_label, "cargo", "build", "--offline"], env, cwd=project)
         run = invoke("run-built-program", [project / "target/debug/offline-proof"], env)
         if run.stdout != b"offline mirror proof ok\n":
             raise RuntimeError("unexpected program output")
-        result["positive_request_count"] = len(request_log)
+        installed = invoke("installed-components", [rustup, "component", "list", "--installed", "--toolchain", install_label], env)
+        installed_targets = invoke("installed-targets", [rustup, "target", "list", "--installed", "--toolchain", install_label], env)
+        for component in components:
+            if component.removesuffix("-preview").encode() not in installed.stdout:
+                raise RuntimeError("requested component missing from installed list")
+        for target in targets:
+            if target.encode() not in installed_targets.stdout.splitlines():
+                raise RuntimeError("requested target missing from installed list")
+        if b"rustfmt" in installed.stdout:
+            invoke("cargo-fmt", [rustup, "run", install_label, "cargo", "fmt", "--check"], env, cwd=project)
+        if b"clippy" in installed.stdout:
+            invoke("cargo-clippy", [rustup, "run", install_label, "cargo", "clippy", "--offline", "--", "-D", "warnings"], env, cwd=project)
+        if "wasm32-unknown-unknown" in targets:
+            library = project / "wasm.rs"
+            library.write_text("pub fn target_word_size() -> usize { std::mem::size_of::<usize>() }\n")
+            invoke("wasm-metadata", [rustup, "run", install_label, "rustc", "--target", "wasm32-unknown-unknown", "--crate-type", "lib", "--emit=metadata", library, "-o", project / "wasm.rmeta"], env)
+        result["positive_request_count"] = len(request_log) - client_request_start
 
         # Each negative control starts with another completely empty Rustup/Cargo home.
-        artifact = next(n for n, p, h in files if n.startswith("dist/") and n.endswith((".tar.xz", ".tar.zst", ".tar.gz")))
-        remote_artifact = served / PREFIX.lstrip("/") / artifact
-        missing = remote_artifact.with_name(remote_artifact.name + ".withheld")
-        remote_artifact.rename(missing)
+        downloaded = [r["path"][len(PREFIX)+1:] for r in request_log[client_request_start:] if r["method"] == "GET" and r["status"] == "200" and r["path"].endswith((".tar.xz", ".tar.zst", ".tar.gz"))]
+        if not downloaded:
+            raise RuntimeError("no real component download was recorded")
+        artifact = downloaded[0]
+        stem = next(artifact[:-len(ext)] for ext in (".tar.xz", ".tar.zst", ".tar.gz") if artifact.endswith(ext))
+        variants = [n for n, p, h in files if any(n == stem+ext for ext in (".tar.xz", ".tar.zst", ".tar.gz"))]
+        result["negative_control_variants"] = variants
+        hidden = []
         try:
+            for name in variants:
+                remote = served / PREFIX.lstrip("/") / name
+                missing = remote.with_name(remote.name + ".withheld")
+                remote.rename(missing)
+                hidden.append((remote, missing))
             _, negative_env, negative_rustup = client("missing")
-            failed = invoke("missing-artifact-install", [negative_rustup, "toolchain", "install", release, "--profile", "minimal", "--no-self-update"], negative_env, success=False)
+            failed = invoke("missing-artifact-install", [negative_rustup, *install_args], negative_env, success=False)
             if b"404" not in failed.stderr:
                 raise RuntimeError("missing-artifact control failed for a different reason")
         finally:
-            missing.rename(remote_artifact)
-        with remote_artifact.open("r+b") as f:
-            original = f.read(1)
-            f.seek(0)
-            f.write(bytes([original[0] ^ 1]))
+            for remote, missing in hidden:
+                missing.rename(remote)
+        changed = []
         try:
+            for name in variants:
+                remote = served / PREFIX.lstrip("/") / name
+                with remote.open("r+b") as f:
+                    original = f.read(1)
+                    f.seek(0)
+                    f.write(bytes([original[0] ^ 1]))
+                changed.append((remote, original))
             _, negative_env, negative_rustup = client("corrupt")
-            failed = invoke("corrupt-artifact-install", [negative_rustup, "toolchain", "install", release, "--profile", "minimal", "--no-self-update"], negative_env, success=False)
+            failed = invoke("corrupt-artifact-install", [negative_rustup, *install_args], negative_env, success=False)
             if b"checksum" not in failed.stderr.lower():
                 raise RuntimeError("corruption control failed for a different reason")
         finally:
-            with remote_artifact.open("r+b") as f:
-                f.write(original)
+            for remote, original in changed:
+                with remote.open("r+b") as f:
+                    f.write(original)
         if any(not r["path"].startswith(PREFIX + "/") for r in request_log):
             raise RuntimeError("request escaped the configured Raw prefix")
         result["status"] = "passed"
         result["release"] = release
         result["rustup_version"] = rustup_version
         result["snapshot_inventory_sha256"] = publish_raw.digest(snapshot / "snapshot.toml")
-        result["limits"] = ["Not a real Nexus instance or authentication/TLS test", "Only the recorded Linux host, pinned release, minimal profile and Rustup bootstrap", "No crates.io mirroring, additional components, updates, Windows or macOS proof", "No independent OpenPGP signature verification", "Toolchain requires existing system loader, linker and native libraries"]
+        result["limits"] = ["Not a real Nexus instance or authentication/TLS test", "Only the recorded Linux host, pinned release, selected profile/components/targets and Rustup bootstrap", "No crates.io mirroring, channel update, Windows or macOS execution proof; wasm is metadata typechecking only", "No independent OpenPGP signature verification", "Toolchain requires existing system loader, linker and native libraries"]
     finally:
         if server is not None:
             server.shutdown()
@@ -178,10 +231,11 @@ def prove(snapshot, evidence):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--host", help="Explicit native host for multi-host snapshots")
     parser.add_argument("--snapshot", type=Path, required=True)
     parser.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args()
-    prove(args.snapshot, args.evidence.resolve())
+    prove(args.snapshot, args.evidence.resolve(), args.host)
 
 
 if __name__ == "__main__":

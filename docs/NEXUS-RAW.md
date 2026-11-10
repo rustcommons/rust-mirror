@@ -16,6 +16,11 @@ recommendation. Community Edition 3.90.6 is held at its operator EULA gate.
 Your actual version, certificate/access/cleanup policy and proxy still need an
 instance-specific test; no production instance has been contacted.
 
+For named versions/channels, additional components, targets or multiple hosts,
+use the [selection workflow](SELECTIONS.md). Its schema 2 inventory is accepted
+by the same publisher. The legacy command below remains a schema 1 minimal example.
+Only the recorded original schema 1 case has actual Nexus server qualification.
+
 ## Prepare on the connected machine
 
 Requirements: Rust/Cargo 1.90 or newer, HTTPS access to static.rust-lang.org and a

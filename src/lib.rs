@@ -1,4 +1,5 @@
-//! Pinned minimal-toolchain snapshots. Upstream manifests are preserved, not rewritten.
+//! Pinned toolchain snapshots. Upstream manifests are preserved, not rewritten.
+pub mod selection;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -88,6 +89,12 @@ struct Manifest {
     date: String,
     pkg: BTreeMap<String, Package>,
     profiles: BTreeMap<String, Vec<String>>,
+    #[serde(default)]
+    renames: BTreeMap<String, Renamed>,
+}
+#[derive(Deserialize)]
+struct Renamed {
+    to: String,
 }
 #[derive(Deserialize)]
 struct Package {
