@@ -293,6 +293,81 @@ fn result(
         },
     }
 }
+/// Explicitly discard a managed run's progress and mirror, then resolve a fresh
+/// cohort at the same path. No backup is kept; `previous` must not overlap.
+pub fn run_forced(
+    config: &Config,
+    previous: Option<&Path>,
+    output: &Path,
+    source: &impl Source,
+) -> Result<SyncResult> {
+    config.validate()?;
+    if exists(output)? {
+        real_dir(output)?;
+        children(output, &named(&[".sync.lock", ".sync", "mirror"]))?;
+        if exists(&output.join(".sync"))? {
+            real_dir(&output.join(".sync"))?;
+        } else {
+            // A failed fresh resolution after force leaves only this lock marker.
+            children(output, &named(&[".sync.lock"]))?;
+        }
+        regular(&output.join(".sync.lock"), 0)?;
+        let target = output.canonicalize()?;
+        if let Some(previous) = previous {
+            let prior = previous.canonicalize()?;
+            if prior.starts_with(&target) || target.starts_with(&prior) {
+                return Err("force output and previous mirror must not overlap".into());
+            }
+            collection::read_input(previous)?;
+        }
+        let guard = lock(output)?;
+        // Validate the full destructive scope before deleting anything. Never follow
+        // links/junctions, and keep the lock file in place throughout restart.
+        let mut entries = 0;
+        for name in ["mirror", ".sync"] {
+            let path = target.join(name);
+            if exists(&path)? {
+                validate_reset_tree(&path, &target, 0, &mut entries)?;
+            }
+        }
+        stage("--force: discarding existing mirror and progress; no backup");
+        for name in ["mirror", ".sync"] {
+            let path = target.join(name);
+            if exists(&path)? {
+                fs::remove_dir_all(path)?;
+            }
+        }
+        return run_inner(config, previous, output, false, source, Some(guard));
+    }
+    run(config, previous, output, false, source)
+}
+fn validate_reset_tree(path: &Path, root: &Path, depth: usize, count: &mut usize) -> Result<()> {
+    *count += 1;
+    if depth > 64 || *count > 300_000 {
+        return Err("force reset tree exceeds validation budget".into());
+    }
+    let metadata = fs::symlink_metadata(path)?;
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        if metadata.file_attributes() & 0x400 != 0 {
+            return Err("force refuses reparse points".into());
+        }
+    }
+    if metadata.file_type().is_symlink() || (!metadata.is_file() && !metadata.is_dir()) {
+        return Err("force refuses links and special files".into());
+    }
+    let canonical = path.canonicalize()?;
+    if canonical == root || !canonical.starts_with(root) {
+        return Err("force reset path escapes the output directory".into());
+    }
+    if metadata.is_dir() {
+        for entry in fs::read_dir(path)? {
+            validate_reset_tree(&entry?.path(), root, depth + 1, count)?;
+        }
+    }
+    Ok(())
+}
 /// Synchronize all configured selections into a new immutable generation. No server
 /// writes, client activation or pruning. Resume requires exact config/previous identity.
 pub fn run(
@@ -302,9 +377,20 @@ pub fn run(
     resume: bool,
     source: &impl Source,
 ) -> Result<SyncResult> {
+    run_inner(config, previous, output, resume, source, None)
+}
+fn run_inner(
+    config: &Config,
+    previous: Option<&Path>,
+    output: &Path,
+    resume: bool,
+    source: &impl Source,
+    forced_guard: Option<File>,
+) -> Result<SyncResult> {
+    let forced = forced_guard.is_some();
     config.validate()?;
-    if !resume && exists(output)? {
-        return Err("sync output already exists; use --resume with unchanged configuration".into());
+    if !resume && !forced && exists(output)? {
+        return Err("sync output already exists; use --resume with unchanged configuration, or --force to discard it and start fresh".into());
     }
     let parent = output
         .parent()
@@ -341,7 +427,7 @@ pub fn run(
     let allowed_indices: BTreeSet<_> = (0..config.selections.len())
         .map(|n| PathBuf::from(n.to_string()))
         .collect();
-    let mut guard = None;
+    let mut guard = forced_guard;
     let resolved = if resume {
         real_dir(output)?;
         children(output, &named(&[".sync.lock", ".sync", "mirror"]))?;
@@ -404,7 +490,7 @@ pub fn run(
         plans
     };
     let unchanged = preflight(&resolved, old.as_ref(), config.max_download_bytes)?;
-    if unchanged && !resume {
+    if unchanged && !resume && !forced {
         if exists(output)? {
             return Err("sync output appeared during resolution".into());
         }
@@ -421,8 +507,12 @@ pub fn run(
         ));
     }
     if !resume {
-        fs::create_dir(output)?;
-        guard = Some(lock(output)?);
+        if !forced {
+            fs::create_dir(output)?;
+            guard = Some(lock(output)?);
+        } else {
+            children(output, &named(&[".sync.lock"]))?;
+        }
         fs::create_dir(&root)?;
         fs::create_dir(&plan_root)?;
         fs::create_dir(&snapshot_root)?;

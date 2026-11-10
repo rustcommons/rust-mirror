@@ -15,7 +15,8 @@ From a checkout with Rust/Cargo 1.90+:
 It runs in about a second after compilation and preserves its output location.
 It uses tiny synthetic archives: **no Rust distribution download or installation**.
 You see first-run creation, a simulated connection interruption, a resume using
-saved metadata, and an unchanged repeat run. Reports are left under the printed
+saved metadata, an unchanged repeat run, refusal without an explicit flag, and a
+destructive force restart with no backup. Reports are left under the printed
 path. The script never deletes an existing output or changes a user's toolchain home.
 Cargo may need to obtain the project's build dependencies on a fresh checkout.
 
@@ -66,8 +67,8 @@ so a large unchanged mirror still needs disk I/O. Extra retained releases stay;
 omitting a selection does not delete it.
 
 For a changed result, `OUTPUT/mirror` is the new immutable generation. Existing
-outputs refuse unless explicitly resumed. Output parents must exist and cannot be
-inside the previous mirror. Publish separately using the [hosting guide](NEXUS-RAW.md).
+outputs refuse unless explicitly resumed or restarted with `--force`. Output
+parents must exist and cannot be inside the previous mirror. Publish separately using the [hosting guide](NEXUS-RAW.md).
 
 ## Resume an interrupted run
 
@@ -87,6 +88,43 @@ sync and selection locks. Initial setup interrupted before its identity is compl
 may require a new output. Staging copy work can be rebuilt; payload progress remains
 available. Retained selected copies currently stay for revalidation/resume and cost
 additional disk space. There is no shared global cache or pruning.
+
+## Explicit restart with --force
+
+An existing output always errors before network access unless you choose `--resume`
+or `--force`. The two flags are mutually exclusive and duplicates are rejected.
+These options apply to `sync`; the separate `fetch` command retains its existing
+explicit-resume-only contract.
+
+```sh
+# Continue the saved cohort and verified partial downloads:
+rust-mirror sync --config examples/sync-demo.toml --output ./run-002 --resume
+# Resolve today's configuration again and start a fresh run:
+rust-mirror sync --config examples/sync-demo.toml --output ./run-002 --force
+```
+
+`--force` **discards the old run's `.sync` progress and completed `mirror`**, then
+resolves the current configuration and rebuilds at the same path. **There is no
+backup or rollback.** It keeps the workspace lock held during deletion and restart;
+an active writer still refuses. No old payloads survive for reuse. Use an external
+`--previous` mirror for verified reuse. An existing completed run is rebuilt even
+when that previous mirror already contains the requested data. With a new output,
+`--force` behaves like an ordinary new run, including unchanged detection.
+
+Only recognizable managed run directories qualify. Unrelated directories, linked
+outputs or descendants, special files, unexpected top-level entries, and any overlap
+between output and `--previous` refuse before deletion. The old config may differ:
+force deliberately does not continue its frozen plans. Validate the full reset tree
+before clearing either managed directory; refuse over 300,000 entries or depth 64.
+The persistent `.sync.lock` stays in place. Other commands do not gain this option.
+
+If fresh metadata resolution or download fails, the old completed mirror is already
+gone. A failure before initialization can leave only `.sync.lock`; retry that shell
+with `--force`. If download state was initialized, `--resume` can continue the new
+cohort. A crash or filesystem error during clearing may leave partial old state;
+retry with `--force`, not `--resume`, to finish discarding it. This is an explicit
+destructive reset, not a transactional mirror swap or retention pruning. Do not use
+it on a live served mirror when continuity matters; use a new run directory instead.
 
 ## Results and counter meaning
 

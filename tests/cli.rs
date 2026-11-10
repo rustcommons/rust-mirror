@@ -95,3 +95,22 @@ fn saved_selection_commands_work_offline_and_preserve_existing_files() {
         assert!(result.stdout.is_empty());
     }
 }
+
+#[test]
+fn sync_force_and_resume_are_exclusive_and_singleton_before_io() {
+    for args in [
+        vec!["sync", "--force", "--resume"],
+        vec!["sync", "--resume", "--force"],
+        vec!["sync", "--force", "--force"],
+        vec!["sync", "--resume", "--resume"],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        let err = String::from_utf8(output.stderr).unwrap();
+        assert!(err.contains("mutually exclusive") || err.contains("duplicate"));
+    }
+}

@@ -322,6 +322,15 @@ fn demo_tiny_sync() {
     )
     .is_err());
     println!("INTERRUPTED: no completed mirror exposed");
+    let refused = run(
+        &cfg,
+        None,
+        &root.join("interrupted"),
+        false,
+        &source(0, false),
+    )
+    .unwrap_err();
+    println!("WITHOUT --resume/--force: ERROR: {refused}");
     let resumed = run(
         &cfg,
         None,
@@ -345,6 +354,17 @@ fn demo_tiny_sync() {
     println!(
         "UNCHANGED\n{}",
         toml::to_string_pretty(&next.report).unwrap()
+    );
+    let forced = rust_mirror::selection::sync::run_forced(
+        &cfg,
+        None,
+        &root.join("interrupted"),
+        &source(0, true),
+    )
+    .unwrap();
+    println!(
+        "FORCED FRESH RUN (old progress and mirror discarded, no backup)\n{}",
+        toml::to_string_pretty(&forced.report).unwrap()
     );
 }
 
@@ -486,4 +506,171 @@ fn killed_sync_releases_both_locks_and_resumes_without_metadata_refresh() {
     let result = run(&config(), None, &out, true, &source(0, false)).unwrap();
     assert!(result.report.resumed);
     assert_eq!(result.report.metadata_requests, 0);
+}
+
+#[test]
+fn force_discards_interrupted_and_completed_runs_and_resolves_fresh() {
+    use rust_mirror::selection::sync::run_forced;
+    let t = tempfile::tempdir().unwrap();
+    let out = t.path().join("run");
+    let cfg = config();
+    assert!(run(&cfg, None, &out, false, &source(2, true)).is_err());
+    let forbidden = source(0, false);
+    let err = run(&cfg, None, &out, false, &forbidden)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("--resume") && err.contains("--force"));
+    assert_eq!(*forbidden.metadata.lock().unwrap(), 0);
+    std::fs::write(out.join(".sync/obsolete"), b"discard me").unwrap();
+    let result = run_forced(&cfg, None, &out, &source(0, true)).unwrap();
+    assert_eq!(result.report.status, "created");
+    assert!(!result.report.resumed);
+    assert_eq!(result.report.metadata_requests, 8);
+    assert!(!out.join(".sync/obsolete").exists());
+    std::fs::write(out.join("mirror/obsolete"), b"discard me too").unwrap();
+    run_forced(&cfg, None, &out, &source(0, true)).unwrap();
+    assert!(!out.join("mirror/obsolete").exists());
+    assert_eq!(std::fs::read_dir(t.path()).unwrap().count(), 1, "no backup");
+}
+#[test]
+fn force_refuses_active_unmanaged_or_overlapping_runs_without_changes() {
+    use rust_mirror::selection::sync::run_forced;
+    let t = tempfile::tempdir().unwrap();
+    let out = t.path().join("run");
+    let cfg = config();
+    let done = run(&cfg, None, &out, false, &source(0, true)).unwrap();
+    let inventory = std::fs::read(done.mirror.join("snapshot.toml")).unwrap();
+    let lock = std::fs::File::options()
+        .read(true)
+        .write(true)
+        .open(out.join(".sync.lock"))
+        .unwrap();
+    lock.try_lock().unwrap();
+    assert!(run_forced(&cfg, None, &out, &source(0, false)).is_err());
+    drop(lock);
+    assert!(run_forced(&cfg, Some(&done.mirror), &out, &source(0, false)).is_err());
+    assert!(run_forced(
+        &cfg,
+        Some(&done.mirror),
+        &done.mirror.join("nested"),
+        &source(0, false)
+    )
+    .is_err());
+    std::fs::write(out.join("mine"), b"keep").unwrap();
+    assert!(run_forced(&cfg, None, &out, &source(0, false)).is_err());
+    assert_eq!(std::fs::read(out.join("mine")).unwrap(), b"keep");
+    assert_eq!(
+        std::fs::read(done.mirror.join("snapshot.toml")).unwrap(),
+        inventory
+    );
+    let empty = t.path().join("empty");
+    std::fs::create_dir(&empty).unwrap();
+    assert!(run_forced(&cfg, None, &empty, &source(0, false)).is_err());
+    assert_eq!(std::fs::read_dir(&empty).unwrap().count(), 0);
+}
+#[test]
+fn force_failure_leaves_no_old_mirror_and_can_restart_lock_only_shell() {
+    use rust_mirror::selection::sync::run_forced;
+    let t = tempfile::tempdir().unwrap();
+    let out = t.path().join("run");
+    let cfg = config();
+    run_forced(&cfg, None, &out, &source(0, true)).unwrap();
+    assert!(run_forced(&cfg, None, &out, &source(0, false)).is_err());
+    assert!(!out.join("mirror").exists());
+    assert!(!out.join(".sync").exists());
+    assert_eq!(std::fs::read_dir(&out).unwrap().count(), 1);
+    run_forced(&cfg, None, &out, &source(0, true)).unwrap();
+    assert_eq!(std::fs::read_dir(t.path()).unwrap().count(), 1);
+}
+#[test]
+fn force_rebuilds_with_external_previous_reuse_without_mutating_previous() {
+    let t = tempfile::tempdir().unwrap();
+    let cfg = config();
+    let previous = run(&cfg, None, &t.path().join("prior"), false, &source(0, true)).unwrap();
+    let out = t.path().join("run");
+    run(&cfg, None, &out, false, &source(0, true)).unwrap();
+    let before = std::fs::read(previous.mirror.join("snapshot.toml")).unwrap();
+    let result = rust_mirror::selection::sync::run_forced(
+        &cfg,
+        Some(&previous.mirror),
+        &out,
+        &source(1, true),
+    )
+    .unwrap();
+    assert_eq!(result.report.status, "created");
+    assert_eq!(result.report.upstream_attempts, 0);
+    assert_eq!(
+        std::fs::read(previous.mirror.join("snapshot.toml")).unwrap(),
+        before
+    );
+}
+#[cfg(unix)]
+#[test]
+fn force_refuses_outer_and_inner_links_or_special_files_before_deleting() {
+    use rust_mirror::selection::sync::run_forced;
+    let t = tempfile::tempdir().unwrap();
+    let out = t.path().join("run");
+    run(&config(), None, &out, false, &source(0, true)).unwrap();
+    let link = t.path().join("link");
+    std::os::unix::fs::symlink(&out, &link).unwrap();
+    assert!(run_forced(&config(), None, &link, &source(0, false)).is_err());
+    let protected = t.path().join("protected");
+    std::fs::create_dir(&protected).unwrap();
+    std::fs::write(protected.join("mine"), b"safe").unwrap();
+    std::os::unix::fs::symlink(&protected, out.join(".sync/escape")).unwrap();
+    assert!(run_forced(&config(), None, &out, &source(0, false)).is_err());
+    assert!(out.join("mirror/snapshot.toml").exists());
+    assert_eq!(std::fs::read(protected.join("mine")).unwrap(), b"safe");
+    std::fs::remove_file(out.join(".sync/escape")).unwrap();
+    let fifo = out.join(".sync/fifo");
+    assert!(std::process::Command::new("mkfifo")
+        .arg(&fifo)
+        .status()
+        .unwrap()
+        .success());
+    assert!(run_forced(&config(), None, &out, &source(0, false)).is_err());
+    assert!(out.join("mirror/snapshot.toml").exists());
+}
+
+#[cfg(windows)]
+#[test]
+fn force_refuses_windows_junctions_before_deleting_either_tree() {
+    use rust_mirror::selection::sync::run_forced;
+    let t = tempfile::tempdir().unwrap();
+    let out = t.path().join("run");
+    run(&config(), None, &out, false, &source(0, true)).unwrap();
+    let protected = t.path().join("protected");
+    std::fs::create_dir(&protected).unwrap();
+    std::fs::write(protected.join("mine"), b"safe").unwrap();
+    let outer = t.path().join("linked-run");
+    let created = std::process::Command::new("cmd")
+        .args(["/c", "mklink", "/J"])
+        .arg(&outer)
+        .arg(&out)
+        .output()
+        .unwrap();
+    assert!(
+        created.status.success(),
+        "{}",
+        String::from_utf8_lossy(&created.stderr)
+    );
+    assert!(run_forced(&config(), None, &outer, &source(0, false)).is_err());
+    std::fs::remove_dir(&outer).unwrap();
+    let linked = out.join(".sync").join("junction");
+    let created = std::process::Command::new("cmd")
+        .args(["/c", "mklink", "/J"])
+        .arg(&linked)
+        .arg(&protected)
+        .output()
+        .unwrap();
+    assert!(
+        created.status.success(),
+        "{}",
+        String::from_utf8_lossy(&created.stderr)
+    );
+    assert!(run_forced(&config(), None, &out, &source(0, false)).is_err());
+    assert!(out.join("mirror/snapshot.toml").exists());
+    assert_eq!(std::fs::read(protected.join("mine")).unwrap(), b"safe");
+    // Remove this test's junction itself, never its target.
+    std::fs::remove_dir(&linked).unwrap();
 }

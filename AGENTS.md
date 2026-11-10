@@ -101,6 +101,12 @@ local fixtures and reused baseline files before downloading another toolchain.
 
 ## One-shot sync and demos
 
+For existing sync output, require explicit mutually exclusive `--resume` or
+`--force`. Force must discard the old managed progress/mirror without backup, keep writer
+ownership throughout reset/restart, and refuse unrelated/link/overlapping
+previous paths. Test both platforms, failed restarts and deletion containment. Never
+use force to delete previous inputs or bypass locks.
+
 Keep `sync` one-shot and local: no implicit publication, activation, scheduler or
 pruning. Freeze the whole cohort before payload transfers; resume must use the same
 config/previous identity with no live metadata refresh. Reject incoherent roots and

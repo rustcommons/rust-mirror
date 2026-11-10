@@ -11,7 +11,7 @@ $env:RUST_MIRROR_DEMO_ROOT = $demoRoot
 Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
     Write-Host "SYNTHETIC FIXTURE DEMO: no Rust distribution downloads or installs."
-    Write-Host "Shows initial synchronization, interruption/resume, and an unchanged repeat."
+    Write-Host "Shows initial sync, explicit refusal, resume, unchanged repeat, and destructive force."
     & cargo test --locked --test sync demo_tiny_sync -- --exact --nocapture
     if ($LASTEXITCODE -ne 0) { throw "Demo failed; preserved output: $demoRoot" }
     Write-Host "Reports: $demoRoot/first/.sync/report.toml and $demoRoot/interrupted/.sync/report.toml"
