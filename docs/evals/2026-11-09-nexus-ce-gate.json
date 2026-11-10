@@ -1,0 +1,9 @@
+{
+  "server": "Nexus/3.90.6-01 (COMMUNITY)",
+  "status": "held for operator EULA decision",
+  "observed_http_status": 403,
+  "observed_message": "You must accept the End User License Agreement (EULA) through the onboarding wizard or REST API before proceeding. See https://links.sonatype.com/products/nxrm3/docs/ce-onboarding for details.",
+  "source_registry_digest": "sha256:59a7930d44ea9aa96d207b051638296756f389f34321f0a1465394d6ee67847d",
+  "source_image_id": "00cc9b8c7f414d88c5c7c0021c1bc9946d5162882b7cb507376701332dc94c52",
+  "agreement_accepted": false
+}

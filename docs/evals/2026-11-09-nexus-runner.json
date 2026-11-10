@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "image": "docker.io/sonatype/nexus3:3.76.1",
+  "runtime": "podman",
+  "image_id": "3a93fe55b65da099fcd1cb4a685ad882efe45d521affc342c700f395d9d27645",
+  "image_digests": [
+    "docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09"
+  ],
+  "container_id": "bea48621384dd482a394f8e5be0f1d82027fb50985b587380abcf79fe402d6cf",
+  "proof_exit": 0,
+  "container_removed": true,
+  "volume_removed": true
+}

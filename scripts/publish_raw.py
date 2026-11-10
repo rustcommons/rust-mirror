@@ -11,6 +11,7 @@ import http.client
 import os
 from pathlib import Path
 import stat
+import ssl
 import tomllib
 from urllib.parse import urlsplit
 
@@ -70,7 +71,7 @@ def local_files(root):
     return document, [(n, root / n, digest(root / n)) for n in ordered]
 
 
-def publish(root, base_url, allow_loopback_http=False):
+def publish(root, base_url, allow_loopback_http=False, ca_file=None):
     document, files = local_files(root)  # Verify everything before any request.
     base = urlsplit(base_url.rstrip("/"))
     if base.username or base.password or base.query or base.fragment or not base.hostname:
@@ -80,6 +81,9 @@ def publish(root, base_url, allow_loopback_http=False):
     local_http = base.scheme == "http" and base.hostname in ("127.0.0.1", "::1") and allow_loopback_http
     if base.scheme != "https" and not local_http:
         raise ValueError("HTTPS required (literal loopback HTTP needs explicit test opt-in)")
+    if ca_file is not None and base.scheme != "https":
+        raise ValueError("a custom CA file requires HTTPS")
+    context = ssl.create_default_context(cafile=ca_file) if base.scheme == "https" else None
     headers = {}
     user, password = os.environ.get("NEXUS_USERNAME"), os.environ.get("NEXUS_PASSWORD")
     if user or password:
@@ -89,7 +93,8 @@ def publish(root, base_url, allow_loopback_http=False):
     connect = http.client.HTTPSConnection if base.scheme == "https" else http.client.HTTPConnection
 
     def request(method, name, body=None, expected=None):
-        connection = connect(base.hostname, base.port, timeout=120)
+        kwargs = {"context": context} if context is not None else {}
+        connection = connect(base.hostname, base.port, timeout=120, **kwargs)
         try:
             extra = dict(headers)
             if body is not None:
@@ -136,10 +141,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--base-url", required=True, help="Fresh private Raw repository/prefix URL")
+    parser.add_argument("--ca-file", type=Path, help="PEM CA bundle for HTTPS verification; default is system trust")
     parser.add_argument("--allow-loopback-http", action="store_true", help="Local protocol tests only")
     args = parser.parse_args()
     try:
-        publish(args.source, args.base_url, args.allow_loopback_http)
+        publish(args.source, args.base_url, args.allow_loopback_http, ca_file=args.ca_file)
     except Exception as error:
         # Connection errors can contain hostnames; never include credential headers.
         parser.exit(1, f"Raw publication failed: {error}\n")

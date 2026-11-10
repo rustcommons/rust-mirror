@@ -42,6 +42,15 @@ Record actual Nexus/TLS/auth testing separately from the local protocol fixture.
 No independent OpenPGP validation, shared-cache concurrency, cross-platform
 installation or general release qualification follows from the current proof.
 
+The actual Nexus proof is a destructive **disposable-instance test**, not a
+production configuration tool. `scripts/run_nexus_proof.py` requires an explicit
+already-pulled image and creates only uniquely labeled, network-disabled test
+resources. It never accepts server EULAs. `--allow-raw-mime-types` authorizes only
+its new test repository's MIME-policy selection; the publisher never changes this
+policy. See `docs/NEXUS-INTEGRATION.md` before running it. Legacy OSS test images
+must not be presented as recommended production versions. Generated passwords and
+private keys must not enter logs, commits or uploaded artifacts.
+
 ## Documentation and requirements traceability
 
 - Follow the [Rust Commons documentation conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md).

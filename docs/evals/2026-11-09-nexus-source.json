@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "path": "scripts/publish_raw.py",
+      "sha256": "2095cdcff7dbb391071d49e8d23f69a057942bf21b00134bfcaa42544a17d0f8"
+    },
+    {
+      "path": "scripts/run_nexus_proof.py",
+      "sha256": "176321cecc615823395f0b41511a3afb6938635e731c9c4d7b99315e0cd757f9"
+    },
+    {
+      "path": "scripts/prove_nexus.py",
+      "sha256": "04ce7bce0229f7fdb6d161ce464764afe120708467aeb83a171e767953c2adcf"
+    }
+  ],
+  "unchanged_rust_baseline": "d66858c9dbaae7e72227b8b3ec8572a2ff1e24f0",
+  "packet_sha256": "fd0edafeff683446078bd3c348ade826d141376abc95bb084d8eca53effcf63b"
+}

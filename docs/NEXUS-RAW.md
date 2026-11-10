@@ -7,11 +7,14 @@ stable paths, which is what Rustup's distribution protocol needs. Do not depend 
 an online Raw proxy cache to fill missing files inside a disconnected network.
 Sonatype documents [HTTP PUT uploads and GET retrieval](https://help.sonatype.com/en/raw-repositories.html#uploading-files-to-hosted-raw-repositories).
 
-The first proof uses a local HTTP PUT/HEAD/GET fixture under a Nexus-style prefix,
-not a running Nexus product. It proves the static path/byte contract and Rustup
-installation. Nexus version/configuration, authentication, authorization, internal
-TLS/CA, redeployment policy, cleanup tasks and reverse-proxy behavior remain to be
-tested against your actual instance. Nothing has been uploaded to a real server.
+The first proof used a local HTTP PUT/HEAD/GET fixture. A subsequent
+[actual OSS compatibility proof](NEXUS-INTEGRATION.md) tested Nexus OSS 3.76.1,
+scoped publishing credentials, read-only clients, a trusted HTTPS reverse proxy,
+no-redeploy and a fresh offline installation. It required an explicit dedicated
+Raw repository MIME policy. This old server is a test fixture, not a deployment
+recommendation. Community Edition 3.90.6 is held at its operator EULA gate.
+Your actual version, certificate/access/cleanup policy and proxy still need an
+instance-specific test; no production instance has been contacted.
 
 ## Prepare on the connected machine
 
@@ -69,6 +72,10 @@ python3 scripts/publish_raw.py \
   --base-url https://nexus.example.local/repository/rust-toolchains/rust-1.90.0-linux-001
 ```
 
+For an internal CA, add `--ca-file /path/to/trusted-ca-bundle.pem`. This selects
+a PEM trust bundle instead of default roots for the publisher connection; chain
+and hostname checks remain enabled. See [trust details](NEXUS-INTEGRATION.md#trust-and-credentials).
+
 The helper checks all local inventory entries before network writes, refuses
 unexpected files/symlinks, requires destinations to return HEAD 404, sends each
 file with PUT, and verifies every uploaded file using GET and SHA-256. It uploads
@@ -76,6 +83,12 @@ archives before channel metadata and writes `snapshot.toml` last. It does not
 provision a repository, implement arbitrary authentication plugins, proxy the
 upstream, prune files or repair an incomplete publication. On failure, retain the
 logs and choose a new snapshot prefix after investigating.
+
+The tested OSS server rejected the unchanged armored `.asc` under strict MIME
+validation. Its owner must select a suitable dedicated Raw repository policy; the
+publisher never changes server settings or rewrites the signature. The exact
+[test-only opt-in and tradeoff](NEXUS-INTEGRATION.md#meaning-of-the-test-only-mime-opt-in)
+are documented separately.
 
 HTTP PUT is **not** a multi-file transaction. HEAD checks and `If-None-Match: *`
 are not a substitute for server-enforced no-redeploy policy and exclusive publishing.
@@ -111,8 +124,8 @@ Download the pinned bootstrap from
 `$RUSTUP_DIST_SERVER/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init` and
 verify its SHA-256 using the transferred, independently checked inventory before
 executing it. Authenticated browser/curl access may be used for this bootstrap.
-The client distribution URL must subsequently be readable by Rustup: this proof
-covers anonymous GET, not password-protected Rustup downloads. Do not assume the
+The client distribution URL must subsequently be readable by Rustup: the actual
+OSS proof covers anonymous read-only GET, not password-protected Rustup downloads. Do not assume the
 publisher's HTTP credentials configure Rustup. An internal read-only anonymous
 repository or an appropriately configured authenticated gateway needs an explicit
 local access policy and an instance-specific test.
