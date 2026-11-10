@@ -9,6 +9,7 @@ Experimental, unreleased CLI and reusable library. Choose named toolchain
 versions/channels, host platforms, profiles, components and compilation targets;
 preview a metadata-only plan, then download that frozen selection for static hosting.
 Interrupted selected downloads can [resume verified progress](docs/RESUMING.md).
+Combine completed selections into an [immutable multi-version mirror](docs/MULTI-VERSION.md).
 Rustup remains the installer. See the [selection guide](docs/SELECTIONS.md).
 
 Rust/Cargo 1.90+ is required to build. This project is not yet published on crates.io.
@@ -48,6 +49,7 @@ prototype remains untouched and separately preserved; its assessment is historic
 
 ## Documentation
 
+- [Multi-version generations and explicit channel refresh](docs/MULTI-VERSION.md).
 - [Resumable downloads and recovery](docs/RESUMING.md).
 - [Toolchain selections, discovery, import and frozen plans](docs/SELECTIONS.md).
 - [Nexus Raw hosting and offline installation](docs/NEXUS-RAW.md).

@@ -66,7 +66,7 @@ Validate cached-plan replay, aliases/global components, multi-host closure, byte
 budgets, path/hash/schema refusal and existing-output preservation. Exercise the
 publisher against both inventory schemas. The real-Nexus harness currently supports
 schema 1 only; do not describe schema 2 HTTP-fixture evidence as a new Nexus pass.
-Never touch the user's Rustup/Cargo homes. Keep unimplemented update/retention,
+Never touch the user's Rustup/Cargo homes. Keep unimplemented automatic synchronization/retention,
 independent signature validation and foreign-platform execution gaps explicit.
 
 ## Resume validation
@@ -83,6 +83,21 @@ Use `docs/RESUMING.md` and `scripts/prove_resume.py` for the bounded real proof;
 seed other files from a verified baseline instead of downloading full toolchains
 unnecessarily. Keep local-filesystem/power-loss, initial-state and upload limits
 explicit. No automatic retries, global cache or resumable legacy route is claimed.
+
+## Multi-version generation validation
+
+`assemble` works only from completed local schema 2/3 inputs. Keep output new and
+immutable; retain previous releases and dated metadata. Only explicit new coherent
+stable/beta/nightly root triplets may replace previous aliases. Never choose a
+winner between conflicting new inputs or silently prune/change bootstrap versions.
+
+Validate every source inventory and selected artifact closure before writing;
+hash copy-time bytes and enforce file/record/inventory/final-byte bounds. Test
+multi-version retention, alias history, immutable/new-input conflicts, missing
+payloads, budgets and symbolic-link refusal. Keep publisher/proof schemas and
+requirements aligned. Actual Nexus schema 2/3, scheduling, pruning and remote
+client switching remain unqualified or unimplemented as documented. Use bounded
+local fixtures and reused baseline files before downloading another toolchain.
 
 ## Documentation and requirements traceability
 

@@ -43,6 +43,11 @@ def local_files(root):
         if selection.get("profile") not in ("minimal", "default") or not isinstance(hosts, list) or not 1 <= len(hosts) <= 16 or not all(isinstance(h, str) and h for h in hosts):
             raise ValueError("unsupported selection snapshot profile/hosts")
         file_limit = 1088
+    elif schema == 3:
+        records = document.get("toolchains", [])
+        if not isinstance(records, list) or not 1 <= len(records) <= 256 or not isinstance(document.get("rustup_version"), str):
+            raise ValueError("unsupported collection snapshot records")
+        file_limit = 4096
     else:
         raise ValueError("unsupported snapshot schema")
     files = document.get("files", [])
@@ -145,6 +150,8 @@ def publish(root, base_url, allow_loopback_http=False, ca_file=None):
         request("PUT", name, body=path)
         request("GET", name, expected=(path.stat().st_size, sha))
         print(f"Verified upload: {name}", flush=True)
+    if document["schema"] == 3:
+        return {"toolchains": len(document["toolchains"]), "files": len(files)}
     identity = {"host": document["host"]} if document["schema"] == 1 else {"hosts": document["selection"]["hosts"]}
     return {"release": document["release"], **identity, "files": len(files)}
 

@@ -97,7 +97,8 @@ selector, for example `stable-2026-10-15`. Use the actual `pinned_toolchain` fro
 your plan rather than copying this date. Resolve a new plan explicitly to update. For interrupted downloads, use the same
 plan/output with `fetch --resume`; see [resume rules](RESUMING.md).
 One plan/snapshot represents one named selection and one resolved Rust release;
-multiple versions require separate snapshots/hosting prefixes at present.
+download versions separately, then [assemble a shared generation](MULTI-VERSION.md)
+to host them under one prefix.
 
 All advertised gzip/xz/zstd variants for a selected component are included.
 Rustup clients may choose different formats; preserving an original manifest while
@@ -113,10 +114,11 @@ The legacy `fetch-toolchain` command still creates schema 1 minimal Linux snapsh
 
 ## Host and install
 
-The [publisher and Nexus setup](NEXUS-RAW.md) applies to both inventory schemas.
+The [publisher and Nexus setup](NEXUS-RAW.md) accepts schemas 1/2/3; actual
+server qualification remains separately bounded.
 Use a new, empty hosting prefix per snapshot. The publisher verifies archives
-before publishing root/dated metadata and the inventory marker last. There is no
-multi-version merge, transaction across a live server, or overwrite/prune operation.
+before publishing root/dated metadata and the inventory marker last. Use [local generation assembly](MULTI-VERSION.md) to combine versions. There is no
+merge/transaction across a live server or overwrite/prune operation.
 
 Set `RUSTUP_DIST_SERVER` to the snapshot's root and `RUSTUP_UPDATE_ROOT` to its
 `rustup` subdirectory. Download the pinned host bootstrap from

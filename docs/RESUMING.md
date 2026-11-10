@@ -1,7 +1,8 @@
 # Resume frozen-plan downloads
 
 A selected snapshot can now retain verified files and an interrupted transfer.
-This applies to `fetch`/schema 2. The legacy `fetch-toolchain` route and HTTP
+This applies to `fetch`/schema 2; [generation assembly](MULTI-VERSION.md)
+can reuse completed selections but does not itself resume. The legacy `fetch-toolchain` route and HTTP
 publisher are unchanged; resumable Nexus publication is not implemented.
 
 ## Commands

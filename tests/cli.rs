@@ -21,6 +21,8 @@ fn duplicate_and_unknown_options_refuse_before_network() {
             "1.91.0",
         ],
         vec!["fetch-toolchain", "--unknown", "value"],
+        vec!["assemble", "--output", "first", "--output", "second"],
+        vec!["assemble", "--snapshot"],
     ] {
         let result = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
             .args(args)

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add local `assemble` for immutable multi-version mirrors, with explicit previous
+  generation retention and coherent moving-channel alias replacement.
+- Validate combined inventories, artifact closure, conflicts and byte budgets before
+  exposing schema 3 output; support verified publication and offline coexistence proofs.
+
 - Add explicit `fetch --resume` for the same frozen plan/output, with verified-file
   reuse, byte-range continuation and safe whole-file restart when ranges are ignored.
 - Preserve partial progress behind a single-writer output lock; verify final hashes
