@@ -5,25 +5,34 @@ including Nexus Repository Raw hosted repositories.
 
 ## Current state
 
-Experimental, unreleased CLI and reusable library. The first milestone prepares
-a pinned minimal-profile x86_64 Linux toolchain and preserves upstream metadata.
-A network-isolated proof bootstraps Rustup, installs Rust 1.90.0 and builds/runs a
-dependency-free program from a local Nexus-style HTTP path. A subsequent [Nexus OSS compatibility test](docs/NEXUS-INTEGRATION.md)
-verified authenticated upload, trusted HTTPS and read-only offline installation
-on a legacy OSS fixture with an explicit Raw MIME policy. Modern Community Edition
-testing is held for operator license onboarding; your deployed setup remains unqualified. See [hosting and limitations](docs/NEXUS-RAW.md)
-and the [proof record](docs/evals/2026-11-09-offline-toolchain.md).
+Experimental, unreleased CLI and reusable library. Choose named toolchain
+versions/channels, host platforms, profiles, components and compilation targets;
+preview a metadata-only plan, then download that frozen selection for static hosting.
+Rustup remains the installer. See the [selection guide](docs/SELECTIONS.md).
 
 Rust/Cargo 1.90+ is required to build. This project is not yet published on crates.io.
 
 ```sh
 cargo build --locked
-cargo run --locked -- fetch-toolchain --release 1.90.0 --host x86_64-unknown-linux-gnu --rustup-version 1.28.2 --output ./snapshot-1.90.0
+# Use target/debug/rust-mirror (Windows: target/debug/rust-mirror.exe).
+rust-mirror init --config mirror.toml
+rust-mirror list --toolchain 1.90.0 --host x86_64-unknown-linux-gnu
+# Edit mirror.toml before planning; linux-dev is one of the example selections.
+rust-mirror plan --config mirror.toml --selection linux-dev --output ./linux-plan
+rust-mirror fetch --plan ./linux-plan --output ./linux-snapshot
 ```
 
-The new output directory's parent must exist. The completed static tree is under
-`snapshot-1.90.0/mirror`. The [Nexus guide](docs/NEXUS-RAW.md) explains transfer,
-verified HTTP PUT publication and client setup.
+Output parents must exist; existing outputs are refused. The completed static tree
+is `linux-snapshot/mirror`. [Import a project's rust-toolchain.toml](docs/SELECTIONS.md#import-a-projects-toolchain-file)
+to avoid manually duplicating its components and targets.
+
+The [selection proof](docs/evals/2026-11-09-toolchain-selection.md) covers 22 real
+metadata cases and a network-isolated Linux installation with Clippy, rustfmt,
+Rust sources and a Wasm standard library. Other platform execution remains unqualified.
+A separate [Nexus OSS compatibility test](docs/NEXUS-INTEGRATION.md) verified the
+original minimal snapshot on a legacy server fixture with explicit Raw MIME policy.
+Modern Community Edition testing is held for operator license onboarding; your
+production setup remains unqualified. See [hosting and limitations](docs/NEXUS-RAW.md).
 
 ## Planned products
 
@@ -38,6 +47,7 @@ prototype remains untouched and separately preserved; its assessment is historic
 
 ## Documentation
 
+- [Toolchain selections, discovery, import and frozen plans](docs/SELECTIONS.md).
 - [Nexus Raw hosting and offline installation](docs/NEXUS-RAW.md).
 - [Offline proof evidence](docs/evals/2026-11-09-offline-toolchain.md).
 - [Recovered prototype assessment](docs/evals/2026-11-09-prototype-assessment.md).

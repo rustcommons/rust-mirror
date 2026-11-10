@@ -1,0 +1,405 @@
+[
+  {
+    "name": "0-minimal",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.579,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "0-default",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "default",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.031,
+    "expected_result": true,
+    "artifacts": 13,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "1-minimal",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "aarch64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.0,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "1-default",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "aarch64-unknown-linux-gnu"
+    ],
+    "profile": "default",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.922,
+    "expected_result": true,
+    "artifacts": 13,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "2-minimal",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-pc-windows-msvc"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.234,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "2-default",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-pc-windows-msvc"
+    ],
+    "profile": "default",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.938,
+    "expected_result": true,
+    "artifacts": 13,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "3-minimal",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-pc-windows-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.171,
+    "expected_result": true,
+    "artifacts": 9,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "3-default",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-pc-windows-gnu"
+    ],
+    "profile": "default",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.938,
+    "expected_result": true,
+    "artifacts": 15,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "4-minimal",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-apple-darwin"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.937,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "4-default",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-apple-darwin"
+    ],
+    "profile": "default",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.938,
+    "expected_result": true,
+    "artifacts": 13,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "5-minimal",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "aarch64-apple-darwin"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.969,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "5-default",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "aarch64-apple-darwin"
+    ],
+    "profile": "default",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.937,
+    "expected_result": true,
+    "artifacts": 13,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "multi-host",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc",
+      "x86_64-pc-windows-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.969,
+    "expected_result": true,
+    "artifacts": 44,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "extended-linux",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [
+      "clippy",
+      "rustfmt",
+      "rust-src",
+      "rust-analyzer"
+    ],
+    "targets": [
+      "wasm32-unknown-unknown"
+    ],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.953,
+    "expected_result": true,
+    "artifacts": 17,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "musl-host",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-musl"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.14,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.90.0",
+    "date": "2025-09-18",
+    "manifest_sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2"
+  },
+  {
+    "name": "stable",
+    "toolchain": "stable",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 1.906,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.99.1",
+    "date": "2026-10-15",
+    "manifest_sha256": "fb152be80975c194aa5fc684b2aec3a6e14e2b855efe2faa4e5f8ae6e590f463"
+  },
+  {
+    "name": "beta",
+    "toolchain": "beta",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.031,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.100.0-beta.13",
+    "date": "2026-11-08",
+    "manifest_sha256": "43efa85495cfdec35a551f785a792fcf06fbbafd0a48e2a3ad9644351dc25dcf"
+  },
+  {
+    "name": "nightly",
+    "toolchain": "nightly",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.079,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.102.0-nightly",
+    "date": "2026-11-10",
+    "manifest_sha256": "c2986ce080bf1c0e2b96a20d8e704ab33fdd95f1e347f75e0e6ace780909620c"
+  },
+  {
+    "name": "nightly-2025-09-18",
+    "toolchain": "nightly-2025-09-18",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": true,
+    "exit": 0,
+    "seconds": 2.375,
+    "expected_result": true,
+    "artifacts": 7,
+    "resolved_release": "1.92.0-nightly",
+    "date": "2025-09-18",
+    "manifest_sha256": "26ec8d980ee28b1bc604337ed03a62bd0a1f0ce0c5adddaa87e904e01dd7dc8f"
+  },
+  {
+    "name": "missing-component",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [
+      "miri"
+    ],
+    "targets": [],
+    "expect_success": false,
+    "exit": 1,
+    "seconds": 1.265,
+    "expected_result": true,
+    "diagnostic": "rust-mirror: component miri-preview for x86_64-unknown-linux-gnu unavailable in 1.90.0"
+  },
+  {
+    "name": "missing-host",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "unprovided-host"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [],
+    "expect_success": false,
+    "exit": 1,
+    "seconds": 1.297,
+    "expected_result": true,
+    "diagnostic": "rust-mirror: host unavailable for 1.90.0: unprovided-host"
+  },
+  {
+    "name": "missing-target",
+    "toolchain": "1.90.0",
+    "hosts": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "profile": "minimal",
+    "components": [],
+    "targets": [
+      "unprovided-target"
+    ],
+    "expect_success": false,
+    "exit": 1,
+    "seconds": 1.281,
+    "expected_result": true,
+    "diagnostic": "rust-mirror: target unprovided-target not advertised for host x86_64-unknown-linux-gnu"
+  }
+]

@@ -114,3 +114,11 @@ See [the dated results](evals/2026-11-09-nexus-integration.md). Failed setup att
 Community Edition's EULA gate, the strict-MIME failure and successful paths remain
 separate. No production server, package version, registry publication, source tag,
 user toolchain home or original prototype is changed by this iteration.
+
+## Selection inventory boundary
+
+The actual server proof above remains the schema 1 minimal-toolchain case.
+`prove_nexus.py` refuses schema 2 rather than implying its fixed installation
+commands qualify arbitrary selections. The publisher accepts both schemas;
+[selection publication/install](SELECTIONS.md) is separately exercised through the
+local HTTP contract fixture. No new actual-Nexus or Community Edition pass is claimed.

@@ -32,10 +32,21 @@ def local_files(root):
     if inventory.is_symlink() or not inventory.is_file() or inventory.stat().st_size > 1024 * 1024:
         raise ValueError("missing or oversized snapshot inventory")
     document = tomllib.loads(inventory.read_text(encoding="utf-8"))
-    if document.get("schema") != 1 or document.get("profile") != "minimal":
-        raise ValueError("unsupported snapshot schema/profile")
+    schema = document.get("schema")
+    if schema == 1:
+        if document.get("profile") != "minimal":
+            raise ValueError("unsupported legacy snapshot profile")
+        file_limit = 24
+    elif schema == 2:
+        selection = document.get("selection", {})
+        hosts = selection.get("hosts", [])
+        if selection.get("profile") not in ("minimal", "default") or not isinstance(hosts, list) or not 1 <= len(hosts) <= 16 or not all(isinstance(h, str) and h for h in hosts):
+            raise ValueError("unsupported selection snapshot profile/hosts")
+        file_limit = 1088
+    else:
+        raise ValueError("unsupported snapshot schema")
     files = document.get("files", [])
-    if not 1 <= len(files) <= 24:
+    if not 1 <= len(files) <= file_limit:
         raise ValueError("invalid inventory file count")
     seen = set()
     for item in files:
@@ -66,7 +77,7 @@ def local_files(root):
     if actual != seen | {"snapshot.toml"}:
         raise ValueError("unexpected or missing snapshot files")
     # Artifacts first; manifests and their checksums late; inventory is the last marker.
-    ordered = sorted(seen, key=lambda n: (n.startswith("dist/channel-"), n.endswith(".sha256"), n))
+    ordered = sorted(seen, key=lambda n: (n.startswith("dist/") and n.rsplit("/", 1)[-1].startswith("channel-rust-"), n.endswith(".sha256"), n))
     ordered.append("snapshot.toml")
     return document, [(n, root / n, digest(root / n)) for n in ordered]
 
@@ -134,7 +145,8 @@ def publish(root, base_url, allow_loopback_http=False, ca_file=None):
         request("PUT", name, body=path)
         request("GET", name, expected=(path.stat().st_size, sha))
         print(f"Verified upload: {name}", flush=True)
-    return {"release": document["release"], "host": document["host"], "files": len(files)}
+    identity = {"host": document["host"]} if document["schema"] == 1 else {"hosts": document["selection"]["hosts"]}
+    return {"release": document["release"], **identity, "files": len(files)}
 
 
 def main():

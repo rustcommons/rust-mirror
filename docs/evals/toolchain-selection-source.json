@@ -1,0 +1,77 @@
+[
+  {
+    "path": "Cargo.lock",
+    "sha256": "55940d41c1c8a9bb237c037183ed1aca77a772af1990c22a7d2202f30353facf",
+    "bytes": 23552
+  },
+  {
+    "path": "Cargo.toml",
+    "sha256": "870d143bd90da6eb52c26772c25c9d16ce3f40e595d002d2253f24b6af48cdb9",
+    "bytes": 439
+  },
+  {
+    "path": "examples/mirror.toml",
+    "sha256": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e",
+    "bytes": 541
+  },
+  {
+    "path": "scripts/prove_nexus.py",
+    "sha256": "1dce16d3cae04b0c4f378200b3d009fb69734333473056377502704b74dd737e",
+    "bytes": 24657
+  },
+  {
+    "path": "scripts/prove_offline.py",
+    "sha256": "d9dc9ea5b0e279418a0e445e004e4800a2a06a8823c1a8cca51e465cafcb7057",
+    "bytes": 13767
+  },
+  {
+    "path": "scripts/publish_raw.py",
+    "sha256": "78819df72505974560b293c5a22d914af2142a8c81aa3887c11ad1a03df47548",
+    "bytes": 8320
+  },
+  {
+    "path": "scripts/run_nexus_proof.py",
+    "sha256": "176321cecc615823395f0b41511a3afb6938635e731c9c4d7b99315e0cd757f9",
+    "bytes": 6033
+  },
+  {
+    "path": "src/lib.rs",
+    "sha256": "3fe0ad6a821e7af64878e314a9134f8981c3629fc9819b27d0ea125dbdc3e3e6",
+    "bytes": 14605
+  },
+  {
+    "path": "src/main.rs",
+    "sha256": "12e2c5cc52804b15769f0427a0318fde7c5c80a33a1381412590e11701035009",
+    "bytes": 7029
+  },
+  {
+    "path": "src/selection.rs",
+    "sha256": "186e28d7612742b3f2981404e088deee883f246d85832ff3c41a2dae8a57e6b8",
+    "bytes": 29488
+  },
+  {
+    "path": "tests/cli.rs",
+    "sha256": "1262f4090134eaf06421d777e56d49290af4e0d98dc0af13428715d0f68bf323",
+    "bytes": 2812
+  },
+  {
+    "path": "tests/common/mod.rs",
+    "sha256": "2219a545926e34cf3ed464268d62ad81cdceea5fd5e9197b666002f3c652f2c7",
+    "bytes": 2949
+  },
+  {
+    "path": "tests/selections.rs",
+    "sha256": "941f8bacada393925e0d09318d263e2253191c07f73b0af955a8a18b87a969f3",
+    "bytes": 12643
+  },
+  {
+    "path": "tests/snapshot.rs",
+    "sha256": "af15aeb6e0a5569381321a3fa53683cc2a319f7e07e965821945c4d0bf212e16",
+    "bytes": 4719
+  },
+  {
+    "path": "tests/test_publish_raw.py",
+    "sha256": "145d1d81db06d4bf6c498941571e9cf935e5e316e816b3319a68cf01a19f7e9a",
+    "bytes": 5007
+  }
+]

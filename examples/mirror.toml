@@ -1,0 +1,25 @@
+schema = 1
+rustup_version = "1.28.2"
+max_download_bytes = 10737418240
+
+[[selections]]
+name = "linux-dev"
+toolchain = "1.90.0"
+hosts = ["x86_64-unknown-linux-gnu"]
+profile = "default"
+components = ["rust-src"]
+targets = ["wasm32-unknown-unknown"]
+
+[[selections]]
+name = "windows-dev"
+toolchain = "1.90.0"
+hosts = ["x86_64-pc-windows-msvc"]
+profile = "default"
+components = ["rust-src"]
+
+[[selections]]
+name = "mac-dev"
+toolchain = "1.90.0"
+hosts = ["aarch64-apple-darwin", "x86_64-apple-darwin"]
+profile = "default"
+components = ["rust-src"]
