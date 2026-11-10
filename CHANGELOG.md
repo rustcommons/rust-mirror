@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add explicit `fetch --resume` for the same frozen plan/output, with verified-file
+  reuse, byte-range continuation and safe whole-file restart when ranges are ignored.
+- Preserve partial progress behind a single-writer output lock; verify final hashes
+  before completion and recheck existing completed snapshots without overwriting them.
+
 - Add named version/channel, host, profile, component and cross-target selections.
 - Add release-specific discovery and explicit-host project toolchain-file import.
 - Split metadata-only planning from verified frozen-plan downloads; mirror all

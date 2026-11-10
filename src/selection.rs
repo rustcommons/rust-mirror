@@ -622,7 +622,7 @@ pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
     })
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct SelectionSnapshot {
     pub schema: u32,
@@ -633,72 +633,29 @@ pub struct SelectionSnapshot {
     pub selection: Selection,
     pub files: Vec<SnapshotFile>,
 }
-/// Fetch a previously saved, verified plan. No live channel metadata is consulted.
-pub fn fetch(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
-    let resolved = load_plan(plan_dir)?;
+fn snapshot_metadata(resolved: &ResolvedPlan) -> Result<BTreeMap<String, &Vec<u8>>> {
     let plan = &resolved.plan;
     let meta = &resolved.metadata;
-    fs::create_dir(output)?;
-    let staging = tempfile::Builder::new()
-        .prefix(".building-")
-        .tempdir_in(output)?;
-    let mut files = Vec::new();
-    let mut remaining = plan.max_download_bytes;
-    for a in &plan.artifacts {
-        let limit = remaining.min(ARTIFACT_LIMIT);
-        if limit == 0 {
-            return Err("snapshot download budget exhausted".into());
-        }
-        let destination = staging.path().join(&a.path);
-        fs::create_dir_all(destination.parent().ok_or("missing parent")?)?;
-        let mut f = File::options()
-            .create_new(true)
-            .write(true)
-            .open(destination)?;
-        let mut writer = crate::HashWriter {
-            file: &mut f,
-            hash: sha2::Sha256::default(),
-            bytes: 0,
-        };
-        source.fetch(&format!("{ORIGIN}{}", a.path), &mut writer, limit)?;
-        let count = writer.bytes;
-        let actual = hex::encode(sha2::Digest::finalize(writer.hash));
-        if count > limit || actual != a.sha256 {
-            return Err(format!("size/hash verification failed: {}", a.path).into());
-        }
-        f.sync_all()?;
-        remaining -= count;
-        files.push(SnapshotFile {
-            path: a.path.clone(),
-            sha256: actual,
-            bytes: count,
-        });
-    }
     let spec = Toolchain::parse(&plan.selection.toolchain)?;
-    let mut metadata_files = BTreeMap::new();
+    let mut files = BTreeMap::new();
     for path in [
         plan.metadata_source.clone(),
         format!("dist/{}/channel-rust-{}.toml", plan.date, spec.channel),
     ] {
-        metadata_files.insert(path.clone(), &meta.manifest);
-        metadata_files.insert(format!("{path}.sha256"), &meta.checksum);
-        metadata_files.insert(format!("{path}.asc"), &meta.signature);
+        files.insert(path.clone(), &meta.manifest);
+        files.insert(format!("{path}.sha256"), &meta.checksum);
+        files.insert(format!("{path}.asc"), &meta.signature);
     }
     for host in &plan.selection.hosts {
-        metadata_files.insert(
+        files.insert(
             format!("{}.sha256", bootstrap_path(&plan.rustup_version, host)),
             &meta.bootstraps[host],
         );
     }
-    for (path, data) in metadata_files {
-        if data.len() as u64 > remaining {
-            return Err("snapshot budget exhausted by metadata".into());
-        }
-        remaining -= data.len() as u64;
-        crate::save(staging.path(), &path, data, &mut files)?;
-    }
-    files.sort_by(|a, b| a.path.cmp(&b.path));
-    let snapshot = SelectionSnapshot {
+    Ok(files)
+}
+fn snapshot(plan: &Plan, files: Vec<SnapshotFile>) -> SelectionSnapshot {
+    SelectionSnapshot {
         schema: 2,
         release: plan.resolved_release.clone(),
         date: plan.date.clone(),
@@ -706,16 +663,124 @@ pub fn fetch(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<Pat
         rustup_version: plan.rustup_version.clone(),
         selection: plan.selection.clone(),
         files,
-    };
-    write_new(
-        &staging.path().join("snapshot.toml"),
-        toml::to_string_pretty(&snapshot)?.as_bytes(),
-    )?;
+    }
+}
+/// Fetch a frozen plan into a new output; retain private progress if interrupted.
+pub fn fetch(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
+    fetch_with_resume(plan_dir, output, source, false)
+}
+/// Explicitly reopen an existing output for this exact frozen plan. Reuse requires
+/// whole-file verification; a valid completed snapshot is checked, never overwritten.
+pub fn fetch_resuming(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
+    fetch_with_resume(plan_dir, output, source, true)
+}
+fn fetch_with_resume(
+    plan_dir: &Path,
+    output: &Path,
+    source: &impl Source,
+    resume: bool,
+) -> Result<PathBuf> {
+    let resolved = load_plan(plan_dir)?;
+    let plan = &resolved.plan;
+    let metadata = snapshot_metadata(&resolved)?;
+    let expected: BTreeSet<PathBuf> = plan
+        .artifacts
+        .iter()
+        .map(|a| PathBuf::from(&a.path))
+        .chain(metadata.keys().map(PathBuf::from))
+        .chain([PathBuf::from("snapshot.toml")])
+        .collect();
+    let session = crate::resume::Session::open(output, plan, resume)?;
     let completed = output.join("mirror");
-    if completed.try_exists()? {
+    if fs::symlink_metadata(&completed).is_ok() {
+        crate::resume::validate_tree(&completed, &expected)?;
+        let actual: SelectionSnapshot = toml::from_str(std::str::from_utf8(&read_file(
+            &completed.join("snapshot.toml"),
+            SMALL_LIMIT,
+        )?)?)?;
+        let mut files = Vec::new();
+        let mut remaining = plan.max_download_bytes;
+        for a in &plan.artifacts {
+            let (n, h) =
+                crate::resume::hash_file(&completed.join(&a.path), remaining.min(ARTIFACT_LIMIT))?;
+            if h != a.sha256 {
+                return Err("completed snapshot changed; refusing overwrite".into());
+            }
+            remaining -= n;
+            files.push(SnapshotFile {
+                path: a.path.clone(),
+                bytes: n,
+                sha256: h,
+            });
+        }
+        for (path, data) in &metadata {
+            let (n, h) =
+                crate::resume::hash_file(&completed.join(path), remaining.min(ARTIFACT_LIMIT))?;
+            if n != data.len() as u64 || h != sha256(data) {
+                return Err("completed metadata changed; refusing overwrite".into());
+            }
+            remaining -= n;
+            files.push(SnapshotFile {
+                path: path.clone(),
+                bytes: n,
+                sha256: h,
+            });
+        }
+        files.sort_by(|a, b| a.path.cmp(&b.path));
+        if actual != snapshot(plan, files) {
+            return Err("completed inventory differs from frozen plan".into());
+        }
+        session.cleanup()?;
+        return Ok(completed);
+    }
+    let staging = session.stage(&expected)?;
+    let mut files = Vec::new();
+    let mut remaining = plan.max_download_bytes;
+    for a in &plan.artifacts {
+        let limit = remaining.min(ARTIFACT_LIMIT);
+        if limit == 0 {
+            return Err("snapshot download budget exhausted".into());
+        }
+        let (path, n) = session.retrieve(a, source, limit)?;
+        let destination = staging.join(&a.path);
+        fs::create_dir_all(destination.parent().ok_or("missing parent")?)?;
+        let mut file = File::create_new(destination)?;
+        let mut writer = crate::HashWriter {
+            file: &mut file,
+            hash: sha2::Sha256::default(),
+            bytes: 0,
+        };
+        crate::copy_bounded(File::open(path)?, &mut writer, limit)?;
+        let count = writer.bytes;
+        let h = hex::encode(sha2::Digest::finalize(writer.hash));
+        if count != n || h != a.sha256 {
+            return Err("cached artifact changed while assembling".into());
+        }
+        file.sync_all()?;
+        remaining -= count;
+        files.push(SnapshotFile {
+            path: a.path.clone(),
+            bytes: count,
+            sha256: h,
+        });
+    }
+    for (path, data) in metadata {
+        if data.len() as u64 > remaining {
+            return Err("snapshot budget exhausted by metadata".into());
+        }
+        remaining -= data.len() as u64;
+        crate::save(&staging, &path, data, &mut files)?;
+    }
+    files.sort_by(|a, b| a.path.cmp(&b.path));
+    write_new(
+        &staging.join("snapshot.toml"),
+        toml::to_string_pretty(&snapshot(plan, files))?.as_bytes(),
+    )?;
+    if fs::symlink_metadata(&completed).is_ok() {
         return Err("completed tree unexpectedly exists".into());
     }
-    fs::rename(staging.path(), &completed)?;
+    fs::rename(&staging, &completed)?;
+    session.cleanup()?;
     Ok(completed)
 }
 

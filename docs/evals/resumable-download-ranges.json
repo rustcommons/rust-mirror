@@ -1,0 +1,98 @@
+[
+  {
+    "path": "dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/15110842",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "2685254c5fca21e8cec1a7f41c21ca6232b7778f00f61faf706af33ad393cf03"
+  },
+  {
+    "path": "dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/10679724",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "c184d1398f51d7686abf4eafab686c914e8e23c8d5d97edbbb3392f5b2ed2cd5"
+  },
+  {
+    "path": "dist/2025-09-18/clippy-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/6857966",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "00fa7d049bbac7eca1c402af566df4d262fe6e9220b1a52faa697ea652488bf0"
+  },
+  {
+    "path": "dist/2025-09-18/clippy-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/4544900",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "03f4a85b71ca008011447213ab62110aa0ab5d7c8cea89560c4e8f01d81e9840"
+  },
+  {
+    "path": "dist/2025-09-18/rust-src-1.90.0.tar.gz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/5243641",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "b5aa89a59db7d1eec4bb33929b47a1147319d790573c6131736a3bb397a8c1ef"
+  },
+  {
+    "path": "dist/2025-09-18/rust-src-1.90.0.tar.xz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/3473408",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "0763548637db8f02780481511d8e96008329d8c06e3a056393e26f920897bf0e"
+  },
+  {
+    "path": "dist/2025-09-18/rust-std-1.90.0-wasm32-unknown-unknown.tar.gz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/31842733",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "82365513c2f00f15b446e8cc9ef980691a2d8273bc40508bed2fe34bea680b9a"
+  },
+  {
+    "path": "dist/2025-09-18/rust-std-1.90.0-wasm32-unknown-unknown.tar.xz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/21133648",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "05038b6f630ac5102410b2b7108862eba1fc007af141e92f6e647ca26c901177"
+  },
+  {
+    "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/51017986",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "2428ee3d7383c015fbfb76956763ab07b75d637a3f8382fa77282abd85007a69"
+  },
+  {
+    "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/29115852",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "1e2527f22334fe2f38c79bc360275c73985093fd27f7ad452b11b503256a1e20"
+  },
+  {
+    "path": "dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/130697487",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "c7ef3678d279f1a640c1903633e6755b466ccb1c06bb3d313f7ef67436e56ac5"
+  },
+  {
+    "path": "dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "status": 206,
+    "content_range": "bytes 1024-2047/82519204",
+    "content_length": "1024",
+    "bytes_read": 1024,
+    "sample_sha256": "7c95832c99c53880185b2c15f9d15038fc52746ff3e7d3afef68b22065773e0b"
+  }
+]

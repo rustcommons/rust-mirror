@@ -66,8 +66,23 @@ Validate cached-plan replay, aliases/global components, multi-host closure, byte
 budgets, path/hash/schema refusal and existing-output preservation. Exercise the
 publisher against both inventory schemas. The real-Nexus harness currently supports
 schema 1 only; do not describe schema 2 HTTP-fixture evidence as a new Nexus pass.
-Never touch the user's Rustup/Cargo homes. Keep unimplemented update/resume/retention,
+Never touch the user's Rustup/Cargo homes. Keep unimplemented update/retention,
 independent signature validation and foreign-platform execution gaps explicit.
+
+## Resume validation
+
+Keep ordinary fetch's new-output refusal; require explicit `--resume` and exact
+frozen-plan identity for existing selected outputs. Never serve `.download` state.
+Rehash reusable files, check range offset/length/budgets before appending, verify
+whole-file hashes and copied assembly bytes, and never overwrite a completed tree.
+Keep the persistent lock file: OS locks, not file existence, determine ownership.
+
+Test ignored/malformed/truncated/oversized ranges, corrupt progress, different plans,
+unknown paths/links, competing writers and process termination on Linux/Windows.
+Use `docs/RESUMING.md` and `scripts/prove_resume.py` for the bounded real proof;
+seed other files from a verified baseline instead of downloading full toolchains
+unnecessarily. Keep local-filesystem/power-loss, initial-state and upload limits
+explicit. No automatic retries, global cache or resumable legacy route is claimed.
 
 ## Documentation and requirements traceability
 

@@ -1,5 +1,7 @@
 //! Pinned toolchain snapshots. Upstream manifests are preserved, not rewritten.
+mod resume;
 pub mod selection;
+pub use resume::Transfer;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -29,6 +31,22 @@ pub struct Options {
 /// refuse oversized responses. Sources are required to honor the supplied URL exactly.
 pub trait Source {
     fn fetch(&self, url: &str, output: &mut dyn Write, limit: u64) -> Result<()>;
+    /// Append bytes beginning at offset, within the remaining byte budget. Restart must
+    /// write nothing. Errors may leave a prefix; only a final whole-file hash proves it.
+    /// Sources without range support safely restart that file.
+    fn fetch_from(
+        &self,
+        url: &str,
+        output: &mut dyn Write,
+        offset: u64,
+        limit: u64,
+    ) -> Result<Transfer> {
+        if offset != 0 {
+            return Ok(Transfer::Restart);
+        }
+        self.fetch(url, output, limit)?;
+        Ok(Transfer::Complete)
+    }
 }
 
 pub struct HttpsSource(ureq::Agent);
@@ -43,6 +61,19 @@ impl Default for HttpsSource {
     }
 }
 impl Source for HttpsSource {
+    fn fetch_from(
+        &self,
+        url: &str,
+        output: &mut dyn Write,
+        offset: u64,
+        limit: u64,
+    ) -> Result<Transfer> {
+        safe_path(
+            url.strip_prefix(ORIGIN)
+                .ok_or("source must be the official HTTPS origin")?,
+        )?;
+        resume::http_range(&self.0, url, output, offset, limit)
+    }
     fn fetch(&self, url: &str, output: &mut dyn Write, limit: u64) -> Result<()> {
         let path = url
             .strip_prefix(ORIGIN)
@@ -74,7 +105,7 @@ pub struct Snapshot {
     pub profile: String,
     pub files: Vec<SnapshotFile>,
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct SnapshotFile {
     pub path: String,
