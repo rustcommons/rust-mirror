@@ -1,0 +1,232 @@
+{
+  "source": "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml",
+  "sha256": "489c19f20d331765ab2835661eb546de90f6446a107a8db83045e7371e45cae2",
+  "scope": "Read-only metadata inventory, not platform/runtime qualification",
+  "cases": [
+    {
+      "host": "x86_64-unknown-linux-gnu",
+      "package": "rustc",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-unknown-linux-gnu",
+      "package": "cargo",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-unknown-linux-gnu",
+      "package": "rust-std",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-unknown-linux-gnu",
+      "package": "rust-mingw",
+      "entry_present": false,
+      "available": null,
+      "compression_urls": []
+    },
+    {
+      "host": "aarch64-unknown-linux-gnu",
+      "package": "rustc",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "aarch64-unknown-linux-gnu",
+      "package": "cargo",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "aarch64-unknown-linux-gnu",
+      "package": "rust-std",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "aarch64-unknown-linux-gnu",
+      "package": "rust-mingw",
+      "entry_present": false,
+      "available": null,
+      "compression_urls": []
+    },
+    {
+      "host": "x86_64-pc-windows-msvc",
+      "package": "rustc",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-pc-windows-msvc",
+      "package": "cargo",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-pc-windows-msvc",
+      "package": "rust-std",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-pc-windows-msvc",
+      "package": "rust-mingw",
+      "entry_present": false,
+      "available": null,
+      "compression_urls": []
+    },
+    {
+      "host": "x86_64-pc-windows-gnu",
+      "package": "rustc",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-pc-windows-gnu",
+      "package": "cargo",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-pc-windows-gnu",
+      "package": "rust-std",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-pc-windows-gnu",
+      "package": "rust-mingw",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-apple-darwin",
+      "package": "rustc",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-apple-darwin",
+      "package": "cargo",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-apple-darwin",
+      "package": "rust-std",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "x86_64-apple-darwin",
+      "package": "rust-mingw",
+      "entry_present": false,
+      "available": null,
+      "compression_urls": []
+    },
+    {
+      "host": "aarch64-apple-darwin",
+      "package": "rustc",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "aarch64-apple-darwin",
+      "package": "cargo",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "aarch64-apple-darwin",
+      "package": "rust-std",
+      "entry_present": true,
+      "available": true,
+      "compression_urls": [
+        "url",
+        "xz_url"
+      ]
+    },
+    {
+      "host": "aarch64-apple-darwin",
+      "package": "rust-mingw",
+      "entry_present": false,
+      "available": null,
+      "compression_urls": []
+    }
+  ]
+}
