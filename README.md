@@ -8,6 +8,7 @@ including Nexus Repository Raw hosted repositories.
 Experimental, unreleased CLI and reusable library. Choose named toolchain
 versions/channels, host platforms, profiles, components and compilation targets;
 preview a metadata-only plan, then download that frozen selection for static hosting.
+Interrupted selected downloads can [resume verified progress](docs/RESUMING.md).
 Rustup remains the installer. See the [selection guide](docs/SELECTIONS.md).
 
 Rust/Cargo 1.90+ is required to build. This project is not yet published on crates.io.
@@ -22,7 +23,7 @@ rust-mirror plan --config mirror.toml --selection linux-dev --output ./linux-pla
 rust-mirror fetch --plan ./linux-plan --output ./linux-snapshot
 ```
 
-Output parents must exist; existing outputs are refused. The completed static tree
+Output parents must exist; existing outputs require an explicit same-plan `--resume`. The completed static tree
 is `linux-snapshot/mirror`. [Import a project's rust-toolchain.toml](docs/SELECTIONS.md#import-a-projects-toolchain-file)
 to avoid manually duplicating its components and targets.
 
@@ -47,6 +48,7 @@ prototype remains untouched and separately preserved; its assessment is historic
 
 ## Documentation
 
+- [Resumable downloads and recovery](docs/RESUMING.md).
 - [Toolchain selections, discovery, import and frozen plans](docs/SELECTIONS.md).
 - [Nexus Raw hosting and offline installation](docs/NEXUS-RAW.md).
 - [Offline proof evidence](docs/evals/2026-11-09-offline-toolchain.md).

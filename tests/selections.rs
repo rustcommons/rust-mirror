@@ -217,10 +217,13 @@ fn corrupt_download_and_budget_failure_never_publish() {
         let mut source = extended();
         resolve(&c, "dev", &source).unwrap().save(&root).unwrap();
         if budget > 1 {
-            source.files.insert(
-                format!("{ORIGIN}dist/2025-09-18/cargo.tar.xz"),
-                b"corrupt".to_vec(),
-            );
+            // A verified content-addressed file can satisfy identical variants;
+            // corrupt all copies so this still exercises failed verification.
+            for data in source.files.values_mut() {
+                if data == b"test artifact" {
+                    *data = b"corrupt".to_vec();
+                }
+            }
         }
         let output = temp.path().join("output");
         assert!(fetch(&root, &output, &source).is_err());

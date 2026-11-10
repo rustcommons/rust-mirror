@@ -94,7 +94,8 @@ only its frozen artifact URLs; it does not refresh live channel metadata.
 
 For moving channels the plan records the resolved release and a dated install
 selector, for example `stable-2026-10-15`. Use the actual `pinned_toolchain` from
-your plan rather than copying this date. Resolve a new plan explicitly to update.
+your plan rather than copying this date. Resolve a new plan explicitly to update. For interrupted downloads, use the same
+plan/output with `fetch --resume`; see [resume rules](RESUMING.md).
 One plan/snapshot represents one named selection and one resolved Rust release;
 multiple versions require separate snapshots/hosting prefixes at present.
 
@@ -140,8 +141,9 @@ not a new Nexus product qualification. See [actual Nexus boundaries](NEXUS-INTEG
   overhead. All-format downloads may exceed it; failure exposes no completed tree.
 - New output paths only; their parent must exist. Use private, trusted parent
   directories. An interrupted plan or failed fetch may leave an incomplete output
-  directory; select a fresh path when retrying. No resumable/shared cache, hostile
-  filesystem-race protection or concurrent publication guarantee is claimed.
+  directory; use `--resume` only for a validated initialized selection output. Incomplete
+  initialization may require a fresh path. Resume uses an output lock, not a shared
+  cache, hostile-filesystem defense or concurrent publication guarantee.
 - Only official `https://static.rust-lang.org/` downloads are accepted. SHA-256 and
   original signature files are retained; independent OpenPGP verification is not
   implemented. Plan hashes detect inconsistency, not an attacker rewriting a whole

@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "scope": "Actual official-origin interruption and resume, seeded from verified prior snapshot",
+  "plan_sha256": "8d6a88b6daa17875d061e63011f8848f28a98827a845aa2d483d4d5c9844b930",
+  "baseline_inventory_sha256": "3f0a02543c2eadc69b2e8c973ecd7508bb48706f05cbe1f70f8198821bd80bdf",
+  "interrupted_exit": -9,
+  "interrupted_artifact": "dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+  "prefix_bytes": 274736,
+  "artifact_bytes": 15110842,
+  "prefix_sha256": "f577a665250f2a861ff2a8457ef47e53cae2b701456eaba1f93b95b1c4822fba",
+  "seeded_from_baseline": [
+    "dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "dist/2025-09-18/clippy-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "dist/2025-09-18/clippy-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "dist/2025-09-18/rust-src-1.90.0.tar.gz",
+    "dist/2025-09-18/rust-src-1.90.0.tar.xz",
+    "dist/2025-09-18/rust-std-1.90.0-wasm32-unknown-unknown.tar.gz",
+    "dist/2025-09-18/rust-std-1.90.0-wasm32-unknown-unknown.tar.xz",
+    "dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "dist/2025-09-18/rustfmt-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "dist/2025-09-18/rustfmt-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+    "rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init"
+  ],
+  "resume_exit": 0,
+  "final_inventory_sha256": "3f0a02543c2eadc69b2e8c973ecd7508bb48706f05cbe1f70f8198821bd80bdf",
+  "verified_files": 23,
+  "limits": [
+    "Seeded other files; not a second full network download",
+    "No new Rustup installation or foreign-platform runtime qualification",
+    "Trusted private local filesystem; no power-loss or hostile mutation claim",
+    "Resume log indicates requested offset; wire-byte count is not measured by this driver"
+  ]
+}

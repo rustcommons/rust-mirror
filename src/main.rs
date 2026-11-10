@@ -8,7 +8,7 @@ const HELP: &str = "rust-mirror init --config FILE
 rust-mirror list --toolchain TOOLCHAIN [--host HOST]
 rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustup-version VERSION --output FILE
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
-rust-mirror fetch --plan PLAN_DIRECTORY --output NEW_SNAPSHOT_DIRECTORY
+rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
 Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. No crates or GUI yet.";
@@ -86,9 +86,17 @@ fn run() -> Result<()> {
         "fetch" => &["--plan", "--output"],
         _ => return Err(HELP.into()),
     };
+    let mut resume = false;
     let mut values = BTreeMap::new();
     while let Some(key) = args.next() {
         let key = key.into_string().map_err(|_| "option name must be UTF-8")?;
+        if command == "fetch" && key == "--resume" {
+            if resume {
+                return Err("duplicate --resume".into());
+            }
+            resume = true;
+            continue;
+        }
         if !allowed.contains(&key.as_str()) {
             return Err(format!("unknown option: {key}").into());
         }
@@ -160,8 +168,19 @@ fn run() -> Result<()> {
         }
         "fetch" => {
             let output = path("--output")?;
-            new_output(&output)?;
-            let completed = selection::fetch(&path("--plan")?, &output, &source)?;
+            if !resume {
+                new_output(&output)?;
+            }
+            let completed = if resume {
+                selection::fetch_resuming(&path("--plan")?, &output, &source)
+            } else {
+                selection::fetch(&path("--plan")?, &output, &source)
+            }
+            .map_err(|e| {
+                format!(
+                    "{e}; if this output was initialized, retry the same plan/output with --resume"
+                )
+            })?;
             writeln!(io::stdout().lock(), "{}", completed.display())?;
         }
         _ => unreachable!(),
