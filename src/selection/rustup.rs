@@ -79,6 +79,79 @@ pub fn prepare(
         metadata.insert(format!("{current}.sha256"), sidecar);
         installers.push((archive, current, hash));
     }
+    // Rustup clients accept both full and major.minor numeric selectors. Publish
+    // policy aliases using the highest selected stable patch, preserving every
+    // original signed manifest byte. Tool selection itself remains explicitly pinned.
+    let mut minor = BTreeMap::new();
+    for item in &input.records {
+        if crate::version(&item.release).is_err() {
+            continue;
+        }
+        let numbers = item
+            .release
+            .split('.')
+            .map(str::parse::<u64>)
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        let key = format!("{}.{}", numbers[0], numbers[1]);
+        let spec = Toolchain::parse(&item.selection.toolchain)?;
+        let canonical = format!("dist/channel-rust-{}.toml", item.release);
+        let dated = format!("dist/{}/channel-rust-{}.toml", item.date, spec.channel);
+        if let Some(existing) = input.files.get(&canonical) {
+            if input
+                .files
+                .get(&dated)
+                .is_none_or(|e| e.sha256 != existing.sha256)
+            {
+                return Err("ambiguous canonical manifest for a numeric alias".into());
+            }
+        }
+        let stem = if input.files.contains_key(&canonical) {
+            canonical.clone()
+        } else {
+            format!("dist/{}/channel-rust-{}.toml", item.date, spec.channel)
+        };
+        if !input.files.contains_key(&canonical) {
+            for suffix in ["", ".sha256", ".asc"] {
+                let name = format!("{stem}{suffix}");
+                let entry = input
+                    .files
+                    .get(&name)
+                    .ok_or("numeric alias lacks original metadata")?;
+                metadata.insert(
+                    format!("{canonical}{suffix}"),
+                    read_file(&entry.source, crate::METADATA_LIMIT)?,
+                );
+            }
+        }
+        if minor
+            .get(&key)
+            .is_none_or(|(patch, _, _): &(u64, String, String)| numbers[2] > *patch)
+        {
+            minor.insert(key, (numbers[2], item.release.clone(), stem));
+        }
+    }
+    let mut alias_catalog = BTreeMap::new();
+    for (alias, (_, release, stem)) in minor {
+        for suffix in ["", ".sha256", ".asc"] {
+            let entry = input
+                .files
+                .get(&format!("{stem}{suffix}"))
+                .ok_or("minor alias lacks original metadata")?;
+            metadata.insert(
+                format!("dist/channel-rust-{alias}.toml{suffix}"),
+                read_file(&entry.source, crate::METADATA_LIMIT)?,
+            );
+        }
+        alias_catalog.insert(alias, release);
+    }
+    metadata.insert(
+        "rustup/toolchain-aliases.toml".into(),
+        format!(
+            "schema = 1\n[aliases]\n{}",
+            toml::to_string(&alias_catalog)?
+        )
+        .into_bytes(),
+    );
     let mut seen = BTreeSet::new();
     for requested in channels {
         let spec = Toolchain::parse(requested)?;

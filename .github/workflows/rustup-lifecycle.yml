@@ -2,7 +2,14 @@ name: Rustup lifecycle qualification
 on:
   pull_request:
     paths:
-      - 'src/selection/rustup.rs'
+      - 'src/selection/**'
+      - 'src/publish.rs'
+      - 'src/lib.rs'
+      - 'src/main.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'scripts/prove_nexus.py'
+      - 'scripts/run_nexus_proof.py'
       - 'scripts/*rustup*'
       - '.github/workflows/rustup-lifecycle.yml'
   workflow_dispatch:
@@ -16,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-15]
+        os: [ubuntu-latest, windows-latest, macos-15, macos-15-intel]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     env:
@@ -35,30 +42,38 @@ jobs:
       - name: Validate Windows isolation policy before large downloads
         if: runner.os == 'Windows'
         shell: pwsh
-        run: ./scripts/prove_rustup_windows.ps1 -ValidateOnly -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-firewall-preflight"
+        run: ./scripts/prove_rustup_windows.ps1 -ValidateOnly -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-firewall-preflight" -PublisherCli "$env:GITHUB_WORKSPACE/target/release/rust-mirror.exe"
+      - name: Linux publisher and TLS preflight
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$1/target/release/rust-mirror" --host "$3" --evidence "$2/publisher-preflight"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$HOST"
+      - name: macOS publisher and TLS preflight
+        if: runner.os == 'macOS'
+        shell: bash
+        run: python3 scripts/prove_rustup_lifecycle.py --publisher-preflight --publisher-cli "$GITHUB_WORKSPACE/target/release/rust-mirror" --host "$HOST" --evidence "$RUNNER_TEMP/publisher-preflight"
       - name: Prepare genuine old and new generations
         shell: bash
         run: python scripts/prepare_rustup_lifecycle.py --cli target/release/rust-mirror${{ runner.os == 'Windows' && '.exe' || '' }} --host "$HOST" --output "$RUNNER_TEMP/rustup-generations" ${{ runner.os == 'Linux' && '--extra-channels' || '' }}
       - name: Isolated Linux lifecycle
         if: runner.os == 'Linux'
         shell: bash
-        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --old "$2/rustup-generations/old/mirror" --new "$2/rustup-generations/new/mirror" --host "$3" --evidence "$2/rustup-lifecycle"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$HOST"
+        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --old "$2/rustup-generations/old/mirror" --new "$2/rustup-generations/new/mirror" --publisher-cli "$1/target/release/rust-mirror" --host "$3" --evidence "$2/rustup-lifecycle"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$HOST"
       - name: Sandboxed macOS lifecycle
         if: runner.os == 'macOS'
         shell: bash
-        run: python3 scripts/prove_rustup_lifecycle.py --old "$RUNNER_TEMP/rustup-generations/old/mirror" --new "$RUNNER_TEMP/rustup-generations/new/mirror" --host "$HOST" --evidence "$RUNNER_TEMP/rustup-lifecycle"
+        run: python3 scripts/prove_rustup_lifecycle.py --old "$RUNNER_TEMP/rustup-generations/old/mirror" --new "$RUNNER_TEMP/rustup-generations/new/mirror" --publisher-cli "$GITHUB_WORKSPACE/target/release/rust-mirror" --host "$HOST" --evidence "$RUNNER_TEMP/rustup-lifecycle"
       - name: Firewall-isolated Windows lifecycle
         if: runner.os == 'Windows'
         shell: pwsh
-        run: ./scripts/prove_rustup_windows.ps1 -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-lifecycle" -HostTriple "$env:HOST"
+        run: ./scripts/prove_rustup_windows.ps1 -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-lifecycle" -HostTriple "$env:HOST" -PublisherCli "$env:GITHUB_WORKSPACE/target/release/rust-mirror.exe"
       - name: Actual isolated Nexus Raw lifecycle and selected-schema proof
         if: runner.os == 'Linux'
         shell: bash
         run: |
           image=sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09
           docker pull "$image"
-          sudo python3 scripts/run_nexus_proof.py --runtime docker --image "$image" --snapshot "$RUNNER_TEMP/rustup-generations/old/mirror" --next-snapshot "$RUNNER_TEMP/rustup-generations/new/mirror" --evidence "$RUNNER_TEMP/rustup-nexus-collection" --allow-raw-mime-types
-          sudo python3 scripts/run_nexus_proof.py --runtime docker --image "$image" --snapshot "$RUNNER_TEMP/rustup-generations/new-raw/.sync/snapshots/0/mirror" --evidence "$RUNNER_TEMP/rustup-nexus-selection" --allow-raw-mime-types
+          sudo python3 scripts/run_nexus_proof.py --runtime docker --image "$image" --publisher-cli "$GITHUB_WORKSPACE/target/release/rust-mirror" --snapshot "$RUNNER_TEMP/rustup-generations/old/mirror" --next-snapshot "$RUNNER_TEMP/rustup-generations/new/mirror" --evidence "$RUNNER_TEMP/rustup-nexus-collection" --allow-raw-mime-types
+          sudo python3 scripts/run_nexus_proof.py --runtime docker --image "$image" --publisher-cli "$GITHUB_WORKSPACE/target/release/rust-mirror" --snapshot "$RUNNER_TEMP/rustup-generations/new-raw/.sync/snapshots/0/mirror" --evidence "$RUNNER_TEMP/rustup-nexus-selection" --allow-raw-mime-types
       - name: Collect bounded Nexus diagnostics without private homes or keys
         if: always() && runner.os == 'Linux'
         shell: bash
@@ -92,6 +107,12 @@ jobs:
             ${{ runner.temp }}/rustup-lifecycle/*.stdout
             ${{ runner.temp }}/rustup-lifecycle/*.stderr
             ${{ runner.temp }}/rustup-lifecycle-firewall.json
+            ${{ runner.temp }}/publisher-preflight/*.json
+            ${{ runner.temp }}/publisher-preflight/*.stdout
+            ${{ runner.temp }}/publisher-preflight/*.stderr
+            ${{ runner.temp }}/rustup-firewall-preflight/*.json
+            ${{ runner.temp }}/rustup-firewall-preflight/*.stdout
+            ${{ runner.temp }}/rustup-firewall-preflight/*.stderr
             ${{ runner.temp }}/nexus-diagnostics/**/*.json
             ${{ runner.temp }}/nexus-diagnostics/**/*.stdout
             ${{ runner.temp }}/nexus-diagnostics/**/*.stderr

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add native verified HTTPS `publish` for Nexus Raw/static hosting, explicit private
+  CA and scoped credential support, whole-prefix absence checks and remote hash
+  verification. Add normal Rustup full/minor numeric lookup aliases and `--version`.
+
 - Add `rustup` generation finishing: pinned self-update catalog, current/archive
   installers for selected hosts, original Unix installer and explicit dated channel
   promotion. Add native client lifecycle and expanded actual-Nexus proof drivers;

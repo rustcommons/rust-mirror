@@ -10,6 +10,8 @@ versions/channels, host platforms, profiles, components and compilation targets;
 preview a metadata-only plan, then download that frozen selection for static hosting.
 Interrupted selected downloads can [resume verified progress](docs/RESUMING.md).
 Combine completed selections into an [immutable multi-version mirror](docs/MULTI-VERSION.md).
+Publish a verified generation with the native `publish` command; Python is needed
+only for the optional reference helper and qualification scripts.
 Rustup remains the installer. See the [selection guide](docs/SELECTIONS.md).
 Use [one-shot sync and runnable demos](docs/SYNC.md) to run the workflow with one command.
 [Complete Rustup endpoints and channel promotion](docs/RUSTUP.md) are being qualified

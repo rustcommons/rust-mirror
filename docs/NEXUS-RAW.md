@@ -23,6 +23,39 @@ Only the recorded original schema 1 case has actual Nexus server qualification.
 For a shared multi-version tree, [assemble a schema 3 generation](MULTI-VERSION.md)
 and publish it through the same helper to a new prefix.
 
+## Publish from the installed CLI
+
+The Rust `publish` command needs no Python runtime. It verifies schema 1/2/3 local
+inventories and selected data, checks every remote destination is absent before
+any PUT, uploads the inventory last and GET-verifies every remote byte:
+
+```sh
+rust-mirror publish --source ./complete-001/mirror --base-url https://nexus.example.local/repository/rust-generation-001 --ca-file /path/to/company-ca.pem
+```
+
+Set both `NEXUS_USERNAME` and `NEXUS_PASSWORD` in the invoking process for HTTP
+Basic authentication over HTTPS; never put credentials in a URL or command argument.
+Read them securely without echo/history and clear them after publication. An
+anonymous publication is attempted only when neither variable is set and the
+server explicitly permits it. The caller must have read, browse and upload rights
+for this new prefix. The library takes credentials explicitly and reads no environment.
+
+For private TLS, pass a PEM CA bundle (at most 4 MiB / 256 certificates). This
+configures the publisher's connection, not Rustup's client trust. No verification
+bypass, credential-bearing URL, HTTP redirect or automatic proxy discovery is used.
+Literal loopback HTTP requires the test-only `--allow-loopback-http`, and can never
+carry credentials or a CA option. Each request has a 180-second deadline.
+
+Stdout is a TOML report with `files`, `remote_bytes_verified`, `inventory_sha256`
+and `schema`. Success is 0; failures return 1. Credentials are not printed.
+The byte count is verified payload bytes, not HTTP/TLS traffic. All destinations
+are checked before writes; concurrent writers still require server no-redeploy and
+exclusive publication. Interrupted/failed uploads can leave an incomplete prefix:
+never activate it, retry writes blindly or treat HEAD/If-None-Match as a transaction.
+There is no remote `--force`, upload resume or automatic group/settings change.
+The Python helper below remains a reference/QA interface, not a CLI runtime dependency.
+For fixed client URLs and explicit activation, see [Raw groups](RUSTUP.md#keep-one-client-url-with-a-nexus-raw-group).
+
 ## Prepare on the connected machine
 
 Requirements: Rust/Cargo 1.90 or newer, HTTPS access to static.rust-lang.org and a

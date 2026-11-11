@@ -79,6 +79,16 @@ Do not describe HTTP-fixture evidence as an actual Nexus pass.
 Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
 independent signature validation and foreign-platform execution gaps explicit.
 
+## Native publication validation
+
+`publish` must work from the installed binary without Python. Reuse the full local
+inventory/closure checks, refuse credentials in URLs and plain HTTP, disable
+redirect/proxy discovery, validate explicit private-CA bundles, check all destination
+absences before any PUT and verify each GET hash with the inventory marker last.
+Never print auth data or alter Nexus settings. Test legacy/selected/collection,
+existing late markers, malformed inputs, redirects, bad GETs, TLS/auth and actual
+no-redeploy Nexus. Local sync force must never become remote overwrite authority.
+
 ## Resume validation
 
 Keep ordinary fetch's new-output refusal; require explicit `--resume` and exact

@@ -18,7 +18,7 @@ publication is authorized by this implementation request.
 - Actual Nexus Raw schema 2 and 3 publication/GET verification, TLS/private CA,
   scoped writer/read-only clients, no-redeploy, missing/corrupt controls and an
   existing-client old/new generation update through a fixed Raw group URL. No production server writes.
-- Native Windows/macOS/Linux proof jobs, with external-access isolation controls
+- Native Windows/x86-64, macOS/Intel+Apple-Silicon and Linux/x86-64 proof jobs, with external-access isolation controls
   recorded separately from ordinary endpoint-redirection checks.
 - A repeatable demonstration, final package/install qualification, release notes,
   changelog, registry/tag/docs.rs/Release agreement before release closeout.

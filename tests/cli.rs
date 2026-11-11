@@ -130,3 +130,32 @@ fn rustup_generation_options_refuse_duplicates_and_unknowns_without_network() {
         assert!(output.stdout.is_empty());
     }
 }
+
+#[test]
+fn publication_cli_refuses_duplicates_before_network() {
+    for args in [
+        vec!["publish", "--source", "a", "--source", "b"],
+        vec!["publish", "--force"],
+        vec!["publish", "--allow-loopback-http", "--allow-loopback-http"],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+    }
+}
+
+#[test]
+fn version_is_offline_and_matches_package() {
+    let output = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+        .arg("--version")
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        concat!("rust-mirror ", env!("CARGO_PKG_VERSION"))
+    );
+}

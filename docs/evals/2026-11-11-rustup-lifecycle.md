@@ -28,3 +28,32 @@ old archives and supports explicit original dated channel promotion. Four focuse
 Rustup tests and CLI refusal coverage are included. Source changes do not imply
 native qualification. Record actual Windows/macOS/Linux and Nexus results here
 before closing release gates. No new dependencies or version/lock change.
+
+
+The [36-case artifact size sweep](rustup-artifact-size-cases-20261111.json) sampled
+actual gzip artifact HEAD responses for Rust 1.90.0, current stable/nightly, Linux,
+Windows and macOS, including rustc, documentation, rustc-dev and LLVM tools. All
+36 returned known sizes below the 512 MiB per-file limit (largest 246,839,325 bytes).
+This measures those exact URLs; future upstream versions/formats still need checks.
+
+## Intermediate results (not final release approval)
+
+- Native WSL/GNU Linux: 31 lifecycle cases passed inside a loopback-only namespace,
+  including genuine bootstrap, old/new stable, components/targets, offline builds,
+  self-update and negative controls.
+- Actual isolated Nexus OSS 3.76.1-01: schema-3 old/new publication/lifecycle passed,
+  then fixed Raw-group URL activation and the same existing-client lifecycle passed.
+- A separate schema-2 publication/bootstrap/install/build proof passed on that image.
+  Containers/volumes were owned, network-disabled and removed afterward.
+- Hosted release-built Linux qualification at run 42950688394 passed native
+  stable/beta/nightly and the paired actual Nexus tests. Its application source
+  predates the later numeric alias addition; it is bounded intermediate evidence.
+- Windows and macOS final native acceptance remains pending. Initial failures were
+  test-setup issues: retired macOS runner label, a CA used as the server certificate,
+  unsupported Windows firewall address forms, and a fresh PowerShell process lacking
+  the Cert provider. These are retained as failures, not counted as passes. The
+  corrected CA/leaf fixture has a permanent trusted/untrusted handshake test.
+
+The finishing command now supplies explicit full/minor numeric policy aliases and
+records the selected highest stable patch. Final native acceptance must check
+those new client lookups too. No release or crates.io publication is authorized yet.

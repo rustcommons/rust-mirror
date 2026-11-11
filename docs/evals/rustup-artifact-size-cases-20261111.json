@@ -1,0 +1,326 @@
+[
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 130697487
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rust-docs-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 72881231
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-dev-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 213514599
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/llvm-tools-1.90.0-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 62393631
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-1.90.0-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 129684050
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rust-docs-1.90.0-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 72889900
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-dev-1.90.0-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 237046701
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/llvm-tools-1.90.0-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 96812699
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "aarch64-apple-darwin",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-1.90.0-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 108857954
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "aarch64-apple-darwin",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rust-docs-1.90.0-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 72801910
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "aarch64-apple-darwin",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-dev-1.90.0-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 191256562
+  },
+  {
+    "release": "1.90.0",
+    "date": "2025-09-18",
+    "host": "aarch64-apple-darwin",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2025-09-18/llvm-tools-1.90.0-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 108842093
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 141445153
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rust-docs-1.99.1-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 81440993
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rustc-dev-1.99.1-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 226277544
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/llvm-tools-1.99.1-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 69420981
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 136051904
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rust-docs-1.99.1-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 81270707
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rustc-dev-1.99.1-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 246839325
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/llvm-tools-1.99.1-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 110876347
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "aarch64-apple-darwin",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 85305190
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "aarch64-apple-darwin",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rust-docs-1.99.1-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 81654876
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "aarch64-apple-darwin",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/rustc-dev-1.99.1-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 170429712
+  },
+  {
+    "release": "stable",
+    "date": "2026-10-15",
+    "host": "aarch64-apple-darwin",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2026-10-15/llvm-tools-1.99.1-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 43935846
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rustc-nightly-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 144663850
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rust-docs-nightly-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 84120649
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rustc-dev-nightly-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 223989037
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-unknown-linux-gnu",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.gz",
+    "status": 200,
+    "bytes": 69674516
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rustc-nightly-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 138619609
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rust-docs-nightly-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 84046638
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rustc-dev-nightly-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 243650154
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "x86_64-pc-windows-msvc",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/llvm-tools-nightly-x86_64-pc-windows-msvc.tar.gz",
+    "status": 200,
+    "bytes": 112451681
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "aarch64-apple-darwin",
+    "package": "rustc",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rustc-nightly-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 86926410
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "aarch64-apple-darwin",
+    "package": "rust-docs",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rust-docs-nightly-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 84483349
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "aarch64-apple-darwin",
+    "package": "rustc-dev",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/rustc-dev-nightly-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 166505143
+  },
+  {
+    "release": "nightly",
+    "date": "2026-11-11",
+    "host": "aarch64-apple-darwin",
+    "package": "llvm-tools-preview",
+    "url": "https://static.rust-lang.org/dist/2026-11-11/llvm-tools-nightly-aarch64-apple-darwin.tar.gz",
+    "status": 200,
+    "bytes": 44057709
+  }
+]

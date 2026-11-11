@@ -6,6 +6,8 @@ Windows requires --windows-firewall-proof (disposable CI runner, configured by w
 No user Rustup/Cargo homes, shell profiles, production repository writes or EULAs.
 """
 import argparse
+import base64
+import secrets
 import http.server
 import json
 import os
@@ -80,6 +82,7 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
         (evidence/(name+".stdout")).write_bytes(p.stdout)
         (evidence/(name+".stderr")).write_bytes(p.stderr)
         result["commands"].append({"case":name,"exit":p.returncode,"expected_success":expect==0})
+        print("native case",name,"exit",p.returncode,flush=True)
         if (p.returncode==0) != (expect==0):
             raise RuntimeError(f"lifecycle case failed: {name}; see retained stderr")
         return p.stdout
@@ -167,6 +170,13 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
                 invoke(channel+"-repeat",[rustup,"update",channel,"--no-self-update"])
                 if requests is not None and payload_count()!=before: raise RuntimeError("unchanged extra channel fetched archives")
                 result["extra_channels"].append({"channel":channel,"version":version})
+        # The mirror's explicit numeric aliases serve normal Rustup clients too.
+        for selector in [new_version, ".".join(new_version.split(".")[:2])]:
+            if (new/f"dist/channel-rust-{selector}.toml").exists():
+                label="numeric-"+selector
+                invoke(label+"-install",[rustup,"toolchain","install",selector,"--profile","minimal","--no-self-update"])
+                compiler=invoke(label+"-compiler",[rustup,"run",selector,"rustc","--version"])
+                if not compiler.startswith(("rustc "+new_version+" ").encode()): raise RuntimeError("wrong numeric alias compiler")
         invoke("check-current-channels",[rustup,"check"])
         result["status"]="passed"
         result["limits"]=["Selected native host and exact versions only", "Original HTTPS/checksum trust; no independent signature verification", "Cargo dependencies/SDKs are not mirrored by this proof"]
@@ -174,6 +184,47 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
         (evidence/"lifecycle.json").write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8")
     return result
 
+
+def publisher_fixture(root):
+    """Tiny valid metadata model, never executed or presented as a Rust install."""
+    host="x86_64-unknown-linux-gnu"; body=b"synthetic publisher fixture"
+    h=hashlib.sha256(body).hexdigest()
+    manifest='manifest-version="2"\ndate="2025-09-18"\n[profiles]\nminimal=["rustc","cargo","rust-std"]\n[pkg.rust]\nversion="1.90.0 fixture"\n[pkg.rust.target.'+host+']\navailable=true\ncomponents=[{pkg="rustc",target="'+host+'"},{pkg="cargo",target="'+host+'"},{pkg="rust-std",target="'+host+'"}]\n'
+    files={}
+    for package in ["rustc","cargo","rust-std"]:
+        name=f"dist/2025-09-18/{package}.tar.gz"
+        manifest+=f'[pkg.{package}]\nversion="1.90.0"\n[pkg.{package}.target.{host}]\navailable=true\nurl="https://static.rust-lang.org/{name}"\nhash="{h}"\n'
+        files[name]=body
+    bootstrap=f"rustup/archive/1.28.2/{host}/rustup-init"
+    files[bootstrap]=body;files[bootstrap+".sha256"]=h.encode()
+    name="dist/channel-rust-1.90.0.toml";files[name]=manifest.encode();files[name+".sha256"]=hashlib.sha256(manifest.encode()).hexdigest().encode();files[name+".asc"]=b"synthetic signature"
+    inventory=f'schema=1\nrelease="1.90.0"\nhost="{host}"\nrustup_version="1.28.2"\nprofile="minimal"\n'
+    for name,data in files.items():
+        path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+        inventory+=f'[[files]]\npath="{name}"\nbytes={len(data)}\nsha256="{hashlib.sha256(data).hexdigest()}"\n'
+    (root/"snapshot.toml").write_text(inventory,encoding="utf-8")
+    return len(files)+1
+
+def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
+    source=evidence/"publisher-fixture";source.mkdir()
+    expected=publisher_fixture(source)
+    env=os.environ.copy();env.update(NEXUS_USERNAME="fixture-user",NEXUS_PASSWORD=password)
+    for key in list(env):
+        if key.lower() in ("http_proxy","https_proxy","all_proxy"):env.pop(key)
+    command=[str(cli),"publish","--source",str(source),"--base-url",base+"/publish-test","--ca-file",str(ca_file)]
+    before=len(request_log)
+    for name,success in [("native-publish",True),("native-publish-repeat-refuses",False)]:
+        result=subprocess.run([*prefix,*command],env=env,capture_output=True,timeout=60)
+        (evidence/(name+".stdout")).write_bytes(result.stdout);(evidence/(name+".stderr")).write_bytes(result.stderr)
+        if password.encode() in result.stdout+result.stderr:raise RuntimeError("publisher exposed a credential")
+        if (result.returncode==0)!=success:raise RuntimeError("native HTTPS publisher case failed: "+name)
+        if success:
+            report=tomllib.loads(result.stdout.decode())
+            if report["files"]!=expected:raise RuntimeError("wrong native publication inventory count")
+    records=request_log[before:]
+    puts=[r for r in records if r["method"]=="PUT"]
+    if len(puts)!=expected or not puts[-1]["path"].endswith("/snapshot.toml"):raise RuntimeError("publisher ordering/overwrite contract failed")
+    (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True},indent=2)+"\n",encoding="utf-8")
 
 def fixture_tls(evidence):
     openssl=shutil.which("openssl")
@@ -199,41 +250,62 @@ def fixture_tls(evidence):
     if platform.system() in ("Windows","Darwin"):
         if os.environ.get("GITHUB_ACTIONS")!="true": raise RuntimeError("native trust-store tests are restricted to disposable CI runners")
         if os.name=="nt":
-            script=evidence/"import-test-ca.ps1"
-            script.write_text('param([string]$CertPath)\n$ErrorActionPreference="Stop"\n$c=Import-Certificate -FilePath $CertPath -CertStoreLocation Cert:/CurrentUser/Root\n$c.Thumbprint\n',encoding="utf-8")
             der=evidence/"test-ca.cer"
             der.write_bytes(ssl.PEM_cert_to_DER_cert(cert.read_text()))
-            imported=subprocess.run(["powershell.exe","-NoProfile","-ExecutionPolicy","Bypass","-File",str(script),str(der)],capture_output=True,text=True)
+            thumb=hashlib.sha1(der.read_bytes()).hexdigest().upper()
+            imported=subprocess.run(["certutil.exe","-user","-f","-addstore","Root",str(der)],capture_output=True,text=True,timeout=60)
             (evidence/"trust-setup.stdout").write_text(imported.stdout,encoding="utf-8")
             (evidence/"trust-setup.stderr").write_text(imported.stderr,encoding="utf-8")
             if imported.returncode: raise RuntimeError("native test-CA import failed; see trust-setup.stderr")
-            thumb=imported.stdout.strip().splitlines()[-1]
-            if not thumb or any(c not in "0123456789ABCDEFabcdef" for c in thumb): raise RuntimeError("unexpected certificate identity")
-            cleanup=lambda: subprocess.run(["powershell.exe","-NoProfile","-Command",f"Remove-Item -LiteralPath Cert:/CurrentUser/Root/{thumb}"],check=True,capture_output=True)
+            cleanup=lambda: subprocess.run(["certutil.exe","-user","-delstore","Root",thumb],check=True,capture_output=True,timeout=60)
         else:
-            # CI's login keychain only; delete this exact certificate in finally.
-            keychain=str(Path.home()/"Library/Keychains/login.keychain-db")
-            subprocess.run(["security","add-trusted-cert","-r","trustRoot","-k",keychain,str(cert)],capture_output=True,check=True)
+            # Disposable CI system keychain, passwordless sudo; no interactive trust UI.
+            keychain="/Library/Keychains/System.keychain"
+            subprocess.run(["sudo","-n","security","add-trusted-cert","-d","-r","trustRoot","-k",keychain,str(cert)],capture_output=True,check=True,timeout=60)
             der=ssl.PEM_cert_to_DER_cert(cert.read_text())
             fingerprint=hashlib.sha1(der).hexdigest().upper()
-            cleanup=lambda: subprocess.run(["security","delete-certificate","-Z",fingerprint,"-t",keychain],capture_output=True,check=True)
+            cleanup=lambda: subprocess.run(["sudo","-n","security","delete-certificate","-Z",fingerprint,"-t",keychain],capture_output=True,check=True,timeout=60)
     return context,cert,cleanup
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--old",type=Path,required=True)
-    p.add_argument("--new",type=Path,required=True)
+    p.add_argument("--old",type=Path)
+    p.add_argument("--new",type=Path)
     p.add_argument("--host",required=True)
     p.add_argument("--evidence",type=Path,required=True)
     p.add_argument("--windows-firewall-proof",type=Path)
+    p.add_argument("--publisher-cli",type=Path)
+    p.add_argument("--publisher-preflight",action="store_true")
     args=p.parse_args()
     args.evidence=args.evidence.resolve();args.evidence.mkdir(parents=True,exist_ok=False)
     detail,prefix=isolation(args.evidence,args.windows_firewall_proof)
     (args.evidence/"isolation.json").write_text(json.dumps(detail,indent=2)+"\n",encoding="utf-8")
-    roots={"old":args.old.resolve(),"new":args.new.resolve()}; requests=[]; fault={"mode":None}
+    if not args.publisher_preflight and (args.old is None or args.new is None):p.error("--old and --new are required for full lifecycle")
+    if args.publisher_preflight and args.publisher_cli is None:p.error("--publisher-cli required")
+    roots={} if args.publisher_preflight else {"old":args.old.resolve(),"new":args.new.resolve()}
+    requests=[];fault={"mode":None};published={};password=secrets.token_urlsafe(24)
+    authentication="Basic "+base64.b64encode(("fixture-user:"+password).encode()).decode()
     for root in roots.values(): publish_raw.local_files(root)
     class Handler(http.server.SimpleHTTPRequestHandler):
+        def publish_request(self):
+            if not self.path.startswith("/publish-test/"):return False
+            if self.headers.get("Authorization")!=authentication:self.send_error(401);return True
+            if self.command=="PUT":
+                n=int(self.headers.get("Content-Length","0"))
+                if n>1024*1024:self.send_error(413);return True
+                if self.path in published:self.send_error(409);return True
+                published[self.path]=self.rfile.read(n);self.send_response(201);self.end_headers();return True
+            data=published.get(self.path)
+            if data is None:self.send_error(404);return True
+            self.send_response(200);self.send_header("Content-Length",str(len(data)));self.end_headers()
+            if self.command=="GET":self.wfile.write(data)
+            return True
+        def do_HEAD(self):
+            if not self.publish_request():super().do_HEAD()
+        def do_PUT(self):
+            if not self.publish_request():self.send_error(403)
         def do_GET(self):
+            if self.publish_request():return
             if fault["mode"] and urlsplit(self.path).path.endswith((".tar.gz",".tar.xz",".tar.zst")):
                 if fault["mode"]=="missing": self.send_error(404); return
                 data=b"deliberately corrupt archive"
@@ -252,7 +324,8 @@ def main():
         server.socket=context.wrap_socket(server.socket,server_side=True)
         thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
         base=f"https://127.0.0.1:{server.server_port}"
-        exercise(args.old,args.new,base+"/old",base+"/new",args.host,args.evidence,ca_file=ca_file,prefix=prefix,requests=requests,set_fault=lambda mode:fault.update(mode=mode))
+        if args.publisher_cli:prove_publisher(args.publisher_cli.resolve(),args.evidence,base,ca_file,prefix,requests,password)
+        if not args.publisher_preflight:exercise(args.old,args.new,base+"/old",base+"/new",args.host,args.evidence,ca_file=ca_file,prefix=prefix,requests=requests,set_fault=lambda mode:fault.update(mode=mode))
     finally:
         if server:
             if thread and thread.is_alive(): server.shutdown()

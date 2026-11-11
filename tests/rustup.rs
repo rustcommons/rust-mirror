@@ -57,6 +57,15 @@ fn complete_catalog_preserves_input_and_archives_and_validates_under_collection_
             .contains("1.29.3")
     );
     assert_eq!(
+        fs::read(mirror.join("dist/channel-rust-1.90.toml")).unwrap(),
+        fs::read(mirror.join("dist/channel-rust-1.90.0.toml")).unwrap()
+    );
+    assert!(
+        fs::read_to_string(mirror.join("rustup/toolchain-aliases.toml"))
+            .unwrap()
+            .contains("1.90.0")
+    );
+    assert_eq!(
         fs::read(mirror.join("rustup/rustup-init.sh")).unwrap(),
         f.files[&format!("{ORIGIN}rustup/rustup-init.sh")]
     );
@@ -178,4 +187,57 @@ fn a_self_consistent_but_wrong_catalog_cannot_pass_collection_validation() {
         10_000_000
     )
     .is_err());
+}
+
+#[test]
+fn minor_alias_chooses_highest_selected_stable_patch_and_retains_exact_versions() {
+    let t = tempfile::tempdir().unwrap();
+    let mut f = source();
+    let body = Fixture::manifest()
+        .replace("1.90.0", "1.90.1")
+        .replace("2025-09-18", "2025-10-01");
+    f.files.insert(
+        format!("{ORIGIN}dist/channel-rust-1.90.1.toml"),
+        body.as_bytes().to_vec(),
+    );
+    f.files.insert(
+        format!("{ORIGIN}dist/channel-rust-1.90.1.toml.sha256"),
+        hash(body.as_bytes()).into_bytes(),
+    );
+    f.files.insert(
+        format!("{ORIGIN}dist/channel-rust-1.90.1.toml.asc"),
+        b"original fixture signature".to_vec(),
+    );
+    for (key, data) in f.files.clone() {
+        if key.contains("dist/2025-09-18/") {
+            f.files
+                .insert(key.replace("2025-09-18", "2025-10-01"), data);
+        }
+    }
+    let mut cfg = config("1.90.0");
+    let mut patch = cfg.selections[0].clone();
+    patch.name = "patch".into();
+    patch.toolchain = "1.90.1".into();
+    cfg.selections.push(patch);
+    let old = sync::run(&cfg, None, &t.path().join("raw"), false, &f).unwrap();
+    let mirror = rustup::prepare(
+        &old.mirror,
+        "1.29.3",
+        &[],
+        &t.path().join("complete"),
+        10_000_000,
+        &f,
+    )
+    .unwrap();
+    assert_eq!(
+        fs::read(mirror.join("dist/channel-rust-1.90.toml")).unwrap(),
+        body.as_bytes()
+    );
+    assert!(mirror.join("dist/channel-rust-1.90.0.toml").exists());
+    assert!(mirror.join("dist/channel-rust-1.90.1.toml").exists());
+    assert!(
+        fs::read_to_string(mirror.join("rustup/toolchain-aliases.toml"))
+            .unwrap()
+            .contains("1.90.1")
+    );
 }

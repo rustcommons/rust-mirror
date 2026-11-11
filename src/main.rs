@@ -10,6 +10,7 @@ rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustu
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
 rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
 rust-mirror sync --config FILE --output RUN_DIRECTORY [--previous MIRROR] [--resume | --force]
+rust-mirror publish --source MIRROR --base-url HTTPS_URL [--ca-file PEM] [--allow-loopback-http]
 rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [--promote CHANNEL-DATE ...] [--max-bytes BYTES]
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
@@ -75,8 +76,19 @@ fn run() -> Result<()> {
     if command == "fetch-toolchain" {
         return legacy(args);
     }
+    if command == "--version" || command == "-V" {
+        writeln!(
+            io::stdout().lock(),
+            "rust-mirror {}",
+            env!("CARGO_PKG_VERSION")
+        )?;
+        return Ok(());
+    }
     if command == "assemble" {
         return assemble(args);
+    }
+    if command == "publish" {
+        return publish_generation(args);
     }
     if command == "rustup" {
         return rustup_generation(args);
@@ -233,6 +245,60 @@ fn assemble(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         budget,
     )?;
     writeln!(io::stdout().lock(), "{}", path.display())?;
+    Ok(())
+}
+
+fn publish_generation(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+    let mut values = BTreeMap::new();
+    let mut local = false;
+    while let Some(key) = args.next() {
+        let key = key.into_string().map_err(|_| "option must be UTF-8")?;
+        if key == "--allow-loopback-http" {
+            if local {
+                return Err("duplicate loopback option".into());
+            }
+            local = true;
+            continue;
+        }
+        if !["--source", "--base-url", "--ca-file"].contains(&key.as_str()) {
+            return Err("unknown publication option".into());
+        }
+        let value = args.next().ok_or("missing publication option value")?;
+        if value.to_str().is_some_and(|v| v.starts_with("--"))
+            || values.insert(key, value).is_some()
+        {
+            return Err("missing/duplicate publication option".into());
+        }
+    }
+    let root = PathBuf::from(values.remove("--source").ok_or("--source required")?);
+    let base_url = values
+        .remove("--base-url")
+        .ok_or("--base-url required")?
+        .into_string()
+        .map_err(|_| "URL must be UTF-8")?;
+    let ca_file = values.remove("--ca-file").map(PathBuf::from);
+    fn credential(key: &str) -> Result<Option<String>> {
+        match std::env::var(key) {
+            Ok(v) => Ok(Some(v)),
+            Err(std::env::VarError::NotPresent) => Ok(None),
+            Err(_) => Err("credentials must be UTF-8".into()),
+        }
+    }
+    let credentials = match (credential("NEXUS_USERNAME")?, credential("NEXUS_PASSWORD")?) {
+        (None, None) => None,
+        (Some(u), Some(p)) => Some((u, p)),
+        _ => return Err("set both NEXUS_USERNAME and NEXUS_PASSWORD".into()),
+    };
+    let report = rust_mirror::publish::publish(
+        &root,
+        &rust_mirror::publish::Options {
+            base_url,
+            ca_file,
+            credentials,
+            allow_loopback_http: local,
+        },
+    )?;
+    writeln!(io::stdout().lock(), "{}", toml::to_string_pretty(&report)?)?;
     Ok(())
 }
 

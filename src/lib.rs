@@ -1,4 +1,5 @@
 //! Pinned toolchain snapshots. Upstream manifests are preserved, not rewritten.
+pub mod publish;
 mod resume;
 pub mod selection;
 pub use resume::Transfer;

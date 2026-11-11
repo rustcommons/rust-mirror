@@ -42,6 +42,14 @@ A failure leaves no completed mirror. The default byte budget is 10 GiB; select
 `--max-bytes` explicitly if needed. No serving, publication or client activation
 happens automatically.
 
+The finishing stage also supplies full numeric and major.minor Rustup client
+lookups (for example `rustup toolchain install 1.90`). A minor alias chooses the
+highest selected stable patch already in this generation, not an unmirrored public
+release. `rustup/toolchain-aliases.toml` records that generated policy. Its manifests
+and signatures are original bytes copied to those lookup paths. Mirror selection
+configs remain explicit full versions or named/date channels; they do not silently
+resolve a partial numeric version during offline project-file import.
+
 ## Promote a channel and update existing clients
 
 For reproducible historical promotion, select e.g. `stable-2025-09-18` during sync,
@@ -56,7 +64,7 @@ snapshot must contain a matching original dated selection and metadata triplet.
 There is no guessed version, backwards date search or mixed manifest/checksum/signature.
 An undated `stable` selection already supplies its resolved stable root.
 
-Publish each generation to a new [Nexus Raw prefix](NEXUS-RAW.md). Keep the old prefix
+Publish each generation with the native `publish` command to a new [Nexus Raw prefix](NEXUS-RAW.md). Keep the old prefix
 available so pinned clients retain historical artifacts. Point clients at the new
 verified generation (or deliberately switch an operator-managed gateway route):
 

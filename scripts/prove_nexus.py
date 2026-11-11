@@ -20,6 +20,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import tomllib
 from urllib.request import urlopen
 import publish_raw
 
@@ -40,7 +41,7 @@ def native_selection(document):
     if record is None: raise ValueError("Nexus native proof needs a GNU x86-64 selection")
     return record["release"], "x86_64-unknown-linux-gnu", record["pinned_toolchain"]
 
-def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False, next_snapshot=None):
+def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False, next_snapshot=None, publisher_cli=None):
     evidence.mkdir(parents=True, exist_ok=False, mode=0o700)
     result = {"status": "running", "cases": [], "commands": [], "scope": "Disposable actual Nexus Raw hosted, with a temporary TLS reverse proxy"}
     requests = []
@@ -66,6 +67,12 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             if next_document["schema"] != 3 or document["schema"] not in (2, 3):
                 raise ValueError("lifecycle proof requires selected/collection generations")
         result["inventory_sha256"] = publish_raw.digest(snapshot / "snapshot.toml")
+        def publish_snapshot(source, destination, ca_file):
+            if publisher_cli is None: return publish_raw.publish(source,destination,ca_file=ca_file)
+            command=[str(publisher_cli),"publish","--source",str(source),"--base-url",destination,"--ca-file",str(ca_file)]
+            completed=subprocess.run(command,capture_output=True,timeout=900)
+            if completed.returncode: raise ValueError(completed.stderr.decode("utf-8",errors="replace"))
+            return tomllib.loads(completed.stdout.decode("utf-8"))
         admin_password = password_file.read_text().strip()
         administrator = credentials("admin", admin_password)
 
@@ -281,11 +288,11 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             os.environ["NEXUS_USERNAME"] = publisher
             os.environ["NEXUS_PASSWORD"] = publisher_password
             try:
-                result["publication"] = publish_raw.publish(snapshot, base, ca_file=ca_file)
+                result["publication"] = publish_snapshot(snapshot, base, ca_file)
                 case("authenticated_snapshot_publication_and_get_hashes", files=result["publication"]["files"])
                 before = sum(r["method"] == "PUT" for r in requests)
                 try:
-                    publish_raw.publish(snapshot, base, ca_file=ca_file)
+                    publish_snapshot(snapshot, base, ca_file)
                 except ValueError as error:
                     if "destination is not absent" not in str(error):
                         raise
@@ -381,8 +388,8 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                 os.environ["NEXUS_USERNAME"] = publisher
                 os.environ["NEXUS_PASSWORD"] = publisher_password
                 try:
-                    result["old_generation_publication"]=publish_raw.publish(snapshot,server_base+"/repository/"+old_repo,ca_file=ca_file)
-                    result["new_generation_publication"]=publish_raw.publish(next_snapshot,server_base+"/repository/"+new_repo,ca_file=ca_file)
+                    result["old_generation_publication"]=publish_snapshot(snapshot,server_base+"/repository/"+old_repo,ca_file)
+                    result["new_generation_publication"]=publish_snapshot(next_snapshot,server_base+"/repository/"+new_repo,ca_file)
                 finally:
                     os.environ.pop("NEXUS_USERNAME",None);os.environ.pop("NEXUS_PASSWORD",None)
                 fixed_url=server_base+"/repository/"+active
@@ -431,9 +438,10 @@ def main():
     parser.add_argument("--allow-raw-mime-types", action="store_true", help="Opt in to non-strict MIME in this disposable repository only")
     parser.add_argument("--nexus-port", type=int, default=8081)
     parser.add_argument("--next-snapshot", type=Path, help="New immutable generation for full existing-client/self-update proof")
+    parser.add_argument("--publisher-cli",type=Path,help="Use the real Rust publish subcommand instead of Python reference publisher")
     args = parser.parse_args()
     prove(args.snapshot.resolve(), args.evidence.resolve(), args.initial_password_file, args.nexus_port, args.allow_raw_mime_types,
-          args.next_snapshot.resolve() if args.next_snapshot else None)
+          args.next_snapshot.resolve() if args.next_snapshot else None,args.publisher_cli.resolve() if args.publisher_cli else None)
 
 
 if __name__ == "__main__":
