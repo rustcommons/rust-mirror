@@ -1346,5 +1346,240 @@
     "macOS trust removal can defer to fresh hosted-VM teardown; fixture private keys are destroyed and this is recorded.",
     "Trusted local filesystems; no hostile mutation/NFS/power-loss guarantee.",
     "Official crates.io archive/install, docs.rs, tag and GitHub Release remain post-authorization gates."
-  ]
+  ],
+  "frozen_release_candidate": "0b38e4595a09e5e2a5b781c39b509fb60eff3d9c",
+  "final_clean_package": {
+    "source": "0b38e4595a09e5e2a5b781c39b509fb60eff3d9c",
+    "archive_sha256": "360885af0d2b89a1ec0ae7146ea3ea30c1e901943cc5b8d51999477efb8fdd9f",
+    "archive_bytes": 48883,
+    "different_from_installed_a82": [
+      ".cargo_vcs_info.json",
+      "CHANGELOG.md"
+    ],
+    "toolchain": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "install": "fresh Cargo home, unpacked --locked; not registry",
+    "install_status": "passed",
+    "binary_sha256": "12b548096ec297cc29e04842ac810cd3b9a36200f436ecce6674ec909ea5e7e7",
+    "smoke": [
+      {
+        "case": "version",
+        "exit": 0
+      },
+      {
+        "case": "help",
+        "exit": 0
+      },
+      {
+        "case": "init",
+        "exit": 0
+      },
+      {
+        "case": "existing-init",
+        "exit": 1
+      },
+      {
+        "case": "unknown",
+        "exit": 1
+      }
+    ],
+    "inventory": [
+      {
+        "path": ".cargo_vcs_info.json",
+        "bytes": 94,
+        "sha256": "9f38c6e597dcc89d4dbf9c1dcd10b90267de77cce3650c55d03941cba16998ab"
+      },
+      {
+        "path": "CHANGELOG.md",
+        "bytes": 2944,
+        "sha256": "6f99f29fa848a9557b10d0350242e70e5e814916bd40afe0421a54725118be91"
+      },
+      {
+        "path": "Cargo.lock",
+        "bytes": 23552,
+        "sha256": "55940d41c1c8a9bb237c037183ed1aca77a772af1990c22a7d2202f30353facf"
+      },
+      {
+        "path": "Cargo.toml",
+        "bytes": 1349,
+        "sha256": "439875baeed328c5b88e3104af88d46299fb2ac594b0a2256c6c9de5e5e2ca51"
+      },
+      {
+        "path": "Cargo.toml.orig",
+        "bytes": 548,
+        "sha256": "392d66a2c717d65dfbe139b0c5a5d205829b4a88f9f7538bd21f35310c02cdf0"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 11357,
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      },
+      {
+        "path": "README.md",
+        "bytes": 5144,
+        "sha256": "d5100643fae8c800f9b28908661bcd6b8461b3560f6d7510d7653ab1549f2735"
+      },
+      {
+        "path": "examples/mirror.toml",
+        "bytes": 541,
+        "sha256": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e"
+      },
+      {
+        "path": "examples/multi-version.toml",
+        "bytes": 292,
+        "sha256": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d"
+      },
+      {
+        "path": "examples/sync-demo.toml",
+        "bytes": 366,
+        "sha256": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc"
+      },
+      {
+        "path": "src/lib.rs",
+        "bytes": 15588,
+        "sha256": "f3031264e8d71dc32ff589ef5bd8fff51ed557b20ccbc6adaa056227a799bc16"
+      },
+      {
+        "path": "src/main.rs",
+        "bytes": 16442,
+        "sha256": "6daf8f15724a5889d9847ec04697614056b38ad70a93a3307679ef0b2a3ebda0"
+      },
+      {
+        "path": "src/publish.rs",
+        "bytes": 13519,
+        "sha256": "7fe182709d6806ba10c3a91d548bc548001d6b4e8ed5e318b2b8cbcdf3c42a03"
+      },
+      {
+        "path": "src/resume.rs",
+        "bytes": 16621,
+        "sha256": "29ab51a22dcc1b302645287ece39696c1c8c3559486cd7a6a7ae7f55a2441546"
+      },
+      {
+        "path": "src/selection/collection.rs",
+        "bytes": 18964,
+        "sha256": "6322159d24841103f87dc2cf958ee608277f63cb4aa1f751c38240290543d32e"
+      },
+      {
+        "path": "src/selection/rustup.rs",
+        "bytes": 11336,
+        "sha256": "aa093e6520d2b468ceb2f623b5443b978b75ab5dba63f8a08617fb79af646f0c"
+      },
+      {
+        "path": "src/selection/sync.rs",
+        "bytes": 22491,
+        "sha256": "02806076893c08a953725dc040639eea1a6f937e3f9b01c1afb30ff6af3a6b98"
+      },
+      {
+        "path": "src/selection.rs",
+        "bytes": 32371,
+        "sha256": "6ac17ab5dd05a70b6e7f7648a049927a656534a36b2ee6c946e14af59d408191"
+      }
+    ],
+    "publisher_fixture": {
+      "status": "passed",
+      "files": 9,
+      "transport": "HTTPS with private CA and scoped fixture credentials",
+      "fixture_only": true,
+      "untrusted_ca_refused": true,
+      "wrong_hostname_refused": true
+    },
+    "evidence_files": [
+      {
+        "path": "package.log",
+        "sha256": "58d02b04b4e0cb23ff22f605ea2e966a153ccba48158bcc3dd7f72e622de2f6d"
+      },
+      {
+        "path": "version.stdout",
+        "sha256": "fc5d60c57d2df20b85915c10b1abe2119d30037b42b4b5788f4bcf1813ad8c27"
+      },
+      {
+        "path": "existing-init.stderr",
+        "sha256": "ca9c8674a5d2cf1d08a88823f0aedda0f1a9dea2a3de9819fd777d6530b543a9"
+      },
+      {
+        "path": "init.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "unknown.stderr",
+        "sha256": "2e0ac549bef1d18513d19dbdb848feb8de30641e1e00ba7e96586195616f7a94"
+      },
+      {
+        "path": "package-audit.json",
+        "sha256": "9baee814eb672cd8d8cec9cd53e0a7ef60e0fd33a26ce21dad753f95c3c3c194"
+      },
+      {
+        "path": "unpacked-install.log",
+        "sha256": "03e312c447d627573880677babb4cd52590656eac4d5f008c42fcbc34fefa2c9"
+      },
+      {
+        "path": "version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "unknown.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "existing-init.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "help.stdout",
+        "sha256": "9c50f760d0e1d6123173e1e5e75d3363b0e3ef50fbd3bc2fc15645ff1f7f73e5"
+      },
+      {
+        "path": "help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "init.stdout",
+        "sha256": "282cd122b522d30970d971d425f2ecdf7f32dfcc7362551e32f2ae8a6ee44b2a"
+      },
+      {
+        "path": "publisher-proof/native-publish-hostname-refuses.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "publisher-proof/isolation.json",
+        "sha256": "8c0677839476679b67033531de289e96a97ce19ffed29c18c711d568b3f04778"
+      },
+      {
+        "path": "publisher-proof/requests.json",
+        "sha256": "4024e85fae46ca1f6631ed3de85982c8651c3bda04873d0e4fbd101b327e3057"
+      },
+      {
+        "path": "publisher-proof/publisher.json",
+        "sha256": "78c1b4b0d7782fa363adaa84eef4d7d01e52accdae224b7dd39e10e570cf4be0"
+      },
+      {
+        "path": "publisher-proof/native-publish-untrusted-refuses.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "publisher-proof/native-publish-repeat-refuses.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "publisher-proof/native-publish-untrusted-refuses.stderr",
+        "sha256": "867a6e505de411a7944e36f45aaa499c291e9b856d989768dd27567e9dbc5f5a"
+      },
+      {
+        "path": "publisher-proof/native-publish.stdout",
+        "sha256": "df6bb1caf5de2bc203fa6393a1c7b304447ad443528601c1cc12d52cd7b9cf9b"
+      },
+      {
+        "path": "publisher-proof/native-publish-hostname-refuses.stderr",
+        "sha256": "867a6e505de411a7944e36f45aaa499c291e9b856d989768dd27567e9dbc5f5a"
+      },
+      {
+        "path": "publisher-proof/native-publish-repeat-refuses.stderr",
+        "sha256": "5dea733080d3dee1d6db6c8e5bdfacdb2ebd1c5656eb43da85cbe167df52f5f2"
+      },
+      {
+        "path": "publisher-proof/native-publish.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  }
 }
