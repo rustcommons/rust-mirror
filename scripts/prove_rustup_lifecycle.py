@@ -201,7 +201,12 @@ def fixture_tls(evidence):
         if os.name=="nt":
             script=evidence/"import-test-ca.ps1"
             script.write_text('param([string]$CertPath)\n$ErrorActionPreference="Stop"\n$c=Import-Certificate -FilePath $CertPath -CertStoreLocation Cert:/CurrentUser/Root\n$c.Thumbprint\n',encoding="utf-8")
-            imported=subprocess.run(["powershell.exe","-NoProfile","-File",str(script),str(cert)],capture_output=True,text=True,check=True)
+            der=evidence/"test-ca.cer"
+            der.write_bytes(ssl.PEM_cert_to_DER_cert(cert.read_text()))
+            imported=subprocess.run(["powershell.exe","-NoProfile","-ExecutionPolicy","Bypass","-File",str(script),str(der)],capture_output=True,text=True)
+            (evidence/"trust-setup.stdout").write_text(imported.stdout,encoding="utf-8")
+            (evidence/"trust-setup.stderr").write_text(imported.stderr,encoding="utf-8")
+            if imported.returncode: raise RuntimeError("native test-CA import failed; see trust-setup.stderr")
             thumb=imported.stdout.strip().splitlines()[-1]
             if not thumb or any(c not in "0123456789ABCDEFabcdef" for c in thumb): raise RuntimeError("unexpected certificate identity")
             cleanup=lambda: subprocess.run(["powershell.exe","-NoProfile","-Command",f"Remove-Item -LiteralPath Cert:/CurrentUser/Root/{thumb}"],check=True,capture_output=True)

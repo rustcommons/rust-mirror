@@ -31,6 +31,15 @@ def credentials(user, password):
     return "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
 
 
+def native_selection(document):
+    if document["schema"] == 1:
+        return document["release"], document["host"], document["release"]
+    records = document.get("toolchains", [document])
+    record = next((r for r in sorted(records, key=lambda r:r["date"], reverse=True)
+                   if "x86_64-unknown-linux-gnu" in r["selection"]["hosts"]), None)
+    if record is None: raise ValueError("Nexus native proof needs a GNU x86-64 selection")
+    return record["release"], "x86_64-unknown-linux-gnu", record["pinned_toolchain"]
+
 def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False, next_snapshot=None):
     evidence.mkdir(parents=True, exist_ok=False, mode=0o700)
     result = {"status": "running", "cases": [], "commands": [], "scope": "Disposable actual Nexus Raw hosted, with a temporary TLS reverse proxy"}
@@ -309,15 +318,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             # Read-only anonymous client with completely fresh homes and real TLS checks.
             client_request_start = len(requests)
             rustup_version = document["rustup_version"]
-            if document["schema"] == 1:
-                release, host = document["release"], document["host"]
-            else:
-                records = document.get("toolchains", [document])
-                record = next((r for r in sorted(records, key=lambda r:r["date"], reverse=True)
-                               if "x86_64-unknown-linux-gnu" in r["selection"]["hosts"]), None)
-                if record is None: raise ValueError("Nexus native proof needs a GNU x86-64 selection")
-                host = "x86_64-unknown-linux-gnu"
-                release = record["pinned_toolchain"]
+            release, host, selector = native_selection(document)
             bootstrap_name = f"rustup/archive/{rustup_version}/{host}/rustup-init"
             bootstrap = evidence / "rustup-init"
             with urlopen(base + "/" + bootstrap_name, context=context, timeout=30) as source, bootstrap.open("xb") as output:
@@ -342,16 +343,16 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             invoke("bootstrap", [bootstrap, "-y", "--no-modify-path", "--default-host", host, "--default-toolchain", "none"])
             rustup = evidence / "cargo/bin/rustup"
             invoke("disable-self-update", [rustup, "set", "auto-self-update", "disable"])
-            invoke("install", [rustup, "toolchain", "install", release, "--profile", "minimal", "--no-self-update"])
-            version = invoke("rustc-version", [rustup, "run", release, "rustc", "--version"])
+            invoke("install", [rustup, "toolchain", "install", selector, "--profile", "minimal", "--no-self-update"])
+            version = invoke("rustc-version", [rustup, "run", selector, "rustc", "--version"])
             if not version.stdout.startswith(f"rustc {release} ".encode()):
                 raise RuntimeError("wrong installed compiler")
-            invoke("cargo-version", [rustup, "run", release, "cargo", "--version"])
+            invoke("cargo-version", [rustup, "run", selector, "cargo", "--version"])
             project = evidence / "hello"
             (project / "src").mkdir(parents=True)
             (project / "Cargo.toml").write_text('[package]\nname = "nexus-offline-proof"\nversion = "0.1.0"\nedition = "2021"\n')
             (project / "src/main.rs").write_text('fn main() { println!("nexus offline proof ok"); }\n')
-            invoke("cargo-offline-build", [rustup, "run", release, "cargo", "build", "--offline"], cwd=project)
+            invoke("cargo-offline-build", [rustup, "run", selector, "cargo", "build", "--offline"], cwd=project)
             program = invoke("run-program", [project / "target/debug/nexus-offline-proof"])
             if program.stdout != b"nexus offline proof ok\n":
                 raise RuntimeError("unexpected compiled output")
@@ -401,6 +402,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                 case("actual_nexus_fixed_url_existing_client_update_components_targets_and_self_update")
             result["status"] = "passed"
             result["release"] = release
+            result["installed_selector"] = selector
             result["host"] = host
             result["rustup_version"] = rustup_version
             result["tls"] = "Temporary TLS reverse proxy; verified custom CA and IP SAN; HTTP backend on isolated loopback"

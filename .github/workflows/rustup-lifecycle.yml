@@ -30,7 +30,7 @@ jobs:
       - name: Build CLI and identify native host
         shell: bash
         run: |
-          cargo build --locked
+          cargo build --release --locked
           rustc -vV | sed -n 's/^host: /HOST=/p' >> "$GITHUB_ENV"
       - name: Validate Windows isolation policy before large downloads
         if: runner.os == 'Windows'
@@ -38,7 +38,7 @@ jobs:
         run: ./scripts/prove_rustup_windows.ps1 -ValidateOnly -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-firewall-preflight"
       - name: Prepare genuine old and new generations
         shell: bash
-        run: python scripts/prepare_rustup_lifecycle.py --cli target/debug/rust-mirror${{ runner.os == 'Windows' && '.exe' || '' }} --host "$HOST" --output "$RUNNER_TEMP/rustup-generations" ${{ runner.os == 'Linux' && '--extra-channels' || '' }}
+        run: python scripts/prepare_rustup_lifecycle.py --cli target/release/rust-mirror${{ runner.os == 'Windows' && '.exe' || '' }} --host "$HOST" --output "$RUNNER_TEMP/rustup-generations" ${{ runner.os == 'Linux' && '--extra-channels' || '' }}
       - name: Isolated Linux lifecycle
         if: runner.os == 'Linux'
         shell: bash

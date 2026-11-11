@@ -34,3 +34,11 @@ class RustupTLSFixture(unittest.TestCase):
 
             finally:
                 server.shutdown(); server.server_close(); thread.join(timeout=5); cleanup()
+
+class NativeProofSelector(unittest.TestCase):
+    def test_dated_selector_is_not_the_compiler_version(self):
+        import prove_nexus
+        record={"schema":2,"release":"1.90.0","date":"2025-09-18","pinned_toolchain":"stable-2025-09-18","selection":{"hosts":["x86_64-unknown-linux-gnu"]}}
+        self.assertEqual(prove_nexus.native_selection(record),("1.90.0","x86_64-unknown-linux-gnu","stable-2025-09-18"))
+        self.assertEqual(prove_nexus.native_selection({"schema":3,"toolchains":[record]}),("1.90.0","x86_64-unknown-linux-gnu","stable-2025-09-18"))
+        self.assertEqual(prove_nexus.native_selection({"schema":1,"release":"1.90.0","host":"x86_64-unknown-linux-gnu"}),("1.90.0","x86_64-unknown-linux-gnu","1.90.0"))
