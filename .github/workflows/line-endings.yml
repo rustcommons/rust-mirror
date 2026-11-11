@@ -1,0 +1,24 @@
+name: line-endings
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lf-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Refuse CRLF in committed text files
+        run: |
+          bad=$(git ls-files --eol | grep -E '^i/(crlf|mixed)' | grep -v 'attr/-text' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Text files committed with CRLF line endings. Fix with: git add --renormalize ."
+            echo "$bad"
+            exit 1
+          fi
+          echo "All committed text files use LF."
