@@ -137,7 +137,8 @@ or automatic retry guarantee.
 ## Unreleased local retention
 
 The source checkout adds the planned 0.2.0 local `prune` feature, with declared
-pins/stable/nightly/rollback protection, exact structured previews and explicit
+pins/stable/nightly/rollback protection, local generation/run discovery,
+next-previous protection, exact structured previews and explicit
 `--apply`. Published 0.1.x binaries do not include it. It removes whole generations;
 kept collections are not compacted and Nexus deletion remains deferred. See the
 [retention guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/RETENTION.md).

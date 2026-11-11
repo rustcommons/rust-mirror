@@ -271,6 +271,14 @@ if user_approved {
 # Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
 ```
 
+For directory-based GUI screens, `retention::discover(directory)` returns a
+metadata-only serializable `Catalog`. `retention::preview_directory(policy,
+directory, next_previous, as_of)` protects the exact next-sync anchor and paused
+run dependencies, and binds managed files/private state and membership to apply.
+`PrunePlan::folders` provides per-folder logical totals. Locked/unknown/incomplete
+runs are never deletion candidates; private workspace deletion and common
+progress/cancel/events support remain deferred.
+
 Current first is always protected; following roots are declared newest-first.
 Apply requires explicit authority and revalidates the preview under advisory locks.
 It removes whole roots only and returns successful-prefix information on I/O failure;

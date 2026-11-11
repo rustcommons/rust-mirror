@@ -632,3 +632,9 @@ List all candidate `mirror` roots newest first, active/current first. Nothing pr
 automatically; published 0.1.x binaries have no pruning command. This feature deletes
 whole local roots only, leaves retained collections intact and does not delete remote
 Nexus copies. Pause other users/writers of deletion candidates before apply.
+
+For GUI-style maintenance, `generations --directory DIR` lists local generations
+and run states without verifying payloads. Directory-backed pruning additionally
+protects the exact next `--previous` and paused-run dependencies, and refuses changes
+since preview. Private run cleanup and general progress/cancel integration remain
+deferred; see [discovery and directory planning](RETENTION.md#discover-generations-and-sync-runs).

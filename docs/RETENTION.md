@@ -21,7 +21,13 @@ nightly_days = 7
 previous_generations = 1
 ```
 
-All four fields are required when the table exists. An absent table disables pruning.
+The original four fields are required when the table exists. Optional
+`keep_newest` (0–32, default 0) retains at least that many newest roots, while
+`pinned_generations` (at most 32 unique completed root paths, default empty) pins
+whole generations. Relative pinned paths resolve from the process working
+directory, like CLI paths. Explicit-root ordering is declared by the caller; directory
+ordering uses inventory mtime with path as a deterministic tie-breaker. Neither
+ordering discovers active server routing. An absent table disables pruning.
 Counts may explicitly be zero. Pins accept unique full numeric releases or dated
 stable/beta/nightly selectors; moving channel names and minor aliases are refused.
 Every pin must be present in at least one supplied generation or the operation
@@ -47,6 +53,59 @@ variants can retain additional generations; protection never substitutes a small
 host/component closure. Arrays with different ordering may conservatively keep an
 extra generation. Beta history needs a dated pin or rollback protection.
 
+## Discover generations and sync runs
+
+The GUI can call `selection::retention::discover(directory)` or use:
+
+```sh
+cargo run --locked -- generations --directory ./mirrors
+```
+
+The serializable `Catalog` lists immediate `directory/run/mirror` roots, direct
+`directory/snapshot-root` folders, and managed sync/fetch workspaces. It includes
+inventory identity, toolchains, recorded byte lengths and inventory mtime;
+`RunInfo` distinguishes `completed`, `in_progress`, `locked` and `unknown` states.
+`unmanaged` entries are listed without recursion. `issues` identify invalid managed
+paths. Discovery reads inventory/state/report metadata only; it **does not verify
+payloads**, prove resume compatibility or infer which generation is active. It
+creates no files or locks and only probes existing locks nonblockingly.
+
+For a discovery-backed plan, use the exact `SyncResult::mirror` (or the finished
+mirror you selected for the next run) as `next_previous`:
+
+```sh
+cargo run --locked -- prune --config mirror.toml --as-of 2025-09-22 --directory ./mirrors --next-previous ./mirrors/generation-003/mirror --dry-run
+```
+
+Use either this directory pair or explicit `--generation` arguments, not both.
+The library call is `preview_directory(policy, directory, next_previous, as_of)`.
+It always protects that exact root regardless of mtime/counts and protects every
+matching previous-inventory identity referenced by paused sync state. Missing
+anchors/dependencies refuse the plan. Paused runs, including a mirror whose sync
+report has not committed, are protected. Busy/unknown runs or malformed managed
+paths refuse directory pruning; discovery remains available to display them.
+
+The plan includes `catalog`, `folders` with per-folder logical byte totals, exact
+`files` and keep reasons. It validates every candidate generation and fingerprints
+all managed run/generation content, including private state/cache copies, file
+lengths/mtime/available creation metadata and permissions. A second scan refuses
+changes during planning. Apply locks existing run writers, repeats discovery and
+hashing, and refuses a changed managed file, run state or immediate directory
+membership before deleting any inventory marker. Empty regular pruning-lock files
+are excluded from this binding so acquiring persistent maintenance locks does not
+invalidate the preview. Access times and directory mtimes are excluded because
+reads/maintenance lock creation can change them. Contents of unmanaged directories
+and paths outside the declared directory are outside the binding and are never
+traversed or deleted.
+
+Limits are 128 immediate entries for discovery; planning accepts at most 32
+completed roots, 300,000 managed entries, depth 64 and 100 GiB of managed file
+content per fingerprint, plus the existing 512 MiB individual-file limit. Discovery
+is metadata-only; directory planning/apply can read private copies several times
+and should run off the GUI thread. Unsupported links/special files or resource
+limits refuse rather than silently omit state. Stop external writers before apply;
+locks cover known workspaces, not a new run created after preflight or other tools.
+
 ## Preview without deleting
 
 Pass completed schema-2/3 snapshot roots, **newest first, current first**. This order
@@ -68,7 +127,8 @@ lengths, not physical reclaimed disk blocks (hardlinks, compression and open han
 can change actual savings).
 
 Preview reads and hashes all inputs; it creates no files/locks and uses no network.
-It validates complete inventory/selected-artifact closure and refuses corruption,
+It validates complete inventory/selected-artifact closure and refuses inputs belonging
+to locked, unknown or incomplete sync runs, as well as corruption,
 legacy schema 1, unrelated files or empty directories, duplicate/overlapping roots,
 parent traversal, non-UTF-8 root paths and symbolic links in roots, ancestors or payload trees.
 Limits: 1–32 roots, 256 pins/latest-stable count, 36,600 nightly days, 31 rollback
@@ -121,8 +181,11 @@ or explicitly repair/remove the already-approved partial root after inspection.
 `PrunePlan`/`ApplyReport` values, without printing progress. Calls are synchronous
 and can hash many files; GUI callers should run them off their UI thread. Errors
 before deletion use the common `Result`; post-preflight I/O failures carry the
-successful prefix in `ApplyReport::failure`. There is no cancellation/progress
-callback or persistent execution-plan format in this iteration. See the compiled
+successful prefix in `ApplyReport::failure`. General progress/cancellation hooks, typed cancellation errors, heartbeats and the
+shared EVENTS serializer are deferred to the common library design; no placeholder
+observer API is claimed. Existing entry points can remain convenience wrappers
+around future observer-aware variants. There is no persistent execution-plan format
+in this iteration; serialized previews are display data, not execution authority. See the compiled
 [packaged API example](../src/guide.md#local-retention-unreleased).
 
 Adding optional `Config::retention` preserves existing TOML without the table.
@@ -137,7 +200,11 @@ Pruning removes **whole local snapshot roots**. It never edits or compacts files
 records inside a kept immutable generation. If one protected record retains a root,
 all its other releases are retained too. Additive collections can therefore exceed
 requested release counts; those counts are minimum protection, not an exact cache
-size or disk quota. Private fetch/sync working copies also consume separate space.
+size or disk quota. Private fetch/sync working copies also consume separate space. Discovery lists them,
+but whole-workspace deletion is deferred: state, plans, reports, caches and incomplete
+runs are retained intact. Apply may acquire existing writer locks for inspection;
+it never resets, edits or deletes paused state. An incomplete run with a missing
+previous root must be restored/repaired explicitly before directory pruning.
 
 Nexus-side pruning is deferred. The current publisher only uploads/verifies fresh
 prefixes; it cannot reliably discover active Raw group membership, concurrent

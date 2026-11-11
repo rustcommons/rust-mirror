@@ -6,6 +6,11 @@
   release pins, latest stable counts, nightly calendar windows and rollback roots.
 - Add read-only `prune` previews with exact file paths, hashes and sizes; deletion
   requires `--apply`, locks and revalidates the plan, and reports partial failures.
+- Add metadata-only local generation/run discovery and directory-backed plans with
+  keep-newest and generation pins, automatic next-previous/paused-run dependency
+  protection, per-folder byte totals and managed-directory change refusal.
+- Preserve incomplete/locked runs and private sync/fetch state. Whole-workspace
+  cleanup and general progress/cancel/events integration remain deferred.
 - Expose structured library preview/apply results for GUI callers. Existing config
   TOML remains valid; Rust `Config` literals need the new optional `retention` field.
 - Prune whole completed local generations only. Kept collections are not compacted;

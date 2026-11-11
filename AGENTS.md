@@ -152,6 +152,11 @@ The owner authorized local retention/pruning for the unreleased 0.2.0 feature on
 Keep policies explicit: pinned releases, latest stable count, nightly calendar days
 and preceding rollback generations. Offline clients cannot discover protection for us.
 Keep current first and always protected; preserve distinct protected closures.
+For directory-backed GUI plans, list generations/runs without payload verification,
+retain the exact next-previous anchor and paused-run dependencies, and bind apply to
+managed content/state and membership. Refuse locked/unknown runs; preserve incomplete
+and private workspaces. Keep mtime ordering distinct from active routing. General
+observer/cancel/events support and full workspace cleanup are separate work.
 
 Preview must be read-only and return exact file paths/sizes and keep reasons.
 Apply requires explicit authorization, writer locks and complete plan revalidation;

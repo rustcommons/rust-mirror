@@ -10,7 +10,9 @@ rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustu
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
 rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
 rust-mirror sync --config FILE --output RUN_DIRECTORY [--previous MIRROR] [--resume | --force]
+rust-mirror generations --directory DIRECTORY
 rust-mirror prune --config FILE --as-of YYYY-MM-DD --generation MIRROR [--generation MIRROR ...] [--dry-run | --apply]
+rust-mirror prune --config FILE --as-of YYYY-MM-DD --directory DIRECTORY --next-previous MIRROR [--dry-run | --apply]
 rust-mirror publish --source MIRROR --base-url HTTPS_URL [--ca-file PEM] [--allow-loopback-http]
 rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [--promote CHANNEL-DATE ...] [--max-bytes BYTES]
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
@@ -93,6 +95,19 @@ fn run() -> Result<()> {
     }
     if command == "rustup" {
         return rustup_generation(args);
+    }
+    if command == "generations" {
+        let key = args.next().ok_or("--directory required")?;
+        if key != "--directory" {
+            return Err("expected --directory".into());
+        }
+        let path = PathBuf::from(args.next().ok_or("directory value required")?);
+        if args.next().is_some() {
+            return Err("unexpected discovery option".into());
+        }
+        let catalog = selection::retention::discover(&path)?;
+        writeln!(io::stdout().lock(), "{}", toml::to_string_pretty(&catalog)?)?;
+        return Ok(());
     }
     if command == "prune" {
         return prune(args);
@@ -448,7 +463,15 @@ fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
             }
             continue;
         }
-        if !["--config", "--as-of", "--generation"].contains(&key.as_str()) {
+        if ![
+            "--config",
+            "--as-of",
+            "--generation",
+            "--directory",
+            "--next-previous",
+        ]
+        .contains(&key.as_str())
+        {
             return Err("unknown prune option".into());
         }
         let value = args.next().ok_or("missing prune option value")?;
@@ -473,7 +496,25 @@ fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         .retention
         .as_ref()
         .ok_or("pruning disabled: configure [retention] explicitly")?;
-    let plan = rust_mirror::selection::retention::preview(policy, &roots, &date)?;
+    let plan = match (
+        values.remove("--directory"),
+        values.remove("--next-previous"),
+    ) {
+        (Some(directory), Some(previous)) if roots.is_empty() => {
+            rust_mirror::selection::retention::preview_directory(
+                policy,
+                &PathBuf::from(directory),
+                &PathBuf::from(previous),
+                &date,
+            )?
+        }
+        (None, None) if !roots.is_empty() => {
+            rust_mirror::selection::retention::preview(policy, &roots, &date)?
+        }
+        _ => {
+            return Err("use either --generation roots or --directory with --next-previous".into())
+        }
+    };
     if mode.as_deref() == Some("--apply") {
         let report = rust_mirror::selection::retention::apply(&plan, true)?;
         writeln!(io::stdout().lock(), "{}", toml::to_string_pretty(&report)?)?;

@@ -3,8 +3,12 @@
 //! Supply every candidate in newest-first order, current generation first. Whole
 //! generations are kept when needed for declared protection; their files are never
 //! compacted in place. No network operations or Nexus deletion are performed.
+mod catalog;
 use super::{collection, valid_date, Toolchain};
 use crate::{resume, sha256, Result};
+pub use catalog::{
+    discover, preview_directory, Catalog, CatalogIssue, GenerationInfo, RunInfo, RunState,
+};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeSet,
@@ -14,7 +18,8 @@ use std::{
 
 /// Explicit offline-client protection, configured in `[retention]`.
 ///
-/// All four fields are required; omitting the entire table disables pruning.
+/// The four original fields are required; keep-newest/generation pins are optional.
+/// Omitting the entire table disables pruning.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct Policy {
@@ -26,6 +31,12 @@ pub struct Policy {
     pub nightly_days: u32,
     /// Number of preceding generations to keep in addition to current (0–31).
     pub previous_generations: usize,
+    #[serde(default)]
+    /// Minimum newest roots retained, including current (0–32); defaults to zero.
+    pub keep_newest: usize,
+    #[serde(default)]
+    /// Explicit completed generation paths to retain (at most 32); defaults to empty.
+    pub pinned_generations: Vec<PathBuf>,
 }
 impl Policy {
     /// Validate bounds and unique immutable selectors without reading any files.
@@ -37,6 +48,8 @@ impl Policy {
             || self.latest_stable > 256
             || self.nightly_days > 36_600
             || self.previous_generations > 31
+            || self.keep_newest > 32
+            || self.pinned_generations.len() > 32
         {
             return Err("retention policy exceeds bounds".into());
         }
@@ -66,6 +79,14 @@ pub struct Deletion {
     /// Verified SHA-256 identity used when revalidating a preview.
     pub sha256: String,
 }
+/// One whole completed folder approved for deletion.
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct FolderDeletion {
+    /// Absolute snapshot root; never a private sync/fetch workspace.
+    pub path: PathBuf,
+    /// Logical bytes including its inventory marker.
+    pub bytes: u64,
+}
 /// A generation protected by current/rollback order or declared toolchain coverage.
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 pub struct KeptGeneration {
@@ -84,6 +105,10 @@ pub struct PrunePlan {
     pub as_of: String,
     /// Whole snapshot roots that would be removed; enclosing workspaces are preserved.
     pub generations: Vec<PathBuf>,
+    /// Exact snapshot folders with their individual logical byte totals.
+    pub folders: Vec<FolderDeletion>,
+    /// Directory discovery snapshot, when planned by `preview_directory`.
+    pub catalog: Option<Catalog>,
     /// Exact regular files to remove in execution order (inventory marker first).
     pub files: Vec<Deletion>,
     /// Sum of file lengths, not a promise about physical space reclaimed.
@@ -93,6 +118,7 @@ pub struct PrunePlan {
     policy: Policy,
     roots: Vec<PathBuf>,
     identities: Vec<String>,
+    binding: Option<catalog::Binding>,
 }
 /// An apply failure after preflight, including any preceding successful deletions.
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
@@ -185,6 +211,23 @@ fn real_directory(path: &Path) -> Result<PathBuf> {
 /// Refuses missing pins, invalid policy/date, duplicate/overlapping/linked roots,
 /// invalid snapshot inventories/closures, unexpected files, corruption or I/O errors.
 pub fn preview(policy: &Policy, roots: &[PathBuf], as_of: &str) -> Result<PrunePlan> {
+    preview_inner(
+        policy,
+        roots,
+        as_of,
+        &BTreeSet::new(),
+        &BTreeSet::new(),
+        false,
+    )
+}
+fn preview_inner(
+    policy: &Policy,
+    roots: &[PathBuf],
+    as_of: &str,
+    protected: &BTreeSet<PathBuf>,
+    owned: &BTreeSet<PathBuf>,
+    allow_paused: bool,
+) -> Result<PrunePlan> {
     policy.validate()?;
     let today = day(as_of)?;
     if roots.is_empty() || roots.len() > 32 {
@@ -203,6 +246,7 @@ pub fn preview(policy: &Policy, roots: &[PathBuf], as_of: &str) -> Result<PruneP
             return Err("retention generations overlap or are duplicated".into());
         }
     }
+    catalog::check_roots(&roots, owned, allow_paused)?;
     let inputs = roots
         .iter()
         .map(|r| collection::read_input(r))
@@ -228,6 +272,26 @@ pub fn preview(policy: &Policy, roots: &[PathBuf], as_of: &str) -> Result<PruneP
     reasons[0].insert("current generation".into());
     for reason in reasons.iter_mut().skip(1).take(policy.previous_generations) {
         reason.insert("rollback generation".into());
+    }
+    for reason in reasons.iter_mut().take(policy.keep_newest) {
+        reason.insert("keep newest generation".into());
+    }
+    let pinned = policy
+        .pinned_generations
+        .iter()
+        .map(|p| real_directory(p))
+        .collect::<Result<BTreeSet<_>>>()?;
+    if pinned.len() != policy.pinned_generations.len() || pinned.iter().any(|p| !roots.contains(p))
+    {
+        return Err("pinned generations must be unique supplied completed roots".into());
+    }
+    for (i, root) in roots.iter().enumerate() {
+        if pinned.contains(root) {
+            reasons[i].insert("pinned generation".into());
+        }
+        if protected.contains(root) {
+            reasons[i].insert("next previous or paused-run dependency".into());
+        }
     }
     let mut found = BTreeSet::new();
     let mut covered = BTreeSet::new();
@@ -308,6 +372,9 @@ pub fn preview(policy: &Policy, roots: &[PathBuf], as_of: &str) -> Result<PruneP
     let mut plan = PrunePlan {
         as_of: as_of.into(),
         generations: vec![],
+        folders: vec![],
+        catalog: None,
+        binding: None,
         files: vec![],
         total_bytes: 0,
         kept: vec![],
@@ -338,6 +405,19 @@ pub fn preview(policy: &Policy, roots: &[PathBuf], as_of: &str) -> Result<PruneP
                 sha256: entry.sha256,
             });
         }
+    }
+    for root in &plan.generations {
+        let bytes = plan
+            .files
+            .iter()
+            .filter(|f| f.path.starts_with(root))
+            .try_fold(0u64, |n, f| {
+                n.checked_add(f.bytes).ok_or("folder size overflow")
+            })?;
+        plan.folders.push(FolderDeletion {
+            path: root.clone(),
+            bytes,
+        });
     }
     plan.total_bytes = plan.files.iter().try_fold(0u64, |n, f| {
         n.checked_add(f.bytes).ok_or("retention size overflow")
@@ -386,19 +466,67 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
         .map(|r| r.parent().ok_or("generation needs parent"))
         .collect::<std::result::Result<_, _>>()?;
     let mut locks = Vec::new();
+    let mut owned = BTreeSet::new();
     for parent in parents {
         real_directory(parent)?;
-        locks.push(lock_file(&parent.join(".rust-mirror-prune.lock"), true)?);
+        let paused = plan.catalog.as_ref().is_some_and(|c| {
+            c.runs
+                .iter()
+                .any(|r| r.path == parent && r.state == RunState::InProgress)
+        });
+        if !paused {
+            locks.push(lock_file(&parent.join(".rust-mirror-prune.lock"), true)?);
+        }
         for name in [".sync.lock", ".fetch.lock"] {
             let p = parent.join(name);
             match fs::symlink_metadata(&p) {
-                Ok(_) => locks.push(lock_file(&p, false)?),
+                Ok(_) => {
+                    locks.push(lock_file(&p, false)?);
+                    owned.insert(p);
+                }
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
                 Err(e) => return Err(e.into()),
             }
         }
     }
-    if &preview(&plan.policy, &plan.roots, &plan.as_of)? != plan {
+    if let Some(binding) = &plan.binding {
+        for workspace in &binding.runs {
+            real_directory(workspace)?;
+            for name in [".sync.lock", ".fetch.lock"] {
+                let p = workspace.join(name);
+                if owned.contains(&p) {
+                    continue;
+                }
+                match fs::symlink_metadata(&p) {
+                    Ok(_) => {
+                        locks.push(lock_file(&p, false)?);
+                        owned.insert(p);
+                    }
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
+                    Err(e) => return Err(e.into()),
+                }
+            }
+        }
+    }
+    let fresh = if let Some(binding) = &plan.binding {
+        catalog::preview_owned(
+            &plan.policy,
+            &binding.directory,
+            &binding.next_previous,
+            &plan.as_of,
+            &owned,
+        )?
+    } else {
+        preview_inner(
+            &plan.policy,
+            &plan.roots,
+            &plan.as_of,
+            &BTreeSet::new(),
+            &owned,
+            false,
+        )?
+    };
+    if &fresh != plan {
         return Err("retention preview is stale or modified; preview again".into());
     }
     let mut report = ApplyReport {

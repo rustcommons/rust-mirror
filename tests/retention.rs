@@ -15,6 +15,8 @@ fn policy() -> Policy {
         latest_stable: 0,
         nightly_days: 0,
         previous_generations: 0,
+        keep_newest: 0,
+        pinned_generations: vec![],
     }
 }
 fn make(root: &Path, name: &str, release: &str, date: &str, selector: &str) -> PathBuf {
@@ -304,6 +306,9 @@ fn active_sync_fetch_and_prune_locks_refuse_then_allow_retry() {
         assert!(apply(&plan, true).is_err());
         assert!(roots[1].exists());
         drop(lock);
+        if name == ".sync.lock" {
+            fs::remove_file(path).unwrap();
+        }
     }
     assert!(apply(&plan, true).unwrap().failure.is_none());
 }
@@ -587,4 +592,246 @@ fn windows_open_file_refusal_reports_partial_deletion() {
     assert!(roots[0].join("snapshot.toml").is_file());
     assert!(!roots[1].join("snapshot.toml").exists());
     assert!(file.is_file());
+}
+
+fn paused(store: &Path, name: &str, previous: Option<&str>) -> PathBuf {
+    let run = store.join(name);
+    fs::create_dir(&run).unwrap();
+    fs::create_dir(run.join(".sync")).unwrap();
+    fs::write(run.join(".sync.lock"), b"").unwrap();
+    let mut state = format!(
+        "schema = 1\nconfig_sha256 = \"{}\"\nplans = [\"{}\"]\n",
+        "0".repeat(64),
+        "1".repeat(64)
+    );
+    if let Some(previous) = previous {
+        state += &format!("previous_sha256 = \"{previous}\"\n");
+    }
+    fs::write(run.join(".sync/state.toml"), state).unwrap();
+    run.canonicalize().unwrap()
+}
+#[test]
+fn discovery_lists_generations_completed_sync_and_paused_runs_without_writes() {
+    let t = tempfile::tempdir().unwrap();
+    let store = t.path();
+    let old = sample(store, "old", "1.89.0");
+    let cfg = Config::parse(include_str!("../examples/retention.toml")).unwrap();
+    // Same synthetic release and bootstrap as Fixture; retain the actual sync layout.
+    let mut cfg = cfg;
+    cfg.rustup_version = "1.28.2".into();
+    let complete =
+        rust_mirror::selection::sync::run(&cfg, None, &store.join("sync"), false, &Fixture::new())
+            .unwrap();
+    let interrupted = paused(store, "paused", Some(&common::hash(&inventory(&old))));
+    let catalog = discover(store).unwrap();
+    assert_eq!(catalog.generations.len(), 2);
+    assert_eq!(
+        catalog
+            .runs
+            .iter()
+            .filter(|r| r.state == RunState::Completed)
+            .count(),
+        2
+    );
+    assert_eq!(
+        catalog
+            .runs
+            .iter()
+            .find(|r| r.path == interrupted)
+            .unwrap()
+            .state,
+        RunState::InProgress
+    );
+    assert!(catalog
+        .generations
+        .iter()
+        .any(|g| g.path == complete.mirror.canonicalize().unwrap()));
+    assert!(!store.join("old/.rust-mirror-prune.lock").exists());
+    let text = toml::to_string_pretty(&catalog).unwrap();
+    assert!(text.contains("in_progress"));
+}
+#[test]
+fn directory_preview_protects_next_previous_paused_dependencies_pins_and_newest() {
+    use std::time::{Duration, UNIX_EPOCH};
+    let t = tempfile::tempdir().unwrap();
+    let store = t.path();
+    let roots: Vec<_> = (0..4)
+        .map(|i| sample(store, &format!("run-{i}"), &format!("1.{}.0", 86 + i)))
+        .collect();
+    for (i, root) in roots.iter().enumerate() {
+        fs::File::options()
+            .write(true)
+            .open(root.join("snapshot.toml"))
+            .unwrap()
+            .set_times(
+                fs::FileTimes::new()
+                    .set_modified(UNIX_EPOCH + Duration::from_secs(1_700_000_000 + i as u64)),
+            )
+            .unwrap();
+    }
+    let waiting = paused(store, "waiting", Some(&common::hash(&inventory(&roots[1]))));
+    let mut p = policy();
+    p.keep_newest = 1;
+    let plan = preview_directory(&p, store, &roots[0], DATE).unwrap();
+    assert_eq!(plan.generations, vec![roots[2].clone()]);
+    assert_eq!(plan.folders[0].bytes, plan.total_bytes);
+    assert_eq!(plan.folders[0].path, roots[2]);
+    p.pinned_generations = vec![roots[2].clone()];
+    assert!(preview_directory(&p, store, &roots[0], DATE)
+        .unwrap()
+        .files
+        .is_empty());
+    let state = fs::read(waiting.join(".sync/state.toml")).unwrap();
+    let report = apply(&plan, true).unwrap();
+    assert!(report.failure.is_none());
+    assert!(roots[0].exists() && roots[1].exists() && roots[3].exists());
+    assert!(!roots[2].exists());
+    assert_eq!(fs::read(waiting.join(".sync/state.toml")).unwrap(), state);
+    assert!(!waiting.join(".rust-mirror-prune.lock").exists());
+}
+#[test]
+fn directory_apply_refuses_private_content_same_size_metadata_and_membership_changes() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
+    let private = roots[1].parent().unwrap().join(".download/state.toml");
+    let bytes = fs::read(&private).unwrap();
+    let mut changed = bytes.clone();
+    changed[0] = if changed[0] == b'x' { b'y' } else { b'x' };
+    fs::write(&private, &changed).unwrap();
+    assert!(apply(&plan, true).is_err());
+    assert!(roots[1].join("snapshot.toml").exists());
+    fs::write(&private, bytes).unwrap();
+    // Even restoring bytes changes metadata and requires another preview.
+    assert!(apply(&plan, true).is_err());
+    let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
+    fs::create_dir(t.path().join("new-unmanaged-folder")).unwrap();
+    assert!(apply(&plan, true).is_err());
+    assert!(roots[1].join("snapshot.toml").exists());
+}
+#[test]
+fn directory_refuses_locked_unknown_and_missing_previous_runs() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let waiting = paused(t.path(), "waiting", Some(&"2".repeat(64)));
+    assert!(preview_directory(&policy(), t.path(), &roots[0], DATE).is_err());
+    fs::write(waiting.join(".sync/state.toml"), b"malformed").unwrap();
+    let catalog = discover(t.path()).unwrap();
+    assert!(catalog.runs.iter().any(|r| r.state == RunState::Unknown));
+    assert!(!catalog.issues.is_empty());
+    let lock = fs::File::options()
+        .read(true)
+        .write(true)
+        .open(waiting.join(".sync.lock"))
+        .unwrap();
+    lock.try_lock().unwrap();
+    assert!(discover(t.path())
+        .unwrap()
+        .runs
+        .iter()
+        .any(|r| r.state == RunState::Locked));
+    assert!(preview_directory(&policy(), t.path(), &roots[0], DATE).is_err());
+    drop(lock);
+    assert!(roots[1].exists());
+}
+#[test]
+fn paused_run_with_completed_marker_is_protected_and_explicit_preview_refuses() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let parent = roots[1].parent().unwrap();
+    fs::remove_file(parent.join(".fetch.lock")).unwrap();
+    // Convert the completed fixture output into a sync layout with an uncommitted report.
+    fs::remove_dir_all(parent.join(".download")).unwrap();
+    fs::create_dir(parent.join(".sync")).unwrap();
+    fs::write(parent.join(".sync.lock"), b"").unwrap();
+    fs::write(
+        parent.join(".sync/state.toml"),
+        format!(
+            "schema=1\nconfig_sha256=\"{}\"\nplans=[\"{}\"]\n",
+            "0".repeat(64),
+            "1".repeat(64)
+        ),
+    )
+    .unwrap();
+    assert!(preview(&policy(), &roots, DATE).is_err());
+    let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
+    assert!(plan.files.is_empty());
+    assert!(apply(&plan, true).unwrap().failure.is_none());
+    assert!(!parent.join(".rust-mirror-prune.lock").exists());
+}
+#[test]
+fn cli_discovery_and_directory_preview_are_serializable() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let out = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+        .args(["generations", "--directory"])
+        .arg(t.path())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let catalog: toml::Value = toml::from_str(std::str::from_utf8(&out.stdout).unwrap()).unwrap();
+    assert_eq!(catalog["generations"].as_array().unwrap().len(), 2);
+    let cfg = t.path().join("config.toml");
+    fs::write(&cfg,format!("{}\n[retention]\npinned_releases=[]\nlatest_stable=0\nnightly_days=0\nprevious_generations=0\nkeep_newest=1\npinned_generations=[]\n",include_str!("../examples/mirror.toml"))).unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+        .arg("prune")
+        .arg("--config")
+        .arg(cfg)
+        .args(["--as-of", DATE, "--directory"])
+        .arg(t.path())
+        .arg("--next-previous")
+        .arg(&roots[0])
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let plan: toml::Value = toml::from_str(std::str::from_utf8(&out.stdout).unwrap()).unwrap();
+    assert!(plan.get("catalog").is_some());
+    assert!(roots[1].exists());
+}
+
+#[test]
+fn directory_apply_refuses_new_locks_and_changed_paused_state_before_deleting() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let waiting = paused(t.path(), "waiting", None);
+    let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
+    let lock = fs::File::options()
+        .read(true)
+        .write(true)
+        .open(waiting.join(".sync.lock"))
+        .unwrap();
+    lock.try_lock().unwrap();
+    assert!(apply(&plan, true).is_err());
+    drop(lock);
+    assert!(roots[1].join("snapshot.toml").is_file());
+    let state = waiting.join(".sync/state.toml");
+    let raw = fs::read_to_string(&state).unwrap();
+    fs::write(&state, raw + "\n").unwrap();
+    assert!(apply(&plan, true).is_err());
+    assert!(roots[1].join("snapshot.toml").is_file());
+}
+#[test]
+fn direct_snapshot_named_mirror_does_not_expand_discovery_to_unmanaged_trees() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let direct = t.path().join("mirror");
+    fs::rename(&roots[1], &direct).unwrap();
+    let unknown = t.path().join("unmanaged");
+    fs::create_dir(&unknown).unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(&roots[0], unknown.join("do-not-follow")).unwrap();
+    let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
+    assert!(plan
+        .catalog
+        .as_ref()
+        .unwrap()
+        .generations
+        .iter()
+        .any(|g| g.path == direct.canonicalize().unwrap()));
+    assert!(apply(&plan, true).unwrap().failure.is_none());
+    assert!(unknown.is_dir());
 }

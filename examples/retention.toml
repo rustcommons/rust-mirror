@@ -14,3 +14,6 @@ pinned_releases = ["1.90.0"]
 latest_stable = 2
 nightly_days = 7
 previous_generations = 1
+# Optional whole-generation protection, additional to the four required fields.
+keep_newest = 2
+pinned_generations = []

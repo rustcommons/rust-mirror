@@ -42,6 +42,7 @@ rust-mirror COMMAND --option VALUE ...
 | [`sync`](#sync) | Resolve/fetch/assemble all selections once | Metadata and missing payloads | New or previous mirror path |
 | [`assemble`](#assemble) | Combine completed local snapshots/history | None | Completed mirror path |
 | [`rustup`](#rustup) | Add bootstrap/self-update endpoints and explicit promotion | Rustup script/checksums/missing installers | Completed mirror path |
+| [`generations`](#generations) | List local generations and managed runs | None, metadata reads only | TOML catalog |
 | [`prune`](#prune) | Preview/explicitly delete whole local generations | None | TOML preview or apply report |
 | [`publish`](#publish) | Upload/GET-verify a fresh remote prefix | HEAD/PUT/GET to selected endpoint | TOML publication report |
 | [`fetch-toolchain`](#fetch-toolchain) | Legacy pinned minimal GNU Linux snapshot | Metadata/payloads | Completed mirror path |
@@ -251,6 +252,18 @@ Generation creation and publication validate their inputs; `fetch --resume`
 revalidates an already completed matching workspace. This is not a general-purpose
 verification command for arbitrary files.
 
+### generations
+
+```sh
+cargo run --locked -- generations --directory ./mirrors
+```
+
+`--directory DIRECTORY` is required and the only option. Read-only metadata discovery
+lists direct snapshot folders and `run/mirror` roots plus completed/in-progress/locked/
+unknown sync/fetch runs, inventory identities/recorded sizes, unmanaged entries and
+classification issues. It does not verify payloads or promise resume compatibility.
+At most 128 immediate entries are inspected; no files/locks/network requests are created.
+
 ### prune
 
 Available from the source checkout for the planned 0.2.0 feature:
@@ -263,11 +276,17 @@ cargo run --locked -- prune --config mirror.toml --as-of 2025-09-22 --generation
 | --- | --- | --- |
 | `--config FILE` | Yes | Existing strict mirror config with explicit `[retention]` policy |
 | `--as-of YYYY-MM-DD` | Yes | Calendar reference date; no implicit clock/mtime policy |
-| `--generation MIRROR` | Yes, repeatable | 1–32 completed schema-2/3 roots in declared newest-first order; first is current and always kept |
+| `--generation MIRROR` | Explicit-root mode, repeatable | 1–32 completed schema-2/3 roots in declared newest-first order; first is current and always kept |
+| `--directory DIR` | Alternative | Discover candidates instead of passing explicit roots; requires `--next-previous` |
+| `--next-previous MIRROR` | With directory | Exact completed root needed for the next sync; always protected |
 | `--dry-run` | No | Read-only exact preview; also the default when neither mode flag is given |
 | `--apply` | No | Explicitly delete approved whole snapshot roots after locks and revalidation; mutually exclusive with dry-run |
 
-No network or remote deletion occurs. Preview returns exact file `path`, `bytes`,
+Use either explicit generation roots or the directory/next-previous pair. Directory
+mode protects paused-run dependencies and binds the managed directory state to apply.
+Busy/unknown runs refuse pruning. Whole private-workspace deletion is deferred.
+
+No network or remote deletion occurs. Preview returns per-folder `folders` sizes, exact file `path`, `bytes`,
 `sha256`, `total_bytes`, kept roots/reasons and frozen inputs/policy. Apply returns
 `deleted_files`, `deleted_bytes`, `removed_generations` and optional `failure`.
 A partial failure returns exit 1 and leaves earlier deletions applied. Read
@@ -282,6 +301,8 @@ The optional top-level `[retention]` table requires all four fields:
 | `latest_stable` | Yes | 0–256 newest distinct numeric stable releases present in the supplied roots |
 | `nightly_days` | Yes | 0–36,600 calendar days including as-of; zero disables this protection |
 | `previous_generations` | Yes | 0–31 roots immediately after current kept for rollback |
+| `keep_newest` | No, default 0 | 0–32 newest roots; minimum protection in addition to current and other rules |
+| `pinned_generations` | No, default empty | Up to 32 unique completed root paths that must be present |
 
 Absent table disables pruning. Protection is additive and keeps every distinct
 recorded platform/component/manifest/bootstrap variant in its newest matching root.
@@ -476,7 +497,8 @@ Generate full type/signature documentation from the source with
 | `selection::collection::assemble`, `ToolchainRecord`, `CollectionSnapshot` | Local retained-generation assembly and records |
 | `selection::sync::run`, `run_forced`, `SyncResult`, `Report`, `SelectionStatus` | One-shot workflow, explicit destructive reset, results/counters |
 | `selection::rustup::prepare` | Complete a new generation with pinned manager endpoints and promotion |
-| `selection::retention::{preview, apply}`, `Policy`, `PrunePlan`, `Deletion`, `KeptGeneration`, `ApplyReport`, `ApplyFailure` | Local generation policy, structured exact preview, explicit validated deletion and partial-failure results |
+| `selection::retention::{discover, preview_directory}`, `Catalog`, `GenerationInfo`, `RunInfo`, `RunState`, `CatalogIssue` | Metadata-only local listing, automatic next-previous/paused dependency protection and directory-bound dry runs |
+| `selection::retention::{preview, apply}`, `Policy`, `PrunePlan`, `Deletion`, `FolderDeletion`, `KeptGeneration`, `ApplyReport`, `ApplyFailure` | Local generation policy, structured exact preview, explicit validated deletion and partial-failure results |
 | `publish::publish`, `publish::Options`, `publish::Report` | Validate/upload/verify a fresh remote prefix |
 
 For example, prepare the second walkthrough configuration through the library:
