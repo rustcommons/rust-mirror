@@ -1,4 +1,9 @@
 //! Verified, no-overwrite publication to a fresh Nexus Raw/static HTTP prefix.
+//!
+//! Pass a completed mirror root and explicit [Options] to [publish]. The library
+//! takes credentials explicitly; only the CLI reads credential environment variables.
+//! It verifies local closure and remote absence before writing and checks GET
+//! hashes afterward. This never provisions Nexus, activates routing or installs tools.
 use crate::{Result, SnapshotFile, ARTIFACT_LIMIT};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -12,18 +17,33 @@ use std::{
 };
 
 /// Credentials are explicit, never read implicitly by the library or included in Debug output.
+/// Explicit connection and authentication settings for [`publish`].
+///
+/// The library never reads CLI credential environment variables. This type has no
+/// `Debug` implementation so credentials are not accidentally formatted.
 pub struct Options {
+    /// Fresh HTTPS prefix for complete mirror paths; no userinfo, query, fragment or redirects.
     pub base_url: String,
+    /// Optional PEM CA bundle for this connection only; defaults to the publisher TLS root store.
     pub ca_file: Option<PathBuf>,
+    /// Optional `(username, password)` for HTTPS Basic authentication; both must be nonempty.
     pub credentials: Option<(String, String)>,
     /// Test-only literal IPv4/IPv6 loopback. Credentials still require HTTPS.
     pub allow_loopback_http: bool,
 }
 #[derive(Serialize)]
+/// Successful remote verification summary.
+///
+/// Returned only after all uploads/GET hashes succeed; it does not mean a Nexus
+/// group was activated, a client installed tools or multiple requests switched atomically.
 pub struct Report {
+    /// Number of uploaded/verified files, including the inventory marker.
     pub files: usize,
+    /// Total bytes read back and verified through GET requests.
     pub remote_bytes_verified: u64,
+    /// SHA-256 of the exact uploaded `snapshot.toml` bytes.
     pub inventory_sha256: String,
+    /// Source inventory schema, not a report-schema version.
     pub schema: u32,
 }
 fn read(path: &Path, limit: u64) -> Result<Vec<u8>> {
@@ -234,6 +254,15 @@ impl Client {
 /// Validate all local content and every destination's absence before the first PUT.
 /// Send the inventory marker last, verify every remote byte, and never retry writes
 /// or activate a server/group. Requires an exclusive publisher and no-redeploy server.
+///
+/// The root must be a completed schema-1/2/3 mirror, not private working state.
+/// The returned [Report] counts the inventory marker too.
+///
+/// # Errors
+/// Refuses invalid local content, URL/CA/credentials, any pre-existing remote path,
+/// TLS/auth/HTTP failures or GET size/hash mismatches. Errors after writes may leave
+/// partial remote data: investigate and use fresh storage. No remote rollback,
+/// retry, resume or force mode is provided.
 pub fn publish(root: &Path, options: &Options) -> Result<Report> {
     let base = base_url(options)?;
     let mut builder = ureq::AgentBuilder::new()

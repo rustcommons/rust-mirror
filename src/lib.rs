@@ -1,4 +1,5 @@
-//! Pinned toolchain snapshots. Upstream manifests are preserved, not rewritten.
+#![doc = include_str!("guide.md")]
+#![warn(missing_docs)]
 pub mod publish;
 mod resume;
 pub mod selection;
@@ -14,15 +15,25 @@ use std::{
     time::Duration,
 };
 
+/// Error result used by synchronous library operations.
+///
+/// Errors include validation/refusal, local I/O and transport failures; callers
+/// should preserve their context rather than treating every failure as retryable.
 pub type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 const ORIGIN: &str = "https://static.rust-lang.org/";
 const METADATA_LIMIT: u64 = 4 * 1024 * 1024;
 const ARTIFACT_LIMIT: u64 = 512 * 1024 * 1024;
 
 #[derive(Debug)]
+/// Options for the legacy minimal GNU Linux snapshot route.
+///
+/// Use [`selection::Config`] for multi-host selections, components and targets.
 pub struct Options {
+    /// Full numeric Rust release, for example `1.90.0`.
     pub release: String,
+    /// Compiler host; this legacy route accepts only `x86_64-unknown-linux-gnu`.
     pub host: String,
+    /// Full numeric Rustup bootstrap version, independent of the compiler release.
     pub rustup_version: String,
     /// Must not already exist. The completed tree is returned as `<output>/mirror`.
     pub output: PathBuf,
@@ -31,6 +42,10 @@ pub struct Options {
 /// Transport boundary shared by the CLI and deterministic tests. Implementations must
 /// refuse oversized responses. Sources are required to honor the supplied URL exactly.
 pub trait Source {
+    /// Write the complete response for exactly `url`, refusing bytes beyond `limit`.
+    ///
+    /// Errors may leave partial output. The caller verifies the planned whole-file hash;
+    /// implementations must not silently substitute another origin or artifact.
     fn fetch(&self, url: &str, output: &mut dyn Write, limit: u64) -> Result<()>;
     /// Append bytes beginning at offset, within the remaining byte budget. Restart must
     /// write nothing. Errors may leave a prefix; only a final whole-file hash proves it.
@@ -50,6 +65,11 @@ pub trait Source {
     }
 }
 
+/// Official upstream HTTPS transport with bounded reads and no redirects.
+///
+/// Create with [`Default::default`]. Requests must remain under
+/// `https://static.rust-lang.org/`. The default request timeout is 180 seconds;
+/// resume uses verified range handling. This does not configure publisher or client trust.
 pub struct HttpsSource(ureq::Agent);
 impl Default for HttpsSource {
     fn default() -> Self {
@@ -98,19 +118,35 @@ fn copy_bounded(input: impl Read, output: &mut dyn Write, limit: u64) -> Result<
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
+/// Legacy schema-1 inventory written to `snapshot.toml`.
+///
+/// For selected or combined generations see [`selection::SelectionSnapshot`] and
+/// [`selection::collection::CollectionSnapshot`]. Parsing alone does not verify files.
 pub struct Snapshot {
+    /// Inventory schema number; the legacy route writes `1`.
     pub schema: u32,
+    /// Pinned numeric Rust compiler release.
     pub release: String,
+    /// GNU Linux x86-64 compiler host.
     pub host: String,
+    /// Pinned bootstrap manager version.
     pub rustup_version: String,
+    /// The legacy route records `minimal`.
     pub profile: String,
+    /// Payload/metadata entries; the inventory itself is not listed.
     pub files: Vec<SnapshotFile>,
 }
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// One relative file path with its expected SHA-256 and byte length.
+///
+/// Consumers must verify actual bytes and path containment; deserialization is not verification.
 pub struct SnapshotFile {
+    /// Forward-slash path relative to the mirror root, not an arbitrary filesystem path.
     pub path: String,
+    /// Expected lowercase hexadecimal SHA-256 of the complete file.
     pub sha256: String,
+    /// Expected complete file size in bytes.
     pub bytes: u64,
 }
 
@@ -359,6 +395,13 @@ fn download(
 /// upload to a server, modify upstream manifests, or claim signature authentication.
 /// An existing output is always refused. Failed attempts may leave the reserved
 /// output directory; they never produce a completed `mirror` tree.
+///
+/// Output must be new with an existing parent. Returns its completed mirror child.
+/// For multiple hosts/components prefer [selection::sync::run].
+///
+/// # Errors
+/// Refuses invalid versions/host, existing output, invalid metadata, unavailable
+/// payloads, size/hash mismatches or transport/local I/O failures.
 pub fn prepare(options: &Options, source: &impl Source) -> Result<PathBuf> {
     version(&options.release)?;
     version(&options.rustup_version)?;

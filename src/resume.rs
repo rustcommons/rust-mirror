@@ -13,8 +13,14 @@ use std::{
 };
 
 #[derive(Debug, PartialEq, Eq)]
+/// Outcome of a [`crate::Source::fetch_from`] request.
+///
+/// This describes transfer progress, not payload authenticity; the caller checks
+/// its expected complete size/hash before publishing a snapshot.
 pub enum Transfer {
+    /// The requested remainder was written; verify the complete file before reuse.
     Complete,
+    /// Range continuation is unavailable or invalid; no bytes were written by this call.
     Restart,
 }
 

@@ -1,4 +1,8 @@
 //! One-shot orchestration. Publication, activation and pruning are separate operations.
+//!
+//! [run] orchestrates a full [Config] with verified local reuse, retained history
+//! and frozen-cohort resume. Always use the returned [SyncResult::mirror] path.
+//! [run_forced] is an explicitly destructive restart and makes no backup.
 use super::{
     collection::{self, CollectionSnapshot, Input, ToolchainRecord},
     Config, Plan, ResolvedPlan, Result,
@@ -13,29 +17,55 @@ use std::{
     sync::Mutex,
 };
 #[derive(Default, Debug, Serialize)]
+/// Diagnostic counters for a successful one-shot synchronization.
+///
+/// Reports are not readiness/freshness certificates. No schema field is serialized;
+/// byte counters describe this operation, not all retained storage or every network byte.
 pub struct Report {
+    /// `created`, `validated` (completed resume), or `unchanged` (previous mirror returned).
     pub status: String,
+    /// Number of configured selections in this cohort.
     pub selections: usize,
+    /// Resolved selection identities used for this run.
     pub frozen: Vec<SelectionStatus>,
+    /// Counted source metadata requests; not a payload or HTTP-byte counter.
     pub metadata_requests: u64,
+    /// Payload bytes written from verified local reuse during this invocation.
     pub local_payload_bytes: u64,
+    /// Payload bytes written from upstream during this invocation, including partial attempts.
     pub upstream_payload_bytes: u64,
+    /// Counted upstream payload transfer attempts, including failed/interrupted ones.
     pub upstream_attempts: u64,
+    /// Number of recorded final payload/metadata files, excluding the inventory itself.
     pub files: usize,
+    /// Sum of recorded final file bytes, excluding the inventory itself.
     pub recorded_bytes: u64,
+    /// Whether this invocation used the explicit resume route.
     pub resumed: bool,
 }
 #[derive(Debug, Serialize)]
+/// Frozen identity of one selection in a synchronization report.
 pub struct SelectionStatus {
+    /// Configuration selection label.
     pub name: String,
+    /// Originally requested selector, which may be a moving channel.
     pub requested: String,
+    /// Frozen numeric or dated-channel selector actually used.
     pub pinned_toolchain: String,
+    /// Resolved numeric Rust compiler release.
     pub release: String,
+    /// Resolved upstream manifest date.
     pub date: String,
 }
 #[derive(Debug)]
+/// Completed local mirror path and diagnostic report.
+///
+/// Always use [`Self::mirror`]: an unchanged run can return the previous generation
+/// without creating the requested new output path.
 pub struct SyncResult {
+    /// Actual completed mirror root; this may point at the supplied previous generation.
     pub mirror: PathBuf,
+    /// Counters/identities for this invocation; not a substitute for file verification.
     pub report: Report,
 }
 #[derive(Deserialize, Serialize)]
@@ -295,6 +325,14 @@ fn result(
 }
 /// Explicitly discard a managed run's progress and mirror, then resolve a fresh
 /// cohort at the same path. No backup is kept; `previous` must not overlap.
+///
+/// Validates managed output and holds its lock while removing old progress and
+/// mirror files. Fresh resolution may fail after old data is gone. New output
+/// behaves like a fresh [run]. Remote storage and previous inputs are untouched.
+///
+/// # Errors
+/// Refuses unrelated/linked/special paths, previous/output overlap, competing
+/// writers, invalid state or any validation/transfer/I/O error from [run].
 pub fn run_forced(
     config: &Config,
     previous: Option<&Path>,
@@ -370,6 +408,19 @@ fn validate_reset_tree(path: &Path, root: &Path, depth: usize, count: &mut usize
 }
 /// Synchronize all configured selections into a new immutable generation. No server
 /// writes, client activation or pruning. Resume requires exact config/previous identity.
+///
+/// Config defines the whole cohort; previous may be a completed schema-2/3 root.
+/// Output must be new unless resume is true, which requires initialized progress
+/// with identical config/previous identity. An unchanged run may return previous
+/// without creating output: always use [SyncResult::mirror].
+///
+/// Fresh runs read live metadata; resumes replay frozen metadata. Missing
+/// payloads still need source access.
+///
+/// # Errors
+/// Refuses invalid inputs, incompatible state, writer conflicts, changed identity,
+/// unavailable selections, resource/hash failures or transport/local I/O errors.
+/// Failures can leave private resumable state.
 pub fn run(
     config: &Config,
     previous: Option<&Path>,

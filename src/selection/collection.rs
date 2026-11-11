@@ -1,4 +1,8 @@
 //! Immutable multi-version generations assembled from verified local snapshots.
+//!
+//! [assemble] verifies completed selected/collection roots, retains previous
+//! history and copies a new generation. It does not download missing archives or
+//! mix bootstrap versions. See [CollectionSnapshot] for inventory fields.
 use super::{parsed, read_file, Selection, SelectionSnapshot, Toolchain};
 use crate::{
     checksum, safe_path, sha256, valid_hash, Result, SnapshotFile, ARTIFACT_LIMIT, METADATA_LIMIT,
@@ -13,20 +17,33 @@ const INVENTORY_LIMIT: u64 = 1024 * 1024;
 const FILE_LIMIT: usize = 4096;
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// One retained selection/release in a combined generation.
 pub struct ToolchainRecord {
+    /// Original named selection and its platforms/components.
     pub selection: Selection,
+    /// Resolved full numeric compiler release.
     pub release: String,
+    /// Original upstream manifest date.
     pub date: String,
+    /// Frozen numeric or dated-channel selector retained for clients.
     pub pinned_toolchain: String,
 }
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// Schema-3 inventory for an immutable multi-toolchain generation.
+///
+/// The inventory describes selected files, not every artifact mentioned by upstream.
+/// Callers must use the assembly/publication validators rather than trusting parsed fields.
 pub struct CollectionSnapshot {
+    /// Inventory schema number; collections use `3`.
     pub schema: u32,
+    /// Bootstrap manager version shared by the generation.
     pub rustup_version: String,
+    /// Retained selections/releases, bounded to 256 records.
     pub toolchains: Vec<ToolchainRecord>,
     /// SHA-256 identities of directly supplied inventories, including the previous generation.
     pub inputs: Vec<String>,
+    /// Payload/metadata entries, bounded to 4,096 files; excludes `snapshot.toml`.
     pub files: Vec<SnapshotFile>,
 }
 #[derive(Clone)]
@@ -322,6 +339,15 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
 }
 /// Assemble a new generation. New inputs may replace only stable/beta/nightly root
 /// metadata from `previous`; immutable path conflicts always refuse. No input is edited.
+///
+/// Accepts 1–32 completed schema-2/3 roots plus optional previous history.
+/// All inputs must share their bootstrap manager version. Output must be new
+/// with an existing parent; max_bytes bounds recorded/copy bytes (1 byte–100 GiB).
+/// Returns the completed mirror child. This performs no network operations.
+///
+/// # Errors
+/// Refuses malformed/corrupt/incompatible inputs, conflicting metadata,
+/// overlapping/existing output, resource limits or local I/O failures.
 pub fn assemble(
     inputs: &[PathBuf],
     previous: Option<&Path>,
