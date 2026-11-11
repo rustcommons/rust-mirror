@@ -8,6 +8,7 @@ use std::{io::Write, path::Path, sync::Mutex};
 fn config() -> Config {
     Config {
         schema: 1,
+        retention: None,
         rustup_version: "1.28.2".into(),
         max_download_bytes: 10 * 1024 * 1024,
         selections: vec!["project-a", "project-b"]

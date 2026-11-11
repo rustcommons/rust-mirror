@@ -3,7 +3,7 @@
 `assemble` combines completed frozen selections into one static distribution tree.
 It works entirely from local files: resolve/download each selection first, then
 assemble a new generation. Rustup remains the client. The [one-shot sync command](SYNC.md) automates these steps. Automatic scheduling,
-channel resolution during assembly, retention/pruning and in-place server updates
+channel resolution during assembly, in-generation compaction and in-place server updates
 are not implemented.
 
 ## Prepare and combine selections
@@ -118,3 +118,10 @@ harness refuses ambiguity; ordinary clients can select the recorded pinned selec
 directly. This is not all-platform or old-system qualification.
 
 [The dated record](evals/2026-11-10-multi-version.md) lists exact cases and limits.
+
+## Explicit local pruning (unreleased)
+
+[Retention](RETENTION.md) can preview and explicitly delete whole superseded local
+schema-2/3 snapshot roots, while protecting pins, newest stable releases, recent
+nightlies and rollback generations. It does not edit kept collections; additive
+history within a protected generation remains. Assembly itself never prunes.

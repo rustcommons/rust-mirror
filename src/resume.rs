@@ -31,6 +31,7 @@ pub(crate) fn http_range(
     offset: u64,
     limit: u64,
 ) -> Result<Transfer> {
+    crate::events::check()?;
     let mut request = agent.get(url).set("Accept-Encoding", "identity");
     if offset > 0 {
         request = request.set("Range", &format!("bytes={offset}-"));
@@ -69,7 +70,11 @@ pub(crate) fn http_range(
             || total > ARTIFACT_LIMIT
             || total - offset > limit
         {
-            return Err("resume range exceeds expected offset or byte budget".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "resume range exceeds expected offset or byte budget",
+            )
+            .into());
         }
         Some(total - offset)
     } else {
@@ -80,19 +85,35 @@ pub(crate) fn http_range(
     };
     let length = response.header("Content-Length").map(number).transpose()?;
     if length.is_some_and(|n| n > limit) || expected.zip(length).is_some_and(|(a, b)| a != b) {
-        return Err("response length exceeds budget or disagrees with range".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "response length exceeds budget or disagrees with range",
+        )
+        .into());
     }
+    let total = expected.or(length).and_then(|n| n.checked_add(offset));
+    crate::events::artifact(
+        url.strip_prefix(ORIGIN).unwrap_or("HTTP artifact"),
+        if offset > 0 { "resume" } else { "download" },
+        offset,
+        total,
+    )?;
     let mut reader = response.into_reader();
     let mut bytes = 0;
     let mut buffer = [0; 64 * 1024];
     loop {
+        crate::events::check()?;
         let n = reader.read(&mut buffer)?;
         if n == 0 {
             break;
         }
         bytes += n as u64;
         if bytes > limit || expected.is_some_and(|max| bytes > max) {
-            return Err("response exceeds download budget".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "response exceeds download budget",
+            )
+            .into());
         }
         out.write_all(&buffer[..n])?;
     }
@@ -124,22 +145,35 @@ fn directory(path: &Path) -> Result<()> {
 }
 pub(crate) fn hash_file(path: &Path, limit: u64) -> Result<(u64, String)> {
     if regular(path)?.ok_or("missing download file")? > limit {
-        return Err("stored download exceeds byte budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "stored download exceeds byte budget",
+        )
+        .into());
     }
     let mut f = File::open(path)?;
+    let label = path.to_string_lossy();
+    let total = fs::metadata(path)?.len();
+    crate::events::hashing(&label, 0, Some(total))?;
     let mut count = 0;
     let mut hash = Sha256::new();
     let mut buf = [0; 64 * 1024];
     loop {
+        crate::events::check()?;
         let n = f.read(&mut buf)?;
         if n == 0 {
             break;
         }
         count += n as u64;
         if count > limit {
-            return Err("stored download grew beyond budget".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "stored download grew beyond budget",
+            )
+            .into());
         }
         hash.update(&buf[..n]);
+        crate::events::hashing(&label, count, Some(total))?;
     }
     Ok((count, hex::encode(hash.finalize())))
 }
@@ -160,6 +194,7 @@ pub(crate) fn validate_tree(root: &Path, files: &BTreeSet<PathBuf>) -> Result<()
     let mut stack = vec![root.to_path_buf()];
     let mut visited = 0;
     while let Some(dir) = stack.pop() {
+        crate::events::check()?;
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             visited += 1;
@@ -210,7 +245,9 @@ impl Session {
         }
         let lock = output.join(".fetch.lock");
         if regular(&lock)?.is_some_and(|n| n != 0) {
-            return Err("invalid download lock file".into());
+            return Err(
+                crate::Error::new(crate::ErrorKind::Locked, "invalid download lock file").into(),
+            );
         }
         let lock = File::options()
             .read(true)
@@ -218,8 +255,12 @@ impl Session {
             .create(true)
             .truncate(false)
             .open(lock)?;
-        lock.try_lock()
-            .map_err(|_| "another fetch owns this output, or filesystem locking is unavailable")?;
+        lock.try_lock().map_err(|_| {
+            crate::Error::new(
+                crate::ErrorKind::Locked,
+                "another fetch owns this output, or filesystem locking is unavailable",
+            )
+        })?;
         let root = output.join(".download");
         let state = State {
             schema: 1,
@@ -228,12 +269,23 @@ impl Session {
         if resume {
             directory(&root)?;
             let file = root.join("state.toml");
-            if regular(&file)?.ok_or("missing resume identity")? > 4096 {
-                return Err("oversized resume identity".into());
+            if regular(&file)?.ok_or_else(|| {
+                crate::Error::new(crate::ErrorKind::ResumeMismatch, "missing resume identity")
+            })? > 4096
+            {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::ResumeMismatch,
+                    "oversized resume identity",
+                )
+                .into());
             }
             let saved: State = toml::from_str(&fs::read_to_string(file)?)?;
             if saved != state {
-                return Err("output belongs to a different frozen plan".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::ResumeMismatch,
+                    "output belongs to a different frozen plan",
+                )
+                .into());
             }
         } else {
             fs::create_dir(&root)?;
@@ -298,6 +350,7 @@ impl Session {
             if let Ok((n, h)) = hash_file(&ready, limit) {
                 if h == a.sha256 {
                     eprintln_status("Reuse", a, n);
+                    crate::events::artifact(&a.path, "reuse", n, Some(n))?;
                     return Ok((ready, n));
                 }
             }
@@ -311,6 +364,7 @@ impl Session {
         if offset > 0 {
             let (n, h) = hash_file(&part, limit)?;
             if h == a.sha256 {
+                crate::events::check()?;
                 fs::rename(&part, &ready)?;
                 return Ok((ready, n));
             }
@@ -323,9 +377,19 @@ impl Session {
             .open(&part)?;
         file.seek(SeekFrom::End(0))?;
         eprintln_status(if offset > 0 { "Resume" } else { "Download" }, a, offset);
+        crate::events::artifact(
+            &a.path,
+            if offset > 0 { "resume" } else { "download" },
+            offset,
+            None,
+        )?;
         let transfer = source.fetch_from(
             &format!("{ORIGIN}{}", a.path),
-            &mut file,
+            &mut crate::events::ProgressWriter {
+                inner: &mut file,
+                path: a.path.clone(),
+                count: offset,
+            },
             offset,
             limit - offset,
         );
@@ -335,7 +399,17 @@ impl Session {
             file.set_len(0)?;
             file.seek(SeekFrom::Start(0))?;
             eprintln_status("Restart", a, 0);
-            let transfer = source.fetch_from(&format!("{ORIGIN}{}", a.path), &mut file, 0, limit);
+            crate::events::artifact(&a.path, "restart", 0, None)?;
+            let transfer = source.fetch_from(
+                &format!("{ORIGIN}{}", a.path),
+                &mut crate::events::ProgressWriter {
+                    inner: &mut file,
+                    path: a.path.clone(),
+                    count: 0,
+                },
+                0,
+                limit,
+            );
             file.sync_all()?;
             if transfer? != Transfer::Complete {
                 return Err("source cannot restart download".into());
@@ -349,6 +423,7 @@ impl Session {
                 format!("download checksum mismatch; discarded partial: {}", a.path).into(),
             );
         }
+        crate::events::check()?;
         fs::rename(&part, &ready)?;
         Ok((ready, n))
     }

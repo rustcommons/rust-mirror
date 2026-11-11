@@ -52,6 +52,7 @@ fn make(
         .collect::<BTreeMap<_, _>>();
     let c = Config {
         schema: 1,
+        retention: None,
         rustup_version: rustup.into(),
         max_download_bytes: BUDGET,
         selections: vec![Selection {

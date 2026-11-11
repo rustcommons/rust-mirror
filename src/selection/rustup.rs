@@ -42,10 +42,18 @@ pub fn prepare(
 ) -> Result<PathBuf> {
     crate::version(rustup_version)?;
     if max_bytes == 0 || max_bytes > 100 * 1024 * 1024 * 1024 || channels.len() > 3 {
-        return Err("invalid Rustup generation budget/channel count".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "invalid Rustup generation budget/channel count",
+        )
+        .into());
     }
     if output.symlink_metadata().is_ok() {
-        return Err("Rustup output already exists; select a new path".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::OutputExists,
+            "Rustup output already exists; select a new path",
+        )
+        .into());
     }
     let parent = output
         .parent()
@@ -59,11 +67,16 @@ pub fn prepare(
     }
     let input = collection::read_input(snapshot)?;
     let initial_bytes = input.files.values().try_fold(0u64, |n, e| {
-        n.checked_add(e.bytes)
-            .ok_or("Rustup input byte count overflow")
+        n.checked_add(e.bytes).ok_or_else(|| {
+            crate::Error::new(crate::ErrorKind::Budget, "Rustup input byte count overflow")
+        })
     })?;
     if initial_bytes > max_bytes {
-        return Err("Rustup input already exceeds generation budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "Rustup input already exceeds generation budget",
+        )
+        .into());
     }
     let hosts: BTreeSet<_> = input
         .records
@@ -71,7 +84,9 @@ pub fn prepare(
         .flat_map(|r| r.selection.hosts.iter().cloned())
         .collect();
     if hosts.is_empty() || hosts.len() > 64 {
-        return Err("Rustup host limit exceeded".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Budget, "Rustup host limit exceeded").into(),
+        );
     }
     let mut metadata = BTreeMap::new();
     let catalog = format!("schema-version = '1'\nversion = '{rustup_version}'\n").into_bytes();
@@ -210,10 +225,23 @@ pub fn prepare(
         let dest = root.join(name);
         fs::create_dir_all(dest.parent().unwrap())?;
         let mut out = File::create(&dest)?;
-        crate::copy_bounded(File::open(&entry.source)?, &mut out, entry.bytes)?;
+        crate::events::artifact(&name.clone(), "copy", 0, Some(entry.bytes))?;
+        crate::copy_bounded(
+            File::open(&entry.source)?,
+            &mut crate::events::ProgressWriter {
+                inner: &mut out,
+                path: name.clone(),
+                count: 0,
+            },
+            entry.bytes,
+        )?;
         out.sync_all()?;
         if crate::resume::hash_file(&dest, ARTIFACT_LIMIT)? != (entry.bytes, entry.sha256.clone()) {
-            return Err("input changed during Rustup generation copy".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "input changed during Rustup generation copy",
+            )
+            .into());
         }
         record(
             &mut entries,
@@ -231,7 +259,11 @@ pub fn prepare(
         {
             let path = root.join(&archive);
             if entries.contains_key(&archive) {
-                return Err("immutable Rustup archive checksum conflict".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "immutable Rustup archive checksum conflict",
+                )
+                .into());
             }
             fs::create_dir_all(path.parent().unwrap())?;
             let mut out = File::create(&path)?;
@@ -243,7 +275,11 @@ pub fn prepare(
             out.sync_all()?;
             let (n, actual) = crate::resume::hash_file(&path, ARTIFACT_LIMIT)?;
             if actual != expected {
-                return Err("Rustup installer checksum mismatch".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "Rustup installer checksum mismatch",
+                )
+                .into());
             }
             record(&mut entries, &archive, n, actual, &mut total, max_bytes)?;
         }
@@ -253,7 +289,16 @@ pub fn prepare(
         let path = root.join(&current);
         fs::create_dir_all(path.parent().unwrap())?;
         let mut out = File::create(&path)?;
-        crate::copy_bounded(File::open(root.join(&archive))?, &mut out, n)?;
+        crate::events::artifact(&current, "copy", 0, Some(n))?;
+        crate::copy_bounded(
+            File::open(root.join(&archive))?,
+            &mut crate::events::ProgressWriter {
+                inner: &mut out,
+                path: current.clone(),
+                count: 0,
+            },
+            n,
+        )?;
         out.sync_all()?;
     }
     for (name, data) in metadata {
@@ -283,11 +328,16 @@ pub fn prepare(
     };
     let raw = toml::to_string_pretty(&inventory)?;
     if raw.len() > 1024 * 1024 {
-        return Err("Rustup inventory exceeds byte limit".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "Rustup inventory exceeds byte limit",
+        )
+        .into());
     }
     super::write_new(&root.join("snapshot.toml"), raw.as_bytes())?;
     collection::read_input(root)?;
     let completed = output.join("mirror");
+    crate::events::check()?;
     fs::rename(root, &completed)?;
     Ok(completed)
 }
@@ -303,9 +353,13 @@ fn record(
     *total = total
         .checked_sub(prior)
         .and_then(|v| v.checked_add(bytes))
-        .ok_or("Rustup byte count overflow")?;
+        .ok_or_else(|| crate::Error::new(crate::ErrorKind::Budget, "Rustup byte count overflow"))?;
     if *total > budget || (!files.contains_key(name) && files.len() >= 4096) {
-        return Err("Rustup generation exceeds byte/file budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "Rustup generation exceeds byte/file budget",
+        )
+        .into());
     }
     files.insert(
         name.into(),
@@ -316,4 +370,21 @@ fn record(
         },
     );
     Ok(())
+}
+
+/// Finish a generation with progress/cancel and independent heartbeats; inputs are preserved.
+/// # Errors
+/// Returns typed finishing/cancellation errors. Retry interrupted staging with a new output.
+pub fn prepare_with_control(
+    snapshot: &Path,
+    version: &str,
+    channels: &[String],
+    output: &Path,
+    max_bytes: u64,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<PathBuf> {
+    control.run("rustup", || {
+        prepare(snapshot, version, channels, output, max_bytes, source)
+    })
 }

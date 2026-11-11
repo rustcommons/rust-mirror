@@ -5,6 +5,7 @@
 //! transfer its payloads. For all selections together use [sync::run], then
 //! complete Rustup endpoints with [rustup::prepare].
 pub mod collection;
+pub mod retention;
 pub mod rustup;
 pub mod sync;
 use crate::{
@@ -43,6 +44,9 @@ pub struct Config {
     pub max_download_bytes: u64,
     /// One through 32 uniquely named selections.
     pub selections: Vec<Selection>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Optional explicit generation retention; absent disables pruning. Sync never prunes.
+    pub retention: Option<retention::Policy>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -79,7 +83,9 @@ fn atom(s: &str) -> Result<()> {
 }
 fn unique(values: &[String], limit: usize) -> Result<()> {
     if values.len() > limit {
-        return Err("selection list exceeds budget".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Budget, "selection list exceeds budget").into(),
+        );
     }
     let mut seen = BTreeSet::new();
     for value in values {
@@ -222,10 +228,17 @@ impl Config {
         }
         version(&self.rustup_version)?;
         if self.max_download_bytes == 0 || self.max_download_bytes > 100 * 1024 * 1024 * 1024 {
-            return Err("download budget must be 1 byte to 100 GiB".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "download budget must be 1 byte to 100 GiB",
+            )
+            .into());
         }
         if self.selections.is_empty() || self.selections.len() > 32 {
             return Err("select 1 to 32 named selections".into());
+        }
+        if let Some(policy) = &self.retention {
+            policy.validate()?;
         }
         let mut names = BTreeSet::new();
         for s in &self.selections {
@@ -254,7 +267,9 @@ fn read_file(path: &Path, limit: u64) -> Result<Vec<u8>> {
     let mut data = Vec::new();
     File::open(path)?.take(limit + 1).read_to_end(&mut data)?;
     if data.len() as u64 > limit {
-        return Err("local file exceeds budget".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Budget, "local file exceeds budget").into(),
+        );
     }
     Ok(data)
 }
@@ -332,7 +347,11 @@ fn parsed(raw: &[u8], spec: &Toolchain) -> Result<Manifest> {
         return Err("unsupported manifest schema or date".into());
     }
     if spec.date.as_ref().is_some_and(|d| d != &m.date) {
-        return Err("manifest date differs from requested date".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Integrity,
+            "manifest date differs from requested date",
+        )
+        .into());
     }
     let release = m
         .pkg
@@ -393,7 +412,9 @@ fn add_artifact(map: &mut BTreeMap<String, Artifact>, a: Artifact) -> Result<()>
         map.insert(a.path.clone(), a);
     }
     if map.len() > MAX_FILES {
-        return Err("plan exceeds artifact budget".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Budget, "plan exceeds artifact budget").into(),
+        );
     }
     Ok(())
 }
@@ -403,7 +424,9 @@ fn build_plan(selection: &Selection, rustup: &str, budget: u64, meta: &Metadata)
     let spec = Toolchain::parse(&selection.toolchain)?;
     let m = parsed(&meta.manifest, &spec)?;
     if sha256(&meta.manifest) != checksum(&meta.checksum)? {
-        return Err("manifest checksum mismatch".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Integrity, "manifest checksum mismatch").into(),
+        );
     }
     let mut artifacts = BTreeMap::new();
     let root = m.pkg.get("rust").ok_or("missing rust package")?;
@@ -470,7 +493,13 @@ fn build_plan(selection: &Selection, rustup: &str, budget: u64, meta: &Metadata)
                 let (url, hash) = match (url, hash) {
                     (Some(url), Some(hash)) => (url, hash),
                     (None, None) => continue,
-                    _ => return Err("archive URL/checksum pair is incomplete".into()),
+                    _ => {
+                        return Err(crate::Error::new(
+                            crate::ErrorKind::Integrity,
+                            "archive URL/checksum pair is incomplete",
+                        )
+                        .into())
+                    }
                 };
                 found = true;
                 let path = url.strip_prefix(ORIGIN).ok_or("foreign artifact origin")?;
@@ -494,10 +523,12 @@ fn build_plan(selection: &Selection, rustup: &str, budget: u64, meta: &Metadata)
                 return Err("available component has no downloadable archives".into());
             }
         }
-        let sha = meta
-            .bootstraps
-            .get(host)
-            .ok_or("missing bootstrap checksum metadata")?;
+        let sha = meta.bootstraps.get(host).ok_or_else(|| {
+            crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "missing bootstrap checksum metadata",
+            )
+        })?;
         let path = bootstrap_path(rustup, host);
         add_artifact(
             &mut artifacts,
@@ -552,7 +583,11 @@ fn metadata(toolchain: &str, source: &impl Source) -> Result<Metadata> {
     let hash = bytes(source, &format!("{path}.sha256"), 4096)?;
     let raw = bytes(source, &path, METADATA_LIMIT)?;
     if sha256(&raw) != checksum(&hash)? {
-        return Err("upstream manifest checksum mismatch; retry resolution".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Integrity,
+            "upstream manifest checksum mismatch; retry resolution",
+        )
+        .into());
     }
     parsed(&raw, &spec)?;
     let sig = bytes(source, &format!("{path}.asc"), 64 * 1024)?;
@@ -609,8 +644,14 @@ pub fn resolve(config: &Config, name: &str, source: &impl Source) -> Result<Reso
     })
 }
 fn write_new(path: &Path, data: &[u8]) -> Result<()> {
+    crate::events::artifact(&path.to_string_lossy(), "copy", 0, Some(data.len() as u64))?;
     let mut f = File::options().write(true).create_new(true).open(path)?;
-    f.write_all(data)?;
+    crate::events::ProgressWriter {
+        inner: &mut f,
+        path: path.to_string_lossy().into(),
+        count: 0,
+    }
+    .write_all(data)?;
     f.sync_all()?;
     Ok(())
 }
@@ -673,6 +714,7 @@ pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
         rustup_version: plan.rustup_version.clone(),
         max_download_bytes: plan.max_download_bytes,
         selections: vec![plan.selection.clone()],
+        retention: None,
     }
     .validate()?;
     let mut meta = Metadata {
@@ -716,7 +758,11 @@ pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
         &meta,
     )? != plan
     {
-        return Err("frozen plan differs from cached metadata; resolve a new plan".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Integrity,
+            "frozen plan differs from cached metadata; resolve a new plan",
+        )
+        .into());
     }
     Ok(ResolvedPlan {
         plan,
@@ -844,7 +890,11 @@ fn fetch_with_resume(
             let (n, h) =
                 crate::resume::hash_file(&completed.join(&a.path), remaining.min(ARTIFACT_LIMIT))?;
             if h != a.sha256 {
-                return Err("completed snapshot changed; refusing overwrite".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "completed snapshot changed; refusing overwrite",
+                )
+                .into());
             }
             remaining -= n;
             files.push(SnapshotFile {
@@ -857,7 +907,11 @@ fn fetch_with_resume(
             let (n, h) =
                 crate::resume::hash_file(&completed.join(path), remaining.min(ARTIFACT_LIMIT))?;
             if n != data.len() as u64 || h != sha256(data) {
-                return Err("completed metadata changed; refusing overwrite".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "completed metadata changed; refusing overwrite",
+                )
+                .into());
             }
             remaining -= n;
             files.push(SnapshotFile {
@@ -868,7 +922,11 @@ fn fetch_with_resume(
         }
         files.sort_by(|a, b| a.path.cmp(&b.path));
         if actual != snapshot(plan, files) {
-            return Err("completed inventory differs from frozen plan".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "completed inventory differs from frozen plan",
+            )
+            .into());
         }
         session.cleanup()?;
         return Ok(completed);
@@ -879,7 +937,11 @@ fn fetch_with_resume(
     for a in &plan.artifacts {
         let limit = remaining.min(ARTIFACT_LIMIT);
         if limit == 0 {
-            return Err("snapshot download budget exhausted".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "snapshot download budget exhausted",
+            )
+            .into());
         }
         let (path, n) = session.retrieve(a, source, limit)?;
         let destination = staging.join(&a.path);
@@ -890,11 +952,24 @@ fn fetch_with_resume(
             hash: sha2::Sha256::default(),
             bytes: 0,
         };
-        crate::copy_bounded(File::open(path)?, &mut writer, limit)?;
+        crate::events::artifact(&a.path.clone(), "copy", 0, Some(n))?;
+        crate::copy_bounded(
+            File::open(path)?,
+            &mut crate::events::ProgressWriter {
+                inner: &mut writer,
+                path: a.path.clone(),
+                count: 0,
+            },
+            limit,
+        )?;
         let count = writer.bytes;
         let h = hex::encode(sha2::Digest::finalize(writer.hash));
         if count != n || h != a.sha256 {
-            return Err("cached artifact changed while assembling".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "cached artifact changed while assembling",
+            )
+            .into());
         }
         file.sync_all()?;
         remaining -= count;
@@ -906,7 +981,11 @@ fn fetch_with_resume(
     }
     for (path, data) in metadata {
         if data.len() as u64 > remaining {
-            return Err("snapshot budget exhausted by metadata".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "snapshot budget exhausted by metadata",
+            )
+            .into());
         }
         remaining -= data.len() as u64;
         crate::save(&staging, &path, data, &mut files)?;
@@ -919,6 +998,7 @@ fn fetch_with_resume(
     if fs::symlink_metadata(&completed).is_ok() {
         return Err("completed tree unexpectedly exists".into());
     }
+    crate::events::check()?;
     fs::rename(&staging, &completed)?;
     session.cleanup()?;
     Ok(completed)
@@ -1119,6 +1199,7 @@ pub fn import_toolchain(
         rustup_version: rustup.into(),
         max_download_bytes: default_budget(),
         selections: vec![selection],
+        retention: None,
     };
     config.validate()?;
     Ok(config)
@@ -1130,4 +1211,27 @@ pub fn import_toolchain(
 pub fn write_config(config: &Config, path: &Path) -> Result<()> {
     config.validate()?;
     write_new(path, toml::to_string_pretty(config)?.as_bytes())
+}
+
+/// Fetch with structured progress, independent heartbeats and cooperative cancellation.
+/// # Errors
+/// Returns typed fetch/refusal/cancellation errors; initialized private progress remains resumable.
+pub fn fetch_with_control(
+    plan: &Path,
+    output: &Path,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<PathBuf> {
+    control.run("fetch", || fetch(plan, output, source))
+}
+/// Resume a frozen fetch with progress and cancellation; never changes the saved identity.
+/// # Errors
+/// Returns typed resume/refusal/cancellation errors, preserving private progress.
+pub fn fetch_resuming_with_control(
+    plan: &Path,
+    output: &Path,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<PathBuf> {
+    control.run("fetch resume", || fetch_resuming(plan, output, source))
 }

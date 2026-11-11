@@ -80,7 +80,7 @@ budgets, path/hash/schema refusal and existing-output preservation. Exercise the
 publisher against both inventory schemas. The real-Nexus harness accepts selected/collection pairs; distinguish the original
 schema 1 proof from current expanded results in the lifecycle evaluation.
 Do not describe HTTP-fixture evidence as an actual Nexus pass.
-Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
+Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling and in-generation compaction,
 independent signature validation and foreign-platform execution gaps explicit.
 
 ## Native publication validation
@@ -120,7 +120,7 @@ hash copy-time bytes and enforce file/record/inventory/final-byte bounds. Test
 multi-version retention, alias history, immutable/new-input conflicts, missing
 payloads, budgets and symbolic-link refusal. Keep publisher/proof schemas and
 requirements aligned. Record actual Nexus schema 2/3 and explicit Raw-group client
-activation separately from local assembly. Scheduling/pruning remain unimplemented. Use bounded
+activation separately from local assembly. Scheduling remains unimplemented; whole-generation pruning is separate. Use bounded
 local fixtures and reused baseline files before downloading another toolchain.
 
 ## One-shot sync and demos
@@ -145,9 +145,55 @@ helpers. Demo scripts must use new private output, distinguish synthetic fixture
 from actual archives, and preserve user homes/inputs. Record counter semantics and
 resource/platform limits in `docs/SYNC.md`; no new dependencies without approval.
 
+## Retention and pruning
+
+The owner authorized local retention/pruning for the unreleased 0.2.0 feature on
+2026-11-11. Follow [the retention contract](docs/RETENTION.md) and stable trace.
+Keep policies explicit: pinned releases, latest stable count, nightly calendar days
+and preceding rollback generations. Offline clients cannot discover protection for us.
+Keep current first and always protected; preserve distinct protected closures.
+For directory-backed GUI plans, list generations/runs without payload verification,
+retain the exact next-previous anchor and paused-run dependencies, and bind apply to
+managed content/state and membership. Refuse locked/unknown runs; preserve incomplete
+and private workspaces. Keep mtime ordering distinct from active routing. General observer/cancel/events support is part of 0.2.0; full workspace cleanup
+remains separate work.
+
+Preview must be read-only and return exact file paths/sizes and keep reasons.
+Apply requires explicit authorization, writer locks and complete plan revalidation;
+return structured successful-prefix/failure results for GUI callers. Never recursively
+remove enclosing workspaces, unlisted paths or retained-generation contents.
+Test policy boundaries, immutable/schema/closure/path/hash refusal, stale plans,
+locks, partial failures, CLI opt-in and both CI platforms. Keep advisory-lock,
+whole-generation granularity and interrupted-deletion recovery limits explicit.
+
+No real Nexus deletion is authorized. Remote pruning remains deferred until active
+routing/client/concurrent-writer protection can be established and separately approved.
+The owner authorized 0.2.0 publication on 2026-11-11 after implementation, merge and
+full release qualification. Include retention plus protocol/observer/cancel/typed
+errors and no-write publish preflight; follow docs/RELEASING.md.
+
+## Protocol 1 and controlled operations
+
+Maintain [docs/EVENTS.md](docs/EVENTS.md) as the stable CLI/GUI wire contract. Keep
+stdout JSON-only in events mode, hello first, one final typed result last and an
+independent heartbeat during blocked work. Include stage/operation and progress
+sequence; missed heartbeats require the GUI's own watchdog, not optimistic status.
+Existing human mode and convenience library calls remain usable. Controlled calls
+use shared observers and cancellation tokens; check transfer/copy/hash/delete loops.
+Keep initialized frozen fetch/sync state resumable; document new-output and partial
+remote/deletion recovery accurately. Signal handlers belong only to the binary and
+must perform no I/O/allocation. Do not add dependencies without owner approval.
+
+Preflight must perform no PUT/DELETE, validate local closure and all remote absences,
+and distinguish HEAD access from future PUT permission. Publish repeats checks and
+verifies uploads. Test JSON framing/escaping, nulls, monotonic sequence, long blocked
+I/O heartbeats, stdin record/EOF and signals, cancel/resume and typed TLS/auth/refusal
+outcomes. Preserve scoped disposable Nexus and four-host qualification gates.
+
 ## User-facing documentation
 
-The owner authorized docs-only 0.1.1 publication on 2026-11-11. Maintain
+The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
+maintained guides; every exported item still needs meaningful rustdoc. Maintain
 `src/guide.md` as the packaged docs.rs walkthrough included by `src/lib.rs`. Every
 exported item/field needs meaningful rustdoc. Keep missing-doc warnings enabled;
 compile examples and deny rustdoc warnings during release checks. Public README/API

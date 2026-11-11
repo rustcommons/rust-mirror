@@ -157,7 +157,8 @@ and [actual Nexus boundaries](NEXUS-INTEGRATION.md).
   plan. Treat transferred plans/snapshots as trusted administrative inputs.
 - Native lifecycle qualification is tracked separately in the [current record](evals/2026-11-11-rustup-lifecycle.md);
   metadata availability never proves an untested host works. Native prerequisites,
-  Cargo crate mirroring, GUI, scheduling and pruning are not supplied. Rustup
+  Cargo crate mirroring, GUI and scheduling are not supplied. Separate
+  [unreleased local pruning](RETENTION.md) does not compact retained snapshots. Rustup
   self-update requires the explicit [finishing stage](RUSTUP.md).
 
 ## Offline proof

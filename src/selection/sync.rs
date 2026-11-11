@@ -140,14 +140,28 @@ impl<S: Source> Source for PayloadSource<'_, S> {
         if let Some(path) = self.known.get(hash) {
             let (n, actual) = crate::resume::hash_file(path, ARTIFACT_LIMIT)?;
             if &actual != hash {
-                return Err("verified local input changed during sync".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "verified local input changed during sync",
+                )
+                .into());
             }
             if offset > n {
                 return Ok(Transfer::Restart);
             }
             if n - offset > limit {
-                return Err("local reuse exceeds remaining workspace budget".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Budget,
+                    "local reuse exceeds remaining workspace budget",
+                )
+                .into());
             }
+            crate::events::artifact(
+                url.strip_prefix(crate::ORIGIN).unwrap_or("local artifact"),
+                "reuse",
+                offset,
+                Some(n),
+            )?;
             let mut file = File::open(path)?;
             file.seek(SeekFrom::Start(offset))?;
             let mut writer = Counter {
@@ -168,8 +182,10 @@ impl<S: Source> Source for PayloadSource<'_, S> {
         }
     }
 }
-fn stage(message: &str) {
+fn stage(message: &str) -> Result<()> {
+    crate::events::stage(message)?;
     let _ = writeln!(io::stderr().lock(), "sync: {message}");
+    Ok(())
 }
 fn real_dir(path: &Path) -> Result<()> {
     let m = fs::symlink_metadata(path)?;
@@ -227,7 +243,8 @@ fn read_inventory(path: &Path) -> Result<CollectionSnapshot> {
 }
 fn checked_total(input: &Input) -> Result<u64> {
     Ok(input.files.values().try_fold(0u64, |n, e| {
-        n.checked_add(e.bytes).ok_or("sync byte count overflow")
+        n.checked_add(e.bytes)
+            .ok_or_else(|| crate::Error::new(crate::ErrorKind::Budget, "sync byte count overflow"))
     })?)
 }
 /// Detect inconsistencies before payload download. `true` means every requested record
@@ -257,7 +274,7 @@ fn preflight(plans: &[ResolvedPlan], old: Option<&Input>, budget: u64) -> Result
             .collect::<Vec<_>>();
         for (path, hash) in entries {
             if desired.get(&path).is_some_and(|h| h != &hash) {
-                return Err("channel changed between resolutions or selections conflict; resolve a fresh coherent run".into());
+                return Err(crate::Error::new(crate::ErrorKind::Integrity, "channel changed between resolutions or selections conflict; resolve a fresh coherent run").into());
             }
             if let Some(prior) = old.and_then(|i| i.files.get(&path)) {
                 if prior.sha256 != hash {
@@ -277,7 +294,11 @@ fn preflight(plans: &[ResolvedPlan], old: Option<&Input>, budget: u64) -> Result
         .unwrap_or_default();
     paths.extend(desired.keys().cloned());
     if paths.len() > 4096 || records.len() > 256 {
-        return Err("sync generation file/record limit exceeded".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "sync generation file/record limit exceeded",
+        )
+        .into());
     }
     if let Some(old) = old {
         if checked_total(old)? > budget {
@@ -339,6 +360,7 @@ pub fn run_forced(
     output: &Path,
     source: &impl Source,
 ) -> Result<SyncResult> {
+    crate::events::check()?;
     config.validate()?;
     if exists(output)? {
         real_dir(output)?;
@@ -368,8 +390,9 @@ pub fn run_forced(
                 validate_reset_tree(&path, &target, 0, &mut entries)?;
             }
         }
-        stage("--force: discarding existing mirror and progress; no backup");
+        stage("--force: discarding existing mirror and progress; no backup")?;
         for name in ["mirror", ".sync"] {
+            crate::events::check()?;
             let path = target.join(name);
             if exists(&path)? {
                 fs::remove_dir_all(path)?;
@@ -382,7 +405,11 @@ pub fn run_forced(
 fn validate_reset_tree(path: &Path, root: &Path, depth: usize, count: &mut usize) -> Result<()> {
     *count += 1;
     if depth > 64 || *count > 300_000 {
-        return Err("force reset tree exceeds validation budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "force reset tree exceeds validation budget",
+        )
+        .into());
     }
     let metadata = fs::symlink_metadata(path)?;
     #[cfg(windows)]
@@ -439,19 +466,23 @@ fn run_inner(
     forced_guard: Option<File>,
 ) -> Result<SyncResult> {
     let forced = forced_guard.is_some();
+    crate::events::check()?;
     config.validate()?;
     if !resume && !forced && exists(output)? {
-        return Err("sync output already exists; use --resume with unchanged configuration, or --force to discard it and start fresh".into());
+        return Err(crate::Error::new(crate::ErrorKind::OutputExists, "sync output already exists; use --resume with unchanged configuration, or --force to discard it and start fresh").into());
     }
     let parent = output
         .parent()
         .filter(|p| !p.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    let target = parent.canonicalize()?.join(
-        output
-            .file_name()
-            .ok_or("sync needs a new output directory")?,
-    );
+    let target = parent
+        .canonicalize()?
+        .join(output.file_name().ok_or_else(|| {
+            crate::Error::new(
+                crate::ErrorKind::OutputExists,
+                "sync needs a new output directory",
+            )
+        })?);
     if let Some(previous) = previous {
         if target.starts_with(previous.canonicalize()?) {
             return Err("sync output must not be inside the previous mirror".into());
@@ -462,7 +493,7 @@ fn run_inner(
         "verify previous generation"
     } else {
         "start new mirror"
-    });
+    })?;
     let old = previous.map(collection::read_input).transpose()?;
     if old
         .as_ref()
@@ -506,7 +537,11 @@ fn run_inner(
             || state.previous_sha256 != previous_hash
             || state.plans.len() != config.selections.len()
         {
-            return Err("sync resume identity/config/previous mismatch".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::ResumeMismatch,
+                "sync resume identity/config/previous mismatch",
+            )
+            .into());
         }
         children(&plan_root, &allowed_indices)?;
         let mut plans = Vec::new();
@@ -517,7 +552,11 @@ fn run_inner(
                 || p.plan.max_download_bytes != config.max_download_bytes
                 || plan_hash(&p.plan)? != state.plans[index]
             {
-                return Err("saved sync plan differs from initialized run".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::ResumeMismatch,
+                    "saved sync plan differs from initialized run",
+                )
+                .into());
             }
             plans.push(p);
         }
@@ -535,7 +574,7 @@ fn run_inner(
                 config.selections.len(),
                 selected.name,
                 selected.toolchain
-            ));
+            ))?;
             plans.push(super::resolve(config, &selected.name, &metadata)?);
         }
         plans
@@ -546,7 +585,7 @@ fn run_inner(
             return Err("sync output appeared during resolution".into());
         }
         let old = old.as_ref().unwrap();
-        stage("unchanged; previous generation is verified, no payload downloads");
+        stage("unchanged; previous generation is verified, no payload downloads")?;
         return Ok(result(
             "unchanged",
             previous.unwrap().to_path_buf(),
@@ -616,7 +655,7 @@ fn run_inner(
             resolved.len(),
             p.plan.selection.name,
             p.plan.pinned_toolchain
-        ));
+        ))?;
         let out = snapshot_root.join(index.to_string());
         let payload = PayloadSource {
             inner: source,
@@ -633,15 +672,18 @@ fn run_inner(
         )?;
         let input = collection::read_input(&mirror)?;
         let bytes = checked_total(&input)?;
-        remaining = remaining
-            .checked_sub(bytes)
-            .ok_or("selected working snapshots exceed configured byte budget")?;
+        remaining = remaining.checked_sub(bytes).ok_or_else(|| {
+            crate::Error::new(
+                crate::ErrorKind::Budget,
+                "selected working snapshots exceed configured byte budget",
+            )
+        })?;
         for e in input.files.values() {
             known.insert(e.sha256.clone(), e.source.clone());
         }
         inputs.push(mirror);
     }
-    stage("verify and assemble generation");
+    stage("verify and assemble generation")?;
     let (inventory, files) = collection::prepare(&inputs, previous, config.max_download_bytes)?;
     let completed = output.join("mirror");
     let status = if exists(&completed)? {
@@ -668,6 +710,7 @@ fn run_inner(
         if exists(&completed)? {
             return Err("completed generation appeared during sync".into());
         }
+        crate::events::check()?;
         fs::rename(&tree, &completed)?;
         "created"
     };
@@ -691,6 +734,7 @@ fn run_inner(
         &temporary,
         toml::to_string_pretty(&result.report)?.as_bytes(),
     )?;
+    crate::events::check()?;
     fs::rename(temporary, report)?;
     stage(&format!(
         "{}; {} files, {} upstream payload bytes, {} local payload bytes",
@@ -698,7 +742,7 @@ fn run_inner(
         result.report.files,
         result.report.upstream_payload_bytes,
         result.report.local_payload_bytes
-    ));
+    ))?;
     Ok(result)
 }
 fn lock(output: &Path) -> Result<File> {
@@ -712,7 +756,39 @@ fn lock(output: &Path) -> Result<File> {
         .create(true)
         .truncate(false)
         .open(p)?;
-    f.try_lock()
-        .map_err(|_| "another sync owns this workspace, or file locking is unavailable")?;
+    f.try_lock().map_err(|_| {
+        crate::Error::new(
+            crate::ErrorKind::Locked,
+            "another sync owns this workspace, or file locking is unavailable",
+        )
+    })?;
     Ok(f)
+}
+
+/// Synchronize with an observer, independent heartbeat and cooperative cancellation.
+/// # Errors
+/// Returns typed sync/refusal/cancellation errors; initialized frozen progress supports explicit resume.
+pub fn run_with_control(
+    config: &Config,
+    previous: Option<&Path>,
+    output: &Path,
+    resume: bool,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<SyncResult> {
+    control.run("sync", || run(config, previous, output, resume, source))
+}
+/// Explicit destructive restart with progress/cancel; discarded old state is not backed up.
+/// # Errors
+/// Returns typed restart/sync errors. Cancellation does not undo an authorized reset.
+pub fn run_forced_with_control(
+    config: &Config,
+    previous: Option<&Path>,
+    output: &Path,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<SyncResult> {
+    control.run("sync force", || {
+        run_forced(config, previous, output, source)
+    })
 }

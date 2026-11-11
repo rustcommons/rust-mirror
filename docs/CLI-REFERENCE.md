@@ -1,7 +1,8 @@
 # Command and configuration reference
 
 For the complete first-run/update walkthrough, read the [user guide](USER-GUIDE.md).
-This reference describes 0.1.1's public CLI. `rust-mirror`
+This reference describes the current source CLI, including the 0.2.0
+retention and events additions. Published 0.1.x binaries do not include these features. `rust-mirror`
 prepares/hosts files; the separate `rustup` application installs client tools.
 
 ## Invocation and common rules
@@ -21,13 +22,30 @@ rust-mirror COMMAND --option VALUE ...
   config/environment selection overrides.
 - Required means the CLI has no default. Unknown command/options, missing values
   and repeated singleton options fail. Only `assemble --snapshot` and
-  `rustup --promote` are repeatable options, within their documented limits.
+  `rustup --promote` and `prune --generation` are repeatable options, within their documented limits.
 - Success returns 0; errors return 1, including network/validation/refusal errors.
   There are no distinct HTTP or checksum exit codes. Diagnostics use stderr.
 - New output paths need existing parents. No implicit overwrite is offered.
   Resume/force exceptions are explicit below. Completed snapshots are immutable.
 - Remote publication, local preparation and Rustup client settings are independent.
   Neither `sync` nor `rustup` automatically uploads or activates anything.
+
+## Global events and cancellation
+
+`--events jsonl` is an opt-in global flag. Stdout becomes protocol-1 JSON lines;
+human diagnostics stay on stderr. `--events jsonl --version` is cheap local backend/
+protocol discovery. Add `--cancel-stdin` to accept a literal `{"type":"cancel"}`
+line or EOF as an idempotent stop request; otherwise stdin is not a control channel.
+Ctrl-C and supported process-stop signals request cooperative cancellation too.
+Independent 1-second heartbeats include stage, operation, current path, last progress
+sequence and pending cancellation. The GUI owns watchdog/grace/kill behavior and
+must drain both output pipes. Exit codes are 0/1/130 for success/failure/cancel.
+
+See [protocol 1](EVENTS.md) for fields, nullable sizes, typed result kinds, sequencing,
+limits of blocked reads and command-specific recovery. Fetch/sync initialized state
+supports explicit resume; assemble/rustup require a new output after interruption;
+publish/prune may have partial effects. No global events flag changes deletion or
+overwrite authority.
 
 ## Command overview
 
@@ -41,6 +59,8 @@ rust-mirror COMMAND --option VALUE ...
 | [`sync`](#sync) | Resolve/fetch/assemble all selections once | Metadata and missing payloads | New or previous mirror path |
 | [`assemble`](#assemble) | Combine completed local snapshots/history | None | Completed mirror path |
 | [`rustup`](#rustup) | Add bootstrap/self-update endpoints and explicit promotion | Rustup script/checksums/missing installers | Completed mirror path |
+| [`generations`](#generations) | List local generations and managed runs | None, metadata reads only | TOML catalog |
+| [`prune`](#prune) | Preview/explicitly delete whole local generations | None | TOML preview or apply report |
 | [`publish`](#publish) | Upload/GET-verify a fresh remote prefix | HEAD/PUT/GET to selected endpoint | TOML publication report |
 | [`fetch-toolchain`](#fetch-toolchain) | Legacy pinned minimal GNU Linux snapshot | Metadata/payloads | Completed mirror path |
 
@@ -216,6 +236,7 @@ rust-mirror publish --source complete-002/mirror --base-url https://nexus.exampl
 | --- | --- | --- |
 | `--source MIRROR` | Yes | Complete validated schema 1/2/3 static tree |
 | `--base-url HTTPS_URL` | Yes | Fresh remote prefix receiving `dist/`, `rustup/`, inventory beneath it |
+| `--preflight` | No | Validate local closure/TLS/auth responses and HEAD-absence of all remote paths; no PUT/DELETE, not a reservation or proof of upload permission |
 | `--ca-file PEM` | No | Explicit CA bundle for this publisher connection instead of default roots |
 | `--allow-loopback-http` | No | Test-only literal `127.0.0.1`/`[::1]` HTTP; never with credentials or CA option |
 
@@ -248,6 +269,65 @@ There is no standalone `serve`, `verify`, `doctor` or `schedule` command in 0.1.
 Generation creation and publication validate their inputs; `fetch --resume`
 revalidates an already completed matching workspace. This is not a general-purpose
 verification command for arbitrary files.
+
+### generations
+
+```sh
+cargo run --locked -- generations --directory ./mirrors
+```
+
+`--directory DIRECTORY` is required and the only option. Read-only metadata discovery
+lists direct snapshot folders and `run/mirror` roots plus completed/in-progress/locked/
+unknown sync/fetch runs, inventory identities/recorded sizes, unmanaged entries and
+classification issues. It does not verify payloads or promise resume compatibility.
+At most 128 immediate entries are inspected; no files/locks/network requests are created.
+
+### prune
+
+Available in 0.2.0:
+
+```sh
+cargo run --locked -- prune --config mirror.toml --as-of 2025-09-22 --generation ./generation-002/mirror --generation ./generation-001/mirror --dry-run
+```
+
+| Option | Required | Meaning |
+| --- | --- | --- |
+| `--config FILE` | Yes | Existing strict mirror config with explicit `[retention]` policy |
+| `--as-of YYYY-MM-DD` | Yes | Calendar reference date; no implicit clock/mtime policy |
+| `--generation MIRROR` | Explicit-root mode, repeatable | 1–32 completed schema-2/3 roots in declared newest-first order; first is current and always kept |
+| `--directory DIR` | Alternative | Discover candidates instead of passing explicit roots; requires `--next-previous` |
+| `--next-previous MIRROR` | With directory | Exact completed root needed for the next sync; always protected |
+| `--dry-run` | No | Read-only exact preview; also the default when neither mode flag is given |
+| `--apply` | No | Explicitly delete approved whole snapshot roots after locks and revalidation; mutually exclusive with dry-run |
+
+Use either explicit generation roots or the directory/next-previous pair. Directory
+mode protects paused-run dependencies and binds the managed directory state to apply.
+Busy/unknown runs refuse pruning. Whole private-workspace deletion is deferred.
+
+No network or remote deletion occurs. Preview returns per-folder `folders` sizes, exact file `path`, `bytes`,
+`sha256`, `total_bytes`, kept roots/reasons and frozen inputs/policy. Apply returns
+`deleted_files`, `deleted_bytes`, `removed_generations` and optional `failure`.
+A partial failure returns exit 1 and leaves earlier deletions applied. Read
+[retention and recovery](RETENTION.md) before apply: enclosing workspaces and kept
+collections are preserved; locks are advisory, not live-reader protection.
+
+The optional top-level `[retention]` table requires all four fields:
+
+| Field | Required within table | Meaning/bounds |
+| --- | --- | --- |
+| `pinned_releases` | Yes | 0–256 unique full numeric or dated-channel selectors; missing pins refuse |
+| `latest_stable` | Yes | 0–256 newest distinct numeric stable releases present in the supplied roots |
+| `nightly_days` | Yes | 0–36,600 calendar days including as-of; zero disables this protection |
+| `previous_generations` | Yes | 0–31 roots immediately after current kept for rollback |
+| `keep_newest` | No, default 0 | 0–32 newest roots; minimum protection in addition to current and other rules |
+| `pinned_generations` | No, default empty | Up to 32 unique completed root paths that must be present |
+
+Absent table disables pruning. Protection is additive and keeps every distinct
+recorded platform/component/manifest/bootstrap variant in its newest matching root.
+Counts are minimum protection, not a disk quota; a kept root retains all its files.
+`sync` never invokes retention. Existing config TOML is compatible, but `Config`
+struct literals need `retention: None` (or a policy), and config changes affect sync
+resume identity. See [configuration example](../examples/retention.toml).
 
 ## Configuration fields
 
@@ -377,6 +457,10 @@ headers, metadata traffic, assembly copies and already-verified workspace cache
 reuse are not all counted as payload bytes. A failed invocation has no completed
 report; an older completed report is not evidence a new attempt succeeded.
 
+Use `publish --preflight` for the no-write route. It returns `schema`, `files`,
+`local_bytes`, `inventory_sha256` and `absent_paths`; actual publish always repeats
+checks. Upload/GET progress and typed results are available in events mode.
+
 Publication report fields are `schema` (source inventory schema), `files` (includes
 its uploaded inventory marker), `remote_bytes_verified` (GET-verified file bytes,
 not TLS traffic) and `inventory_sha256` (hash of the source inventory).
@@ -435,6 +519,8 @@ Generate full type/signature documentation from the source with
 | `selection::collection::assemble`, `ToolchainRecord`, `CollectionSnapshot` | Local retained-generation assembly and records |
 | `selection::sync::run`, `run_forced`, `SyncResult`, `Report`, `SelectionStatus` | One-shot workflow, explicit destructive reset, results/counters |
 | `selection::rustup::prepare` | Complete a new generation with pinned manager endpoints and promotion |
+| `selection::retention::{discover, preview_directory}`, `Catalog`, `GenerationInfo`, `RunInfo`, `RunState`, `CatalogIssue` | Metadata-only local listing, automatic next-previous/paused dependency protection and directory-bound dry runs |
+| `selection::retention::{preview, apply}`, `Policy`, `PrunePlan`, `Deletion`, `FolderDeletion`, `KeptGeneration`, `ApplyReport`, `ApplyFailure` | Local generation policy, structured exact preview, explicit validated deletion and partial-failure results |
 | `publish::publish`, `publish::Options`, `publish::Report` | Validate/upload/verify a fresh remote prefix |
 
 For example, prepare the second walkthrough configuration through the library:
@@ -473,6 +559,24 @@ custom transport authentication/trust; `Source` must honor the supplied URL and
 byte limit, and `Transfer::Restart` must write no bytes. Integrity checks do not
 create an independent trust root. Keep the same path/byte/immutability boundaries as the CLI.
 
+## Controlled library operations
+
+`events::{Observer, CancelToken, Control, JsonLines, Event, EventKind,
+PROTOCOL_VERSION}` share the CLI progress model. Observers are thread-safe, quick
+callbacks; do not reenter the same control. `_with_control` variants of sync run/
+forced run, fetch/resuming fetch, collection assemble, rustup prepare, publish/
+preflight and retention previews/apply take `&Control`. The calling-thread context
+propagates through private helpers; heartbeat emission runs independently. Existing
+convenience signatures remain usable. The library installs no process signal handler.
+Root `Error`, `ErrorKind` and `error_kind(&*error)` expose categories without parsing
+messages. Controlled errors normalize to `Error`; custom legacy errors without a
+known category become Invalid. `Error::report` can carry partial prune evidence.
+
+`cli::run_with_events(args, writer, cancel)` is a shared adapter with hello/result
+framing. Its writer is owned, Send and static; it returns 0/1/130 without installing
+signal handlers. Standalone execution adds its binary-only signal bridge. Detailed
+contracts and names are in [EVENTS.md](EVENTS.md).
+
 ## QA tools, compatibility and release status
 
 The Python publisher is a reference/QA interface; it is not required by installed
@@ -486,6 +590,6 @@ A source inspection or passed Markdown check is not new runtime evidence. Native
 SDKs, old/unlisted OS versions, authenticated client gateways and production
 policies retain the [user-guide limits](USER-GUIDE.md#limits-demos-and-further-reading).
 
-Scheduling, pruning, Cargo registry/index mirroring and rust-mirror-gui are future
+Scheduling, Nexus pruning, in-generation compaction, Cargo registry/index mirroring and rust-mirror-gui are future
 work. See the [release notes](releases/v0.1.0.md) for actual publication state and
 [release checklist](RELEASING.md) for the remaining authorized-release process.
