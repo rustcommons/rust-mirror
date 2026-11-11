@@ -3,7 +3,7 @@
 ## Source and scope
 
 Baseline: `18a467508d4db21e64cc8dd35f266d1ad022c63d` (published 0.1.x history).
-Implementation revision: `2a38078d446ea818b6998f0eca9993807d590622`.
+Implementation revision: `32ee66bcee6288411e067a7ef7ad9157b3c3e4e8`.
 Validation environment: Linux aarch64, Rust/Cargo 1.90.0, private disposable fixture
 roots. No user mirror, Rustup/Cargo client home or real Nexus was pruned. Package
 version remains 0.1.1; these source changes are the unreleased 0.2.0 feature, not a
@@ -43,6 +43,8 @@ directories. Advisory locks do not protect HTTP clients, publishers or hostile e
 - Busy prune/sync/fetch locks, malformed locks and unlocked retry; default CLI dry-run,
   mode conflict and structured explicit apply.
 - Unix linked ancestors/payloads/locks and non-UTF-8 root refusal.
+- A Windows-specific open-file case permits reads but denies unlink, checking the
+  structured successful-prefix failure report (evaluated by Windows CI).
 - Unix permission-induced mid-delete failure: successful-prefix report, marker removed,
   current preserved and partial-root replay refused. Permissions restored for cleanup.
 
@@ -50,6 +52,15 @@ The initial component-variant fixture attempted an unavailable default profile a
 correctly failed snapshot validation; it was corrected to an explicit redundant
 component with a valid minimal-profile closure. This was a test fixture correction,
 not a relaxation of the validator.
+
+The [initial Windows CI run](https://github.com/rustcommons/rust-mirror/actions/runs/43025694123)
+at `831e49a9c4010cc9715d8ceb662b7de0c8ac3496` passed 16 retention cases and failed
+one traversal-refusal assertion. The fixture used `PathBuf::join` on a Windows
+verbatim root, which normalized `dist/..` before preview received it. The corrected
+fixture constructs the raw path, and validation now also checks original path
+components before joining/canonicalizing. Subsequent superseded workflow runs were
+canceled rather than treated as passing evidence. Local required checks were rerun
+after this correction; final CI evidence is attached to the PR head.
 
 ## Read-only real metadata checks
 
@@ -77,7 +88,7 @@ behavior, not real-archive removal, native installation or production traffic.
 - `cargo package --locked`: passed from clean implementation revision; unpacked
   verification compiled successfully. Included source/lock/manifest-original/docs/
   examples/license bytes matched the checkout (19 files); VCS metadata was clean.
-  Local source archive SHA-256: `eb59fe39488a135788373f82b378fd273b4afc00ec54f2252299b2d7afb5b2f9`.
+  Local source archive SHA-256: `82d2ed7e027785a39dcbe555365f7eb6eaa4b409dbf8914b617696e3a7c2f2d9`.
   This is an unpublished source-check archive, not a 0.1.1 replacement or a 0.2.0 release.
 - Existing shared traceability/release/Working/Git sections and CLAUDE shim compared
   byte-for-byte with baseline: preserved. All 31 existing requirement rows unchanged;
