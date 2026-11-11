@@ -33,7 +33,7 @@ try {
         }
         return
     }
-    & python "$PSScriptRoot/prove_rustup_lifecycle.py" --old "$Generations/old/mirror" --new "$Generations/new/mirror" --host $HostTriple --evidence $evidenceRoot --windows-firewall-proof $proof --publisher-cli $PublisherCli
+    & python "$PSScriptRoot/prove_rustup_lifecycle.py" --old "$Generations/old/mirror" --new "$Generations/new/mirror" --host $HostTriple --evidence $evidenceRoot --windows-firewall-proof $proof --publisher-cli $PublisherCli --require-default-profile
     if ($LASTEXITCODE -ne 0) { throw "Windows lifecycle failed; retained evidence: $evidenceRoot" }
 } finally {
     foreach ($rule in $rules) { Remove-NetFirewallRule -Name $rule.name }

@@ -57,11 +57,11 @@ jobs:
       - name: Isolated Linux lifecycle
         if: runner.os == 'Linux'
         shell: bash
-        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --old "$2/rustup-generations/old/mirror" --new "$2/rustup-generations/new/mirror" --publisher-cli "$1/target/release/rust-mirror" --host "$3" --evidence "$2/rustup-lifecycle"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$HOST"
+        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --old "$2/rustup-generations/old/mirror" --new "$2/rustup-generations/new/mirror" --publisher-cli "$1/target/release/rust-mirror" --host "$3" --evidence "$2/rustup-lifecycle" --require-default-profile' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$HOST"
       - name: Sandboxed macOS lifecycle
         if: runner.os == 'macOS'
         shell: bash
-        run: python3 scripts/prove_rustup_lifecycle.py --old "$RUNNER_TEMP/rustup-generations/old/mirror" --new "$RUNNER_TEMP/rustup-generations/new/mirror" --publisher-cli "$GITHUB_WORKSPACE/target/release/rust-mirror" --host "$HOST" --evidence "$RUNNER_TEMP/rustup-lifecycle"
+        run: python3 scripts/prove_rustup_lifecycle.py --old "$RUNNER_TEMP/rustup-generations/old/mirror" --new "$RUNNER_TEMP/rustup-generations/new/mirror" --publisher-cli "$GITHUB_WORKSPACE/target/release/rust-mirror" --host "$HOST" --evidence "$RUNNER_TEMP/rustup-lifecycle" --require-default-profile
       - name: Firewall-isolated Windows lifecycle
         if: runner.os == 'Windows'
         shell: pwsh

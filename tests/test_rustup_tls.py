@@ -49,3 +49,12 @@ class NativeProofSelector(unittest.TestCase):
         self.assertEqual(prove_nexus.native_selection(record),("1.90.0","x86_64-unknown-linux-gnu","stable-2025-09-18"))
         self.assertEqual(prove_nexus.native_selection({"schema":3,"toolchains":[record]}),("1.90.0","x86_64-unknown-linux-gnu","stable-2025-09-18"))
         self.assertEqual(prove_nexus.native_selection({"schema":1,"release":"1.90.0","host":"x86_64-unknown-linux-gnu"}),("1.90.0","x86_64-unknown-linux-gnu","1.90.0"))
+
+class DefaultProfileSelection(unittest.TestCase):
+    def test_default_profile_uses_recorded_host_not_shared_archive_filename(self):
+        document={"schema":3,"toolchains":[{"release":"1.90.0","selection":{"profile":"default","hosts":["x86_64-apple-darwin"]}}],"files":[{"path":"dist/2025-09-18/rust-docs-1.90.0-aarch64-apple-darwin.tar.xz"}]}
+        self.assertTrue(prove_rustup_lifecycle.default_profile_selected(document,"1.90.0","x86_64-apple-darwin"))
+        self.assertFalse(prove_rustup_lifecycle.default_profile_selected(document,"1.90.0","aarch64-apple-darwin"))
+        self.assertFalse(prove_rustup_lifecycle.default_profile_selected(document,"1.89.0","x86_64-apple-darwin"))
+        document["toolchains"][0]["selection"]["profile"]="minimal"
+        self.assertFalse(prove_rustup_lifecycle.default_profile_selected(document,"1.90.0","x86_64-apple-darwin"))

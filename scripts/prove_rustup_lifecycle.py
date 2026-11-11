@@ -48,7 +48,12 @@ def isolation(evidence, windows_firewall_proof=None):
     raise RuntimeError("no native isolation contract for this platform")
 
 
-def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=(), requests=None, set_fault=None, activate=None):
+def default_profile_selected(document,release,host):
+    records=document.get("toolchains",[document])
+    return any(r.get("release")==release and r.get("selection",{}).get("profile")=="default" and host in r.get("selection",{}).get("hosts",[]) for r in records)
+
+
+def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=(), requests=None, set_fault=None, activate=None, require_default_profile=False):
     old_doc, old_files = publish_raw.local_files(old)
     new_doc, new_files = publish_raw.local_files(new)
     old_manifest = tomllib.loads((old / "dist/channel-rust-stable.toml").read_text(encoding="utf-8"))
@@ -171,7 +176,7 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
                 if requests is not None and payload_count()!=before: raise RuntimeError("unchanged extra channel fetched archives")
                 result["extra_channels"].append({"channel":channel,"version":version})
         # The mirror's explicit numeric aliases serve normal Rustup clients too.
-        default_available=any("/rust-docs-" in name and host in name and new_manifest["date"] in name for name,_,_ in new_files)
+        default_available=default_profile_selected(new_doc,new_version,host)
         result["default_profile_checked"]=False
         for selector in [new_version, ".".join(new_version.split(".")[:2])]:
             if (new/f"dist/channel-rust-{selector}.toml").exists():
@@ -187,6 +192,7 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
                     if not Path(doc.decode().strip()).is_file():raise RuntimeError("offline documentation index absent")
                     result["default_profile_checked"]=True
         invoke("check-current-channels",[rustup,"check"])
+        if require_default_profile and not result["default_profile_checked"]:raise RuntimeError("required default-profile proof was not exercised")
         result["status"]="passed"
         result["limits"]=["Selected native host and exact versions only", "Original HTTPS/checksum trust; no independent signature verification", "Cargo dependencies/SDKs are not mirrored by this proof"]
     finally:
@@ -316,6 +322,7 @@ def main():
     p.add_argument("--windows-firewall-proof",type=Path)
     p.add_argument("--publisher-cli",type=Path)
     p.add_argument("--publisher-preflight",action="store_true")
+    p.add_argument("--require-default-profile",action="store_true")
     args=p.parse_args()
     args.evidence=args.evidence.resolve();args.evidence.mkdir(parents=True,exist_ok=False)
     detail,prefix=isolation(args.evidence,args.windows_firewall_proof)
@@ -365,7 +372,7 @@ def main():
         thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
         base=f"https://127.0.0.1:{server.server_port}"
         if args.publisher_cli:prove_publisher(args.publisher_cli.resolve(),args.evidence,base,ca_file,prefix,requests,password)
-        if not args.publisher_preflight:exercise(args.old,args.new,base+"/old",base+"/new",args.host,args.evidence,ca_file=ca_file,prefix=prefix,requests=requests,set_fault=lambda mode:fault.update(mode=mode))
+        if not args.publisher_preflight:exercise(args.old,args.new,base+"/old",base+"/new",args.host,args.evidence,ca_file=ca_file,prefix=prefix,requests=requests,set_fault=lambda mode:fault.update(mode=mode),require_default_profile=args.require_default_profile)
     finally:
         if server:
             if thread and thread.is_alive(): server.shutdown()
