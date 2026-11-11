@@ -1,0 +1,64 @@
+name: Published registry verification
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published version with an immutable v-prefixed source tag
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ inputs.version }}
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fresh actual registry installation and source identity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,re
+          assert re.fullmatch(r'\d+\.\d+\.\d+',os.environ['RELEASE_VERSION'])
+          PY
+          CARGO_HOME="$RUNNER_TEMP/registry-cargo" cargo install rust-mirror --version "$RELEASE_VERSION" --locked --root "$RUNNER_TEMP/registry-install" -j 2
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,subprocess,tarfile,urllib.request
+          version=os.environ['RELEASE_VERSION'];root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          archive=next((root/'registry-cargo/registry/cache').rglob(f'rust-mirror-{version}.crate'))
+          with tarfile.open(archive) as tar:
+              vcs=json.load(tar.extractfile(f'rust-mirror-{version}/.cargo_vcs_info.json'))
+          source=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          assert vcs['git']['sha1']==source and not vcs['git'].get('dirty',False)
+          request=urllib.request.Request(f'https://crates.io/api/v1/crates/rust-mirror/{version}',headers={'User-Agent':'rust-mirror-release-verification (https://github.com/rustcommons/rust-mirror)'})
+          with urllib.request.urlopen(request,timeout=60) as response: metadata=json.load(response)['version']
+          digest=hashlib.sha256(archive.read_bytes()).hexdigest()
+          assert metadata['checksum']==digest and not metadata['yanked']
+          binary=root/'registry-install/bin/rust-mirror'
+          events=[json.loads(line) for line in subprocess.check_output([str(binary),'--events','jsonl','--version'],text=True).splitlines()]
+          assert events[0]['protocol']==1 and events[-1]['report']['tool_version']==version
+          result={'version':version,'source':source,'archive_sha256':digest,'vcs':vcs,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'events':events,'registry_install':True,'fresh_cargo_home':True}
+          (root/'registry-identity.json').write_text(json.dumps(result,indent=2)+'\n')
+          PY
+      - name: Installed publisher in a loopback-only namespace
+        shell: bash
+        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/registry-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/registry-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+      - name: Save bounded identity and proof logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-registry-verification
+          path: |
+            ${{ runner.temp }}/registry-identity.json
+            ${{ runner.temp }}/registry-publisher/*.json
+            ${{ runner.temp }}/registry-publisher/*.stdout
+            ${{ runner.temp }}/registry-publisher/*.stderr
