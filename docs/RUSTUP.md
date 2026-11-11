@@ -79,6 +79,13 @@ rustup self update
 
 PowerShell uses `$env:RUSTUP_DIST_SERVER = 'https://...'` and
 `$env:RUSTUP_UPDATE_ROOT = "$env:RUSTUP_DIST_SERVER/rustup"`.
+Client TLS trust is separate from `publish --ca-file`. Rustup uses its selected
+backend's platform verifier; set up the organization's CA through its approved OS
+policy on Windows/macOS. `SSL_CERT_FILE` is not a portable substitute for that
+platform trust setup. The proof's temporary CA installation is CI-only, not a
+feature that changes user trust stores. See the pinned
+[Rustup download implementation](https://github.com/rust-lang/rustup/blob/1.28.2/src/download/mod.rs).
+
 The same installed CARGO_HOME/RUSTUP_HOME is retained: `stable` advances while a
 pinned dated toolchain remains pinned. Repeat updates should download no toolchain
 archives when unchanged. Self-update selects the **mirrored Rustup catalog**, not

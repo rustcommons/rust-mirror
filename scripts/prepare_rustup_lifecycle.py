@@ -21,7 +21,9 @@ def main():
     for name,date,version in [("old","2025-08-07","1.28.2"),("new","2025-09-18","1.29.3")]:
         config=root/(name+".toml")
         text=f'schema = 1\nrustup_version = "1.28.2"\nmax_download_bytes = 10737418240\n[[selections]]\nname = "native-lifecycle"\ntoolchain = "stable-{date}"\nhosts = ["{args.host}"]\nprofile = "minimal"\n'
-        if name=="new": text+='components = ["clippy", "rustfmt", "rust-src"]\ntargets = ["wasm32-unknown-unknown"]\n'
+        if name=="new":
+            text=text.replace('profile = "minimal"','profile = "default"')
+            text+='components = ["rust-src"]\ntargets = ["wasm32-unknown-unknown"]\n'
         if name=="new" and args.extra_channels:
             for channel in ["beta", "nightly"]:
                 text+=f'[[selections]]\nname="{channel}-native"\ntoolchain="{channel}"\nhosts=["{args.host}"]\nprofile="minimal"\n'

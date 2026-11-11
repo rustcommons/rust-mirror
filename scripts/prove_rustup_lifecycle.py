@@ -171,12 +171,21 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
                 if requests is not None and payload_count()!=before: raise RuntimeError("unchanged extra channel fetched archives")
                 result["extra_channels"].append({"channel":channel,"version":version})
         # The mirror's explicit numeric aliases serve normal Rustup clients too.
+        default_available=any("/rust-docs-" in name and host in name and new_manifest["date"] in name for name,_,_ in new_files)
+        result["default_profile_checked"]=False
         for selector in [new_version, ".".join(new_version.split(".")[:2])]:
             if (new/f"dist/channel-rust-{selector}.toml").exists():
                 label="numeric-"+selector
-                invoke(label+"-install",[rustup,"toolchain","install",selector,"--profile","minimal","--no-self-update"])
+                profile="default" if default_available and selector==new_version else "minimal"
+                invoke(label+"-install",[rustup,"toolchain","install",selector,"--profile",profile,"--no-self-update"])
                 compiler=invoke(label+"-compiler",[rustup,"run",selector,"rustc","--version"])
                 if not compiler.startswith(("rustc "+new_version+" ").encode()): raise RuntimeError("wrong numeric alias compiler")
+                if profile=="default":
+                    components=invoke("default-profile-components",[rustup,"component","list","--installed","--toolchain",selector])
+                    if any(component not in components for component in [b"rust-docs",b"rustfmt",b"clippy"]):raise RuntimeError("default profile incomplete")
+                    doc=invoke("offline-documentation-path",[rustup,"doc","--path","--toolchain",selector])
+                    if not Path(doc.decode().strip()).is_file():raise RuntimeError("offline documentation index absent")
+                    result["default_profile_checked"]=True
         invoke("check-current-channels",[rustup,"check"])
         result["status"]="passed"
         result["limits"]=["Selected native host and exact versions only", "Original HTTPS/checksum trust; no independent signature verification", "Cargo dependencies/SDKs are not mirrored by this proof"]

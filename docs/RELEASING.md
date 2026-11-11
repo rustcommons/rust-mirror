@@ -20,7 +20,7 @@ publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
    link/render checks and release-documentation CI. Inspect the exact final diff.
 3. Run the [Rustup lifecycle workflow](../.github/workflows/rustup-lifecycle.yml)
    for Linux/x86-64, Windows/x86-64, macOS/Intel and Apple Silicon. Require fresh
-   bootstrap, old/new stable and pinned history, numeric aliases, components/targets,
+   bootstrap, old/new stable and pinned history, numeric aliases, minimal/default profiles, offline documentation, components/targets,
    offline build, self-update/repeat and missing/corrupt controls. Linux additionally
    checks beta/nightly. Preserve isolation and temporary-CA cleanup evidence,
    including explicitly recorded macOS hosted-VM teardown if its removal API blocks.

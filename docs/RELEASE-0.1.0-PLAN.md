@@ -14,7 +14,8 @@ publication is authorized by this implementation request.
   original shell installer, and explicit promotion of dated channel metadata.
 - Fresh native client bootstrap/install, component and target add/remove/re-add,
   toolchain remove/reinstall, offline project use, existing stable-client update,
-  unchanged repeat, Rustup self-update and already-current self-update.
+  unchanged repeat, Rustup self-update and already-current self-update; install the
+  default profile and resolve its actual offline documentation index.
 - Actual Nexus Raw schema 2 and 3 publication/GET verification, TLS/private CA,
   scoped writer/read-only clients, no-redeploy, missing/corrupt controls and an
   existing-client old/new generation update through a fixed Raw group URL. No production server writes.
