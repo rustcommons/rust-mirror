@@ -7,6 +7,9 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+// A CLI fork can briefly inherit another test's locked descriptors before exec.
+// CLI tests run exclusively; library tests may still run concurrently.
+static PROCESS_GATE: std::sync::RwLock<()> = std::sync::RwLock::new(());
 const DATE: &str = "2025-09-18";
 const BUDGET: u64 = 10 * 1024 * 1024;
 fn policy() -> Policy {
@@ -78,6 +81,7 @@ fn inventory(root: &Path) -> Vec<u8> {
 }
 #[test]
 fn preview_is_read_only_exact_and_apply_requires_explicit_authority() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let bytes = inventory(&roots[0]);
@@ -109,6 +113,7 @@ fn preview_is_read_only_exact_and_apply_requires_explicit_authority() {
 }
 #[test]
 fn rollback_and_pins_are_additive_and_missing_pins_refuse() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let mut p = policy();
@@ -123,6 +128,7 @@ fn rollback_and_pins_are_additive_and_missing_pins_refuse() {
 }
 #[test]
 fn latest_stable_is_numeric_not_lexical_or_generation_order() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = vec![
         sample(t.path(), "current", "1.9.0"),
@@ -138,6 +144,7 @@ fn latest_stable_is_numeric_not_lexical_or_generation_order() {
 }
 #[test]
 fn nightlies_use_calendar_window_and_dated_pins() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let current = sample(t.path(), "current", "1.90.0");
     let a = make(
@@ -172,6 +179,7 @@ fn nightlies_use_calendar_window_and_dated_pins() {
 }
 #[test]
 fn calendar_boundaries_including_leap_day() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let root = make(
         t.path(),
@@ -206,6 +214,7 @@ fn calendar_boundaries_including_leap_day() {
 }
 #[test]
 fn newest_equivalent_copy_satisfies_protection_but_different_components_survive() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let a = sample(t.path(), "a", "1.90.0");
     let b = sample(t.path(), "b", "1.90.0");
@@ -223,6 +232,7 @@ fn newest_equivalent_copy_satisfies_protection_but_different_components_survive(
 }
 #[test]
 fn schema_three_and_two_are_supported_without_mutating_collections() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let a = sample(t.path(), "a", "1.90.0");
     let b = sample(t.path(), "b", "1.89.0");
@@ -243,6 +253,7 @@ fn schema_three_and_two_are_supported_without_mutating_collections() {
 }
 #[test]
 fn stale_inventory_kept_generation_and_modified_report_refuse_before_deleting() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let plan = preview(&policy(), &roots, DATE).unwrap();
@@ -269,6 +280,7 @@ fn stale_inventory_kept_generation_and_modified_report_refuse_before_deleting() 
 }
 #[test]
 fn duplicates_overlaps_traversal_missing_and_empty_inputs_refuse() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     for paths in [
@@ -290,6 +302,7 @@ fn duplicates_overlaps_traversal_missing_and_empty_inputs_refuse() {
 }
 #[test]
 fn active_sync_fetch_and_prune_locks_refuse_then_allow_retry() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let plan = preview(&policy(), &roots, DATE).unwrap();
@@ -314,6 +327,7 @@ fn active_sync_fetch_and_prune_locks_refuse_then_allow_retry() {
 }
 #[test]
 fn policy_config_requires_explicit_fields_and_has_bounds() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     Config::parse(include_str!("../examples/retention.toml")).unwrap();
     let base = include_str!("../examples/mirror.toml");
     let cfg = Config::parse(base).unwrap();
@@ -336,6 +350,7 @@ fn policy_config_requires_explicit_fields_and_has_bounds() {
 }
 #[test]
 fn cli_defaults_to_preview_and_reports_structured_apply() {
+    let _process_gate = PROCESS_GATE.write().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let config = t.path().join("config.toml");
@@ -379,6 +394,7 @@ fn cli_defaults_to_preview_and_reports_structured_apply() {
 #[cfg(unix)]
 #[test]
 fn linked_ancestor_payload_and_lock_refuse_without_touching_target() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     use std::os::unix::fs::symlink;
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
@@ -399,6 +415,7 @@ fn linked_ancestor_payload_and_lock_refuse_without_touching_target() {
 
 #[test]
 fn beta_is_only_protected_by_explicit_pin_or_rollback() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = vec![
         sample(t.path(), "current", "1.90.0"),
@@ -414,6 +431,7 @@ fn beta_is_only_protected_by_explicit_pin_or_rollback() {
 
 #[test]
 fn unexpected_empty_directory_and_legacy_schema_refuse() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     fs::create_dir(roots[1].join("unrelated-directory")).unwrap();
@@ -433,6 +451,7 @@ fn unexpected_empty_directory_and_legacy_schema_refuse() {
 #[cfg(unix)]
 #[test]
 fn partial_io_failure_reports_successful_prefix_and_preserves_current() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     use std::os::unix::fs::PermissionsExt;
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
@@ -452,6 +471,7 @@ fn partial_io_failure_reports_successful_prefix_and_preserves_current() {
 
 #[test]
 fn real_metadata_shapes_replay_through_local_policy_without_live_network() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     #[derive(serde::Deserialize)]
     struct Corpus {
         cases: Vec<Case>,
@@ -507,6 +527,7 @@ fn real_metadata_shapes_replay_through_local_policy_without_live_network() {
 
 #[test]
 fn optional_numeric_lookup_capabilities_are_not_lost_to_raw_equivalent() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = vec![
         sample(t.path(), "raw", "1.90.0"),
@@ -545,6 +566,7 @@ fn optional_numeric_lookup_capabilities_are_not_lost_to_raw_equivalent() {
 
 #[test]
 fn malformed_lock_and_root_count_limit_refuse() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let plan = preview(&policy(), &roots, DATE).unwrap();
@@ -558,6 +580,7 @@ fn malformed_lock_and_root_count_limit_refuse() {
 #[cfg(unix)]
 #[test]
 fn non_utf8_root_refuses_before_any_apply() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     use std::os::unix::ffi::OsStringExt;
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
@@ -573,6 +596,7 @@ fn non_utf8_root_refuses_before_any_apply() {
 #[cfg(windows)]
 #[test]
 fn windows_open_file_refusal_reports_partial_deletion() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     use std::os::windows::fs::OpenOptionsExt;
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
@@ -612,6 +636,7 @@ fn paused(store: &Path, name: &str, previous: Option<&str>) -> PathBuf {
 }
 #[test]
 fn discovery_lists_generations_completed_sync_and_paused_runs_without_writes() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let store = t.path();
     let old = sample(store, "old", "1.89.0");
@@ -652,6 +677,7 @@ fn discovery_lists_generations_completed_sync_and_paused_runs_without_writes() {
 }
 #[test]
 fn directory_preview_protects_next_previous_paused_dependencies_pins_and_newest() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     use std::time::{Duration, UNIX_EPOCH};
     let t = tempfile::tempdir().unwrap();
     let store = t.path();
@@ -691,18 +717,28 @@ fn directory_preview_protects_next_previous_paused_dependencies_pins_and_newest(
 }
 #[test]
 fn directory_apply_refuses_private_content_same_size_metadata_and_membership_changes() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
     let private = roots[1].parent().unwrap().join(".download/state.toml");
     let bytes = fs::read(&private).unwrap();
+    let original_time = fs::metadata(&private).unwrap().modified().unwrap();
     let mut changed = bytes.clone();
     changed[0] = if changed[0] == b'x' { b'y' } else { b'x' };
     fs::write(&private, &changed).unwrap();
     assert!(apply(&plan, true).is_err());
     assert!(roots[1].join("snapshot.toml").exists());
     fs::write(&private, bytes).unwrap();
-    // Even restoring bytes changes metadata and requires another preview.
+    // Set a distinct timestamp explicitly; do not depend on filesystem clock granularity.
+    fs::File::options()
+        .write(true)
+        .open(&private)
+        .unwrap()
+        .set_times(
+            fs::FileTimes::new().set_modified(original_time + std::time::Duration::from_secs(1)),
+        )
+        .unwrap();
     assert!(apply(&plan, true).is_err());
     let plan = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
     fs::create_dir(t.path().join("new-unmanaged-folder")).unwrap();
@@ -711,6 +747,7 @@ fn directory_apply_refuses_private_content_same_size_metadata_and_membership_cha
 }
 #[test]
 fn directory_refuses_locked_unknown_and_missing_previous_runs() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let waiting = paused(t.path(), "waiting", Some(&"2".repeat(64)));
@@ -736,6 +773,7 @@ fn directory_refuses_locked_unknown_and_missing_previous_runs() {
 }
 #[test]
 fn paused_run_with_completed_marker_is_protected_and_explicit_preview_refuses() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let parent = roots[1].parent().unwrap();
@@ -761,6 +799,7 @@ fn paused_run_with_completed_marker_is_protected_and_explicit_preview_refuses() 
 }
 #[test]
 fn cli_discovery_and_directory_preview_are_serializable() {
+    let _process_gate = PROCESS_GATE.write().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let out = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
@@ -795,6 +834,7 @@ fn cli_discovery_and_directory_preview_are_serializable() {
 
 #[test]
 fn directory_apply_refuses_new_locks_and_changed_paused_state_before_deleting() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let waiting = paused(t.path(), "waiting", None);
@@ -816,6 +856,7 @@ fn directory_apply_refuses_new_locks_and_changed_paused_state_before_deleting() 
 }
 #[test]
 fn direct_snapshot_named_mirror_does_not_expand_discovery_to_unmanaged_trees() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let direct = t.path().join("mirror");
@@ -838,6 +879,7 @@ fn direct_snapshot_named_mirror_does_not_expand_discovery_to_unmanaged_trees() {
 
 #[test]
 fn serde_roundtrip_plans_are_revalidated_and_require_explicit_authority() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     let plan = preview(&policy(), &roots, DATE).unwrap();
@@ -860,6 +902,7 @@ fn serde_roundtrip_plans_are_revalidated_and_require_explicit_authority() {
 
 #[test]
 fn discovery_refuses_a_workspace_as_the_parent_directory() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let roots = roots(t.path());
     assert!(discover(roots[0].parent().unwrap()).is_err());
@@ -868,6 +911,7 @@ fn discovery_refuses_a_workspace_as_the_parent_directory() {
 }
 #[test]
 fn explicit_pruning_refuses_private_working_snapshots() {
+    let _process_gate = PROCESS_GATE.read().unwrap_or_else(|e| e.into_inner());
     let t = tempfile::tempdir().unwrap();
     let current = sample(t.path(), "current", "1.90.0");
     for reserved in [".sync", ".download"] {
