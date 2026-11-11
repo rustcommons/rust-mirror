@@ -45,11 +45,19 @@ All implementation, native client and actual Nexus gates above passed at qualifi
 [final prepublication record](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification)
 and [structured evidence](evals/rustup-0.1.0-qualification.json).
 
-Final clean-merge Rust 1.90 package verification, fresh unpacked installation and
-installed publisher TLS checks have passed. 0.1.0 is ready for owner publication
-approval at frozen `0b38e4595a09e5e2a5b781c39b509fb60eff3d9c`; later bookkeeping
-does not change the released package inputs. No crate, source tag or GitHub Release has been published. Official
-archive/registry-install/docs.rs/tag/Release checks follow authorization under the
-[release checklist](RELEASING.md). Scheduling remains excluded. Unlisted native
-hosts, production Nexus policy, current CE onboarding, SDKs and Cargo dependencies
-retain the documented boundaries; they are not silently counted as verified.
+The earlier clean-source package passed its recorded Rust 1.90 verification and
+installation, but the full-user-documentation update changes packaged files.
+Publication remains on hold until the expanded documentation merges and its
+refreshed clean package/candidate identity is recorded. Do not publish the old
+candidate merely because its earlier gates passed. Official archive/registry
+install/docs.rs/tag/Release checks still follow owner authorization under the
+[release checklist](RELEASING.md). Scheduling remains excluded.
+
+## Documentation expansion before publication
+
+The owner's full-documentation request adds the user guide/reference and changes
+packaged README/changelog bytes. The earlier frozen `0b38e459` archive is superseded
+for publication. Code, manifest, lock, examples and license are unchanged, so the
+native/server qualification carries in its recorded scope. Final clean packaging
+and the new release-candidate identity will be recorded after the docs merge.
+Do not upload the superseded archive.

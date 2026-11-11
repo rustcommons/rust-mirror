@@ -3,6 +3,11 @@
 Prepare Rust toolchain snapshots for offline development and static hosting,
 including Nexus Repository Raw hosted repositories.
 
+Start with the [complete user guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md),
+then use the [command/configuration reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md)
+for exact options and defaults. The guide explains preparation, Nexus publication,
+activation and client updates as separate steps.
+
 ## Current state
 
 CLI and reusable library for selected modern Rustup distributions. Choose named toolchain
@@ -55,6 +60,9 @@ Git history and stable `ROM-REQ` identifiers. The earlier Windows-local uncommit
 prototype remains untouched and separately preserved; its assessment is historical.
 
 ## Documentation
+
+- [Complete user guide and worked Windows/Unix deployment/update examples](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md).
+- [Every command, option, config field, report and library entry point](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md).
 
 - [Start testing: one-shot sync and demos](https://github.com/rustcommons/rust-mirror/blob/main/docs/SYNC.md).
 - [Multi-version generations and explicit channel refresh](https://github.com/rustcommons/rust-mirror/blob/main/docs/MULTI-VERSION.md).

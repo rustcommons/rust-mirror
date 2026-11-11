@@ -9,6 +9,10 @@ No additional changes queued.
 First release of selected modern Rustup mirroring and Nexus Raw publication.
 See [versioned notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.1.0.md) for availability and qualification.
 
+- Add a complete operating guide and command/configuration reference, covering
+  platform/version selection, private client examples, Nexus activation, recovery
+  and current limitations.
+
 - Add native verified HTTPS `publish` for Nexus Raw/static hosting, explicit private
   CA and scoped credential support, whole-prefix absence checks and remote hash
   verification. Add normal Rustup full/minor numeric lookup aliases and `--version`.

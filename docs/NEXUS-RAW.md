@@ -1,5 +1,8 @@
 # Hosting a toolchain snapshot in Nexus Raw
 
+New here? Start with the [complete user guide](USER-GUIDE.md). For all flags,
+defaults and outputs see the [command reference](CLI-REFERENCE.md).
+
 ## Supported shape and current evidence
 
 Use a **Nexus Repository 3 Raw (hosted)** repository. It serves ordinary bytes at

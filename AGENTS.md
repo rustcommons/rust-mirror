@@ -142,6 +142,24 @@ helpers. Demo scripts must use new private output, distinguish synthetic fixture
 from actual archives, and preserve user homes/inputs. Record counter semantics and
 resource/platform limits in `docs/SYNC.md`; no new dependencies without approval.
 
+## User-facing documentation
+
+Maintain `docs/USER-GUIDE.md` as the plain-language start-to-finish route and
+`docs/CLI-REFERENCE.md` as the complete command/configuration reference. Document
+every command/option's meaning, defaults, output, network/local/remote effects and
+failure/retry behavior. Explain host versus target, compiler versus manager,
+raw versus finished generation, and publication versus explicit activation.
+Keep Windows and Unix client examples, safe credential/trust handling and known
+limits aligned with implementation; never imply all historical/custom Rustup
+selectors or unqualified hosts are supported.
+
+For documentation changes, audit CLI/source coverage, parse configuration/shell
+examples, compile changed Rust API examples, check links/anchors/rendering and
+inspect the diff. Do not repeat unrelated native matrices for unchanged code.
+When packaged README/changelog bytes change, refresh the clean package audit and
+release-candidate identity; do not publish an earlier archive missing the new docs.
+Preserve dated qualification history and explicitly carry only applicable evidence.
+
 ## Documentation and requirements traceability
 
 - Follow the [Rust Commons documentation conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md).

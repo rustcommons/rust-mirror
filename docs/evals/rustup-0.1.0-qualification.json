@@ -1,5 +1,5 @@
 {
-  "state": "prepublication qualification complete; publication not authorized",
+  "state": "full user documentation added; package/candidate identity refresh pending",
   "qualified_head": "4738aef30187431886c67aa931af0eeaef681fc4",
   "implementation_merge": "7c020b58b9893d41775157710d98a895ede66dd8",
   "workflow_run": 42961977999,
@@ -1347,8 +1347,16 @@
     "Trusted local filesystems; no hostile mutation/NFS/power-loss guarantee.",
     "Official crates.io archive/install, docs.rs, tag and GitHub Release remain post-authorization gates."
   ],
-  "frozen_release_candidate": "0b38e4595a09e5e2a5b781c39b509fb60eff3d9c",
-  "final_clean_package": {
+  "previous_frozen_release_candidate": "0b38e4595a09e5e2a5b781c39b509fb60eff3d9c",
+  "documentation_refresh": {
+    "packaged_changes": [
+      "README.md",
+      "CHANGELOG.md"
+    ],
+    "compiled_source_manifest_lock_examples_license_unchanged": true,
+    "new_candidate_identity_pending": true
+  },
+  "previous_final_clean_package": {
     "source": "0b38e4595a09e5e2a5b781c39b509fb60eff3d9c",
     "archive_sha256": "360885af0d2b89a1ec0ae7146ea3ea30c1e901943cc5b8d51999477efb8fdd9f",
     "archive_bytes": 48883,
