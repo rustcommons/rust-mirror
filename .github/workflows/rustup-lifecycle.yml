@@ -6,6 +6,9 @@ on:
       - 'scripts/*rustup*'
       - '.github/workflows/rustup-lifecycle.yml'
   workflow_dispatch:
+concurrency:
+  group: rustup-lifecycle-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -13,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-15]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     env:

@@ -65,6 +65,9 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
     cargo = evidence / "cargo"
     rustup_home = evidence / "rustup"
     env = {k:v for k,v in os.environ.items() if not k.startswith(("RUSTUP_", "CARGO_", "RUSTC_")) and k not in ("RUSTFLAGS", "RUSTDOCFLAGS")}
+    for key in list(env):
+        if key.lower() in ("http_proxy","https_proxy","all_proxy","no_proxy"): env.pop(key)
+    env.update(NO_PROXY="127.0.0.1,localhost", no_proxy="127.0.0.1,localhost")
     env.update(HOME=str(home), USERPROFILE=str(home), CARGO_HOME=str(cargo), RUSTUP_HOME=str(rustup_home), RUSTUP_DIST_SERVER=old_url,
                RUSTUP_UPDATE_ROOT=old_url+"/rustup", RUSTUP_INIT_SKIP_PATH_CHECK="yes", RUSTUP_INIT_SKIP_SUDO_CHECK="yes", RUSTUP_MAX_RETRIES="0",
                RUSTUP_IO_THREADS="2", RUSTUP_UNPACK_RAM="268435456", CARGO_BUILD_JOBS="2", RUSTUP_NO_WINDOWS_PATH_WARNING="1")
@@ -165,9 +168,19 @@ def fixture_tls(evidence):
         if candidate.is_file(): openssl=str(candidate)
     if openssl is None: raise RuntimeError("TLS fixture requires preinstalled openssl")
     cert=evidence/"test-ca.pem"; key=evidence/"server.key"
-    p=subprocess.run([openssl,"req","-x509","-newkey","rsa:2048","-nodes","-days","1","-subj","/CN=rust-mirror-lifecycle","-addext","subjectAltName=IP:127.0.0.1","-keyout",str(key),"-out",str(cert)],capture_output=True)
-    if p.returncode: raise RuntimeError("temporary TLS certificate generation failed")
-    context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.load_cert_chain(cert,key)
+    config=evidence/"ca.cnf"
+    config.write_text("[req]\nprompt=no\ndistinguished_name=dn\nx509_extensions=ca\n[dn]\nCN=rust-mirror-lifecycle-ca\n[ca]\nbasicConstraints=critical,CA:TRUE\nkeyUsage=critical,keyCertSign,cRLSign\nsubjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid:always\n",encoding="utf-8")
+    commands=[
+        [openssl,"req","-x509","-newkey","rsa:2048","-nodes","-days","1","-config",str(config),"-keyout",str(evidence/"ca.key"),"-out",str(cert)],
+        [openssl,"req","-new","-newkey","rsa:2048","-nodes","-subj","/CN=127.0.0.1","-keyout",str(key),"-out",str(evidence/"server.csr")],
+    ]
+    extensions=evidence/"server.ext"
+    extensions.write_text("subjectAltName=IP:127.0.0.1\nbasicConstraints=critical,CA:FALSE\nextendedKeyUsage=serverAuth\n",encoding="utf-8")
+    commands.append([openssl,"x509","-req","-in",str(evidence/"server.csr"),"-CA",str(cert),"-CAkey",str(evidence/"ca.key"),"-CAcreateserial","-out",str(evidence/"server.pem"),"-days","1","-extfile",str(extensions)])
+    for command in commands:
+        p=subprocess.run(command,capture_output=True)
+        if p.returncode: raise RuntimeError("temporary TLS certificate generation failed")
+    context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.load_cert_chain(evidence/"server.pem",key)
     cleanup=lambda: None
     if platform.system() in ("Windows","Darwin"):
         if os.environ.get("GITHUB_ACTIONS")!="true": raise RuntimeError("native trust-store tests are restricted to disposable CI runners")
