@@ -213,6 +213,14 @@ def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
         if key.lower() in ("http_proxy","https_proxy","all_proxy"):env.pop(key)
     command=[str(cli),"publish","--source",str(source),"--base-url",base+"/publish-test","--ca-file",str(ca_file)]
     before=len(request_log)
+    # Validate the installed publisher's trust policy, not only Python TLS.
+    unknown_ca=command[:-2]
+    wrong_hostname=[part.replace("https://127.0.0.1:","https://localhost:") for part in command]
+    for name,probe in [("native-publish-untrusted-refuses",unknown_ca),("native-publish-hostname-refuses",wrong_hostname)]:
+        result=subprocess.run([*prefix,*probe],env=env,capture_output=True,timeout=60)
+        (evidence/(name+".stdout")).write_bytes(result.stdout);(evidence/(name+".stderr")).write_bytes(result.stderr)
+        if password.encode() in result.stdout+result.stderr:raise RuntimeError("publisher exposed a credential")
+        if result.returncode==0 or any(r["method"]=="PUT" for r in request_log[before:]):raise RuntimeError("native publisher bypassed TLS policy: "+name)
     for name,success in [("native-publish",True),("native-publish-repeat-refuses",False)]:
         result=subprocess.run([*prefix,*command],env=env,capture_output=True,timeout=60)
         (evidence/(name+".stdout")).write_bytes(result.stdout);(evidence/(name+".stderr")).write_bytes(result.stderr)
@@ -224,7 +232,7 @@ def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
     records=request_log[before:]
     puts=[r for r in records if r["method"]=="PUT"]
     if len(puts)!=expected or not puts[-1]["path"].endswith("/snapshot.toml"):raise RuntimeError("publisher ordering/overwrite contract failed")
-    (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True},indent=2)+"\n",encoding="utf-8")
+    (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True,"untrusted_ca_refused":True,"wrong_hostname_refused":True},indent=2)+"\n",encoding="utf-8")
 
 def fixture_tls(evidence, native_trust=True):
     openssl=shutil.which("openssl")
