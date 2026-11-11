@@ -24,7 +24,7 @@ completed selected snapshots (schema 2) or earlier collection mirrors (schema 3)
 not legacy schema 1. Inputs and output parents must already exist; the output
 itself must be new. Stdout is the completed `OUTPUT/mirror` path. Failures return 1.
 
-Repeat `--snapshot` for 1?32 inputs. `--previous` and `--max-bytes` are singletons;
+Repeat `--snapshot` for 1-32 inputs. `--previous` and `--max-bytes` are singletons;
 duplicates refuse. Paths may contain spaces when quoted. No network is used by
 assembly and no source snapshot is changed or removed. Outputs nested inside an
 input snapshot (including the previous generation) are refused.

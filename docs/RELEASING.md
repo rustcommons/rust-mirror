@@ -22,7 +22,9 @@ publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
    for Linux/x86-64, Windows/x86-64, macOS/Intel and Apple Silicon. Require fresh
    bootstrap, old/new stable and pinned history, numeric aliases, components/targets,
    offline build, self-update/repeat and missing/corrupt controls. Linux additionally
-   checks beta/nightly. Preserve isolation and temporary-CA cleanup evidence.
+   checks beta/nightly. Preserve isolation and temporary-CA cleanup evidence,
+   including explicitly recorded macOS hosted-VM teardown if its removal API blocks.
+   Require destroyed fixture private keys; never accept this route on a self-hosted VM.
 4. On actual disposable Nexus, require schema 2/3, native CLI publication, private
    CA/hostname/auth/no-redeploy controls and same-client updates through a fixed
    Raw group URL. Never accept EULAs or use production credentials for qualification.

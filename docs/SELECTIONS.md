@@ -136,7 +136,7 @@ and [actual Nexus boundaries](NEXUS-INTEGRATION.md).
 
 ## Limits and trust
 
-- Strict schema 1 configuration: 1?32 unique named selections, 1?16 unique hosts per
+- Strict schema 1 configuration: 1-32 unique named selections, 1-16 unique hosts per
   selection, at most 64 explicit components and 64 targets. Identifier/path checks apply.
 - At most 1,024 payload files; manifests up to 4 MiB; config/plan up to 1 MiB;
   signatures up to 64 KiB; individual downloads up to 512 MiB.

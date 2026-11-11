@@ -129,7 +129,11 @@ updates, pinned history, component/target changes, offline builds, self-update,
 repeat operations and missing/corrupt download controls. The dedicated workflow
 runs Linux network namespaces, macOS sandboxing and program-scoped Windows firewall
 rules. Temporary CA trust changes on macOS/Windows are restricted to disposable
-CI runners and removed afterward. Never run that Windows wrapper on a workstation.
+fresh GitHub-hosted VMs. Windows uses the machine Root store and exact-certificate
+removal. macOS attempts bounded exact removal; if the headless API times out, the
+proof records deferred VM-teardown cleanup and destroys both fixture private keys.
+That is not a successful explicit-removal claim. Self-hosted runners and workstations
+are refused for native trust setup. Never run the Windows wrapper on a workstation.
 
 The extended Nexus runner accepts selected/collection snapshots and an optional
 `--next-snapshot` for the same lifecycle through actual Raw storage with a trusted

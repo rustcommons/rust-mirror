@@ -256,34 +256,19 @@ def fixture_tls(evidence, native_trust=True):
     context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.load_cert_chain(evidence/"server.pem",key)
     cleanup=lambda: None
     if native_trust and platform.system() in ("Windows","Darwin"):
-        if os.environ.get("GITHUB_ACTIONS")!="true": raise RuntimeError("native trust-store tests are restricted to disposable CI runners")
+        if os.environ.get("GITHUB_ACTIONS")!="true" or os.environ.get("RUNNER_ENVIRONMENT")!="github-hosted": raise RuntimeError("native trust-store tests require fresh GitHub-hosted VMs")
         if os.name=="nt":
-            # Direct current-user certificate-store APIs avoid certutil trust UI.
-            # Only the newly generated certificate context is removed on cleanup.
-            import ctypes
-            from ctypes import wintypes
-            api=ctypes.WinDLL("crypt32",use_last_error=True)
-            api.CertOpenSystemStoreW.argtypes=[ctypes.c_void_p,wintypes.LPCWSTR]
-            api.CertOpenSystemStoreW.restype=ctypes.c_void_p
-            api.CertAddEncodedCertificateToStore.argtypes=[ctypes.c_void_p,wintypes.DWORD,ctypes.c_void_p,wintypes.DWORD,wintypes.DWORD,ctypes.POINTER(ctypes.c_void_p)]
-            api.CertAddEncodedCertificateToStore.restype=wintypes.BOOL
-            api.CertDeleteCertificateFromStore.argtypes=[ctypes.c_void_p]
-            api.CertDeleteCertificateFromStore.restype=wintypes.BOOL
-            api.CertCloseStore.argtypes=[ctypes.c_void_p,wintypes.DWORD]
-            api.CertCloseStore.restype=wintypes.BOOL
-            store=api.CertOpenSystemStoreW(None,"ROOT")
-            if not store:raise ctypes.WinError(ctypes.get_last_error())
-            der=ssl.PEM_cert_to_DER_cert(cert.read_text())
-            buffer=ctypes.create_string_buffer(der);context_ptr=ctypes.c_void_p()
-            if not api.CertAddEncodedCertificateToStore(store,0x10001,buffer,len(der),1,ctypes.byref(context_ptr)):
-                error=ctypes.get_last_error();api.CertCloseStore(store,0);raise ctypes.WinError(error)
-            (evidence/"trust-setup.json").write_text(json.dumps({"store":"current-user ROOT","sha1":hashlib.sha1(der).hexdigest(),"added":True}),encoding="utf-8")
+            # CI runs elevated. LocalMachine avoids the current-user Root UI prompt.
+            der=evidence/"test-ca.cer";der.write_bytes(ssl.PEM_cert_to_DER_cert(cert.read_text()))
+            thumb=hashlib.sha1(der.read_bytes()).hexdigest().upper()
+            added=subprocess.run(["certutil.exe","-f","-addstore","Root",str(der)],capture_output=True,text=True,timeout=60)
+            (evidence/"trust-setup.stdout").write_text(added.stdout,encoding="utf-8")
+            (evidence/"trust-setup.stderr").write_text(added.stderr,encoding="utf-8")
+            if added.returncode:raise RuntimeError("machine test-CA import failed")
+            (evidence/"trust-setup.json").write_text(json.dumps({"store":"LocalMachine ROOT","sha1":thumb,"added":True}),encoding="utf-8")
             def cleanup():
-                removed=bool(api.CertDeleteCertificateFromStore(context_ptr))
-                error=ctypes.get_last_error()
-                closed=bool(api.CertCloseStore(store,0))
-                (evidence/"trust-cleanup.json").write_text(json.dumps({"removed":removed,"store_closed":closed}),encoding="utf-8")
-                if not removed or not closed:raise ctypes.WinError(error)
+                subprocess.run(["certutil.exe","-delstore","Root",thumb],capture_output=True,check=True,timeout=60)
+                (evidence/"trust-cleanup.json").write_text('{"removed":true}',encoding="utf-8")
         else:
             # Disposable CI system keychain, passwordless sudo; no interactive trust UI.
             keychain="/Library/Keychains/System.keychain"
@@ -293,9 +278,21 @@ def fixture_tls(evidence, native_trust=True):
             def cleanup():
                 # -t removes user trust settings and may prompt even under sudo.
                 # Remove the admin trust entry explicitly, then its exact certificate.
-                subprocess.run(["sudo","-n","security","remove-trusted-cert","-d",str(cert)],capture_output=True,check=True,timeout=60)
-                subprocess.run(["sudo","-n","security","delete-certificate","-Z",fingerprint,keychain],capture_output=True,check=True,timeout=60)
-                (evidence/"trust-cleanup.json").write_text('{"removed":true}',encoding="utf-8")
+                record={"removed":False,"disposable_runner_teardown":False}
+                try:
+                    subprocess.run(["sudo","-n","security","remove-trusted-cert","-d",str(cert)],stdin=subprocess.DEVNULL,capture_output=True,check=True,timeout=15)
+                    subprocess.run(["sudo","-n","security","delete-certificate","-Z",fingerprint,keychain],stdin=subprocess.DEVNULL,capture_output=True,check=True,timeout=15)
+                    record["removed"]=True
+                except subprocess.TimeoutExpired:
+                    # macOS headless authorization can block even with sudo. The
+                    # private keys are destroyed below; the fresh hosted VM is the
+                    # remaining trust-store cleanup boundary, never a workstation.
+                    if os.environ.get("GITHUB_ACTIONS")!="true" or os.environ.get("RUNNER_ENVIRONMENT")!="github-hosted":raise
+                    record["disposable_runner_teardown"]=True
+                    print("Temporary macOS trust cleanup deferred to hosted-VM teardown; private keys destroyed.",flush=True)
+                finally:
+                    for private in (evidence/"ca.key",key):private.unlink(missing_ok=True)
+                    (evidence/"trust-cleanup.json").write_text(json.dumps(record),encoding="utf-8")
     return context,cert,cleanup
 
 def main():
