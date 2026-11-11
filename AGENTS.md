@@ -73,8 +73,8 @@ Explicit unavailable selections must fail, not silently shrink or change date.
 
 Validate cached-plan replay, aliases/global components, multi-host closure, byte
 budgets, path/hash/schema refusal and existing-output preservation. Exercise the
-publisher against both inventory schemas. The real-Nexus harness now accepts selected/collection pairs, but its previously
-completed proof remains schema 1 until expanded actual results are recorded.
+publisher against both inventory schemas. The real-Nexus harness accepts selected/collection pairs; distinguish the original
+schema 1 proof from current expanded results in the lifecycle evaluation.
 Do not describe HTTP-fixture evidence as an actual Nexus pass.
 Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
 independent signature validation and foreign-platform execution gaps explicit.
@@ -115,8 +115,8 @@ Validate every source inventory and selected artifact closure before writing;
 hash copy-time bytes and enforce file/record/inventory/final-byte bounds. Test
 multi-version retention, alias history, immutable/new-input conflicts, missing
 payloads, budgets and symbolic-link refusal. Keep publisher/proof schemas and
-requirements aligned. Actual Nexus schema 2/3, scheduling, pruning and remote
-client switching remain unqualified or unimplemented as documented. Use bounded
+requirements aligned. Record actual Nexus schema 2/3 and explicit Raw-group client
+activation separately from local assembly. Scheduling/pruning remain unimplemented. Use bounded
 local fixtures and reused baseline files before downloading another toolchain.
 
 ## One-shot sync and demos

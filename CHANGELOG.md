@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
+
+No additional changes queued.
+
+## [0.1.0] - 2026-11-11
+
+First-release candidate; not published. Final native/package gates remain open.
+See [versioned notes](docs/releases/v0.1.0.md).
 
 - Add native verified HTTPS `publish` for Nexus Raw/static hosting, explicit private
   CA and scoped credential support, whole-prefix absence checks and remote hash

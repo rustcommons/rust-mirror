@@ -19,7 +19,9 @@ instance-specific test; no production instance has been contacted.
 For named versions/channels, additional components, targets or multiple hosts,
 use the [selection workflow](SELECTIONS.md). Its schema 2 inventory is accepted
 by the same publisher. The legacy command below remains a schema 1 minimal example.
-Only the recorded original schema 1 case has actual Nexus server qualification.
+Actual schema 2/3 and existing-client Nexus results are tracked in
+[the current lifecycle record](evals/2026-11-11-rustup-lifecycle.md), separately from
+the original schema 1 proof.
 For a shared multi-version tree, [assemble a schema 3 generation](MULTI-VERSION.md)
 and publish it through the same helper to a new prefix.
 
@@ -133,7 +135,9 @@ are documented separately.
 HTTP PUT is **not** a multi-file transaction. HEAD checks and `If-None-Match: *`
 are not a substitute for server-enforced no-redeploy policy and exclusive publishing.
 Do not give clients the snapshot URL until publication and GET verification finish.
-There is no rolling `stable` alias or automatic switch of existing clients yet.
+The [Rustup finishing stage](RUSTUP.md) supplies explicit stable/beta/nightly
+metadata and self-update endpoints. Switching a fixed group URL is a separate
+operator action after complete publication; the publisher never changes routing.
 
 The relevant layout below is illustrative; archive names come from the upstream
 manifest rather than being synthesized:
@@ -196,8 +200,9 @@ GNU Linux case with Rustup 1.28.2. It selects one preferred format (zstd, xz, gz
 That historical proof does not qualify every release or client. The newer
 [selection workflow](SELECTIONS.md) downloads all selected advertised variants and
 has separate component/Wasm evidence; [multi-version generations](MULTI-VERSION.md)
-have a separate two-release Linux coexistence proof. Foreign-platform execution,
-old-system qualification, self-updates and deployed Nexus policy remain gaps.
+have a separate two-release Linux coexistence proof. Current native-platform,
+self-update and Nexus qualification is in the [lifecycle record](evals/2026-11-11-rustup-lifecycle.md).
+Old-system qualification and your deployed Nexus policy remain separate gaps.
 
 The untouched manifest lists components/targets that this subset snapshot does
 not contain. Requests for those artifacts will fail; the inventory, not the full

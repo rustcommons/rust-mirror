@@ -1,0 +1,65 @@
+# Release policy and checklist
+
+The first planned crate is `rust-mirror` 0.1.0. No placeholder crate is published
+for name reservation; `rust-mirror-gui` remains future work. Publication requires
+the owner's separate go-ahead. This policy does not itself authorize publication.
+
+## Versioning and scope
+
+Use a minor release for new CLI/report/refusal contracts while pre-1.0; use a patch
+for compatible fixes and documentation-only package corrections. Keep saved schema
+compatibility explicit and migrations documented. The current release scope is
+selected modern Rustup distributions, offline clients and verified Nexus Raw
+publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
+
+## Before merge and publication
+
+1. Update the changelog, versioned notes, guides and stable ROM-REQ trace together.
+   Keep historical failures and bounds; metadata checks are not native evidence.
+2. Run Rust 1.90 fmt, tests, Clippy and rustdoc with warnings denied, Python tests,
+   link/render checks and release-documentation CI. Inspect the exact final diff.
+3. Run the [Rustup lifecycle workflow](../.github/workflows/rustup-lifecycle.yml)
+   for Linux/x86-64, Windows/x86-64, macOS/Intel and Apple Silicon. Require fresh
+   bootstrap, old/new stable and pinned history, numeric aliases, components/targets,
+   offline build, self-update/repeat and missing/corrupt controls. Linux additionally
+   checks beta/nightly. Preserve isolation and temporary-CA cleanup evidence.
+4. On actual disposable Nexus, require schema 2/3, native CLI publication, private
+   CA/hostname/auth/no-redeploy controls and same-client updates through a fixed
+   Raw group URL. Never accept EULAs or use production credentials for qualification.
+5. Audit `cargo package --locked`: exact clean VCS, include list, source/manifest/
+   lock/license bytes and no private evidence/keys/archives. Unpack and install
+   with `cargo install --path UNPACKED --locked --root FRESH_ROOT` and a fresh
+   Cargo home. Check `--version`, CLI/refusals and real native publication/lifecycle
+   using the installed executable. A source-tree pass is not a package-install pass.
+6. Freeze the reviewed candidate, merge normally, verify tree equality and repackage
+   at the exact merge. Compare payloads; only VCS metadata may differ. Record the
+   archive hash. Require owner publication authorization before `cargo publish`.
+
+## After publication
+
+- Verify the official crates.io archive against the API/index checksum, non-yanked
+  status, exact release VCS and qualified payload; verify docs.rs build and links.
+- Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
+  and installed-command proof. Do not claim registry installation before upload.
+- Create the annotated version tag at the exact release commit. Publish the exact
+  committed [versioned notes](releases/v0.1.0.md) as the GitHub Release, latest and
+  without attached standalone binaries unless separately authorized.
+- Verify live tag/body, full `--published` documentation CI, registry/docs agreement
+  and clean remote-aligned main. Record evidence in excluded documentation.
+- Never move a release tag, overwrite a published crate or rewrite failed history.
+  A discovered published-doc defect requires a new version if its package must change.
+
+## Update triggers and limitations
+
+Rerun affected permanent gates when Rustup endpoint/schema/client behavior changes,
+new hosts/components/formats are advertised, Rust toolchain metadata changes,
+Nexus/proxy/TLS/auth policies change, or download/publication/selection code changes.
+An unchanged excluded-doc correction needs only its narrow checks. A new untested
+host or server stays unqualified until native evidence is recorded.
+
+The mirror retains upstream signatures but does not independently verify OpenPGP.
+TLS/upstream checksums and trusted administrative transfers are the stated trust
+model. No evidence certifies arbitrary offline Cargo dependencies, OS SDKs, ancient
+pre-v2 Rustup releases, hostile filesystems, production configuration or globally
+atomic in-flight group switching. Use the [current gates](RELEASE-0.1.0-PLAN.md) and
+[dated evidence](evals/2026-11-11-rustup-lifecycle.md), not a blanket coverage claim.

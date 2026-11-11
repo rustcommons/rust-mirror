@@ -226,7 +226,7 @@ def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
     if len(puts)!=expected or not puts[-1]["path"].endswith("/snapshot.toml"):raise RuntimeError("publisher ordering/overwrite contract failed")
     (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True},indent=2)+"\n",encoding="utf-8")
 
-def fixture_tls(evidence):
+def fixture_tls(evidence, native_trust=True):
     openssl=shutil.which("openssl")
     if openssl is None and os.name=="nt":
         candidate=Path(os.environ.get("ProgramFiles","C:/Program Files"))/"Git/usr/bin/openssl.exe"
@@ -247,24 +247,47 @@ def fixture_tls(evidence):
         if p.returncode: raise RuntimeError("temporary TLS certificate generation failed")
     context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.load_cert_chain(evidence/"server.pem",key)
     cleanup=lambda: None
-    if platform.system() in ("Windows","Darwin"):
+    if native_trust and platform.system() in ("Windows","Darwin"):
         if os.environ.get("GITHUB_ACTIONS")!="true": raise RuntimeError("native trust-store tests are restricted to disposable CI runners")
         if os.name=="nt":
-            der=evidence/"test-ca.cer"
-            der.write_bytes(ssl.PEM_cert_to_DER_cert(cert.read_text()))
-            thumb=hashlib.sha1(der.read_bytes()).hexdigest().upper()
-            imported=subprocess.run(["certutil.exe","-user","-f","-addstore","Root",str(der)],capture_output=True,text=True,timeout=60)
-            (evidence/"trust-setup.stdout").write_text(imported.stdout,encoding="utf-8")
-            (evidence/"trust-setup.stderr").write_text(imported.stderr,encoding="utf-8")
-            if imported.returncode: raise RuntimeError("native test-CA import failed; see trust-setup.stderr")
-            cleanup=lambda: subprocess.run(["certutil.exe","-user","-delstore","Root",thumb],check=True,capture_output=True,timeout=60)
+            # Direct current-user certificate-store APIs avoid certutil trust UI.
+            # Only the newly generated certificate context is removed on cleanup.
+            import ctypes
+            from ctypes import wintypes
+            api=ctypes.WinDLL("crypt32",use_last_error=True)
+            api.CertOpenSystemStoreW.argtypes=[ctypes.c_void_p,wintypes.LPCWSTR]
+            api.CertOpenSystemStoreW.restype=ctypes.c_void_p
+            api.CertAddEncodedCertificateToStore.argtypes=[ctypes.c_void_p,wintypes.DWORD,ctypes.c_void_p,wintypes.DWORD,wintypes.DWORD,ctypes.POINTER(ctypes.c_void_p)]
+            api.CertAddEncodedCertificateToStore.restype=wintypes.BOOL
+            api.CertDeleteCertificateFromStore.argtypes=[ctypes.c_void_p]
+            api.CertDeleteCertificateFromStore.restype=wintypes.BOOL
+            api.CertCloseStore.argtypes=[ctypes.c_void_p,wintypes.DWORD]
+            api.CertCloseStore.restype=wintypes.BOOL
+            store=api.CertOpenSystemStoreW(None,"ROOT")
+            if not store:raise ctypes.WinError(ctypes.get_last_error())
+            der=ssl.PEM_cert_to_DER_cert(cert.read_text())
+            buffer=ctypes.create_string_buffer(der);context_ptr=ctypes.c_void_p()
+            if not api.CertAddEncodedCertificateToStore(store,0x10001,buffer,len(der),1,ctypes.byref(context_ptr)):
+                error=ctypes.get_last_error();api.CertCloseStore(store,0);raise ctypes.WinError(error)
+            (evidence/"trust-setup.json").write_text(json.dumps({"store":"current-user ROOT","sha1":hashlib.sha1(der).hexdigest(),"added":True}),encoding="utf-8")
+            def cleanup():
+                removed=bool(api.CertDeleteCertificateFromStore(context_ptr))
+                error=ctypes.get_last_error()
+                closed=bool(api.CertCloseStore(store,0))
+                (evidence/"trust-cleanup.json").write_text(json.dumps({"removed":removed,"store_closed":closed}),encoding="utf-8")
+                if not removed or not closed:raise ctypes.WinError(error)
         else:
             # Disposable CI system keychain, passwordless sudo; no interactive trust UI.
             keychain="/Library/Keychains/System.keychain"
             subprocess.run(["sudo","-n","security","add-trusted-cert","-d","-r","trustRoot","-k",keychain,str(cert)],capture_output=True,check=True,timeout=60)
             der=ssl.PEM_cert_to_DER_cert(cert.read_text())
             fingerprint=hashlib.sha1(der).hexdigest().upper()
-            cleanup=lambda: subprocess.run(["sudo","-n","security","delete-certificate","-Z",fingerprint,"-t",keychain],capture_output=True,check=True,timeout=60)
+            def cleanup():
+                # -t removes user trust settings and may prompt even under sudo.
+                # Remove the admin trust entry explicitly, then its exact certificate.
+                subprocess.run(["sudo","-n","security","remove-trusted-cert","-d",str(cert)],capture_output=True,check=True,timeout=60)
+                subprocess.run(["sudo","-n","security","delete-certificate","-Z",fingerprint,keychain],capture_output=True,check=True,timeout=60)
+                (evidence/"trust-cleanup.json").write_text('{"removed":true}',encoding="utf-8")
     return context,cert,cleanup
 
 def main():
@@ -317,7 +340,7 @@ def main():
             if len(parts)<3 or parts[1] not in roots or any(v in (".","..") for v in parts): return str(args.evidence/"absent")
             return str(roots[parts[1]].joinpath(*parts[2:]))
         def log_request(self,code="-",size="-"): requests.append({"method":self.command,"path":self.path,"status":str(code)})
-    context,ca_file,cleanup=fixture_tls(args.evidence)
+    context,ca_file,cleanup=fixture_tls(args.evidence,native_trust=not args.publisher_preflight)
     server=None;thread=None
     try:
         server=http.server.ThreadingHTTPServer(("127.0.0.1",0),Handler)

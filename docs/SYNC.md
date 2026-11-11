@@ -169,5 +169,7 @@ fallback to a different nightly or silent omission of requested components.
 
 Private trusted local parents and working filesystem locks/renames are required.
 Power-loss durability, hostile mutation and NFS/multi-machine locking are unqualified.
-Publication, scheduling, retention/deletion, self-update hosting and current Nexus
-schema 2/3 onboarding are not implemented or newly qualified by this command.
+`sync` itself does not publish, activate, schedule or prune. Follow it with the
+[Rustup finishing stage](RUSTUP.md) for self-update/bootstrap endpoints and the
+[native publisher](NEXUS-RAW.md#publish-from-the-installed-cli) for verified Nexus
+uploads. Their separate evidence does not change the historical sync proof.
