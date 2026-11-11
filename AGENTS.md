@@ -5,7 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. No version is released. Describe only demonstrated functionality
+publication helper. Version 0.1.0 is published; see docs/evals/2026-11-11-publication.md.
+Describe only demonstrated functionality
 as implemented; broader mirroring and the GUI remain planned.
 
 Preserve the earlier Windows-local uncommitted prototype. Assess it before import
@@ -42,7 +43,8 @@ bytes; check byte/path budgets and hashes before exposing a completed snapshot.
 Record actual Nexus/TLS/auth testing separately from the local protocol fixture.
 The original proof does not establish independent OpenPGP validation, shared-cache
 concurrency or untested-platform support. Current native/package evidence is tracked
-separately in docs/evals/2026-11-11-rustup-lifecycle.md; publication remains gated.
+separately in docs/evals/2026-11-11-rustup-lifecycle.md; completed publication is
+recorded in docs/evals/2026-11-11-publication.md.
 
 The actual Nexus proof is a destructive **disposable-instance test**, not a
 production configuration tool. `scripts/run_nexus_proof.py` requires an explicit
@@ -59,8 +61,8 @@ The owner requires complete selected Rustup lifecycle and actual Nexus testing f
 0.1.0; scheduling is excluded. Follow [release gates](docs/RELEASE-0.1.0-PLAN.md).
 Do not substitute metadata availability for Windows/macOS native client evidence,
 or fixture HTTP for actual Nexus. Preserve isolated homes, existing generations,
-upstream manifests, license gates and documented trust limits. Publication still
-requires separate authorization.
+upstream manifests, license gates and documented trust limits. The owner authorized
+0.1.0 publication on 2026-11-11; later publications require their own authorization.
 
 ## Selection workflow constraints
 

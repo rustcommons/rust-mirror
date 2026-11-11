@@ -1,6 +1,6 @@
 # Release policy and checklist
 
-The first planned crate is `rust-mirror` 0.1.0. No placeholder crate is published
+The first published crate is `rust-mirror` 0.1.0. No placeholder crate is published
 for name reservation; `rust-mirror-gui` remains future work. Publication requires
 the owner's separate go-ahead. This policy does not itself authorize publication.
 

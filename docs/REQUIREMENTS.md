@@ -3,7 +3,7 @@
 ## Scope and sources
 
 This index preserves the original placeholder audit separately from the current
-rust-mirror CLI/library requirements. Selected Rustup mirroring and Nexus
+rust-mirror CLI/library requirements. rust-mirror 0.1.0 is published. Selected Rustup mirroring and Nexus
 publication are implemented within the evidence bounds below; Cargo registry
 mirroring and rust-mirror-gui remain planned. The recovered Windows-local prototype
 was assessed and preserved, not imported or replaced. Read the
@@ -91,7 +91,8 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [Nexus hosting guide](NEXUS-RAW.md) | Current preparation, transfer, publication and client setup with limits. |
 | [Offline proof](evals/2026-11-09-offline-toolchain.md) | Dated exact offline-install evidence, negative controls and gaps. |
 | [Release policy/checklist](RELEASING.md) | Permanent native/Nexus/package and postpublication gates. |
-| [0.1.0 notes](releases/v0.1.0.md) | Qualified candidate scope; publication still requires authorization. |
+| [0.1.0 notes](releases/v0.1.0.md) | Published features, upgrade information, validation and limits. |
+| [0.1.0 publication](evals/2026-11-11-publication.md) | Official archive, actual registry install, docs.rs and live release verification. |
 | [Final Rustup qualification](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification) | Exact native/Nexus/package results and preserved setup failures. |
 | [CHANGELOG.md](../CHANGELOG.md) | Unreleased implementation changes; no fabricated release history. |
 | [Nexus integration proof](NEXUS-INTEGRATION.md) | Explicit disposable test profile, flags, security controls and CE gate. |
@@ -123,3 +124,4 @@ no release records are fabricated.
   preserving reviewed head `6706689c997ab1f442af857771aa98eb16c08a54`.
 - Shared-link checks after the central conventions merge were completed on
   2026-11-01 as recorded above; recheck affected links when documentation targets change.
+

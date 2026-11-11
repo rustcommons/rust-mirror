@@ -1,5 +1,5 @@
 {
-  "state": "documentation-complete candidate qualified; awaiting owner publication authorization",
+  "state": "0.1.0 published; official archive/docs.rs/registry install verified; Release completion tracked separately",
   "qualified_head": "4738aef30187431886c67aa931af0eeaef681fc4",
   "implementation_merge": "7c020b58b9893d41775157710d98a895ede66dd8",
   "workflow_run": 42961977999,
@@ -1609,5 +1609,59 @@
       }
     ]
   },
-  "frozen_release_candidate": "93f38921000ba4e8cc1d55006afd326c077d8f7e"
+  "frozen_release_candidate": "93f38921000ba4e8cc1d55006afd326c077d8f7e",
+  "publication": {
+    "source": "93f38921000ba4e8cc1d55006afd326c077d8f7e",
+    "date": "2026-11-11",
+    "archive_sha256": "b6e01cc29cefc18121c54c23230238a076c9935b8823523073021f8cdba7a69c",
+    "archive_bytes": 49142,
+    "archive_files": 18,
+    "official_api_index_archive_match": true,
+    "non_yanked": true,
+    "byte_identical_to_qualified_archive": true,
+    "docs_rs_build": true,
+    "tag": "v0.1.0",
+    "registry_install": {
+      "status": "passed",
+      "install": "actual crates.io --version 0.1.0 --locked; fresh Cargo home and isolated root",
+      "toolchain": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+      "binary": "/tmp/rust-mirror-published-010-20261111/install/bin/rust-mirror",
+      "binary_sha256": "56e348ffbc4d0157b02720dad4d7041ae15e56eeb0c22960485b8864dd255f9c",
+      "smokes": [
+        {
+          "name": "version",
+          "exit": 0
+        },
+        {
+          "name": "help",
+          "exit": 0
+        },
+        {
+          "name": "init",
+          "exit": 0
+        },
+        {
+          "name": "existing-init",
+          "exit": 1
+        },
+        {
+          "name": "unknown",
+          "exit": 1
+        }
+      ],
+      "publisher_proof": "passed; private-CA HTTPS with unknown-CA/wrong-hostname/repeat-prefix refusals; isolated loopback fixture, not actual Nexus"
+    },
+    "installed_publisher": {
+      "status": "passed",
+      "files": 9,
+      "transport": "HTTPS with private CA and scoped fixture credentials",
+      "fixture_only": true,
+      "untrusted_ca_refused": true,
+      "wrong_hostname_refused": true,
+      "temporary_private_keys_destroyed": true,
+      "namespace_isolated": true,
+      "not_actual_nexus": true
+    },
+    "record": "2026-11-11-publication.md"
+  }
 }

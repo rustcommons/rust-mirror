@@ -73,3 +73,11 @@ Earlier installation/runtime evidence carries only for unchanged executable and
 dependency inputs. This is the current frozen candidate; later excluded-document
 bookkeeping does not change its package inputs. No publication, tag or Release
 has been performed. Official postpublication verification remains pending.
+
+## Published-state follow-up
+
+The owner subsequently authorized publication. The exact documentation-complete
+archive recorded above was uploaded unchanged and independently downloaded from
+crates.io. See the [publication record](2026-11-11-publication.md) for official
+checksums, actual registry-install evidence and release verification. This does
+not rewrite the prepublication hold or claim new broad runtime qualification.

@@ -45,14 +45,14 @@ All implementation, native client and actual Nexus gates above passed at qualifi
 [final prepublication record](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification)
 and [structured evidence](evals/rustup-0.1.0-qualification.json).
 
-The earlier clean-source package passed its recorded Rust 1.90 verification and
-installation, but the full-user-documentation update changes packaged files.
-The expanded documentation is merged and its refreshed clean package/candidate
-identity is recorded in the [documentation validation](evals/2026-11-11-user-documentation.md#documentation-complete-clean-package).
-Publication remains on hold for owner authorization. Do not publish the old
-candidate merely because its earlier gates passed. Official archive/registry
-install/docs.rs/tag/Release checks still follow owner authorization under the
-[release checklist](RELEASING.md). Scheduling remains excluded.
+The documentation-complete 0.1.0 crate is published from clean source
+`93f38921000ba4e8cc1d55006afd326c077d8f7e`. Official archive/API/index hashes,
+docs.rs and fresh crates.io installation/installed-publisher checks passed.
+The annotated `v0.1.0` tag identifies that exact source. See the
+[publication record](evals/2026-11-11-publication.md) for actual results and the
+[release notes](releases/v0.1.0.md). Historical qualification below keeps its
+original scope; no broad native/Nexus matrix was repeated for publication.
+Scheduling and the other stated exclusions remain outside 0.1.0.
 
 ## Documentation expansion before publication
 
