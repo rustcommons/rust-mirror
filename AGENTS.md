@@ -40,8 +40,9 @@ Do not publish artifacts to a real Nexus endpoint without owner authorization.
 Never log credentials or turn off TLS verification. Preserve upstream manifest
 bytes; check byte/path budgets and hashes before exposing a completed snapshot.
 Record actual Nexus/TLS/auth testing separately from the local protocol fixture.
-No independent OpenPGP validation, shared-cache concurrency, cross-platform
-installation or general release qualification follows from the current proof.
+The original proof does not establish independent OpenPGP validation, shared-cache
+concurrency or untested-platform support. Current native/package evidence is tracked
+separately in docs/evals/2026-11-11-rustup-lifecycle.md; publication remains gated.
 
 The actual Nexus proof is a destructive **disposable-instance test**, not a
 production configuration tool. `scripts/run_nexus_proof.py` requires an explicit

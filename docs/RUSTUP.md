@@ -1,7 +1,8 @@
 # Rustup lifecycle mirror
 
-This is the implemented distribution workflow being qualified for 0.1.0. The
-[release gates](RELEASE-0.1.0-PLAN.md) are not yet all complete; no release is published.
+This is the implemented distribution workflow for the 0.1.0 candidate. The
+[prepublication gates](RELEASE-0.1.0-PLAN.md#current-disposition) passed; publication
+and official postpublication checks remain pending.
 Scheduling is excluded. Rustup remains the installer and manages clients normally.
 
 ## Choose platforms, tools and versions
@@ -146,8 +147,8 @@ The extended Nexus runner accepts selected/collection snapshots and an optional
 `--next-snapshot` for the same lifecycle through actual Raw storage with a trusted
 TLS proxy, scoped writer and read-only clients. It uses an already-pulled explicit
 image in an owned isolated container and never accepts license agreements.
-The previously completed legacy Nexus proof is historical; new results must be
-recorded before claiming the expanded release gates pass.
+The original legacy proof remains historical. The [current qualification record](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification)
+records the four native hosts, schema 2/3 Nexus cases and exact evidence boundaries.
 
 HTTPS/upstream checksum and administrative inventory trust are required. Original
 OpenPGP signatures are retained; independent signature verification is not added

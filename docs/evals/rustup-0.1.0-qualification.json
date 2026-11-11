@@ -1,0 +1,1350 @@
+{
+  "state": "prepublication qualification complete; publication not authorized",
+  "qualified_head": "4738aef30187431886c67aa931af0eeaef681fc4",
+  "implementation_merge": "7c020b58b9893d41775157710d98a895ede66dd8",
+  "workflow_run": 42961977999,
+  "platforms": [
+    {
+      "host": "x86_64-apple-darwin",
+      "commands": [
+        {
+          "case": "shell-bootstrap",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "disable-automatic-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-dated",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "update-existing-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-stable-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "clippy-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "rustfmt-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-list",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "unavailable-component-refuses",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "cargo-offline-build",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "run-built-program",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "wasm-offline-check",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-reinstall",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "post-self-update-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "negative-missing",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "negative-corrupt",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "numeric-1.90.0-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-profile-components",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-documentation-path",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "check-current-channels",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "default_profile_checked": true,
+      "extra_channels": [],
+      "trust_cleanup": {
+        "removed": false,
+        "disposable_runner_teardown": true,
+        "private_keys_destroyed": true
+      },
+      "artifact_id": 13830270885,
+      "zip_sha256": "1a86a41553987baa1ddc9839cbeace3ef6f7ffb0c0b55d900684ded343de8740"
+    },
+    {
+      "host": "x86_64-unknown-linux-gnu",
+      "commands": [
+        {
+          "case": "shell-bootstrap",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "disable-automatic-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-dated",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "update-existing-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-stable-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "clippy-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "rustfmt-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-list",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "unavailable-component-refuses",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "cargo-offline-build",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "run-built-program",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "wasm-offline-check",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-reinstall",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "post-self-update-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "negative-missing",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "negative-corrupt",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "beta-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "beta-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "beta-repeat",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "nightly-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "nightly-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "nightly-repeat",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-profile-components",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-documentation-path",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "check-current-channels",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "default_profile_checked": true,
+      "extra_channels": [
+        {
+          "channel": "beta",
+          "version": "1.101.0-beta.1"
+        },
+        {
+          "channel": "nightly",
+          "version": "1.102.0-nightly"
+        }
+      ],
+      "trust_cleanup": null,
+      "artifact_id": 13829923326,
+      "zip_sha256": "4d90d7bc8d0e79c320cda635be108916c8b183700a381d52790efe00f2492712"
+    },
+    {
+      "host": "aarch64-apple-darwin",
+      "commands": [
+        {
+          "case": "shell-bootstrap",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "disable-automatic-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-dated",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "update-existing-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-stable-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "clippy-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "rustfmt-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-list",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "unavailable-component-refuses",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "cargo-offline-build",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "run-built-program",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "wasm-offline-check",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-reinstall",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "post-self-update-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "negative-missing",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "negative-corrupt",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "numeric-1.90.0-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-profile-components",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-documentation-path",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "check-current-channels",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "default_profile_checked": true,
+      "extra_channels": [],
+      "trust_cleanup": {
+        "removed": false,
+        "disposable_runner_teardown": true,
+        "private_keys_destroyed": true
+      },
+      "artifact_id": 13829907309,
+      "zip_sha256": "772a7e57e7495a75be0d50e3fc805b07d2dc7ac40bc7181a5b9a569216bc1882"
+    },
+    {
+      "host": "x86_64-pc-windows-msvc",
+      "commands": [
+        {
+          "case": "bootstrap",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "disable-automatic-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-dated",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "update-existing-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-stable-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "clippy-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "rustfmt-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-list",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "unavailable-component-refuses",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "cargo-offline-build",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "run-built-program",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "wasm-offline-check",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-reinstall",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "post-self-update-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "negative-missing",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "negative-corrupt",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "numeric-1.90.0-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-profile-components",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-documentation-path",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "check-current-channels",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "default_profile_checked": true,
+      "extra_channels": [],
+      "trust_cleanup": {
+        "removed": true
+      },
+      "artifact_id": 13829752954,
+      "zip_sha256": "1b7f6bfe56effe64ef19606ea9c60cd16c657bf6761db4262780bf4812a6970d"
+    }
+  ],
+  "nexus": {
+    "collection": {
+      "cases": [
+        {
+          "case": "actual_nexus_rest_ready",
+          "passed": true,
+          "server": "Nexus/3.76.1-01 (OSS)"
+        },
+        {
+          "case": "raw_hosted_no_redeploy",
+          "passed": true,
+          "policy": "ALLOW_ONCE"
+        },
+        {
+          "case": "scoped_publisher_and_read_only_anonymous_roles",
+          "passed": true
+        },
+        {
+          "case": "anonymous_upload_refused",
+          "passed": true,
+          "status": 401
+        },
+        {
+          "case": "wrong_password_refused",
+          "passed": true,
+          "status": 401
+        },
+        {
+          "case": "publisher_cross_repository_write_refused",
+          "passed": true,
+          "status": 403
+        },
+        {
+          "case": "untrusted_ca_refused",
+          "passed": true
+        },
+        {
+          "case": "wrong_hostname_refused",
+          "passed": true
+        },
+        {
+          "case": "strict_mime_rejects_unchanged_upstream_armored_signature",
+          "passed": true,
+          "status": 400
+        },
+        {
+          "case": "explicit_disposable_raw_mime_policy",
+          "passed": true,
+          "strictContentTypeValidation": false,
+          "writePolicy": "ALLOW_ONCE"
+        },
+        {
+          "case": "explicit_raw_policy_preserves_signature_bytes",
+          "passed": true,
+          "status": 201
+        },
+        {
+          "case": "authenticated_snapshot_publication_and_get_hashes",
+          "passed": true,
+          "files": 26
+        },
+        {
+          "case": "repeat_publication_refuses_before_put",
+          "passed": true
+        },
+        {
+          "case": "nexus_server_redeploy_refused_and_original_retained",
+          "passed": true,
+          "status": 400
+        },
+        {
+          "case": "missing_artifact_returns_404",
+          "passed": true,
+          "status": 404
+        },
+        {
+          "case": "anonymous_cross_repository_read_refused",
+          "passed": true,
+          "status": 401
+        },
+        {
+          "case": "fresh_anonymous_rustup_bootstrap_and_install_over_trusted_https",
+          "passed": true
+        },
+        {
+          "case": "dependency_free_offline_cargo_build_and_run",
+          "passed": true
+        },
+        {
+          "case": "fixed_group_url_activation",
+          "passed": true,
+          "old_member": "rust-mirror-generation-old",
+          "new_member": "rust-mirror-generation-new"
+        },
+        {
+          "case": "actual_nexus_fixed_url_existing_client_update_components_targets_and_self_update",
+          "passed": true
+        }
+      ],
+      "summary_sha256": "4406d1682eea0d57ee60a3e1724a8beefec4e8d23f8d15d3851cb229b0247539"
+    },
+    "selection": {
+      "cases": [
+        {
+          "case": "actual_nexus_rest_ready",
+          "passed": true,
+          "server": "Nexus/3.76.1-01 (OSS)"
+        },
+        {
+          "case": "raw_hosted_no_redeploy",
+          "passed": true,
+          "policy": "ALLOW_ONCE"
+        },
+        {
+          "case": "scoped_publisher_and_read_only_anonymous_roles",
+          "passed": true
+        },
+        {
+          "case": "anonymous_upload_refused",
+          "passed": true,
+          "status": 401
+        },
+        {
+          "case": "wrong_password_refused",
+          "passed": true,
+          "status": 401
+        },
+        {
+          "case": "publisher_cross_repository_write_refused",
+          "passed": true,
+          "status": 403
+        },
+        {
+          "case": "untrusted_ca_refused",
+          "passed": true
+        },
+        {
+          "case": "wrong_hostname_refused",
+          "passed": true
+        },
+        {
+          "case": "strict_mime_rejects_unchanged_upstream_armored_signature",
+          "passed": true,
+          "status": 400
+        },
+        {
+          "case": "explicit_disposable_raw_mime_policy",
+          "passed": true,
+          "strictContentTypeValidation": false,
+          "writePolicy": "ALLOW_ONCE"
+        },
+        {
+          "case": "explicit_raw_policy_preserves_signature_bytes",
+          "passed": true,
+          "status": 201
+        },
+        {
+          "case": "authenticated_snapshot_publication_and_get_hashes",
+          "passed": true,
+          "files": 22
+        },
+        {
+          "case": "repeat_publication_refuses_before_put",
+          "passed": true
+        },
+        {
+          "case": "nexus_server_redeploy_refused_and_original_retained",
+          "passed": true,
+          "status": 400
+        },
+        {
+          "case": "missing_artifact_returns_404",
+          "passed": true,
+          "status": 404
+        },
+        {
+          "case": "anonymous_cross_repository_read_refused",
+          "passed": true,
+          "status": 401
+        },
+        {
+          "case": "fresh_anonymous_rustup_bootstrap_and_install_over_trusted_https",
+          "passed": true
+        },
+        {
+          "case": "dependency_free_offline_cargo_build_and_run",
+          "passed": true
+        }
+      ],
+      "summary_sha256": "08548dd30374b8290410b968d4aeba49d75d8c545b32cbd381ff063c51942286"
+    },
+    "fixed_group_lifecycle": {
+      "status": "passed",
+      "host": "x86_64-unknown-linux-gnu",
+      "old_rust": "1.89.0",
+      "new_rust": "1.90.0",
+      "old_rustup": "1.28.2",
+      "new_rustup": "1.29.3",
+      "commands": [
+        {
+          "case": "shell-bootstrap",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "disable-automatic-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "old-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "install-old-dated",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "update-existing-stable",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-stable-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-add",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "clippy-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "rustfmt-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-list",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "component-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "target-readd",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "unavailable-component-refuses",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "cargo-offline-build",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "run-built-program",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "wasm-offline-check",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-remove",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "dated-reinstall",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "new-rustup-version",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "repeat-self-update",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "post-self-update-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "negative-missing",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "negative-corrupt",
+          "exit": 1,
+          "expected_success": false
+        },
+        {
+          "case": "beta-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "beta-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "beta-repeat",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "nightly-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "nightly-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "nightly-repeat",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90.0-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "default-profile-components",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-documentation-path",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-install",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "numeric-1.90-compiler",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "check-current-channels",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "extra_channels": [
+        {
+          "channel": "beta",
+          "version": "1.101.0-beta.1"
+        },
+        {
+          "channel": "nightly",
+          "version": "1.102.0-nightly"
+        }
+      ],
+      "default_profile_checked": true,
+      "limits": [
+        "Selected native host and exact versions only",
+        "Original HTTPS/checksum trust; no independent signature verification",
+        "Cargo dependencies/SDKs are not mirrored by this proof"
+      ]
+    }
+  },
+  "package": {
+    "installed_archive": {
+      "source": "a82d3900b6a192783e9a5e2ebd039190534d6930",
+      "sha256": "3c4e9e97a4f515b4d1bbc7ab2f8b24dc91aba288afef2164e4d086c5aa3301d8",
+      "bytes": 48882,
+      "files": 18
+    },
+    "qualified_archive": {
+      "source": "4738aef30187431886c67aa931af0eeaef681fc4",
+      "sha256": "42b8543355b785eaf88442ef7b0f5d99dc6e38aa4e6428019e1e0ab535c0f8d2",
+      "bytes": 48864,
+      "differences_from_installed_a82": [
+        ".cargo_vcs_info.json",
+        "CHANGELOG.md"
+      ]
+    },
+    "install_route": "fresh Cargo home; unpacked cargo install --path --locked; not a registry install",
+    "installed_nexus_cases": 20,
+    "installed_nexus_client_commands": 36,
+    "installed_default_client_commands": 38,
+    "compiled_inputs": {
+      "Cargo.lock": "55940d41c1c8a9bb237c037183ed1aca77a772af1990c22a7d2202f30353facf",
+      "Cargo.toml": "392d66a2c717d65dfbe139b0c5a5d205829b4a88f9f7538bd21f35310c02cdf0",
+      "examples/mirror.toml": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e",
+      "examples/multi-version.toml": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d",
+      "examples/sync-demo.toml": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc",
+      "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "README.md": "d5100643fae8c800f9b28908661bcd6b8461b3560f6d7510d7653ab1549f2735",
+      "src/lib.rs": "f3031264e8d71dc32ff589ef5bd8fff51ed557b20ccbc6adaa056227a799bc16",
+      "src/main.rs": "6daf8f15724a5889d9847ec04697614056b38ad70a93a3307679ef0b2a3ebda0",
+      "src/publish.rs": "7fe182709d6806ba10c3a91d548bc548001d6b4e8ed5e318b2b8cbcdf3c42a03",
+      "src/resume.rs": "29ab51a22dcc1b302645287ece39696c1c8c3559486cd7a6a7ae7f55a2441546",
+      "src/selection/collection.rs": "6322159d24841103f87dc2cf958ee608277f63cb4aa1f751c38240290543d32e",
+      "src/selection/rustup.rs": "aa093e6520d2b468ceb2f623b5443b978b75ab5dba63f8a08617fb79af646f0c",
+      "src/selection/sync.rs": "02806076893c08a953725dc040639eea1a6f937e3f9b01c1afb30ff6af3a6b98",
+      "src/selection.rs": "6ac17ab5dd05a70b6e7f7648a049927a656534a36b2ee6c946e14af59d408191"
+    },
+    "identity_limit": "Package source/manifest/lock/example bytes; not a universal toolchain or hermetic build identity."
+  },
+  "prototype_preservation": {
+    "checked_files": 21,
+    "unchanged": true,
+    "differences": []
+  },
+  "limits": [
+    "Selected modern available Rustup distributions, not every historical/custom toolchain.",
+    "Only the four recorded native hosts and exact versions are executed; other advertised hosts remain unqualified.",
+    "Nexus OSS 3.76.1-01 compatibility fixture; production/current-CE setup and license onboarding remain operator work.",
+    "Original signatures retained, without independent OpenPGP verification.",
+    "No Cargo registry, GUI, SDK provisioning, scheduling or pruning.",
+    "Publisher requires exclusive writers/no-redeploy and fresh prefixes; no remote force/resume or globally atomic group switch.",
+    "macOS trust removal can defer to fresh hosted-VM teardown; fixture private keys are destroyed and this is recorded.",
+    "Trusted local filesystems; no hostile mutation/NFS/power-loss guarantee.",
+    "Official crates.io archive/install, docs.rs, tag and GitHub Release remain post-authorization gates."
+  ]
+}

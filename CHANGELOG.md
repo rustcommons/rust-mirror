@@ -7,7 +7,7 @@ No additional changes queued.
 ## [0.1.0] - 2026-11-11
 
 First release of selected modern Rustup mirroring and Nexus Raw publication.
-See [versioned notes](docs/releases/v0.1.0.md) for availability and qualification.
+See [versioned notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.1.0.md) for availability and qualification.
 
 - Add native verified HTTPS `publish` for Nexus Raw/static hosting, explicit private
   CA and scoped credential support, whole-prefix absence checks and remote hash

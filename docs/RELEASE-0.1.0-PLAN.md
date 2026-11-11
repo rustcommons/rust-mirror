@@ -37,3 +37,17 @@ onboarding remains an operator decision; tests must never accept an EULA.
 
 This is a gate checklist, not a completed qualification record. Keep every gate
 open until its exact source, native results and server evidence are recorded.
+
+## Current disposition
+
+All implementation, native client and actual Nexus gates above passed at qualified
+`4738aef` / implementation merge `7c020b5`. See the
+[final prepublication record](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification)
+and [structured evidence](evals/rustup-0.1.0-qualification.json).
+
+0.1.0 is ready for final clean-merge package verification and owner publication
+approval. No crate, source tag or GitHub Release has been published. Official
+archive/registry-install/docs.rs/tag/Release checks follow authorization under the
+[release checklist](RELEASING.md). Scheduling remains excluded. Unlisted native
+hosts, production Nexus policy, current CE onboarding, SDKs and Cargo dependencies
+retain the documented boundaries; they are not silently counted as verified.

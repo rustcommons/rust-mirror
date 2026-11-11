@@ -57,3 +57,71 @@ This measures those exact URLs; future upstream versions/formats still need chec
 The finishing command now supplies explicit full/minor numeric policy aliases and
 records the selected highest stable patch. Final native acceptance must check
 those new client lookups too. No release or crates.io publication is authorized yet.
+
+## Final prepublication qualification
+
+The implementation merged through [PR12](https://github.com/rustcommons/rust-mirror/pull/12)
+as `7c020b58b9893d41775157710d98a895ede66dd8`, tree-identical to qualified
+`4738aef30187431886c67aa931af0eeaef681fc4`. All jobs in
+[run 42961977999](https://github.com/rustcommons/rust-mirror/actions/runs/42961977999)
+passed, as did portable Linux/Windows CI 42961977995 and release-documentation CI.
+All four artifact ZIPs were downloaded and checked against their GitHub SHA-256
+metadata; recorded command statuses and default-profile coverage were inspected.
+
+| Native host | Passing client commands | Additional scope |
+| --- | --- | --- |
+| x86_64-unknown-linux-gnu | 44 | Stable, beta/nightly, minimal/default, numeric aliases, offline docs |
+| x86_64-pc-windows-msvc | 38 | Minimal/default, numeric aliases, offline docs |
+| aarch64-apple-darwin | 38 | Minimal/default, numeric aliases, offline docs |
+| x86_64-apple-darwin | 38 | Minimal/default, numeric aliases, offline docs |
+
+Each host checks genuine Rust 1.89.0 to 1.90.0 stable-client updates, retained pinned
+history, component/target changes, offline build/run/Wasm metadata, Rustup 1.28.2 to
+1.29.3 self-update/repeat and missing/corrupt download controls. Expected refusals
+are passing negative controls, not successful installs. Linux additionally installs
+and repeats the exact beta/nightly versions recorded in the machine-readable record.
+The native publisher's private-CA/hostname refusals, successful verified upload and
+repeat-prefix refusal are included on all four hosts.
+
+Actual isolated Nexus OSS 3.76.1-01 passed 20 collection security/protocol cases,
+44 client commands through the same Raw group URL, and a separate 18-case selected
+snapshot proof. Both owned containers/volumes were removed. The official image is
+pinned at `sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09`.
+This qualifies that legacy compatibility fixture, not a production recommendation
+or current Community Edition/license policy.
+
+A clean 18-file crate of `a82d390` passed fresh unpacked `--locked` installation,
+nine CLI checks, four host metadata listings, actual Nexus (20 cases / 36 client
+commands) and a separate default-profile 38-command Linux lifecycle. Cargo metadata
+resolved 101 non-root packages from crates.io; there were no path/git replacements.
+The `4738aef` archive differs only in VCS metadata and the changelog; compiled
+source, examples, manifest, lock, README and license are identical. The final
+release-record update additionally makes the packaged changelog's note link
+absolute; it changes no compiled input. Final clean-merge packaging is rechecked
+before requesting publication. These are unpacked installs, not a nonexistent
+registry installation of an unpublished version.
+
+The [machine-readable record](rustup-0.1.0-qualification.json) contains refs,
+artifact hashes, command outcomes, package identities and limits. Local raw evidence
+is preserved in this thread's `rust-mirror-rustup-complete-20261111` directory.
+All 21 original prototype hashes remain unchanged.
+
+### Preserved setup failures and corrected coverage
+
+- Initial macOS runner/certificate and Windows firewall/Cert-provider failures above
+  remain historical failures, not passes.
+- Run 42958296997 exposed blocking headless certificate cleanup/import commands.
+  Current-user Windows trust operations also blocked; machine-store setup/removal
+  subsequently passed. Native trust setup refuses workstations/self-hosted runners.
+- macOS client commands passed before its removal API timed out. The permanent
+  harness now records that timeout honestly, destroys fixture private keys and
+  relies on fresh GitHub-hosted VM teardown for remaining test trust state. It
+  never claims explicit removal succeeded; no production/user trust store is used.
+- Run 42960893441 was green, but artifact inspection found Intel macOS's default
+  profile skipped: upstream reuses an ARM-named documentation archive. The harness
+  now uses the validated selection and requires actual default-profile/doc commands.
+  Run 42961977999 confirms those commands ran successfully on every native host.
+
+Implementation/native/server/package gates are complete. Registry publication,
+official archive/install, docs.rs, tag and GitHub Release are still pending the
+owner's separate authorization; no completion of those future steps is claimed.
