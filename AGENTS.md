@@ -52,6 +52,15 @@ policy. See `docs/NEXUS-INTEGRATION.md` before running it. Legacy OSS test image
 must not be presented as recommended production versions. Generated passwords and
 private keys must not enter logs, commits or uploaded artifacts.
 
+## 0.1.0 completion scope
+
+The owner requires complete selected Rustup lifecycle and actual Nexus testing for
+0.1.0; scheduling is excluded. Follow [release gates](docs/RELEASE-0.1.0-PLAN.md).
+Do not substitute metadata availability for Windows/macOS native client evidence,
+or fixture HTTP for actual Nexus. Preserve isolated homes, existing generations,
+upstream manifests, license gates and documented trust limits. Publication still
+requires separate authorization.
+
 ## Selection workflow constraints
 
 Keep saved selections strict and hosts explicit. Distinguish host compiler platforms
