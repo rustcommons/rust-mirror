@@ -151,3 +151,14 @@ it was not misleadingly described as a new full runtime rerun.
 This later bookkeeping changes excluded docs only. Keep publication/tag source at
 the frozen candidate above; it is still unpublished. Official registry installation,
 docs.rs, tag and Release verification must follow the owner's publication go-ahead.
+
+## Documentation-complete candidate refresh
+
+The previous frozen-package record above is historical. Full operating/reference
+documentation merged in PR15. The current frozen candidate is
+`93f38921000ba4e8cc1d55006afd326c077d8f7e`; its clean Rust 1.90 package verification passed.
+Only README/changelog/VCS differ from the earlier archive; compiled inputs remain
+unchanged. See the [documentation/package record](2026-11-11-user-documentation.md#documentation-complete-clean-package)
+for the new hash, exact comparisons and CI observation. These are documentation
+and package checks, not a new installation/native/Nexus run. Publication remains
+on hold for owner authorization.

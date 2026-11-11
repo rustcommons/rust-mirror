@@ -42,9 +42,34 @@ added. Source, manifest, lock, examples, license, scripts and workflows are unch
 ## Package and release disposition
 
 Only README/changelog change within the distributed crate. The earlier `0b38e459`
-archive remains historical evidence and is superseded for publication. Refresh the
-clean package/VCS audit and freeze the documentation-complete candidate before
-upload. Native/Nexus evidence can carry by unchanged compiled source and dependency
+archive remains historical evidence and is superseded for publication. The refreshed
+clean package/VCS audit is recorded below; use that documentation-complete candidate
+for any later authorized upload. Native/Nexus evidence can carry by unchanged compiled source and dependency
 inputs; do not label it as a new runtime matrix. Publication remains on hold for
 the owner's go-ahead. Local detailed validation receipts are in this thread's
 `rust-mirror-user-docs-20261111` storage directory.
+
+## Documentation-complete clean package
+
+PR15 merged as `93f38921000ba4e8cc1d55006afd326c077d8f7e`, with its tree identical to reviewed
+`bbbfa090b919f3667abf9ba7b5fe1989b410460b`. Both Rust 1.90 Linux/Windows CI jobs
+and release-documentation checks passed. The initial Linux run failed to reacquire
+a workspace lock in an existing recovery test; the unchanged-source rerun passed.
+The saved failed log remains evidence, not a claim that its cause was fixed.
+
+Rust/Cargo 1.90 `cargo package --locked` built and verified the exact clean merge.
+The archive has 18 files and 49,142 bytes, SHA-256:
+
+```text
+b6e01cc29cefc18121c54c23230238a076c9935b8823523073021f8cdba7a69c
+```
+
+All included repository payloads match that commit. Compared with the previous
+`0b38e459` archive, only README, changelog and VCS metadata differ. Source,
+normalized/original manifests, lock, examples and license are byte-identical.
+The actual package verification compiled the new archive; no fresh unpacked
+installation or native/Nexus matrix was repeated for these documentation changes.
+Earlier installation/runtime evidence carries only for unchanged executable and
+dependency inputs. This is the current frozen candidate; later excluded-document
+bookkeeping does not change its package inputs. No publication, tag or Release
+has been performed. Official postpublication verification remains pending.

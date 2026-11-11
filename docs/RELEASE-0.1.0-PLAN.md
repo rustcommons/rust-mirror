@@ -47,8 +47,9 @@ and [structured evidence](evals/rustup-0.1.0-qualification.json).
 
 The earlier clean-source package passed its recorded Rust 1.90 verification and
 installation, but the full-user-documentation update changes packaged files.
-Publication remains on hold until the expanded documentation merges and its
-refreshed clean package/candidate identity is recorded. Do not publish the old
+The expanded documentation is merged and its refreshed clean package/candidate
+identity is recorded in the [documentation validation](evals/2026-11-11-user-documentation.md#documentation-complete-clean-package).
+Publication remains on hold for owner authorization. Do not publish the old
 candidate merely because its earlier gates passed. Official archive/registry
 install/docs.rs/tag/Release checks still follow owner authorization under the
 [release checklist](RELEASING.md). Scheduling remains excluded.
@@ -58,6 +59,6 @@ install/docs.rs/tag/Release checks still follow owner authorization under the
 The owner's full-documentation request adds the user guide/reference and changes
 packaged README/changelog bytes. The earlier frozen `0b38e459` archive is superseded
 for publication. Code, manifest, lock, examples and license are unchanged, so the
-native/server qualification carries in its recorded scope. Final clean packaging
-and the new release-candidate identity will be recorded after the docs merge.
+native/server qualification carries in its recorded scope. Final clean packaging passed at `93f38921000ba4e8cc1d55006afd326c077d8f7e`: 18 files,
+49,142 bytes; only README/changelog/VCS differ from the earlier archive.
 Do not upload the superseded archive.
