@@ -1,0 +1,23 @@
+status = "created"
+selections = 2
+metadata_requests = 8
+local_payload_bytes = 693938546
+upstream_payload_bytes = 94366575
+upstream_attempts = 2
+files = 36
+recorded_bytes = 832910535
+resumed = false
+
+[[frozen]]
+name = "rust189"
+requested = "1.89.0"
+pinned_toolchain = "1.89.0"
+release = "1.89.0"
+date = "2025-08-07"
+
+[[frozen]]
+name = "rust190"
+requested = "1.90.0"
+pinned_toolchain = "1.90.0"
+release = "1.90.0"
+date = "2025-09-18"

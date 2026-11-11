@@ -2,7 +2,7 @@
 
 `assemble` combines completed frozen selections into one static distribution tree.
 It works entirely from local files: resolve/download each selection first, then
-assemble a new generation. Rustup remains the client. Automatic scheduling,
+assemble a new generation. Rustup remains the client. The [one-shot sync command](SYNC.md) automates these steps. Automatic scheduling,
 channel resolution during assembly, retention/pruning and in-place server updates
 are not implemented.
 

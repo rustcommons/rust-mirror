@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Require an explicit choice for existing sync runs: `--resume` continues saved
+  progress; `--force` discards the old managed run without backup and starts fresh.
+  Reject combining them, active writers, unrelated outputs and previous-mirror overlap.
+
+- Add one-shot `sync` across saved selections, frozen-cohort resume, verified local
+  payload reuse, unchanged detection, stage summaries and structured run reports.
+- Add a quick fixture demo and a recorded real two-version incremental/no-change demo.
+
 - Add local `assemble` for immutable multi-version mirrors, with explicit previous
   generation retention and coherent moving-channel alias replacement.
 - Validate combined inventories, artifact closure, conflicts and byte budgets before

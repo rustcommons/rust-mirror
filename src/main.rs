@@ -9,6 +9,7 @@ rust-mirror list --toolchain TOOLCHAIN [--host HOST]
 rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustup-version VERSION --output FILE
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
 rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
+rust-mirror sync --config FILE --output RUN_DIRECTORY [--previous MIRROR] [--resume | --force]
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
@@ -75,6 +76,9 @@ fn run() -> Result<()> {
     }
     if command == "assemble" {
         return assemble(args);
+    }
+    if command == "sync" {
+        return sync(args);
     }
     let allowed: &[&str] = match command.as_str() {
         "init" => &["--config"],
@@ -225,6 +229,74 @@ fn assemble(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         budget,
     )?;
     writeln!(io::stdout().lock(), "{}", path.display())?;
+    Ok(())
+}
+
+fn sync(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+    let mut values = BTreeMap::new();
+    let mut resume = false;
+    let mut force = false;
+    while let Some(key) = args.next() {
+        let key = key.into_string().map_err(|_| "option must be UTF-8")?;
+        if key == "--force" {
+            if force {
+                return Err("duplicate --force".into());
+            }
+            force = true;
+            continue;
+        }
+        if key == "--resume" {
+            if resume {
+                return Err("duplicate --resume".into());
+            }
+            resume = true;
+            continue;
+        }
+        if !["--config", "--output", "--previous"].contains(&key.as_str()) {
+            return Err(format!("unknown option: {key}").into());
+        }
+        let value = args.next().ok_or("missing option value")?;
+        if value.to_str().is_some_and(|v| v.starts_with("--")) {
+            return Err("missing option value".into());
+        }
+        if values.insert(key, value).is_some() {
+            return Err("duplicate option".into());
+        }
+    }
+    if resume && force {
+        return Err("--resume and --force are mutually exclusive".into());
+    }
+    let config = rust_mirror::selection::Config::read(&PathBuf::from(
+        values.remove("--config").ok_or("--config is required")?,
+    ))?;
+    let output = PathBuf::from(values.remove("--output").ok_or("--output is required")?);
+    let previous = values.remove("--previous").map(PathBuf::from);
+    let source = HttpsSource::default();
+    let result = if force {
+        rust_mirror::selection::sync::run_forced(&config, previous.as_deref(), &output, &source)
+    } else {
+        rust_mirror::selection::sync::run(&config, previous.as_deref(), &output, resume, &source)
+    }?;
+    let r = &result.report;
+    let mut err = io::stderr().lock();
+    let _ = writeln!(
+        err,
+        "SYNC {} | {} selections | {} files | {} recorded bytes",
+        r.status, r.selections, r.files, r.recorded_bytes
+    );
+    for s in &r.frozen {
+        let _ = writeln!(
+            err,
+            "  {}: {} -> {} ({})",
+            s.name, s.requested, s.pinned_toolchain, s.release
+        );
+    }
+    let _ = writeln!(
+        err,
+        "  metadata requests: {} | upstream payload bytes: {} | local payload bytes: {}",
+        r.metadata_requests, r.upstream_payload_bytes, r.local_payload_bytes
+    );
+    writeln!(io::stdout().lock(), "{}", result.mirror.display())?;
     Ok(())
 }
 

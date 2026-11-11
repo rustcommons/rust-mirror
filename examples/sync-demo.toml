@@ -1,0 +1,16 @@
+# Linux compiler distributions; the mirror CLI itself can run on Windows.
+schema = 1
+rustup_version = "1.28.2"
+max_download_bytes = 10737418240
+
+[[selections]]
+name = "rust189"
+toolchain = "1.89.0"
+hosts = ["x86_64-unknown-linux-gnu"]
+profile = "minimal"
+
+[[selections]]
+name = "rust190"
+toolchain = "1.90.0"
+hosts = ["x86_64-unknown-linux-gnu"]
+profile = "default"

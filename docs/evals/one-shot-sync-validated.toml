@@ -1,0 +1,23 @@
+status = "validated"
+selections = 2
+metadata_requests = 0
+local_payload_bytes = 0
+upstream_payload_bytes = 0
+upstream_attempts = 0
+files = 36
+recorded_bytes = 832910535
+resumed = true
+
+[[frozen]]
+name = "rust189"
+requested = "1.89.0"
+pinned_toolchain = "1.89.0"
+release = "1.89.0"
+date = "2025-08-07"
+
+[[frozen]]
+name = "rust190"
+requested = "1.90.0"
+pinned_toolchain = "1.90.0"
+release = "1.90.0"
+date = "2025-09-18"

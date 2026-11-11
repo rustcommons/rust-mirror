@@ -1,0 +1,51 @@
+[
+  {
+    "name": "incremental",
+    "command": [
+      "rust-mirror",
+      "sync",
+      "--config",
+      "examples/sync-demo.toml",
+      "--previous",
+      "previous/mirror",
+      "--output",
+      "run-001"
+    ],
+    "exit": 0,
+    "seconds": 340.344,
+    "command_is_portable_equivalent": true
+  },
+  {
+    "name": "unchanged",
+    "command": [
+      "rust-mirror",
+      "sync",
+      "--config",
+      "examples/sync-demo.toml",
+      "--previous",
+      "run-001/mirror",
+      "--output",
+      "run-002"
+    ],
+    "exit": 0,
+    "seconds": 41.718,
+    "command_is_portable_equivalent": true
+  },
+  {
+    "name": "validated",
+    "command": [
+      "rust-mirror",
+      "sync",
+      "--config",
+      "examples/sync-demo.toml",
+      "--previous",
+      "previous/mirror",
+      "--output",
+      "run-001",
+      "--resume"
+    ],
+    "exit": 0,
+    "seconds": 207.172,
+    "command_is_portable_equivalent": true
+  }
+]
