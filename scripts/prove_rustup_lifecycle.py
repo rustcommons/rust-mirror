@@ -226,8 +226,13 @@ def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
     env=os.environ.copy();env.update(NEXUS_USERNAME="fixture-user",NEXUS_PASSWORD=password)
     for key in list(env):
         if key.lower() in ("http_proxy","https_proxy","all_proxy"):env.pop(key)
-    command=[str(cli),"publish","--source",str(source),"--base-url",base+"/publish-test","--ca-file",str(ca_file)]
+    command=[str(cli),"--events","jsonl","publish","--source",str(source),"--base-url",base+"/publish-test","--ca-file",str(ca_file)]
     before=len(request_log)
+    def terminal(result):
+        events=[json.loads(line) for line in result.stdout.decode('utf-8').splitlines()]
+        if not events or events[0].get('type')!='hello' or events[0].get('protocol')!=1 or events[-1].get('type')!='result':raise RuntimeError('invalid publisher event framing')
+        if [e['seq'] for e in events]!=list(range(len(events))) or sum(e.get('type')=='result' for e in events)!=1:raise RuntimeError('invalid publisher event ordering')
+        return events[-1]
     # Validate the installed publisher's trust policy, not only Python TLS.
     unknown_ca=command[:-2]
     wrong_hostname=[part.replace("https://127.0.0.1:","https://localhost:") for part in command]
@@ -236,18 +241,26 @@ def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
         (evidence/(name+".stdout")).write_bytes(result.stdout);(evidence/(name+".stderr")).write_bytes(result.stderr)
         if password.encode() in result.stdout+result.stderr:raise RuntimeError("publisher exposed a credential")
         if result.returncode==0 or any(r["method"]=="PUT" for r in request_log[before:]):raise RuntimeError("native publisher bypassed TLS policy: "+name)
+        if terminal(result)['error']['kind']!='tls':raise RuntimeError('TLS refusal lacks typed TLS kind')
+    bad_env=env.copy();bad_env['NEXUS_PASSWORD']=password+'invalid'
+    rejected=subprocess.run([*prefix,*command,'--preflight'],env=bad_env,capture_output=True,timeout=60)
+    if rejected.returncode==0 or terminal(rejected)['error']['kind']!='auth':raise RuntimeError('preflight auth refusal lacks typed kind')
+    checked=subprocess.run([*prefix,*command,'--preflight'],env=env,capture_output=True,timeout=60)
+    if checked.returncode or not terminal(checked)['ok'] or any(r['method']=='PUT' for r in request_log[before:]):raise RuntimeError('read-only native preflight failed or wrote data')
+    (evidence/'native-preflight.stdout').write_bytes(checked.stdout)
     for name,success in [("native-publish",True),("native-publish-repeat-refuses",False)]:
         result=subprocess.run([*prefix,*command],env=env,capture_output=True,timeout=60)
         (evidence/(name+".stdout")).write_bytes(result.stdout);(evidence/(name+".stderr")).write_bytes(result.stderr)
         if password.encode() in result.stdout+result.stderr:raise RuntimeError("publisher exposed a credential")
         if (result.returncode==0)!=success:raise RuntimeError("native HTTPS publisher case failed: "+name)
         if success:
-            report=tomllib.loads(result.stdout.decode())
+            report=terminal(result)['report']
             if report["files"]!=expected:raise RuntimeError("wrong native publication inventory count")
+        elif terminal(result)['error']['kind']!='remote_exists':raise RuntimeError('repeat publication refusal lacks typed kind')
     records=request_log[before:]
     puts=[r for r in records if r["method"]=="PUT"]
     if len(puts)!=expected or not puts[-1]["path"].endswith("/snapshot.toml"):raise RuntimeError("publisher ordering/overwrite contract failed")
-    (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True,"untrusted_ca_refused":True,"wrong_hostname_refused":True},indent=2)+"\n",encoding="utf-8")
+    (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True,"untrusted_ca_refused":True,"wrong_hostname_refused":True,"typed_tls_auth_remote_exists":True,"preflight_no_put":True,"event_protocol":1},indent=2)+"\n",encoding="utf-8")
 
 def fixture_tls(evidence, native_trust=True):
     if native_trust and platform.system() in ("Windows","Darwin"):
