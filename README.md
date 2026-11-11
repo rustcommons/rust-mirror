@@ -1,77 +1,150 @@
 # rust-mirror
 
-Prepare Rust toolchain snapshots for offline development and static hosting,
-including Nexus Repository Raw hosted repositories.
+Mirror selected Rust toolchains for offline installation and updates using Rustup.
+Host the verified files on Nexus Repository Raw or another static HTTP server.
 
-Start with the [complete user guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md),
-then use the [command/configuration reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md)
-for exact options and defaults. The guide explains preparation, Nexus publication,
-activation and client updates as separate steps.
+**[Getting started and API docs](https://docs.rs/rust-mirror/latest/rust_mirror/)** |
+**[Complete user guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md)** |
+**[Command reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md)**
 
-## Current state
+## What it does
 
-CLI and reusable library for selected modern Rustup distributions. Choose named toolchain
-versions/channels, host platforms, profiles, components and compilation targets;
-preview a metadata-only plan, then download that frozen selection for static hosting.
-Interrupted selected downloads can [resume verified progress](https://github.com/rustcommons/rust-mirror/blob/main/docs/RESUMING.md).
-Combine completed selections into an [immutable multi-version mirror](https://github.com/rustcommons/rust-mirror/blob/main/docs/MULTI-VERSION.md).
-Publish a verified generation with the native `publish` command; Python is needed
-only for the optional reference helper and qualification scripts.
-Rustup remains the installer. See the [selection guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/SELECTIONS.md).
-Use [one-shot sync and runnable demos](https://github.com/rustcommons/rust-mirror/blob/main/docs/SYNC.md) to run the workflow with one command.
-[Complete Rustup endpoints and channel promotion](https://github.com/rustcommons/rust-mirror/blob/main/docs/RUSTUP.md) cover bootstrap,
-self-update and explicit client-generation changes. The [release record](https://github.com/rustcommons/rust-mirror/blob/main/docs/RELEASE-0.1.0-PLAN.md)
-states exact qualification and remaining limits.
+- Select compiler versions or dated channels, host platforms, profiles, components
+  and compilation targets.
+- Plan downloads before transferring archives; verify hashes and resume interrupted
+  transfers from frozen metadata.
+- Build immutable generations, retain older toolchains and provide Rustup bootstrap,
+  self-update and numeric-version lookup endpoints.
+- Publish verified files to a fresh Nexus Raw prefix over HTTPS, including private-CA
+  and scoped Basic-authentication support.
 
-Rust/Cargo 1.90+ is required to build. Install a published version with
-`cargo install rust-mirror --version 0.1.0 --locked`, or build the source below.
-Check the [release notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.1.0.md) for availability and exact evidence.
+Rustup installs and updates client tools. rust-mirror prepares and publishes their
+files; it does not replace Rustup, run an HTTP server or activate Nexus routing.
+
+## Install
+
+Rust/Cargo **1.90 or newer** is required to build:
 
 ```sh
-cargo build --locked
-# Use target/debug/rust-mirror (Windows: target/debug/rust-mirror.exe).
-rust-mirror init --config mirror.toml
-rust-mirror list --toolchain 1.90.0 --host x86_64-unknown-linux-gnu
-# Edit mirror.toml before planning; linux-dev is one of the example selections.
-rust-mirror plan --config mirror.toml --selection linux-dev --output ./linux-plan
-rust-mirror fetch --plan ./linux-plan --output ./linux-snapshot
+cargo install rust-mirror --version 0.1.1 --locked
+rust-mirror --help
 ```
 
-Output parents must exist; existing outputs require an explicit same-plan `--resume`. The completed static tree
-is `linux-snapshot/mirror`. [Import a project's rust-toolchain.toml](https://github.com/rustcommons/rust-mirror/blob/main/docs/SELECTIONS.md#import-a-projects-toolchain-file)
-to avoid manually duplicating its components and targets.
+The installed CLI has no Python dependency. Python is used only by optional
+repository helpers and qualification scripts.
 
-The [Rustup lifecycle guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/RUSTUP.md) explains fresh clients, existing-client
-updates, retained pinned versions and self-update. Linux, Windows and macOS are
-explicit host selections; a metadata listing alone never proves native execution.
-The [dated qualification record](https://github.com/rustcommons/rust-mirror/blob/main/docs/evals/2026-11-11-rustup-lifecycle.md) distinguishes
-native/server results and pending gates. Nexus tests use an isolated legacy OSS
-fixture, not your production server. See [hosting and limitations](https://github.com/rustcommons/rust-mirror/blob/main/docs/NEXUS-RAW.md).
+## Prepare your first mirror
 
-## Planned products
+On an internet-connected machine, save this as `mirror.toml`:
 
-- **rust-mirror**: core library and CLI, inspired by [Panamax](https://github.com/panamax-rs/panamax).
-  Cargo crate/index mirroring remains planned; scheduling is outside 0.1.0.
-- **rust-mirror-gui**: future interface over the same core. No GUI implementation
-  or framework has been selected.
+```toml
+schema = 1
+rustup_version = "1.29.3"
+max_download_bytes = 10737418240
 
-The repository was renamed from `rustup-offline-mirror` on 2026-11-09, preserving
-Git history and stable `ROM-REQ` identifiers. The earlier Windows-local uncommitted
-prototype remains untouched and separately preserved; its assessment is historical.
+[[selections]]
+name = "linux-team"
+toolchain = "1.90.0"
+hosts = ["x86_64-unknown-linux-gnu"]
+profile = "default"
+components = []
+targets = []
+```
+
+A **host** is where the compiler runs. A **target** is where the resulting program
+runs. For example, use `x86_64-pc-windows-msvc` for Windows developers or add
+`wasm32-unknown-unknown` to `targets` for WebAssembly output. The Rustup manager
+version is separate from the Rust compiler version. Availability depends on the
+selected upstream release; native qualification is documented separately.
+
+```sh
+# Inspect availability without downloading compiler archives.
+rust-mirror list --toolchain 1.90.0 --host x86_64-unknown-linux-gnu
+
+# Resolve every selection, download and verify its files, then assemble a generation.
+rust-mirror sync --config mirror.toml --output ./run-001
+
+# Complete the Rustup bootstrap, update and numeric-version endpoints.
+rust-mirror rustup --snapshot ./run-001/mirror --version 1.29.3 --output ./generation-001
+```
+
+Use new output directories whose parents exist. The completed tree to transfer or
+host is **`generation-001/mirror`**. Private working directories are not served.
+For separate review/download steps, use `plan`, `fetch` and `assemble` instead of
+`sync`. See the [docs.rs walkthrough](https://docs.rs/rust-mirror/latest/rust_mirror/)
+for commands and a library example.
+
+## Publish and use it
+
+Provision a fresh Nexus Raw hosted repository or prefix with read/upload permissions
+and redeployment disabled. Then upload the completed generation:
+
+```sh
+rust-mirror publish --source ./generation-001/mirror --base-url https://nexus.example.local/repository/rust-generation-001
+```
+
+For a private CA, add `--ca-file /path/to/company-ca.pem`. Set both
+`NEXUS_USERNAME` and `NEXUS_PASSWORD` through your secret-management process when
+Basic authentication is required; do not put credentials in the URL.
+
+Publication checks that every destination is absent, uploads and GET-verifies the
+bytes, and writes the inventory last. It does not configure Nexus or activate a
+Raw group. An operator exposes the complete generation only after verification.
+[The Nexus guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/NEXUS-RAW.md)
+explains routing, permissions, trust and partial-upload recovery.
+
+On a client that already has Rustup installed, point it at the activated root:
+
+```sh
+# Bash/sh; use your approved internal server URL.
+export RUSTUP_DIST_SERVER=https://nexus.example.local/repository/rust-active/dist
+export RUSTUP_UPDATE_ROOT=https://nexus.example.local/repository/rust-active/rustup
+rustup toolchain install 1.90.0 --profile default --no-self-update
+```
+
+The [user guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md)
+has fresh-client bootstrap, Windows PowerShell, private-home and existing-client
+update examples. Client CA trust is separate from the publisher's `--ca-file`.
+
+## Update and recover
+
+| Need | Use |
+| --- | --- |
+| Continue an interrupted run | `sync --resume` or `fetch --resume` with identical frozen inputs |
+| Restart managed sync output | `sync --force`; destroys its old managed data **without a backup** |
+| Retain history in the next generation | New output plus `sync --previous PREVIOUS_MIRROR` |
+| Review a project's toolchain requirements | `import` a `rust-toolchain.toml`, then inspect/plan |
+| Recover a partial upload | A fresh remote prefix; publishing has no resume or overwrite option |
+
+Read [sync](https://github.com/rustcommons/rust-mirror/blob/main/docs/SYNC.md),
+[resume](https://github.com/rustcommons/rust-mirror/blob/main/docs/RESUMING.md) and
+[retained generations](https://github.com/rustcommons/rust-mirror/blob/main/docs/MULTI-VERSION.md)
+for the exact rules. Publishing and client activation remain separate operations.
+
+## Scope and trust
+
+Current releases cover selected modern Rustup distributions. Native client evidence
+covers GNU Linux x86-64, Windows MSVC x86-64, Intel macOS and Apple Silicon macOS at
+the recorded versions. Metadata availability is not proof that another host works.
+Nexus qualification used an isolated legacy OSS fixture, not your production server.
+
+Upstream manifest/signature bytes are preserved. Downloads are checked against
+upstream hashes over HTTPS; independent OpenPGP validation is **not** implemented.
+OS SDKs/linkers, Cargo crate/index mirroring, scheduling, pruning and the planned
+`rust-mirror-gui` are outside this release. There is no globally atomic activation
+or automatic retry guarantee.
 
 ## Documentation
 
-- [Complete user guide and worked Windows/Unix deployment/update examples](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md).
-- [Every command, option, config field, report and library entry point](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md).
+| Read | For |
+| --- | --- |
+| [docs.rs](https://docs.rs/rust-mirror/latest/rust_mirror/) | Usage walkthrough, library examples and API reference |
+| [User guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md) | Complete Windows/Unix preparation, hosting and update workflow |
+| [CLI reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md) | Every command, option, default, report and limit |
+| [Rustup lifecycle](https://github.com/rustcommons/rust-mirror/blob/main/docs/RUSTUP.md) | Bootstrap, self-update, aliases and promotion |
+| [Nexus hosting](https://github.com/rustcommons/rust-mirror/blob/main/docs/NEXUS-RAW.md) | Server roles, publication and trust |
+| [Changelog](https://github.com/rustcommons/rust-mirror/blob/main/CHANGELOG.md) | Release changes |
+| [Qualification](https://github.com/rustcommons/rust-mirror/blob/main/docs/evals/2026-11-11-rustup-lifecycle.md) | Exact tested versions, outcomes and remaining gaps |
 
-- [Start testing: one-shot sync and demos](https://github.com/rustcommons/rust-mirror/blob/main/docs/SYNC.md).
-- [Multi-version generations and explicit channel refresh](https://github.com/rustcommons/rust-mirror/blob/main/docs/MULTI-VERSION.md).
-- [Resumable downloads and recovery](https://github.com/rustcommons/rust-mirror/blob/main/docs/RESUMING.md).
-- [Toolchain selections, discovery, import and frozen plans](https://github.com/rustcommons/rust-mirror/blob/main/docs/SELECTIONS.md).
-- [Nexus Raw hosting and offline installation](https://github.com/rustcommons/rust-mirror/blob/main/docs/NEXUS-RAW.md).
-- [Offline proof evidence](https://github.com/rustcommons/rust-mirror/blob/main/docs/evals/2026-11-09-offline-toolchain.md).
-- [Recovered prototype assessment](https://github.com/rustcommons/rust-mirror/blob/main/docs/evals/2026-11-09-prototype-assessment.md).
-- [Requirements and evidence index](https://github.com/rustcommons/rust-mirror/blob/main/docs/REQUIREMENTS.md).
-- [Changelog](https://github.com/rustcommons/rust-mirror/blob/main/CHANGELOG.md) and [release policy/checklist](https://github.com/rustcommons/rust-mirror/blob/main/docs/RELEASING.md).
-- [Contribution and validation instructions](https://github.com/rustcommons/rust-mirror/blob/main/AGENTS.md).
-- [License](https://github.com/rustcommons/rust-mirror/blob/main/LICENSE).
+Inspired by [Panamax](https://github.com/panamax-rs/panamax). Licensed under
+[Apache-2.0](https://github.com/rustcommons/rust-mirror/blob/main/LICENSE).

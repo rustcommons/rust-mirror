@@ -146,6 +146,13 @@ resource/platform limits in `docs/SYNC.md`; no new dependencies without approval
 
 ## User-facing documentation
 
+The owner authorized docs-only 0.1.1 publication on 2026-11-11. Maintain
+`src/guide.md` as the packaged docs.rs walkthrough included by `src/lib.rs`. Every
+exported item/field needs meaningful rustdoc. Keep missing-doc warnings enabled;
+compile examples and deny rustdoc warnings during release checks. Public README/API
+pages explain usage, not internal coordination/prototype history.
+
+
 Maintain `docs/USER-GUIDE.md` as the plain-language start-to-finish route and
 `docs/CLI-REFERENCE.md` as the complete command/configuration reference. Document
 every command/option's meaning, defaults, output, network/local/remote effects and

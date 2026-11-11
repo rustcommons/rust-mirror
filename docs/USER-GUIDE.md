@@ -1,7 +1,7 @@
 # rust-mirror user guide
 
-Start here to understand and operate published rust-mirror 0.1.0. Install with
-`cargo install rust-mirror --version 0.1.0 --locked`.
+Start here to understand and operate published rust-mirror 0.1.1. Install with
+`cargo install rust-mirror --version 0.1.1 --locked`.
 
 This guide explains the normal workflow. The [command reference](CLI-REFERENCE.md)
 lists every command/option, defaults, outputs and failure behavior. The
@@ -59,7 +59,7 @@ of `sync`. Both routes can feed the same `rustup` finishing command.
 
 | Term | Plain meaning | Example |
 | --- | --- | --- |
-| Tool version | Version of rust-mirror itself | `rust-mirror --version`: 0.1.0 |
+| Tool version | Version of rust-mirror itself | `rust-mirror --version`: 0.1.1 |
 | Artifact | One downloaded metadata/archive/installer file | A `.tar.xz` compiler archive |
 | Channel | Release stream selected by name | `stable`, `beta`, `nightly` |
 | Toolchain | One Rust compiler release and its matching tools/libraries | Rust 1.90.0 |

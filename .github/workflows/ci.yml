@@ -25,4 +25,13 @@ jobs:
       - run: cargo doc --locked --no-deps
         env:
           RUSTDOCFLAGS: -D warnings
+      - name: Verify packaged documentation and source
+        run: cargo package --locked
+      - name: Save verified Rust 1.90 package
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-mirror-package
+          path: target/package/rust-mirror-*.crate
+          if-no-files-found: error
       - run: python -m unittest discover -s tests -p "test_*.py"

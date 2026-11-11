@@ -19,7 +19,10 @@ publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
    including defaults, outputs, local/remote effects and recovery.
    Keep historical failures and bounds; metadata checks are not native evidence.
 2. Run Rust 1.90 fmt, tests, Clippy and rustdoc with warnings denied, Python tests,
-   link/render checks and release-documentation CI. Inspect the exact final diff.
+   link/render checks and release-documentation CI. Deny rustdoc warnings and
+   compile packaged walkthrough examples. Inspect the final diff. For docs-only
+   patches, prove runtime tokens/dependency identities unchanged and carry native/
+   Nexus evidence in its original scope instead of repeating unrelated matrices.
 3. Run the [Rustup lifecycle workflow](../.github/workflows/rustup-lifecycle.yml)
    for Linux/x86-64, Windows/x86-64, macOS/Intel and Apple Silicon. Require fresh
    bootstrap, old/new stable and pinned history, numeric aliases, minimal/default profiles, offline documentation, components/targets,
@@ -48,7 +51,7 @@ publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.1.0.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.1.1.md) as the GitHub Release, latest and
   without attached standalone binaries unless separately authorized.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.

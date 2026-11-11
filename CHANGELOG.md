@@ -4,6 +4,20 @@
 
 No additional changes queued.
 
+## [0.1.1] - 2026-11-11
+
+Documentation-only patch. No command behavior, API signatures, dependency
+requirements, MSRV or saved schemas change.
+
+- Add a docs.rs usage walkthrough with configuration, preparation, Nexus publishing,
+  client setup, recovery and compiled Rust examples.
+- Describe all exported types, fields and operations; enable missing-documentation
+  warnings so future public items must have descriptions.
+- Organize the crates.io README around installation, first mirror, publishing,
+  updates and reference links. Remove repository/prototype history.
+
+See [versioned notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.1.1.md).
+
 ## [0.1.0] - 2026-11-11
 
 First release of selected modern Rustup mirroring and Nexus Raw publication.

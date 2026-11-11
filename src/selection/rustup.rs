@@ -1,4 +1,8 @@
 //! Complete a verified generation with pinned Rustup distribution endpoints.
+//!
+//! [prepare] adds installer paths and generated Rustup policy to a completed
+//! selected/collection root. It does not install Rustup, configure client trust,
+//! provision a server or activate routing.
 use super::{
     collection::{self, CollectionSnapshot},
     read_file, Toolchain,
@@ -14,6 +18,20 @@ use std::{
 /// pinned catalog/installers, and explicitly promote dated channel triplets.
 /// The catalog is generated mirror policy; Rust manifests and shell script bytes
 /// remain upstream originals. No input or remote server is modified.
+///
+/// The snapshot must be a completed schema-2/3 root. Each channels entry names
+/// an included dated channel to promote; an empty list requests no promotion.
+/// The Rustup manager version is independent of the Rust compiler version.
+/// Output must be new with an existing parent; max_bytes bounds the finished
+/// copy (1 byte–100 GiB). Returns the completed mirror child.
+///
+/// Reads upstream installer/script/checksum data through source as needed.
+/// This is not an offline-only operation. Generated numeric aliases and the
+/// manager catalog are mirror policy, not signed upstream evidence.
+///
+/// # Errors
+/// Refuses invalid/corrupt inputs, incoherent promotion, existing/overlapping
+/// output, size/hash/budget failures or network/local I/O failures.
 pub fn prepare(
     snapshot: &Path,
     rustup_version: &str,

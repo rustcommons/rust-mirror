@@ -1,4 +1,9 @@
 //! Saved selections and metadata-only, replayable download plans.
+//!
+//! Start with [Config::parse] or [Config::read]. [catalog] describes upstream
+//! availability. [resolve] freezes metadata before [ResolvedPlan::save] and [fetch]
+//! transfer its payloads. For all selections together use [sync::run], then
+//! complete Rustup endpoints with [rustup::prepare].
 pub mod collection;
 pub mod rustup;
 pub mod sync;
@@ -24,24 +29,39 @@ fn default_budget() -> u64 {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// Validated mirror configuration, normally parsed from TOML.
+///
+/// [`Config::parse`] and [`Config::read`] validate automatically. Directly constructed
+/// values should pass [`Config::validate`] before use. Unknown TOML fields are refused.
 pub struct Config {
+    /// Configuration schema; currently `1`.
     pub schema: u32,
+    /// Pinned full numeric Rustup manager version, not the Rust compiler version.
     pub rustup_version: String,
     #[serde(default = "default_budget")]
+    /// Transfer/copy budget in bytes; defaults to 10 GiB, accepts 1 byte through 100 GiB. Not a disk quota.
     pub max_download_bytes: u64,
+    /// One through 32 uniquely named selections.
     pub selections: Vec<Selection>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// One named compiler/platform/component choice within a [`Config`].
 pub struct Selection {
+    /// Unique nonblank selection label, at most 80 UTF-8 bytes with no control characters.
     pub name: String,
+    /// Full numeric release, channel or dated channel; for example `1.90.0` or `stable-2025-09-18`.
     pub toolchain: String,
+    /// One through 16 unique compiler host triples; no implicit native-host selection.
     pub hosts: Vec<String>,
     #[serde(default = "default_profile")]
+    /// Upstream `minimal` or `default` profile; defaults to `default`.
     pub profile: String,
     #[serde(default)]
+    /// Additional unique component names or accepted aliases, at most 64. Defaults to empty.
     pub components: Vec<String>,
     #[serde(default)]
+    /// Additional unique compilation target triples, at most 64. Defaults to empty.
     pub targets: Vec<String>,
 }
 fn atom(s: &str) -> Result<()> {
@@ -146,6 +166,11 @@ impl Toolchain {
     }
 }
 impl Selection {
+    /// Check selector syntax, list uniqueness and supported profile, without network access.
+    ///
+    /// # Errors
+    /// Refuses invalid names/selectors, empty or duplicate hosts, unsupported profiles
+    /// or component/target count/identifier limits. This does not prove upstream availability.
     pub fn validate(&self) -> Result<()> {
         if self.name.trim().is_empty()
             || self.name.len() > 80
@@ -167,14 +192,30 @@ impl Selection {
     }
 }
 impl Config {
+    /// Parse strict TOML and validate all configuration/selection constraints.
+    ///
+    /// # Errors
+    /// Refuses malformed/unknown fields, unsupported schema, invalid manager version/budget
+    /// or missing/duplicate/invalid selections.
     pub fn parse(text: &str) -> Result<Self> {
         let c: Self = toml::from_str(text)?;
         c.validate()?;
         Ok(c)
     }
+    /// Read up to 1 MiB of UTF-8 configuration TOML and call [`Self::parse`].
+    ///
+    /// # Errors
+    /// Refuses missing/non-file/oversized input, invalid UTF-8 or invalid configuration.
     pub fn read(path: &Path) -> Result<Self> {
         Self::parse(std::str::from_utf8(&read_file(path, SMALL_LIMIT)?)?)
     }
+    /// Check schema, Rustup version, budget and 1 to 32 uniquely named selections.
+    ///
+    /// Calls [`Selection::validate`] for each selection. This is local syntax/policy
+    /// validation, not a download or native-platform check.
+    ///
+    /// # Errors
+    /// Returns an error if any configuration or selection constraint is violated.
     pub fn validate(&self) -> Result<()> {
         if self.schema != 1 {
             return Err("unsupported configuration schema".into());
@@ -195,6 +236,10 @@ impl Config {
         }
         Ok(())
     }
+    /// Find one named selection without network access.
+    ///
+    /// # Errors
+    /// Returns an error if no selection has exactly this name.
     pub fn get(&self, name: &str) -> Result<&Selection> {
         self.selections
             .iter()
@@ -216,32 +261,62 @@ fn read_file(path: &Path, limit: u64) -> Result<Vec<u8>> {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// One frozen archive/installer request in a [`Plan`].
+///
+/// The plan binds a relative upstream path to a whole-file hash; it does not contain payload bytes.
 pub struct Artifact {
+    /// Relative official-distribution path requested for this artifact.
     pub path: String,
+    /// Expected SHA-256 of the complete payload.
     pub sha256: String,
+    /// Manifest package name, or `rustup-init` for a bootstrap installer.
     pub package: String,
+    /// Manifest target/host identifier for this payload.
     pub target: String,
+    /// Artifact category: `component` for tool archives or `bootstrap` for Rustup.
     pub kind: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// Serializable metadata-only download plan, stored as `plan.toml`.
+///
+/// Use [`resolve`] to construct it and [`ResolvedPlan::save`] to persist its original
+/// metadata. [`load_plan`] revalidates saved metadata and reconstructs the plan.
 pub struct Plan {
+    /// Saved-plan schema number; currently `1`.
     pub schema: u32,
+    /// Planner recipe revision checked when replaying a saved plan.
     pub planner_revision: u32,
+    /// Pinned bootstrap manager release.
     pub rustup_version: String,
+    /// Frozen download/copy budget in bytes.
     pub max_download_bytes: u64,
+    /// Exact named selection used during resolution.
     pub selection: Selection,
+    /// Full numeric compiler release reported by the manifest.
     pub resolved_release: String,
+    /// Resolved upstream release date.
     pub date: String,
+    /// Stable replay selector, such as a numeric release or a dated channel.
     pub pinned_toolchain: String,
+    /// Relative upstream manifest path used for resolution.
     pub metadata_source: String,
+    /// SHA-256 of the original manifest bytes.
     pub manifest_sha256: String,
+    /// SHA-256 of the checksum-sidecar bytes, not another copy of the manifest hash.
     pub checksum_sha256: String,
+    /// SHA-256 of retained signature bytes; not a signature-verification result.
     pub signature_sha256: String,
+    /// Host-to-hash map for bootstrap checksum-sidecar bytes, not installer payload hashes.
     pub bootstrap_checksums: BTreeMap<String, String>,
+    /// Frozen payload requests, including every advertised format for selected components.
     pub artifacts: Vec<Artifact>,
 }
+/// A [`Plan`] together with its original manifest, sidecars and bootstrap checksums.
+///
+/// The metadata bytes are private so saved/replayed plans retain their validation boundary.
 pub struct ResolvedPlan {
+    /// Serializable preview; edits are not a substitute for fresh validated resolution.
     pub plan: Plan,
     metadata: Metadata,
 }
@@ -488,6 +563,15 @@ fn metadata(toolchain: &str, source: &impl Source) -> Result<Metadata> {
         bootstraps: BTreeMap::new(),
     })
 }
+/// Resolve `name` from `config`, preserving original metadata and freezing payload hashes.
+///
+/// Reads manifests, checksum/signature sidecars and bootstrap checksums through
+/// `source`. No compiler archive is downloaded and no files are written. Follow with
+/// [`ResolvedPlan::save`] and [`fetch`] to transfer payloads.
+///
+/// # Errors
+/// Refuses invalid config, unknown selection, unavailable components/hosts/targets,
+/// malformed/incoherent metadata, or transport/size failures.
 pub fn resolve(config: &Config, name: &str, source: &impl Source) -> Result<ResolvedPlan> {
     config.validate()?;
     let selected = config.get(name)?;
@@ -532,6 +616,13 @@ fn write_new(path: &Path, data: &[u8]) -> Result<()> {
 }
 impl ResolvedPlan {
     /// Persist only metadata and a preview/lock; no component archive is downloaded.
+    /// Write `plan.toml` and original metadata into a new `output` directory.
+    ///
+    /// The parent must exist. No overwrite/resume mode or component-archive download
+    /// is performed. A failed write can leave the reserved output directory.
+    ///
+    /// # Errors
+    /// Returns an error for existing output, unsuitable parent, serialization or I/O failure.
     pub fn save(&self, output: &Path) -> Result<()> {
         fs::create_dir(output)?;
         write_new(&output.join("manifest.toml"), &self.metadata.manifest)?;
@@ -557,6 +648,14 @@ fn cache_read(root: &Path, name: &str, limit: u64) -> Result<Vec<u8>> {
     }
     read_file(&p, limit)
 }
+/// Load and revalidate a saved plan directory without network access.
+///
+/// Checks metadata hashes and replay identity, then rebuilds the expected closure.
+/// Use this rather than trusting a deserialized [`Plan`] alone.
+///
+/// # Errors
+/// Refuses linked/missing/oversized files, unsupported schema/revision, invalid hashes
+/// or a saved plan that disagrees with its reconstructed metadata.
 pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
     if fs::symlink_metadata(root)?.file_type().is_symlink() || !root.is_dir() {
         return Err("plan must be a real directory".into());
@@ -627,13 +726,24 @@ pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+/// Schema-2 inventory describing one completed selected toolchain snapshot.
+///
+/// Written as `snapshot.toml`; input validation additionally checks file hashes and
+/// the selected manifest closure. Deserialization alone does not establish readiness.
 pub struct SelectionSnapshot {
+    /// Inventory schema number; selected snapshots use `2`.
     pub schema: u32,
+    /// Resolved full numeric compiler release.
     pub release: String,
+    /// Original upstream manifest date.
     pub date: String,
+    /// Frozen numeric or dated-channel selector.
     pub pinned_toolchain: String,
+    /// Bootstrap manager version used by this snapshot.
     pub rustup_version: String,
+    /// Exact requested host/profile/component/target choice.
     pub selection: Selection,
+    /// Verified payload/metadata entries, excluding the inventory itself.
     pub files: Vec<SnapshotFile>,
 }
 fn snapshot_metadata(resolved: &ResolvedPlan) -> Result<BTreeMap<String, &Vec<u8>>> {
@@ -669,11 +779,28 @@ fn snapshot(plan: &Plan, files: Vec<SnapshotFile>) -> SelectionSnapshot {
     }
 }
 /// Fetch a frozen plan into a new output; retain private progress if interrupted.
+/// Return `<output>/mirror` only after frozen payloads and final-tree verification.
+///
+/// `plan_dir` comes from [`ResolvedPlan::save`]. Output must be new with an existing
+/// parent. Interrupted private progress may continue through [`fetch_resuming`];
+/// never serve that working state.
+///
+/// # Errors
+/// Refuses existing output, invalid plans, competing writers, transport failures,
+/// size/hash mismatches or local I/O/assembly failures.
 pub fn fetch(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
     fetch_with_resume(plan_dir, output, source, false, None)
 }
 /// Explicitly reopen an existing output for this exact frozen plan. Reuse requires
 /// whole-file verification; a valid completed snapshot is checked, never overwritten.
+/// Return the verified completed mirror from initialized matching progress.
+///
+/// Rehashes reusable files and verifies ranges against whole-file hashes. It does
+/// not refresh metadata or overwrite completed content.
+///
+/// # Errors
+/// Refuses uninitialized/foreign state, plan mismatch, unknown paths/links, locks,
+/// invalid ranges, size/hash mismatches or I/O failures.
 pub fn fetch_resuming(plan_dir: &Path, output: &Path, source: &impl Source) -> Result<PathBuf> {
     fetch_with_resume(plan_dir, output, source, true, None)
 }
@@ -798,30 +925,58 @@ fn fetch_with_resume(
 }
 
 #[derive(Debug, Serialize)]
+/// Metadata availability report returned by [`catalog`].
+///
+/// Availability describes upstream metadata, not native execution or SDK qualification.
 pub struct Catalog {
+    /// Requested selector.
     pub toolchain: String,
+    /// Resolved compiler release from the selected manifest.
     pub release: String,
+    /// Upstream manifest date.
     pub date: String,
+    /// Compiler hosts advertised by the Rust metapackage.
     pub hosts: Vec<Availability>,
+    /// Component details for the requested host; empty without a host argument.
     pub components: Vec<ComponentAvailability>,
+    /// Additional standard-library targets for the requested host; empty without a host argument.
     pub targets: Vec<Availability>,
+    /// Profile names recorded upstream, which may exceed supported mirror profiles.
     pub profiles: Vec<String>,
+    /// Upstream profiles also supported here: the available subset of `minimal` and `default`.
     pub supported_profiles: Vec<String>,
 }
 #[derive(Debug, Serialize)]
+/// One advertised compiler host or standard-library target.
 pub struct Availability {
+    /// Host or target triple from upstream metadata.
     pub name: String,
+    /// Whether upstream marks this entry available for the resolved release.
     pub available: bool,
 }
 #[derive(Debug, Serialize)]
+/// A component package and its aliases for one requested compiler host.
 pub struct ComponentAvailability {
+    /// Canonical manifest package name.
     pub package: String,
+    /// Alternative component names recorded by manifest renames.
     pub aliases: Vec<String>,
+    /// Manifest target identifier, including `*` for host-independent packages.
     pub target: String,
+    /// Whether this manifest package/target is available.
     pub available: bool,
+    /// Upstream package-version text; not necessarily a bare semantic version.
     pub manifest_package_version: String,
 }
 /// Inspect upstream metadata. Availability is not native platform/runtime qualification.
+/// Resolve release metadata; `host` adds its components and compilation targets.
+///
+/// Reads metadata/sidecars only and writes no files. Availability does not establish
+/// native execution or SDK availability.
+///
+/// # Errors
+/// Refuses unsupported selectors, malformed/hash-invalid metadata, unknown hosts
+/// or upstream transport/size failures.
 pub fn catalog(toolchain: &str, host: Option<&str>, source: &impl Source) -> Result<Catalog> {
     let meta = metadata(toolchain, source)?;
     let m = parsed(&meta.manifest, &Toolchain::parse(toolchain)?)?;
@@ -912,6 +1067,15 @@ struct ImportedToolchain {
     targets: Vec<String>,
 }
 /// Import one project toolchain file. Hosts and bootstrap version remain explicit.
+/// Read a project toolchain file into one named, validated configuration.
+///
+/// Supports TOML and legacy `rust-toolchain` selectors. Caller-supplied `name`,
+/// `hosts` and manager version `rustup` remain explicit. The result is not written;
+/// use [`write_config`]. No upstream availability lookup occurs.
+///
+/// # Errors
+/// Refuses missing/oversized/malformed files, local custom paths, unsupported
+/// selectors or invalid profile/component/target/configuration constraints.
 pub fn import_toolchain(
     path: &Path,
     name: &str,
@@ -959,6 +1123,10 @@ pub fn import_toolchain(
     config.validate()?;
     Ok(config)
 }
+/// Validate and write pretty TOML to a new file without network access.
+///
+/// # Errors
+/// Refuses invalid config, existing destination, missing parent or local I/O failures.
 pub fn write_config(config: &Config, path: &Path) -> Result<()> {
     config.validate()?;
     write_new(path, toml::to_string_pretty(config)?.as_bytes())
