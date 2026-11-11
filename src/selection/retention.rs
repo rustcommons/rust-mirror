@@ -51,7 +51,11 @@ impl Policy {
             || self.keep_newest > 32
             || self.pinned_generations.len() > 32
         {
-            return Err("retention policy exceeds bounds".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "retention policy exceeds bounds",
+            )
+            .into());
         }
         let mut seen = BTreeSet::new();
         for pin in &self.pinned_releases {
@@ -238,6 +242,7 @@ fn preview_inner(
     if roots.is_empty() || roots.len() > 32 {
         return Err("retention requires 1-32 generations, newest first".into());
     }
+    crate::events::stage("validate retention inputs")?;
     let roots = roots
         .iter()
         .map(|p| real_directory(p))
@@ -418,7 +423,9 @@ fn preview_inner(
             .iter()
             .filter(|f| f.path.starts_with(root))
             .try_fold(0u64, |n, f| {
-                n.checked_add(f.bytes).ok_or("folder size overflow")
+                n.checked_add(f.bytes).ok_or_else(|| {
+                    crate::Error::new(crate::ErrorKind::Budget, "folder size overflow")
+                })
             })?;
         plan.folders.push(FolderDeletion {
             path: root.clone(),
@@ -426,7 +433,8 @@ fn preview_inner(
         });
     }
     plan.total_bytes = plan.files.iter().try_fold(0u64, |n, f| {
-        n.checked_add(f.bytes).ok_or("retention size overflow")
+        n.checked_add(f.bytes)
+            .ok_or_else(|| crate::Error::new(crate::ErrorKind::Budget, "retention size overflow"))
     })?;
     Ok(plan)
 }
@@ -443,8 +451,12 @@ fn lock_file(path: &Path, create: bool) -> Result<File> {
         .create(create)
         .truncate(false)
         .open(path)?;
-    f.try_lock()
-        .map_err(|_| "generation workspace busy, or filesystem locking unavailable")?;
+    f.try_lock().map_err(|_| {
+        crate::Error::new(
+            crate::ErrorKind::Locked,
+            "generation workspace busy, or filesystem locking unavailable",
+        )
+    })?;
     Ok(f)
 }
 
@@ -563,15 +575,35 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
             .collect();
         let mut dirs = BTreeSet::from([root.clone()]);
         for file in files {
+            if let Err(error) = crate::events::check() {
+                let mut error = crate::Error::new(crate::ErrorKind::Cancelled, error.to_string());
+                error.report = Some(toml::Value::try_from(&report)?);
+                return Err(error.into());
+            }
             let result = (|| -> Result<()> {
+                crate::events::artifact(
+                    &file.path.to_string_lossy(),
+                    "delete",
+                    0,
+                    Some(file.bytes),
+                )?;
                 real_directory(file.path.parent().ok_or("file needs parent")?)?;
                 if resume::hash_file(&file.path, file.bytes)? != (file.bytes, file.sha256.clone()) {
-                    return Err("file changed during pruning".into());
+                    return Err(crate::Error::new(
+                        crate::ErrorKind::Integrity,
+                        "file changed during pruning",
+                    )
+                    .into());
                 }
                 fs::remove_file(&file.path)?;
                 Ok(())
             })();
             if let Err(e) = result {
+                if crate::error_kind(e.as_ref()) == crate::ErrorKind::Cancelled {
+                    let mut error = crate::Error::new(crate::ErrorKind::Cancelled, e.to_string());
+                    error.report = Some(toml::Value::try_from(&report)?);
+                    return Err(error.into());
+                }
                 report.failure = Some(ApplyFailure {
                     path: file.path.clone(),
                     message: e.to_string(),
@@ -600,4 +632,40 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
         report.removed_generations.push(root.clone());
     }
     Ok(report)
+}
+
+/// Explicit-root preview with progress, independent heartbeats and cancellation.
+/// # Errors
+/// Returns typed preview/cancellation errors; no deletion occurs.
+pub fn preview_with_control(
+    policy: &Policy,
+    roots: &[PathBuf],
+    as_of: &str,
+    control: &crate::events::Control,
+) -> Result<PrunePlan> {
+    control.run("prune preview", || preview(policy, roots, as_of))
+}
+/// Discovery-backed preview with progress/cancel and the same managed-state binding.
+/// # Errors
+/// Returns typed preview/cancellation errors; no deletion occurs.
+pub fn preview_directory_with_control(
+    policy: &Policy,
+    directory: &Path,
+    previous: &Path,
+    as_of: &str,
+    control: &crate::events::Control,
+) -> Result<PrunePlan> {
+    control.run("prune preview", || {
+        preview_directory(policy, directory, previous, as_of)
+    })
+}
+/// Apply with progress/cancel. Cancelled errors carry a successful-prefix report if deletion started.
+/// # Errors
+/// Returns typed errors; cancellation never rolls back already unlinked approved files.
+pub fn apply_with_control(
+    plan: &PrunePlan,
+    allow_delete: bool,
+    control: &crate::events::Control,
+) -> Result<ApplyReport> {
+    control.run("prune apply", || apply(plan, allow_delete))
 }

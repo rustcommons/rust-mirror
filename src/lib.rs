@@ -1,6 +1,10 @@
 #![doc = include_str!("guide.md")]
 #![warn(missing_docs)]
+pub mod cli;
+mod error;
+pub mod events;
 pub mod publish;
+pub use error::{error_kind, Error, ErrorKind};
 mod resume;
 pub mod selection;
 pub use resume::Transfer;
@@ -8,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
-    error::Error,
+    error::Error as StdError,
     fs::{self, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
@@ -19,7 +23,7 @@ use std::{
 ///
 /// Errors include validation/refusal, local I/O and transport failures; callers
 /// should preserve their context rather than treating every failure as retryable.
-pub type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
+pub type Result<T> = std::result::Result<T, Box<dyn StdError + Send + Sync>>;
 const ORIGIN: &str = "https://static.rust-lang.org/";
 const METADATA_LIMIT: u64 = 4 * 1024 * 1024;
 const ARTIFACT_LIMIT: u64 = 512 * 1024 * 1024;
@@ -101,17 +105,41 @@ impl Source for HttpsSource {
             .ok_or("source must be the official HTTPS origin")?;
         safe_path(path)?;
         let _ = writeln!(io::stderr().lock(), "Downloading {path}");
+        events::artifact(path, "download", 0, None)?;
         let response = self.0.get(url).call()?;
         if response.status() != 200 {
             return Err("source did not return HTTP 200".into());
         }
-        copy_bounded(response.into_reader(), output, limit)
+        copy_bounded(
+            response.into_reader(),
+            &mut events::ProgressWriter {
+                inner: output,
+                path: path.into(),
+                count: 0,
+            },
+            limit,
+        )
     }
 }
-fn copy_bounded(input: impl Read, output: &mut dyn Write, limit: u64) -> Result<()> {
-    let count = io::copy(&mut input.take(limit + 1), output)?;
-    if count > limit {
-        return Err("download exceeds size budget".into());
+fn copy_bounded(mut input: impl Read, output: &mut dyn Write, limit: u64) -> Result<()> {
+    let mut count = 0u64;
+    let mut buffer = [0; 64 * 1024];
+    loop {
+        events::check()?;
+        let remaining = limit.saturating_sub(count).saturating_add(1);
+        let cap = buffer
+            .len()
+            .min(remaining.min(buffer.len() as u64) as usize);
+        let n = input.read(&mut buffer[..cap])?;
+        events::check()?;
+        if n == 0 {
+            break;
+        }
+        count += n as u64;
+        if count > limit {
+            return Err(Error::new(ErrorKind::Budget, "download exceeds size budget").into());
+        }
+        output.write_all(&buffer[..n])?;
     }
     Ok(())
 }
@@ -225,16 +253,28 @@ fn checksum(bytes: &[u8]) -> Result<String> {
     let hash = text
         .split_whitespace()
         .next()
-        .ok_or("empty checksum file")?;
+        .ok_or_else(|| crate::Error::new(crate::ErrorKind::Integrity, "empty checksum file"))?;
     valid_hash(hash)?;
     Ok(hash.to_ascii_lowercase())
 }
 fn bytes(source: &impl Source, path: &str, limit: u64) -> Result<Vec<u8>> {
     safe_path(path)?;
     let mut output = Vec::new();
-    source.fetch(&format!("{ORIGIN}{path}"), &mut output, limit)?;
+    events::artifact(path, "download", 0, None)?;
+    source.fetch(
+        &format!("{ORIGIN}{path}"),
+        &mut events::ProgressWriter {
+            inner: &mut output,
+            path: path.into(),
+            count: 0,
+        },
+        limit,
+    )?;
+    events::check()?;
     if output.len() as u64 > limit {
-        return Err("source exceeded byte budget".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Budget, "source exceeded byte budget").into(),
+        );
     }
     Ok(output)
 }
@@ -298,7 +338,12 @@ fn plan(raw: &[u8], options: &Options) -> Result<Vec<(String, String)>> {
                 target.hash.as_ref(),
             )
         };
-        let hash = hash.ok_or("archive URL has no matching checksum")?;
+        let hash = hash.ok_or_else(|| {
+            crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "archive URL has no matching checksum",
+            )
+        })?;
         valid_hash(hash)?;
         let path = url.strip_prefix(ORIGIN).ok_or("foreign artifact origin")?;
         safe_path(path)?;
@@ -307,7 +352,11 @@ fn plan(raw: &[u8], options: &Options) -> Result<Vec<(String, String)>> {
         }
         if let Some(previous) = artifacts.insert(path.to_string(), hash.to_ascii_lowercase()) {
             if previous != hash.to_ascii_lowercase() {
-                return Err("conflicting artifact checksums".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "conflicting artifact checksums",
+                )
+                .into());
             }
         }
         selected.push(component.pkg.as_str());
@@ -318,7 +367,11 @@ fn plan(raw: &[u8], options: &Options) -> Result<Vec<(String, String)>> {
         }
     }
     if artifacts.len() > 16 {
-        return Err("minimal profile exceeds artifact budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "minimal profile exceeds artifact budget",
+        )
+        .into());
     }
     Ok(artifacts.into_iter().collect())
 }
@@ -330,6 +383,7 @@ struct HashWriter<'a> {
 }
 impl Write for HashWriter<'_> {
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
+        events::check().map_err(io::Error::other)?;
         let count = self.file.write(data)?;
         self.hash.update(&data[..count]);
         self.bytes += count as u64;
@@ -376,7 +430,17 @@ fn download(
         hash: Sha256::new(),
         bytes: 0,
     };
-    source.fetch(&format!("{ORIGIN}{path}"), &mut writer, ARTIFACT_LIMIT)?;
+    events::artifact(path, "download", 0, None)?;
+    source.fetch(
+        &format!("{ORIGIN}{path}"),
+        &mut events::ProgressWriter {
+            inner: &mut writer,
+            path: path.into(),
+            count: 0,
+        },
+        ARTIFACT_LIMIT,
+    )?;
+    events::check()?;
     let count = writer.bytes;
     let actual = hex::encode(writer.hash.finalize());
     if count > ARTIFACT_LIMIT || actual != expected.to_ascii_lowercase() {
@@ -410,13 +474,21 @@ pub fn prepare(options: &Options, source: &impl Source) -> Result<PathBuf> {
         return Err("this milestone supports only x86_64-unknown-linux-gnu".into());
     }
     if options.output.try_exists()? {
-        return Err("output already exists; choose a new snapshot directory".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::OutputExists,
+            "output already exists; choose a new snapshot directory",
+        )
+        .into());
     }
     let manifest_path = format!("dist/channel-rust-{}.toml", options.release);
     let upstream_hash = bytes(source, &format!("{manifest_path}.sha256"), 4096)?;
     let raw = bytes(source, &manifest_path, METADATA_LIMIT)?;
     if sha256(&raw) != checksum(&upstream_hash)? {
-        return Err("upstream manifest checksum mismatch".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Integrity,
+            "upstream manifest checksum mismatch",
+        )
+        .into());
     }
     let artifacts = plan(&raw, options)?;
     let signature = bytes(source, &format!("{manifest_path}.asc"), 64 * 1024)?;
@@ -482,6 +554,7 @@ pub fn prepare(options: &Options, source: &impl Source) -> Result<PathBuf> {
     if completed.try_exists()? {
         return Err("completed tree unexpectedly exists".into());
     }
+    crate::events::check()?;
     fs::rename(staging.path(), &completed)?;
     Ok(completed)
 }

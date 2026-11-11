@@ -198,7 +198,9 @@ fn base_url(options: &Options) -> Result<String> {
 }
 fn authorization(user: &str, password: &str) -> Result<String> {
     if user.is_empty() || password.is_empty() || user.contains(':') {
-        return Err("invalid publication credentials".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Auth, "invalid publication credentials").into(),
+        );
     }
     const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let input = format!("{user}:{password}");
@@ -239,15 +241,21 @@ impl Client {
                 .set("Content-Length", &len.to_string())
                 .set("Content-Type", "application/octet-stream")
                 .set("If-None-Match", "*")
-                .send(File::open(path)?)
+                .send(Upload {
+                    file: File::open(path)?,
+                    path: name.into(),
+                    count: 0,
+                })
         } else {
             request.call()
         };
         match result {
             Ok(r) | Err(ureq::Error::Status(_, r)) => Ok(r),
-            Err(_) => {
-                Err("publication transport failed (check endpoint, TLS trust and network)".into())
-            }
+            Err(error) => Err(crate::Error::new(
+                crate::error_kind(&error),
+                "publication transport failed (check endpoint, TLS trust and network)",
+            )
+            .into()),
         }
     }
 }
@@ -264,6 +272,77 @@ impl Client {
 /// partial remote data: investigate and use fresh storage. No remote rollback,
 /// retry, resume or force mode is provided.
 pub fn publish(root: &Path, options: &Options) -> Result<Report> {
+    crate::events::stage("publish preflight")?;
+    let client = client(options)?;
+    let (schema, files, inventory_sha256) = files(root)?;
+    absent(&client, &files)?;
+    crate::events::stage("upload and verify publication")?;
+    let mut total = 0u64;
+    for f in &files {
+        crate::events::check()?;
+        let path = root.join(&f.path);
+        if crate::resume::hash_file(&path, f.bytes)? != (f.bytes, f.sha256.clone()) {
+            return Err("snapshot changed before upload".into());
+        }
+        crate::events::artifact(&f.path, "upload", 0, Some(f.bytes))?;
+        let response = client.request("PUT", &f.path, Some(&path), f.bytes)?;
+        if ![200, 201, 204].contains(&response.status()) {
+            return Err(status_error(response.status(), "upload failed").into());
+        }
+        crate::events::artifact(&f.path, "verify", 0, Some(f.bytes))?;
+        let response = client.request("GET", &f.path, None, 0)?;
+        if response.status() != 200 {
+            return Err(status_error(response.status(), "remote verification GET failed").into());
+        }
+        let mut reader = response.into_reader().take(f.bytes + 1);
+        let mut hasher = Sha256::new();
+        let mut n = 0u64;
+        let mut buffer = [0u8; 64 * 1024];
+        loop {
+            crate::events::check()?;
+            let bytes = reader.read(&mut buffer)?;
+            if bytes == 0 {
+                break;
+            }
+            n += bytes as u64;
+            hasher.update(&buffer[..bytes]);
+            crate::events::bytes(&f.path, n)?;
+        }
+        if n != f.bytes || hex::encode(hasher.finalize()) != f.sha256 {
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "remote bytes differ; incomplete publication must not be activated",
+            )
+            .into());
+        }
+        total = total
+            .checked_add(n)
+            .ok_or("publication byte count overflow")?;
+    }
+    Ok(Report {
+        files: files.len(),
+        remote_bytes_verified: total,
+        inventory_sha256,
+        schema,
+    })
+}
+
+struct Upload {
+    file: File,
+    path: String,
+    count: u64,
+}
+impl Read for Upload {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        crate::events::check().map_err(std::io::Error::other)?;
+        let cap = buf.len().min(64 * 1024);
+        let n = self.file.read(&mut buf[..cap])?;
+        self.count += n as u64;
+        crate::events::bytes(&self.path, self.count).map_err(std::io::Error::other)?;
+        Ok(n)
+    }
+}
+fn client(options: &Options) -> Result<Client> {
     let base = base_url(options)?;
     let mut builder = ureq::AgentBuilder::new()
         .redirects(0)
@@ -283,11 +362,13 @@ pub fn publish(root: &Path, options: &Options) -> Result<Report> {
                 return Err("CA bundle exceeds certificate budget".into());
             }
             roots
-                .add(cert.map_err(|_| "invalid CA PEM")?)
-                .map_err(|_| "invalid CA certificate")?;
+                .add(cert.map_err(|_| crate::Error::new(crate::ErrorKind::Tls, "invalid CA PEM"))?)
+                .map_err(|_| crate::Error::new(crate::ErrorKind::Tls, "invalid CA certificate"))?;
         }
         if count == 0 {
-            return Err("CA bundle has no certificates".into());
+            return Err(
+                crate::Error::new(crate::ErrorKind::Tls, "CA bundle has no certificates").into(),
+            );
         }
         let config = ureq::rustls::ClientConfig::builder_with_provider(Arc::new(
             ureq::rustls::crypto::ring::default_provider(),
@@ -302,63 +383,95 @@ pub fn publish(root: &Path, options: &Options) -> Result<Report> {
         .as_ref()
         .map(|(u, p)| authorization(u, p))
         .transpose()?;
-    let client = Client {
+    Ok(Client {
         agent: builder.build(),
         base,
         authorization,
+    })
+}
+fn status_error(status: u16, message: &str) -> crate::Error {
+    let kind = match status {
+        401 | 403 => crate::ErrorKind::Auth,
+        409 | 412 => crate::ErrorKind::RemoteExists,
+        _ => crate::ErrorKind::Network,
     };
-    let (schema, files, inventory_sha256) = files(root)?;
-    for f in &files {
+    crate::Error::new(kind, format!("{message} (HTTP {status})"))
+}
+fn absent(client: &Client, files: &[SnapshotFile]) -> Result<()> {
+    for f in files {
+        crate::events::artifact(&f.path, "head", 0, None)?;
         match client.request("HEAD", &f.path, None, 0)?.status() {
-            404 => {}
-            200..=299 => return Err("destination is not absent; no files were uploaded".into()),
+            404 => (),
+            200..=299 => {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::RemoteExists,
+                    "destination is not absent; no files were uploaded",
+                )
+                .into())
+            }
             status => {
-                return Err(format!(
-                    "destination preflight refused (HTTP {status}); no files were uploaded"
+                return Err(status_error(
+                    status,
+                    "destination preflight refused; no files were uploaded",
                 )
                 .into())
             }
         }
     }
-    let mut total = 0u64;
-    for f in &files {
-        let path = root.join(&f.path);
-        if crate::resume::hash_file(&path, f.bytes)? != (f.bytes, f.sha256.clone()) {
-            return Err("snapshot changed before upload".into());
-        }
-        let response = client.request("PUT", &f.path, Some(&path), f.bytes)?;
-        if ![200, 201, 204].contains(&response.status()) {
-            return Err(format!("upload failed (HTTP {})", response.status()).into());
-        }
-        let response = client.request("GET", &f.path, None, 0)?;
-        if response.status() != 200 {
-            return Err("remote verification GET failed".into());
-        }
-        let mut reader = response.into_reader().take(f.bytes + 1);
-        let mut hasher = Sha256::new();
-        let mut n = 0u64;
-        let mut buffer = [0u8; 64 * 1024];
-        loop {
-            let bytes = reader.read(&mut buffer)?;
-            if bytes == 0 {
-                break;
-            }
-            n += bytes as u64;
-            hasher.update(&buffer[..bytes]);
-        }
-        if n != f.bytes || hex::encode(hasher.finalize()) != f.sha256 {
-            return Err("remote bytes differ; incomplete publication must not be activated".into());
-        }
-        total = total
-            .checked_add(n)
-            .ok_or("publication byte count overflow")?;
-    }
-    Ok(Report {
-        files: files.len(),
-        remote_bytes_verified: total,
-        inventory_sha256,
+    Ok(())
+}
+/// Read-only local closure and remote-absence evidence; not a reservation or PUT permission.
+#[derive(Serialize)]
+pub struct Preflight {
+    /// Inventory schema checked locally.
+    pub schema: u32,
+    /// Number of locally validated paths including the inventory marker.
+    pub files: usize,
+    /// Logical byte lengths of those files.
+    pub local_bytes: u64,
+    /// Frozen inventory SHA-256.
+    pub inventory_sha256: String,
+    /// Every destination returned HEAD 404; this does not authorize later overwrites.
+    pub absent_paths: Vec<String>,
+}
+/// Verify local closure, TLS/auth responses and absence of every destination without PUT/DELETE.
+/// Publish repeats this check; no concurrent-writer reservation is established.
+/// # Errors
+/// Refuses invalid inputs, unsafe URL/CA/credentials, existing destinations or transport failures.
+pub fn preflight(root: &Path, options: &Options) -> Result<Preflight> {
+    crate::events::stage("publish preflight")?;
+    let client = client(options)?;
+    let (schema, files, inventory_sha256) = files(root)?;
+    absent(&client, &files)?;
+    Ok(Preflight {
         schema,
+        files: files.len(),
+        local_bytes: files.iter().try_fold(0u64, |n, f| {
+            n.checked_add(f.bytes).ok_or("publication size overflow")
+        })?,
+        inventory_sha256,
+        absent_paths: files.into_iter().map(|f| f.path).collect(),
     })
+}
+/// Controlled read-only preflight with progress, independent heartbeats and cancellation.
+/// # Errors
+/// Returns typed preflight/cancellation errors; no remote writes occur.
+pub fn preflight_with_control(
+    root: &Path,
+    options: &Options,
+    control: &crate::events::Control,
+) -> Result<Preflight> {
+    control.run("publish preflight", || preflight(root, options))
+}
+/// Controlled publication; cancellation may leave partial remote data, never a rollback.
+/// # Errors
+/// Returns typed publication/cancellation errors. Retain local inputs and inspect partial remote data.
+pub fn publish_with_control(
+    root: &Path,
+    options: &Options,
+    control: &crate::events::Control,
+) -> Result<Report> {
+    control.run("publish", || publish(root, options))
 }
 #[cfg(test)]
 mod tests {

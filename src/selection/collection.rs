@@ -104,7 +104,11 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
         };
     crate::version(&rustup)?;
     if records.is_empty() || records.len() > 256 || files.is_empty() || files.len() > FILE_LIMIT {
-        return Err("collection record/file limit exceeded".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "collection record/file limit exceeded",
+        )
+        .into());
     }
     let mut entries = BTreeMap::new();
     let mut expected = BTreeSet::from([PathBuf::from("snapshot.toml")]);
@@ -141,18 +145,32 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
         // Historical moving-channel records bind to dated metadata, never today's root alias.
         let path = format!("dist/{}/channel-rust-{}.toml", record.date, spec.channel);
         safe_path(&path)?;
-        let manifest = entries
-            .get(&path)
-            .ok_or("missing dated toolchain manifest")?;
-        let hash = entries
-            .get(&format!("{path}.sha256"))
-            .ok_or("missing dated manifest checksum")?;
+        let manifest = entries.get(&path).ok_or_else(|| {
+            crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "missing dated toolchain manifest",
+            )
+        })?;
+        let hash = entries.get(&format!("{path}.sha256")).ok_or_else(|| {
+            crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "missing dated manifest checksum",
+            )
+        })?;
         if !entries.contains_key(&format!("{path}.asc")) {
-            return Err("missing original signature file".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "missing original signature file",
+            )
+            .into());
         }
         let bytes = read_file(&manifest.source, METADATA_LIMIT)?;
         if checksum(&read_file(&hash.source, 4096)?)? != sha256(&bytes) {
-            return Err("source manifest checksum mismatch".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "source manifest checksum mismatch",
+            )
+            .into());
         }
         let metadata = super::Metadata {
             manifest: bytes.clone(),
@@ -185,7 +203,11 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
         )?;
         for a in &expected.artifacts {
             if entries.get(&a.path).is_none_or(|e| e.sha256 != a.sha256) {
-                return Err("source omits a selected artifact or has a different identity".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "source omits a selected artifact or has a different identity",
+                )
+                .into());
             }
         }
         let m = parsed(&bytes, &spec)?;
@@ -201,7 +223,11 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
             || release != record.release
             || record.pinned_toolchain != spec.pinned(&m.date)
         {
-            return Err("toolchain record differs from preserved manifest".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "toolchain record differs from preserved manifest",
+            )
+            .into());
         }
     }
     // A replacement root channel is a complete original triplet, never mixed metadata.
@@ -215,10 +241,18 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
         let present = names.iter().filter(|p| entries.contains_key(*p)).count();
         if present != 0 {
             if present != 3 {
-                return Err("incomplete moving-channel metadata triplet".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "incomplete moving-channel metadata triplet",
+                )
+                .into());
             }
             if checksum(&read_file(&entries[&names[1]].source, 4096)?)? != entries[&path].sha256 {
-                return Err("moving-channel checksum mismatch".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "moving-channel checksum mismatch",
+                )
+                .into());
             }
             let m = parsed(
                 &read_file(&entries[&path].source, METADATA_LIMIT)?,
@@ -244,7 +278,11 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
         if doc.get("schema-version").and_then(toml::Value::as_str) != Some("1")
             || doc.get("version").and_then(toml::Value::as_str) != Some(rustup.as_str())
         {
-            return Err("Rustup catalog differs from inventory version".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "Rustup catalog differs from inventory version",
+            )
+            .into());
         }
         for host in records.iter().flat_map(|r| &r.selection.hosts) {
             let archive = super::bootstrap_path(&rustup, host);
@@ -260,17 +298,28 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
             let alias = entries
                 .get(&current)
                 .ok_or("missing current Rustup installer")?;
-            let sidecar = entries
-                .get(&format!("{current}.sha256"))
-                .ok_or("missing current Rustup checksum")?;
+            let sidecar = entries.get(&format!("{current}.sha256")).ok_or_else(|| {
+                crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "missing current Rustup checksum",
+                )
+            })?;
             if alias.sha256 != installer.sha256
                 || checksum(&read_file(&sidecar.source, 4096)?)? != alias.sha256
             {
-                return Err("Rustup current installer differs from pinned archive".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "Rustup current installer differs from pinned archive",
+                )
+                .into());
             }
         }
         if !entries.contains_key("rustup/rustup-init.sh") {
-            return Err("missing original Rustup shell installer".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "missing original Rustup shell installer",
+            )
+            .into());
         }
     }
     if let Some(aliases) = entries.get("rustup/toolchain-aliases.toml") {
@@ -286,13 +335,21 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
             .and_then(toml::Value::as_table)
             .ok_or("missing numeric aliases")?;
         if table.len() > 256 {
-            return Err("numeric alias limit exceeded".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "numeric alias limit exceeded",
+            )
+            .into());
         }
         for (alias, value) in table {
             let full = value.as_str().ok_or("invalid numeric alias version")?;
             crate::version(full)?;
             if full.rsplit_once('.').map(|(prefix, _)| prefix) != Some(alias.as_str()) {
-                return Err("numeric alias/version mismatch".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "numeric alias/version mismatch",
+                )
+                .into());
             }
             let exact = format!("dist/channel-rust-{full}.toml");
             let minor = format!("dist/channel-rust-{alias}.toml");
@@ -303,12 +360,19 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
                 .get(&minor)
                 .is_none_or(|e| e.sha256 != original.sha256)
             {
-                return Err("numeric alias manifest mismatch".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Integrity,
+                    "numeric alias manifest mismatch",
+                )
+                .into());
             }
             for name in [&exact, &minor] {
-                let side = entries
-                    .get(&format!("{name}.sha256"))
-                    .ok_or("missing numeric alias checksum")?;
+                let side = entries.get(&format!("{name}.sha256")).ok_or_else(|| {
+                    crate::Error::new(
+                        crate::ErrorKind::Integrity,
+                        "missing numeric alias checksum",
+                    )
+                })?;
                 if checksum(&read_file(&side.source, 4096)?)? != original.sha256
                     || !entries.contains_key(&format!("{name}.asc"))
                 {
@@ -359,7 +423,11 @@ pub fn assemble(
         || max_bytes == 0
         || max_bytes > 100 * 1024 * 1024 * 1024
     {
-        return Err("use 1-32 inputs and a 1 byte through 100 GiB generation budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "use 1-32 inputs and a 1 byte through 100 GiB generation budget",
+        )
+        .into());
     }
     let parent = output
         .parent()
@@ -385,6 +453,7 @@ pub fn assemble(
     if fs::symlink_metadata(&completed).is_ok() {
         return Err("completed generation unexpectedly exists".into());
     }
+    crate::events::check()?;
     fs::rename(staging.path(), &completed)?;
     Ok(completed)
 }
@@ -399,7 +468,9 @@ pub(super) fn prepare(
         || max_bytes == 0
         || max_bytes > 100 * 1024 * 1024 * 1024
     {
-        return Err("invalid collection input/budget".into());
+        return Err(
+            crate::Error::new(crate::ErrorKind::Budget, "invalid collection input/budget").into(),
+        );
     }
     let old = previous.map(read_input).transpose()?;
     let sources: Vec<_> = inputs
@@ -450,13 +521,22 @@ pub(super) fn prepare(
         files.insert(path, entry);
     }
     if records.len() > 256 || files.len() > FILE_LIMIT {
-        return Err("collection record/file limit exceeded".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "collection record/file limit exceeded",
+        )
+        .into());
     }
     let total = files.values().try_fold(0u64, |n, e| {
-        n.checked_add(e.bytes).ok_or("collection size overflow")
+        n.checked_add(e.bytes)
+            .ok_or_else(|| crate::Error::new(crate::ErrorKind::Budget, "collection size overflow"))
     })?;
     if total > max_bytes {
-        return Err("generation byte budget exceeded before output creation".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "generation byte budget exceeded before output creation",
+        )
+        .into());
     }
     records.sort_by_key(|r| toml::to_string(r).unwrap_or_default());
     let inventory = CollectionSnapshot {
@@ -475,7 +555,11 @@ pub(super) fn prepare(
     };
     let serialized = toml::to_string_pretty(&inventory)?;
     if serialized.len() as u64 > INVENTORY_LIMIT {
-        return Err("collection inventory exceeds 1 MiB".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "collection inventory exceeds 1 MiB",
+        )
+        .into());
     }
     Ok((inventory, files))
 }
@@ -494,11 +578,24 @@ pub(super) fn write_prepared(
             hash: sha2::Sha256::default(),
             bytes: 0,
         };
-        crate::copy_bounded(File::open(&entry.source)?, &mut writer, entry.bytes)?;
+        crate::events::artifact(&path.clone(), "copy", 0, Some(entry.bytes))?;
+        crate::copy_bounded(
+            File::open(&entry.source)?,
+            &mut crate::events::ProgressWriter {
+                inner: &mut writer,
+                path: path.clone(),
+                count: 0,
+            },
+            entry.bytes,
+        )?;
         let count = writer.bytes;
         let hash = hex::encode(sha2::Digest::finalize(writer.hash));
         if count != entry.bytes || hash != entry.sha256 {
-            return Err("input changed while assembling generation".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Integrity,
+                "input changed while assembling generation",
+            )
+            .into());
         }
         file.sync_all()?;
     }
@@ -518,4 +615,17 @@ pub(crate) fn publication_files(root: &Path) -> Result<Vec<SnapshotFile>> {
             sha256: e.sha256,
         })
         .collect())
+}
+
+/// Assemble with progress/cancel and independent heartbeats; inputs are preserved.
+/// # Errors
+/// Returns typed assembly/cancellation errors. Retry interrupted assembly in a new output.
+pub fn assemble_with_control(
+    inputs: &[PathBuf],
+    previous: Option<&Path>,
+    output: &Path,
+    max_bytes: u64,
+    control: &crate::events::Control,
+) -> Result<PathBuf> {
+    control.run("assemble", || assemble(inputs, previous, output, max_bytes))
 }

@@ -239,3 +239,40 @@ fn special_ca_files_refuse_before_opening_or_network() {
     assert!(publish::publish(&root, &options).is_err());
     assert!(server.state.lock().unwrap().requests.is_empty());
 }
+
+#[test]
+fn native_preflight_checks_all_paths_without_uploading() {
+    let t = tempfile::tempdir().unwrap();
+    let root = prepare(
+        &rust_mirror::Options {
+            release: "1.90.0".into(),
+            host: HOST.into(),
+            rustup_version: "1.28.2".into(),
+            output: t.path().join("snapshot"),
+        },
+        &Fixture::new(),
+    )
+    .unwrap();
+    let server = Server::new();
+    let result = publish::preflight_with_control(
+        &root,
+        &server.options(),
+        &rust_mirror::events::Control::default(),
+    )
+    .unwrap();
+    assert_eq!(result.files, result.absent_paths.len());
+    assert!(result.local_bytes > 0);
+    {
+        let state = server.state.lock().unwrap();
+        assert!(state.files.is_empty());
+        assert_eq!(state.requests.len(), result.files);
+        assert!(state.requests.iter().all(|(m, _)| m == "HEAD"));
+    }
+    let result = publish::publish_with_control(
+        &root,
+        &server.options(),
+        &rust_mirror::events::Control::default(),
+    )
+    .unwrap();
+    assert!(result.remote_bytes_verified > 0);
+}

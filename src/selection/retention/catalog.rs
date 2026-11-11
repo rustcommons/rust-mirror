@@ -149,7 +149,8 @@ fn generation(path: &Path) -> Result<GenerationInfo> {
         return Err("inventory display bounds exceeded".into());
     }
     let recorded_bytes = files.iter().try_fold(raw.len() as u64, |n, f| {
-        n.checked_add(f.bytes).ok_or("inventory size overflow")
+        n.checked_add(f.bytes)
+            .ok_or_else(|| crate::Error::new(crate::ErrorKind::Budget, "inventory size overflow"))
     })?;
     let time = fs::metadata(path.join("snapshot.toml"))?
         .modified()?
@@ -264,6 +265,7 @@ fn discover_owned(directory: &Path, owned: &BTreeSet<PathBuf>) -> Result<Catalog
         return Err("discovery accepts at most 128 immediate entries".into());
     }
     for path in entries {
+        crate::events::check()?;
         let meta = fs::symlink_metadata(&path)?;
         if path
             .file_name()
@@ -375,9 +377,14 @@ fn fingerprint(catalog: &Catalog) -> Result<String> {
     let mut count = 0usize;
     let mut bytes = 0u64;
     while let Some(path) = stack.pop() {
+        crate::events::check()?;
         count += 1;
         if count > 300_000 {
-            return Err("directory preview exceeds 300000 entries".into());
+            return Err(crate::Error::new(
+                crate::ErrorKind::Budget,
+                "directory preview exceeds 300000 entries",
+            )
+            .into());
         }
         let meta = fs::symlink_metadata(&path)?;
         if path
@@ -422,11 +429,15 @@ fn fingerprint(catalog: &Catalog) -> Result<String> {
             children.sort();
             stack.extend(children);
         } else if meta.is_file() {
-            bytes = bytes
-                .checked_add(meta.len())
-                .ok_or("directory size overflow")?;
+            bytes = bytes.checked_add(meta.len()).ok_or_else(|| {
+                crate::Error::new(crate::ErrorKind::Budget, "directory size overflow")
+            })?;
             if bytes > 100 * 1024 * 1024 * 1024 {
-                return Err("directory preview exceeds 100 GiB read budget".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Budget,
+                    "directory preview exceeds 100 GiB read budget",
+                )
+                .into());
             }
             let stamp = meta.modified()?.duration_since(UNIX_EPOCH)?.as_nanos();
             hash.update(stamp.to_le_bytes());
@@ -474,11 +485,16 @@ pub(super) fn preview_owned(
     owned: &BTreeSet<PathBuf>,
 ) -> Result<PrunePlan> {
     let catalog = discover_owned(directory, owned)?;
+    if catalog.runs.iter().any(|r| r.state == RunState::Locked) {
+        return Err(
+            crate::Error::new(crate::ErrorKind::Locked, "directory contains a locked run").into(),
+        );
+    }
     if !catalog.issues.is_empty()
         || catalog
             .runs
             .iter()
-            .any(|r| matches!(r.state, RunState::Locked | RunState::Unknown))
+            .any(|r| matches!(r.state, RunState::Unknown))
     {
         return Err(
             "directory contains locked/unknown runs or invalid managed paths; inspect discovery"
@@ -515,7 +531,11 @@ pub(super) fn preview_owned(
     let mut plan = super::preview_inner(policy, &roots, as_of, &protected, owned, true)?;
     let after = discover_owned(&catalog.directory, owned)?;
     if after != catalog || fingerprint(&after)? != before {
-        return Err("directory changed while preparing preview".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Integrity,
+            "directory changed while preparing preview",
+        )
+        .into());
     }
     plan.catalog = Some(catalog.clone());
     plan.binding = Some(Binding {
@@ -537,6 +557,13 @@ pub(super) fn check_roots(
         }
         if let Some(parent) = root.parent() {
             if let Some(info) = run(parent, owned)? {
+                if info.state == RunState::Locked {
+                    return Err(crate::Error::new(
+                        crate::ErrorKind::Locked,
+                        "candidate belongs to a locked run",
+                    )
+                    .into());
+                }
                 if info.state == RunState::Locked
                     || info.state == RunState::Unknown
                     || (!allow_paused && info.state == RunState::InProgress)

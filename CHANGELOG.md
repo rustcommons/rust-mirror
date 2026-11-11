@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+No additional changes queued.
+
+## [0.2.0] - 2026-11-11
+
+- Add protocol-1 JSON lines for CLI/GUI operation, independent heartbeat/watchdog
+  context, typed outcomes and opt-in stdin/EOF cancellation. Existing human mode remains.
+- Add library observers/cancellation controls and safe checkpoints during transfers,
+  copies, hashing and pruning. Preserve initialized fetch/sync state for explicit resume.
+- Add no-write publish preflight and upload/GET verification progress. Publication
+  still refuses existing paths and may leave partial remote data after interruption.
+- Shorten README/docs.rs entry points and link maintained detailed guides.
 - Add explicit local generation retention for the planned 0.2.0 feature: declared
   release pins, latest stable counts, nightly calendar windows and rollback roots.
 - Add read-only `prune` previews with exact file paths, hashes and sizes; deletion
@@ -10,7 +21,7 @@
   keep-newest and generation pins, automatic next-previous/paused-run dependency
   protection, per-folder byte totals and managed-directory change refusal.
 - Preserve incomplete/locked runs and private sync/fetch state. Whole-workspace
-  cleanup and general progress/cancel/events integration remain deferred.
+  cleanup and exact config-aware run inspection remains deferred.
 - Expose structured library preview/apply results for GUI callers. Existing config
   TOML remains valid; Rust `Config` literals need the new optional `retention` field.
 - Prune whole completed local generations only. Kept collections are not compacted;
