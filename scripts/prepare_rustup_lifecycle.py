@@ -12,6 +12,7 @@ def main():
     p.add_argument("--host",required=True)
     p.add_argument("--output",type=Path,required=True)
     p.add_argument("--previous",type=Path)
+    p.add_argument("--extra-channels", action="store_true", help="Include current beta/nightly in the new generation")
     args=p.parse_args()
     root=args.output.resolve();root.mkdir(parents=True,exist_ok=False)
     cli=args.cli.resolve()
@@ -21,6 +22,9 @@ def main():
         config=root/(name+".toml")
         text=f'schema = 1\nrustup_version = "1.28.2"\nmax_download_bytes = 10737418240\n[[selections]]\nname = "native-lifecycle"\ntoolchain = "stable-{date}"\nhosts = ["{args.host}"]\nprofile = "minimal"\n'
         if name=="new": text+='components = ["clippy", "rustfmt", "rust-src"]\ntargets = ["wasm32-unknown-unknown"]\n'
+        if name=="new" and args.extra_channels:
+            for channel in ["beta", "nightly"]:
+                text+=f'[[selections]]\nname="{channel}-native"\ntoolchain="{channel}"\nhosts=["{args.host}"]\nprofile="minimal"\n'
         config.write_text(text,encoding="utf-8")
         command=[str(cli),"sync","--config",str(config),"--output",str(root/(name+"-raw"))]
         previous=root/"old-raw/mirror" if name=="new" else args.previous

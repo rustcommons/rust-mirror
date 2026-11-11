@@ -154,6 +154,19 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
                 finally:
                     set_fault(None)
             env["RUSTUP_HOME"]=str(rustup_home)
+        result["extra_channels"]=[]
+        for channel in ["beta", "nightly"]:
+            manifest=new/f"dist/channel-rust-{channel}.toml"
+            if manifest.exists():
+                version=tomllib.loads(manifest.read_text(encoding="utf-8"))["pkg"]["rust"]["version"].split()[0]
+                invoke(channel+"-install",[rustup,"toolchain","install",channel,"--profile","minimal","--no-self-update"])
+                compiler=invoke(channel+"-compiler",[rustup,"run",channel,"rustc","--version"])
+                if not compiler.startswith(("rustc "+version+" ").encode()): raise RuntimeError("wrong extra channel compiler")
+                before=payload_count()
+                invoke(channel+"-repeat",[rustup,"update",channel,"--no-self-update"])
+                if requests is not None and payload_count()!=before: raise RuntimeError("unchanged extra channel fetched archives")
+                result["extra_channels"].append({"channel":channel,"version":version})
+        invoke("check-current-channels",[rustup,"check"])
         result["status"]="passed"
         result["limits"]=["Selected native host and exact versions only", "Original HTTPS/checksum trust; no independent signature verification", "Cargo dependencies/SDKs are not mirrored by this proof"]
     finally:
@@ -227,15 +240,19 @@ def main():
             return str(roots[parts[1]].joinpath(*parts[2:]))
         def log_request(self,code="-",size="-"): requests.append({"method":self.command,"path":self.path,"status":str(code)})
     context,ca_file,cleanup=fixture_tls(args.evidence)
-    server=http.server.ThreadingHTTPServer(("127.0.0.1",0),Handler)
-    server.socket=context.wrap_socket(server.socket,server_side=True)
-    thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+    server=None;thread=None
     try:
+        server=http.server.ThreadingHTTPServer(("127.0.0.1",0),Handler)
+        server.socket=context.wrap_socket(server.socket,server_side=True)
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
         base=f"https://127.0.0.1:{server.server_port}"
         exercise(args.old,args.new,base+"/old",base+"/new",args.host,args.evidence,ca_file=ca_file,prefix=prefix,requests=requests,set_fault=lambda mode:fault.update(mode=mode))
     finally:
-        server.shutdown();server.server_close();thread.join(timeout=5)
-        cleanup()
-        (args.evidence/"requests.json").write_text(json.dumps(requests,indent=2)+"\n",encoding="utf-8")
+        if server:
+            if thread and thread.is_alive(): server.shutdown()
+            server.server_close()
+        if thread: thread.join(timeout=5)
+        try: cleanup()
+        finally: (args.evidence/"requests.json").write_text(json.dumps(requests,indent=2)+"\n",encoding="utf-8")
 
 if __name__=="__main__": main()

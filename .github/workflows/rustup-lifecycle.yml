@@ -34,7 +34,7 @@ jobs:
           rustc -vV | sed -n 's/^host: /HOST=/p' >> "$GITHUB_ENV"
       - name: Prepare genuine old and new generations
         shell: bash
-        run: python scripts/prepare_rustup_lifecycle.py --cli target/debug/rust-mirror${{ runner.os == 'Windows' && '.exe' || '' }} --host "$HOST" --output "$RUNNER_TEMP/rustup-generations"
+        run: python scripts/prepare_rustup_lifecycle.py --cli target/debug/rust-mirror${{ runner.os == 'Windows' && '.exe' || '' }} --host "$HOST" --output "$RUNNER_TEMP/rustup-generations" ${{ runner.os == 'Linux' && '--extra-channels' || '' }}
       - name: Isolated Linux lifecycle
         if: runner.os == 'Linux'
         shell: bash
@@ -47,6 +47,32 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./scripts/prove_rustup_windows.ps1 -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-lifecycle" -HostTriple "$env:HOST"
+      - name: Actual isolated Nexus Raw lifecycle and selected-schema proof
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          image=sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09
+          docker pull "$image"
+          sudo python3 scripts/run_nexus_proof.py --runtime docker --image "$image" --snapshot "$RUNNER_TEMP/rustup-generations/old/mirror" --next-snapshot "$RUNNER_TEMP/rustup-generations/new/mirror" --evidence "$RUNNER_TEMP/rustup-nexus-collection" --allow-raw-mime-types
+          sudo python3 scripts/run_nexus_proof.py --runtime docker --image "$image" --snapshot "$RUNNER_TEMP/rustup-generations/new-raw/.sync/snapshots/0/mirror" --evidence "$RUNNER_TEMP/rustup-nexus-selection" --allow-raw-mime-types
+      - name: Collect bounded Nexus diagnostics without private homes or keys
+        if: always() && runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/nexus-diagnostics"
+          sudo python3 - "$RUNNER_TEMP" <<'PY'
+          import pathlib,shutil,sys
+          root=pathlib.Path(sys.argv[1])
+          for label in ('collection','selection'):
+              source=root/('rustup-nexus-'+label)
+              dest=root/'nexus-diagnostics'/label
+              dest.mkdir(exist_ok=True)
+              for directory in (source,source/'proof',source/'proof/lifecycle'):
+                  if not directory.exists(): continue
+                  for item in directory.iterdir():
+                      if item.is_file() and item.suffix in ('.json','.stdout','.stderr') and not item.name.startswith('nexus.'):
+                          shutil.copyfile(item,dest/(directory.name+'-'+item.name))
+          PY
       - name: Save bounded proof logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,3 +88,6 @@ jobs:
             ${{ runner.temp }}/rustup-lifecycle/*.stdout
             ${{ runner.temp }}/rustup-lifecycle/*.stderr
             ${{ runner.temp }}/rustup-lifecycle-firewall.json
+            ${{ runner.temp }}/nexus-diagnostics/**/*.json
+            ${{ runner.temp }}/nexus-diagnostics/**/*.stdout
+            ${{ runner.temp }}/nexus-diagnostics/**/*.stderr
