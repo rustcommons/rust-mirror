@@ -11,6 +11,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import prove_rustup_lifecycle
 
 class RustupTLSFixture(unittest.TestCase):
+    def test_native_trust_refuses_workstations_and_self_hosted_before_tools(self):
+        for system in ("Windows", "Darwin"):
+            with patch.object(prove_rustup_lifecycle.platform,"system",return_value=system), patch.dict(prove_rustup_lifecycle.os.environ,{"GITHUB_ACTIONS":"true","RUNNER_ENVIRONMENT":"self-hosted"},clear=True), patch.object(prove_rustup_lifecycle.subprocess,"run") as run:
+                with self.assertRaisesRegex(RuntimeError,"fresh GitHub-hosted"):
+                    prove_rustup_lifecycle.fixture_tls(Path("unused"))
+                run.assert_not_called()
+
     def test_separate_ca_and_leaf_verify_and_untrusted_clients_refuse(self):
         with tempfile.TemporaryDirectory() as root:
             # Unit tests never import temporary roots into a workstation trust store.

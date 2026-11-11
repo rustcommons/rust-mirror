@@ -235,6 +235,9 @@ def prove_publisher(cli,evidence,base,ca_file,prefix,request_log,password):
     (evidence/"publisher.json").write_text(json.dumps({"status":"passed","files":expected,"transport":"HTTPS with private CA and scoped fixture credentials","fixture_only":True,"untrusted_ca_refused":True,"wrong_hostname_refused":True},indent=2)+"\n",encoding="utf-8")
 
 def fixture_tls(evidence, native_trust=True):
+    if native_trust and platform.system() in ("Windows","Darwin"):
+        if os.environ.get("GITHUB_ACTIONS")!="true" or os.environ.get("RUNNER_ENVIRONMENT")!="github-hosted":
+            raise RuntimeError("native trust-store tests require fresh GitHub-hosted VMs")
     openssl=shutil.which("openssl")
     if openssl is None and os.name=="nt":
         candidate=Path(os.environ.get("ProgramFiles","C:/Program Files"))/"Git/usr/bin/openssl.exe"
@@ -256,7 +259,6 @@ def fixture_tls(evidence, native_trust=True):
     context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.load_cert_chain(evidence/"server.pem",key)
     cleanup=lambda: None
     if native_trust and platform.system() in ("Windows","Darwin"):
-        if os.environ.get("GITHUB_ACTIONS")!="true" or os.environ.get("RUNNER_ENVIRONMENT")!="github-hosted": raise RuntimeError("native trust-store tests require fresh GitHub-hosted VMs")
         if os.name=="nt":
             # CI runs elevated. LocalMachine avoids the current-user Root UI prompt.
             der=evidence/"test-ca.cer";der.write_bytes(ssl.PEM_cert_to_DER_cert(cert.read_text()))
@@ -292,6 +294,7 @@ def fixture_tls(evidence, native_trust=True):
                     print("Temporary macOS trust cleanup deferred to hosted-VM teardown; private keys destroyed.",flush=True)
                 finally:
                     for private in (evidence/"ca.key",key):private.unlink(missing_ok=True)
+                    record["private_keys_destroyed"]=not (evidence/"ca.key").exists() and not key.exists()
                     (evidence/"trust-cleanup.json").write_text(json.dumps(record),encoding="utf-8")
     return context,cert,cleanup
 

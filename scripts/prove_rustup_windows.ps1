@@ -4,7 +4,7 @@ param([Parameter(Mandatory=$true)][string]$Generations,
       [switch]$ValidateOnly,
       [string]$PublisherCli)
 $ErrorActionPreference = "Stop"
-if ($env:GITHUB_ACTIONS -ne "true" -or $env:RUNNER_OS -ne "Windows") {
+if ($env:GITHUB_ACTIONS -ne "true" -or $env:RUNNER_OS -ne "Windows" -or $env:RUNNER_ENVIRONMENT -ne "github-hosted") {
     throw "Firewall proof is restricted to disposable GitHub Windows runners."
 }
 $evidenceRoot = [IO.Path]::GetFullPath($Evidence)
