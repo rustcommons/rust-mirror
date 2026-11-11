@@ -124,4 +124,3 @@ no release records are fabricated.
   preserving reviewed head `6706689c997ab1f442af857771aa98eb16c08a54`.
 - Shared-link checks after the central conventions merge were completed on
   2026-11-01 as recorded above; recheck affected links when documentation targets change.
-
