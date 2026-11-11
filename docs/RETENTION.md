@@ -65,6 +65,9 @@ The serializable `Catalog` lists immediate `directory/run/mirror` roots, direct
 `directory/snapshot-root` folders, and managed sync/fetch workspaces. It includes
 inventory identity, toolchains, recorded byte lengths and inventory mtime;
 `RunInfo` distinguishes `completed`, `in_progress`, `locked` and `unknown` states.
+The selected directory must be the parent containing runs/generations, not a run
+workspace or private `.sync`/`.download` tree. Explicit-root pruning also refuses
+roots anywhere inside those reserved working-state directories.
 `unmanaged` entries are listed without recursion. `issues` identify invalid managed
 paths. Discovery reads inventory/state/report metadata only; it **does not verify
 payloads**, prove resume compatibility or infer which generation is active. It

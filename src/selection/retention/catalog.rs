@@ -239,6 +239,16 @@ pub fn discover(directory: &Path) -> Result<Catalog> {
 }
 fn discover_owned(directory: &Path, owned: &BTreeSet<PathBuf>) -> Result<Catalog> {
     let directory = real_directory(directory)?;
+    if private_path(&directory) {
+        return Err("select a generation directory outside private working state".into());
+    }
+    for marker in [".sync", ".download", ".sync.lock", ".fetch.lock"] {
+        if present(&directory.join(marker))? {
+            return Err(
+                "select the parent directory containing runs, not a run workspace itself".into(),
+            );
+        }
+    }
     let mut result = Catalog {
         directory: directory.clone(),
         generations: vec![],
@@ -522,6 +532,9 @@ pub(super) fn check_roots(
     allow_paused: bool,
 ) -> Result<()> {
     for root in roots {
+        if private_path(root) {
+            return Err("pruning private sync/download working state is not supported".into());
+        }
         if let Some(parent) = root.parent() {
             if let Some(info) = run(parent, owned)? {
                 if info.state == RunState::Locked
@@ -544,4 +557,20 @@ pub(super) fn workspace_paused(parent: &Path, owned: &BTreeSet<PathBuf>) -> Resu
         Some(info) => Ok(info.state == RunState::InProgress),
         None => Ok(false),
     }
+}
+
+fn private_path(path: &Path) -> bool {
+    path.components().any(|part| {
+        if let Component::Normal(name) = part {
+            name.to_str().is_some_and(|s| {
+                if cfg!(windows) {
+                    s.eq_ignore_ascii_case(".sync") || s.eq_ignore_ascii_case(".download")
+                } else {
+                    s == ".sync" || s == ".download"
+                }
+            })
+        } else {
+            false
+        }
+    })
 }

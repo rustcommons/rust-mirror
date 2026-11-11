@@ -857,3 +857,24 @@ fn serde_roundtrip_plans_are_revalidated_and_require_explicit_authority() {
     assert_eq!(directory, roundtrip);
     assert!(apply(&roundtrip, true).unwrap().failure.is_none());
 }
+
+#[test]
+fn discovery_refuses_a_workspace_as_the_parent_directory() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    assert!(discover(roots[0].parent().unwrap()).is_err());
+    assert!(roots[0].join("snapshot.toml").is_file());
+    assert!(discover(&roots[0].parent().unwrap().join(".download")).is_err());
+}
+#[test]
+fn explicit_pruning_refuses_private_working_snapshots() {
+    let t = tempfile::tempdir().unwrap();
+    let current = sample(t.path(), "current", "1.90.0");
+    for reserved in [".sync", ".download"] {
+        let dir = t.path().join(reserved);
+        fs::create_dir(&dir).unwrap();
+        let private = sample(&dir, "cached", "1.89.0");
+        assert!(preview(&policy(), &[current.clone(), private.clone()], DATE).is_err());
+        assert!(private.join("snapshot.toml").is_file());
+    }
+}
