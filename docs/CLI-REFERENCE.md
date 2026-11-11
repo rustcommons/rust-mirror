@@ -1,7 +1,7 @@
 # Command and configuration reference
 
 For the complete first-run/update walkthrough, read the [user guide](USER-GUIDE.md).
-This reference describes the current 0.1.0 candidate's public CLI. `rust-mirror`
+This reference describes published 0.1.0's public CLI. `rust-mirror`
 prepares/hosts files; the separate `rustup` application installs client tools.
 
 ## Invocation and common rules

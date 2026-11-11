@@ -3,7 +3,7 @@
 New here? Start with the [complete user guide](USER-GUIDE.md). For all flags,
 defaults and outputs see the [command reference](CLI-REFERENCE.md).
 
-This is the implemented distribution workflow for the 0.1.0 candidate. The
+This is the implemented distribution workflow for published 0.1.0. The
 [prepublication gates](RELEASE-0.1.0-PLAN.md#current-disposition) passed; publication
 and official postpublication checks remain pending.
 Scheduling is excluded. Rustup remains the installer and manages clients normally.

@@ -1,7 +1,6 @@
 # rust-mirror user guide
 
-Start here to understand and operate the 0.1.0 candidate. Publication is still on
-hold; building the current source works now. After publication, install with
+Start here to understand and operate published rust-mirror 0.1.0. Install with
 `cargo install rust-mirror --version 0.1.0 --locked`.
 
 This guide explains the normal workflow. The [command reference](CLI-REFERENCE.md)

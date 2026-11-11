@@ -162,3 +162,12 @@ unchanged. See the [documentation/package record](2026-11-11-user-documentation.
 for the new hash, exact comparisons and CI observation. These are documentation
 and package checks, not a new installation/native/Nexus run. Publication remains
 on hold for owner authorization.
+
+## Published-state follow-up
+
+The owner authorized publication after the full documentation was completed.
+0.1.0 is now on crates.io from the documentation-complete `93f38921` source.
+The [publication record](2026-11-11-publication.md) separately records official
+archive identity, docs.rs, actual registry installation and installed-command
+checks. Earlier prepublication holds/failures above are historical, not current
+publication status; their original evidence and scope are preserved.
