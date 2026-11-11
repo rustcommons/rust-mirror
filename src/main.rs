@@ -10,6 +10,7 @@ rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustu
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
 rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
 rust-mirror sync --config FILE --output RUN_DIRECTORY [--previous MIRROR] [--resume | --force]
+rust-mirror prune --config FILE --as-of YYYY-MM-DD --generation MIRROR [--generation MIRROR ...] [--dry-run | --apply]
 rust-mirror publish --source MIRROR --base-url HTTPS_URL [--ca-file PEM] [--allow-loopback-http]
 rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [--promote CHANNEL-DATE ...] [--max-bytes BYTES]
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
@@ -92,6 +93,9 @@ fn run() -> Result<()> {
     }
     if command == "rustup" {
         return rustup_generation(args);
+    }
+    if command == "prune" {
+        return prune(args);
     }
     if command == "sync" {
         return sync(args);
@@ -430,4 +434,56 @@ fn main() -> std::process::ExitCode {
             std::process::ExitCode::FAILURE
         }
     }
+}
+
+fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+    let mut values = BTreeMap::new();
+    let mut roots = Vec::new();
+    let mut mode = None;
+    while let Some(key) = args.next() {
+        let key = key.into_string().map_err(|_| "option must be UTF-8")?;
+        if ["--dry-run", "--apply"].contains(&key.as_str()) {
+            if mode.replace(key).is_some() {
+                return Err("choose --dry-run or --apply once".into());
+            }
+            continue;
+        }
+        if !["--config", "--as-of", "--generation"].contains(&key.as_str()) {
+            return Err("unknown prune option".into());
+        }
+        let value = args.next().ok_or("missing prune option value")?;
+        if value.to_str().is_some_and(|v| v.starts_with("--")) {
+            return Err("missing prune option value".into());
+        }
+        if key == "--generation" {
+            roots.push(PathBuf::from(value));
+        } else if values.insert(key, value).is_some() {
+            return Err("duplicate prune option".into());
+        }
+    }
+    let config = rust_mirror::selection::Config::read(&PathBuf::from(
+        values.remove("--config").ok_or("--config required")?,
+    ))?;
+    let date = values
+        .remove("--as-of")
+        .ok_or("--as-of required")?
+        .into_string()
+        .map_err(|_| "date must be UTF-8")?;
+    let policy = config
+        .retention
+        .as_ref()
+        .ok_or("pruning disabled: configure [retention] explicitly")?;
+    let plan = rust_mirror::selection::retention::preview(policy, &roots, &date)?;
+    if mode.as_deref() == Some("--apply") {
+        let report = rust_mirror::selection::retention::apply(&plan, true)?;
+        writeln!(io::stdout().lock(), "{}", toml::to_string_pretty(&report)?)?;
+        if report.failure.is_some() {
+            return Err(
+                "pruning stopped after a partial deletion; inspect the structured report".into(),
+            );
+        }
+    } else {
+        writeln!(io::stdout().lock(), "{}", toml::to_string_pretty(&plan)?)?;
+    }
+    Ok(())
 }

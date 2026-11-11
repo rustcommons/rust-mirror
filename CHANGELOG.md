@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-No additional changes queued.
+- Add explicit local generation retention for the planned 0.2.0 feature: declared
+  release pins, latest stable counts, nightly calendar windows and rollback roots.
+- Add read-only `prune` previews with exact file paths, hashes and sizes; deletion
+  requires `--apply`, locks and revalidates the plan, and reports partial failures.
+- Expose structured library preview/apply results for GUI callers. Existing config
+  TOML remains valid; Rust `Config` literals need the new optional `retention` field.
+- Prune whole completed local generations only. Kept collections are not compacted;
+  Nexus-side deletion remains deferred. No 0.2.0 publication is authorized here.
 
 ## [0.1.1] - 2026-11-11
 

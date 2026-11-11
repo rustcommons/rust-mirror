@@ -5,6 +5,7 @@
 //! transfer its payloads. For all selections together use [sync::run], then
 //! complete Rustup endpoints with [rustup::prepare].
 pub mod collection;
+pub mod retention;
 pub mod rustup;
 pub mod sync;
 use crate::{
@@ -43,6 +44,9 @@ pub struct Config {
     pub max_download_bytes: u64,
     /// One through 32 uniquely named selections.
     pub selections: Vec<Selection>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Optional explicit generation retention; absent disables pruning. Sync never prunes.
+    pub retention: Option<retention::Policy>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -226,6 +230,9 @@ impl Config {
         }
         if self.selections.is_empty() || self.selections.len() > 32 {
             return Err("select 1 to 32 named selections".into());
+        }
+        if let Some(policy) = &self.retention {
+            policy.validate()?;
         }
         let mut names = BTreeSet::new();
         for s in &self.selections {
@@ -673,6 +680,7 @@ pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
         rustup_version: plan.rustup_version.clone(),
         max_download_bytes: plan.max_download_bytes,
         selections: vec![plan.selection.clone()],
+        retention: None,
     }
     .validate()?;
     let mut meta = Metadata {
@@ -1119,6 +1127,7 @@ pub fn import_toolchain(
         rustup_version: rustup.into(),
         max_download_bytes: default_budget(),
         selections: vec![selection],
+        retention: None,
     };
     config.validate()?;
     Ok(config)

@@ -37,7 +37,8 @@ to crates.io; `cargo publish` is a separate maintainer release action.
 | Activate/use a generation | Nexus operator, then Rustup clients | Operator changes routing or client URLs; Rustup changes installed tools |
 
 `sync` does not publish. `publish` does not activate a group, install Rust, or change
-clients. No command starts a scheduler or prunes old generations. It also does not
+clients. No command starts a scheduler. The unreleased `prune` command can explicitly remove
+whole local generations; [retention policy and preview](RETENTION.md) explain its limits. It also does not
 run an HTTP server: Nexus or another static host serves the completed tree.
 
 ```text
@@ -606,7 +607,7 @@ Rustup downgrade: keep pinned toolchains or plan a supported reinstall/rollback.
   Community Edition license onboarding need local assessment.
 - No globally atomic activation, hostile-filesystem/NFS/power-loss guarantee,
   automatic retries, shared global cache or resumable uploads is claimed.
-- Cargo registry mirroring, scheduling, pruning, GUI and SDK provisioning are outside
+- Cargo registry mirroring, scheduling, Nexus pruning, GUI and SDK provisioning are outside
   0.1.0. `rust-mirror-gui` is planned, not an implemented interface.
 
 For a visible small demo without distribution downloads, run
@@ -621,3 +622,13 @@ scripts are disposable-test tools, not production Nexus or workstation setup.
 - [Rustup catalogs, aliases, promotion and groups](RUSTUP.md)
 - [Nexus hosting/trust](NEXUS-RAW.md), [QA/server boundaries](NEXUS-INTEGRATION.md)
 - [Release checklist](RELEASING.md), [0.1.0 notes](releases/v0.1.0.md), [requirements](REQUIREMENTS.md)
+
+## Local retention (unreleased)
+
+After validating and activating a new generation, use the separate
+[retention guide](RETENTION.md) to declare offline-client pins and stable/nightly/
+rollback protection. Preview exact deletion paths/sizes before choosing `--apply`.
+List all candidate `mirror` roots newest first, active/current first. Nothing prunes
+automatically; published 0.1.x binaries have no pruning command. This feature deletes
+whole local roots only, leaves retained collections intact and does not delete remote
+Nexus copies. Pause other users/writers of deletion candidates before apply.

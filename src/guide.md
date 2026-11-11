@@ -245,6 +245,42 @@ For multiple selections use [`selection::sync`]. For completed local inputs use
 [`selection::collection`]. For remote writes use [`publish`]. Inventory/report
 types describe their fields and evidence boundaries on their API pages.
 
+## Local retention (unreleased)
+
+The source checkout adds local whole-generation pruning for the planned 0.2.0
+feature; published 0.1.x does not include it. Offline clients cannot report which
+releases they need, so declare pins and stable/nightly/rollback counts explicitly.
+`sync` never invokes pruning. Preview reads/hashes supplied schema-2/3 roots and
+returns structured file sizes/paths and keep reasons without printing or writing.
+
+```no_run
+use rust_mirror::selection::{Config, retention};
+use std::path::{Path, PathBuf};
+let config = Config::read(Path::new("mirror.toml"))?;
+let policy = config.retention.as_ref().ok_or("configure [retention] first")?;
+let roots = vec![PathBuf::from("generation-002/mirror"), PathBuf::from("generation-001/mirror")];
+let plan = retention::preview(policy, &roots, "2025-09-22")?;
+// Present plan.files, total_bytes and kept reasons in the GUI, then obtain approval.
+let user_approved = false;
+if user_approved {
+    let report = retention::apply(&plan, true)?;
+    if let Some(failure) = report.failure {
+        eprintln!("Stopped at {}: {}", failure.path.display(), failure.message);
+    }
+}
+# Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
+```
+
+Current first is always protected; following roots are declared newest-first.
+Apply requires explicit authority and revalidates the preview under advisory locks.
+It removes whole roots only and returns successful-prefix information on I/O failure;
+there is no rollback, live-reader protection, in-generation compaction or Nexus
+DELETE. Keep trusted private parents and pause external users/writers before apply.
+GUI callers should run synchronous hashing/deletion off the UI thread. Existing
+Rust `Config` literals need `retention: None` or an explicit policy; existing TOML
+without the table remains valid. See the
+[retention contract](https://github.com/rustcommons/rust-mirror/blob/main/docs/RETENTION.md).
+
 ## Safety, scope and further reading
 
 - Original upstream manifests and signature files are preserved. HTTPS/upstream
@@ -254,7 +290,7 @@ types describe their fields and evidence boundaries on their API pages.
   MSVC x86-64 and both macOS architectures. Other advertised hosts remain unqualified.
 - Actual Nexus evidence used isolated legacy OSS 3.76.1-01. Your production policy,
   current CE onboarding, authentication and proxy configuration require assessment.
-- There is no Cargo registry mirroring, SDK provisioning, scheduling, pruning or GUI.
+- There is no Cargo registry mirroring, SDK provisioning, scheduling, Nexus pruning or GUI.
   No hostile-filesystem, NFS, power-loss, globally atomic activation or arbitrary
   historical/custom-toolchain guarantee is implied.
 

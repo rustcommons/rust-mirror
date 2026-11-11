@@ -1,0 +1,16 @@
+# Source-checkout retention example; the published 0.1.x CLI cannot prune.
+schema = 1
+rustup_version = "1.29.3"
+
+[[selections]]
+name = "linux-team"
+toolchain = "1.90.0"
+hosts = ["x86_64-unknown-linux-gnu"]
+profile = "minimal"
+
+# Explicit offline-client protection. A missing pin refuses the entire preview.
+[retention]
+pinned_releases = ["1.90.0"]
+latest_stable = 2
+nightly_days = 7
+previous_generations = 1

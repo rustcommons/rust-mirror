@@ -80,7 +80,7 @@ budgets, path/hash/schema refusal and existing-output preservation. Exercise the
 publisher against both inventory schemas. The real-Nexus harness accepts selected/collection pairs; distinguish the original
 schema 1 proof from current expanded results in the lifecycle evaluation.
 Do not describe HTTP-fixture evidence as an actual Nexus pass.
-Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
+Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling and in-generation compaction,
 independent signature validation and foreign-platform execution gaps explicit.
 
 ## Native publication validation
@@ -120,7 +120,7 @@ hash copy-time bytes and enforce file/record/inventory/final-byte bounds. Test
 multi-version retention, alias history, immutable/new-input conflicts, missing
 payloads, budgets and symbolic-link refusal. Keep publisher/proof schemas and
 requirements aligned. Record actual Nexus schema 2/3 and explicit Raw-group client
-activation separately from local assembly. Scheduling/pruning remain unimplemented. Use bounded
+activation separately from local assembly. Scheduling remains unimplemented; whole-generation pruning is separate. Use bounded
 local fixtures and reused baseline files before downloading another toolchain.
 
 ## One-shot sync and demos
@@ -144,6 +144,26 @@ uninitialized directories. Preserve original fetched/assembled behavior when sha
 helpers. Demo scripts must use new private output, distinguish synthetic fixtures
 from actual archives, and preserve user homes/inputs. Record counter semantics and
 resource/platform limits in `docs/SYNC.md`; no new dependencies without approval.
+
+## Retention and pruning
+
+The owner authorized local retention/pruning for the unreleased 0.2.0 feature on
+2026-11-11. Follow [the retention contract](docs/RETENTION.md) and stable trace.
+Keep policies explicit: pinned releases, latest stable count, nightly calendar days
+and preceding rollback generations. Offline clients cannot discover protection for us.
+Keep current first and always protected; preserve distinct protected closures.
+
+Preview must be read-only and return exact file paths/sizes and keep reasons.
+Apply requires explicit authorization, writer locks and complete plan revalidation;
+return structured successful-prefix/failure results for GUI callers. Never recursively
+remove enclosing workspaces, unlisted paths or retained-generation contents.
+Test policy boundaries, immutable/schema/closure/path/hash refusal, stale plans,
+locks, partial failures, CLI opt-in and both CI platforms. Keep advisory-lock,
+whole-generation granularity and interrupted-deletion recovery limits explicit.
+
+No real Nexus deletion is authorized. Remote pruning remains deferred until active
+routing/client/concurrent-writer protection can be established and separately approved.
+Do not publish 0.2.0 without separate owner authorization; maintain Unreleased notes.
 
 ## User-facing documentation
 

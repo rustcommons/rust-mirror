@@ -1,7 +1,8 @@
 # Command and configuration reference
 
 For the complete first-run/update walkthrough, read the [user guide](USER-GUIDE.md).
-This reference describes 0.1.1's public CLI. `rust-mirror`
+This reference describes the current source CLI, including the unreleased 0.2.0
+`prune` addition. Published 0.1.x binaries do not include pruning. `rust-mirror`
 prepares/hosts files; the separate `rustup` application installs client tools.
 
 ## Invocation and common rules
@@ -21,7 +22,7 @@ rust-mirror COMMAND --option VALUE ...
   config/environment selection overrides.
 - Required means the CLI has no default. Unknown command/options, missing values
   and repeated singleton options fail. Only `assemble --snapshot` and
-  `rustup --promote` are repeatable options, within their documented limits.
+  `rustup --promote` and `prune --generation` are repeatable options, within their documented limits.
 - Success returns 0; errors return 1, including network/validation/refusal errors.
   There are no distinct HTTP or checksum exit codes. Diagnostics use stderr.
 - New output paths need existing parents. No implicit overwrite is offered.
@@ -41,6 +42,7 @@ rust-mirror COMMAND --option VALUE ...
 | [`sync`](#sync) | Resolve/fetch/assemble all selections once | Metadata and missing payloads | New or previous mirror path |
 | [`assemble`](#assemble) | Combine completed local snapshots/history | None | Completed mirror path |
 | [`rustup`](#rustup) | Add bootstrap/self-update endpoints and explicit promotion | Rustup script/checksums/missing installers | Completed mirror path |
+| [`prune`](#prune) | Preview/explicitly delete whole local generations | None | TOML preview or apply report |
 | [`publish`](#publish) | Upload/GET-verify a fresh remote prefix | HEAD/PUT/GET to selected endpoint | TOML publication report |
 | [`fetch-toolchain`](#fetch-toolchain) | Legacy pinned minimal GNU Linux snapshot | Metadata/payloads | Completed mirror path |
 
@@ -249,6 +251,45 @@ Generation creation and publication validate their inputs; `fetch --resume`
 revalidates an already completed matching workspace. This is not a general-purpose
 verification command for arbitrary files.
 
+### prune
+
+Available from the source checkout for the planned 0.2.0 feature:
+
+```sh
+cargo run --locked -- prune --config mirror.toml --as-of 2025-09-22 --generation ./generation-002/mirror --generation ./generation-001/mirror --dry-run
+```
+
+| Option | Required | Meaning |
+| --- | --- | --- |
+| `--config FILE` | Yes | Existing strict mirror config with explicit `[retention]` policy |
+| `--as-of YYYY-MM-DD` | Yes | Calendar reference date; no implicit clock/mtime policy |
+| `--generation MIRROR` | Yes, repeatable | 1–32 completed schema-2/3 roots in declared newest-first order; first is current and always kept |
+| `--dry-run` | No | Read-only exact preview; also the default when neither mode flag is given |
+| `--apply` | No | Explicitly delete approved whole snapshot roots after locks and revalidation; mutually exclusive with dry-run |
+
+No network or remote deletion occurs. Preview returns exact file `path`, `bytes`,
+`sha256`, `total_bytes`, kept roots/reasons and frozen inputs/policy. Apply returns
+`deleted_files`, `deleted_bytes`, `removed_generations` and optional `failure`.
+A partial failure returns exit 1 and leaves earlier deletions applied. Read
+[retention and recovery](RETENTION.md) before apply: enclosing workspaces and kept
+collections are preserved; locks are advisory, not live-reader protection.
+
+The optional top-level `[retention]` table requires all four fields:
+
+| Field | Required within table | Meaning/bounds |
+| --- | --- | --- |
+| `pinned_releases` | Yes | 0–256 unique full numeric or dated-channel selectors; missing pins refuse |
+| `latest_stable` | Yes | 0–256 newest distinct numeric stable releases present in the supplied roots |
+| `nightly_days` | Yes | 0–36,600 calendar days including as-of; zero disables this protection |
+| `previous_generations` | Yes | 0–31 roots immediately after current kept for rollback |
+
+Absent table disables pruning. Protection is additive and keeps every distinct
+recorded platform/component/manifest/bootstrap variant in its newest matching root.
+Counts are minimum protection, not a disk quota; a kept root retains all its files.
+`sync` never invokes retention. Existing config TOML is compatible, but `Config`
+struct literals need `retention: None` (or a policy), and config changes affect sync
+resume identity. See [configuration example](../examples/retention.toml).
+
 ## Configuration fields
 
 Configuration is strict TOML schema 1. Unknown fields are errors, not ignored hints.
@@ -435,6 +476,7 @@ Generate full type/signature documentation from the source with
 | `selection::collection::assemble`, `ToolchainRecord`, `CollectionSnapshot` | Local retained-generation assembly and records |
 | `selection::sync::run`, `run_forced`, `SyncResult`, `Report`, `SelectionStatus` | One-shot workflow, explicit destructive reset, results/counters |
 | `selection::rustup::prepare` | Complete a new generation with pinned manager endpoints and promotion |
+| `selection::retention::{preview, apply}`, `Policy`, `PrunePlan`, `Deletion`, `KeptGeneration`, `ApplyReport`, `ApplyFailure` | Local generation policy, structured exact preview, explicit validated deletion and partial-failure results |
 | `publish::publish`, `publish::Options`, `publish::Report` | Validate/upload/verify a fresh remote prefix |
 
 For example, prepare the second walkthrough configuration through the library:
@@ -486,6 +528,6 @@ A source inspection or passed Markdown check is not new runtime evidence. Native
 SDKs, old/unlisted OS versions, authenticated client gateways and production
 policies retain the [user-guide limits](USER-GUIDE.md#limits-demos-and-further-reading).
 
-Scheduling, pruning, Cargo registry/index mirroring and rust-mirror-gui are future
+Scheduling, Nexus pruning, in-generation compaction, Cargo registry/index mirroring and rust-mirror-gui are future
 work. See the [release notes](releases/v0.1.0.md) for actual publication state and
 [release checklist](RELEASING.md) for the remaining authorized-release process.

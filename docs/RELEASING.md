@@ -10,7 +10,10 @@ Use a minor release for new CLI/report/refusal contracts while pre-1.0; use a pa
 for compatible fixes and documentation-only package corrections. Keep saved schema
 compatibility explicit and migrations documented. The current release scope is
 selected modern Rustup distributions, offline clients and verified Nexus Raw
-publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
+publication. Scheduling, Cargo registry mirroring, GUI and pruning were excluded
+from 0.1.x. Local whole-generation retention/pruning is the unreleased 0.2.0 feature;
+Nexus pruning and in-generation compaction remain gaps. This work does not authorize
+0.2.0 publication or change the package version.
 
 ## Before merge and publication
 

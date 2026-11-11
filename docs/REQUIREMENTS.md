@@ -24,8 +24,9 @@ with blob SHA `1b659ff536d43bcae5b09626069e89488058ba6f`. The initial audit
 observed a 404 before the central merge; that historical observation is now resolved.
 
 The shared [release documentation convention](https://github.com/rustcommons/.github/blob/a11ce9e8ab27848d5cf78cd0462a4d7182636c9a/docs/RELEASING.md)
-is the source for the release instructions adopted on 2026-11-02. This unreleased project
-records release verification as Not applicable until its first authorized release.
+is the source for the release instructions adopted on 2026-11-02. At that historical
+placeholder stage, release verification was Not applicable. Published 0.1.x evidence
+is now recorded in the documentation map below.
 
 “Verified” below means only the named source inspection, not runtime verification.
 Other allowed statuses are “Implemented—partial verification”, “Planned”, “Deferred”,
@@ -66,11 +67,16 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-029 | Provide verified Nexus publication from the installed Rust CLI with explicit TLS/credential boundaries and no in-place overwrite. Source: complete Rustup/Nexus 0.1.0 direction. | [Native publisher](../src/publish.rs); [guide](NEXUS-RAW.md#publish-from-the-installed-cli); [tests](../tests/publish.rs). | [Final qualification](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification), [machine-readable outcomes](evals/rustup-0.1.0-qualification.json), exact source CI 42961977999 and unpacked installation; pending publication is separate. | Implemented—partial verification; final native TLS/auth, actual Nexus and clean unpacked-install checks passed. Exclusive publishers/no-redeploy and explicit administrator activation remain required; no production writes. |
 | ROM-REQ-030 | Provide complete plain-language documentation for current functionality and option meanings. Source: owner request, 2026-11-11. | [User guide](USER-GUIDE.md); [command/config/API reference](CLI-REFERENCE.md); [maintenance instructions](../AGENTS.md#user-facing-documentation). | [Documentation validation](evals/2026-11-11-user-documentation.md): 10 commands/36 option pairs, configuration/shell/API checks and link/render review; documented network/write/recovery/qualification boundaries. | Implemented—partial verification; written examples are source/syntax checked, not a new production deployment or new runtime qualification. |
 | ROM-REQ-031 | Provide docs.rs usage/API descriptions and an organized crates.io page without internal prototype history. Source: owner request, 2026-11-11. | [Packaged walkthrough](../src/guide.md); [crate docs](../src/lib.rs); [README](../README.md). | Warning-denied rustdoc/doctests, runtime-token comparison and rendered/published-page checks in the [0.1.1 record](evals/2026-11-11-docs-0.1.1.md). | Verified; docs/package/published-page checks only. Original runtime/platform limits remain; no new native qualification. |
+| ROM-REQ-032 | Declare offline-client retention in config: explicit pins, latest N stable, N calendar days of nightlies and N previous rollback generations. Source: owner-agreed design, 2026-11-11. | [Policy/core](../src/selection/retention.rs); [guide](RETENTION.md); [example](../examples/retention.toml). | [Focused matrix and upstream-shape evidence](evals/2026-11-11-retention.md); [tests](../tests/retention.rs). | Implemented—partial verification; whole local generations only; counts protect minimum coverage, not exact compaction or a disk quota. Input order/current and offline-client pins are administrator declarations. |
+| ROM-REQ-033 | Provide read-only exact deletion previews with sizes and explicit opt-in local apply, returning structured results for rust-mirror-gui. Source: owner-agreed design, 2026-11-11. | [Preview/apply API](../src/selection/retention.rs); [CLI](CLI-REFERENCE.md#prune); [packaged example](../src/guide.md#local-retention-unreleased). | [Validation and failure/recovery limits](evals/2026-11-11-retention.md); [integration tests](../tests/retention.rs). | Implemented—partial verification; synchronous library with in-memory revalidated plans and partial-failure reports. Advisory locks do not coordinate readers/publishers or hostile filesystems; no transactional rollback or production deletion qualification. |
+| ROM-REQ-034 | Only add Nexus-side pruning if safe; never delete real Nexus data without separate owner authorization. Source: owner scope, 2026-11-11. | [Nexus gap](RETENTION.md#granularity-and-nexus-gap); [agent constraints](../AGENTS.md#retention-and-pruning). | Source inspection: retention has no network boundary or DELETE route; existing publication cannot prove active routing/client/concurrent-writer protection. | Deferred; no remote deletion implemented, tested or authorized. Local pruning does not remove a published copy. |
 
 ## Documentation map
 
 | Document | Role |
 | --- | --- |
+| [Retention](RETENTION.md) | Unreleased local whole-generation policy, preview/apply, GUI API and Nexus gap. |
+| [Retention validation](evals/2026-11-11-retention.md) | Bounded synthetic deletion matrix and read-only real metadata shape checks. |
 | [docs.rs/README 0.1.1](evals/2026-11-11-docs-0.1.1.md) | Docs-only package and published-page evidence. |
 | [User documentation validation](evals/2026-11-11-user-documentation.md) | Source/syntax/example validation and package-refresh boundary; not new runtime evidence. |
 | [User guide](USER-GUIDE.md) | Plain-language concepts, full first-generation/update workflow, client examples and troubleshooting. |
@@ -101,7 +107,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [Actual Nexus results](evals/2026-11-09-nexus-integration.md) | Dated actual server evidence and preserved failed/held paths. |
 | [LICENSE](../LICENSE) | Existing license, unchanged. |
 | [Central conventions](https://github.com/rustcommons/.github/blob/main/docs/DOCUMENTATION.md) | Live shared documentation policy; link verified 2026-11-01 as recorded above. |
-| [Central release convention](https://github.com/rustcommons/.github/blob/main/docs/RELEASING.md) | Shared release-documentation instructions; release verification is Not applicable for this placeholder. |
+| [Central release convention](https://github.com/rustcommons/.github/blob/main/docs/RELEASING.md) | Shared release-documentation instructions; historical placeholder adoption and current published evidence are distinguished above. |
 
 No implementation guides or validation reports existed in the original audit
 baseline. Current guides/evidence above document the separately authorized milestone;
