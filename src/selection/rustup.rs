@@ -289,7 +289,16 @@ pub fn prepare(
         let path = root.join(&current);
         fs::create_dir_all(path.parent().unwrap())?;
         let mut out = File::create(&path)?;
-        crate::copy_bounded(File::open(root.join(&archive))?, &mut out, n)?;
+        crate::events::artifact(&current, "copy", 0, Some(n))?;
+        crate::copy_bounded(
+            File::open(root.join(&archive))?,
+            &mut crate::events::ProgressWriter {
+                inner: &mut out,
+                path: current.clone(),
+                count: 0,
+            },
+            n,
+        )?;
         out.sync_all()?;
     }
     for (name, data) in metadata {

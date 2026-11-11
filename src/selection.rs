@@ -644,8 +644,14 @@ pub fn resolve(config: &Config, name: &str, source: &impl Source) -> Result<Reso
     })
 }
 fn write_new(path: &Path, data: &[u8]) -> Result<()> {
+    crate::events::artifact(&path.to_string_lossy(), "copy", 0, Some(data.len() as u64))?;
     let mut f = File::options().write(true).create_new(true).open(path)?;
-    f.write_all(data)?;
+    crate::events::ProgressWriter {
+        inner: &mut f,
+        path: path.to_string_lossy().into(),
+        count: 0,
+    }
+    .write_all(data)?;
     f.sync_all()?;
     Ok(())
 }

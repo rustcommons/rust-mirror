@@ -1,7 +1,7 @@
 # Local generation retention and pruning
 
-This is the **unreleased 0.2.0 feature**, available from a source checkout. Published
-0.1.0/0.1.1 binaries do not provide `prune`. Publication requires separate approval.
+This is the **0.2.0 feature**. Published
+0.1.0/0.1.1 binaries do not provide `prune`; see versioned release evidence for 0.2.0 availability.
 
 Offline clients cannot report which toolchains they still need. Declare protection
 in configuration, supply every local candidate explicitly, and inspect the preview
@@ -189,12 +189,12 @@ or explicitly repair/remove the already-approved partial root after inspection.
 `PrunePlan`/`ApplyReport` values, without printing progress. Calls are synchronous
 and can hash many files; GUI callers should run them off their UI thread. Errors
 before deletion use the common `Result`; post-preflight I/O failures carry the
-successful prefix in `ApplyReport::failure`. General progress/cancellation hooks, typed cancellation errors, heartbeats and the
-shared EVENTS serializer are deferred to the common library design; no placeholder
-observer API is claimed. Existing entry points can remain convenience wrappers
-around future observer-aware variants. Same-build Serde round trips are supported; no durable cross-version saved-plan
+successful prefix in `ApplyReport::failure`. Controlled preview/apply variants accept `&events::Control` and emit progress/hash/
+heartbeat events with cooperative cancellation. Cancelled apply errors can contain
+successful-prefix evidence in `Error::report`; process termination can still lose it.
+The CLI uses the [shared protocol](EVENTS.md). Same-build Serde round trips are supported; no durable cross-version saved-plan
 compatibility is promised. Serialized previews do not grant deletion authority. See the compiled
-[packaged API example](../src/guide.md#local-retention-unreleased).
+[packaged API example](../src/guide.md#local-retention).
 
 Adding optional `Config::retention` preserves existing TOML without the table.
 Rust callers constructing `Config` literals must add `retention: None` or an explicit

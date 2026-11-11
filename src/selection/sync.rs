@@ -156,6 +156,12 @@ impl<S: Source> Source for PayloadSource<'_, S> {
                 )
                 .into());
             }
+            crate::events::artifact(
+                url.strip_prefix(crate::ORIGIN).unwrap_or("local artifact"),
+                "reuse",
+                offset,
+                Some(n),
+            )?;
             let mut file = File::open(path)?;
             file.seek(SeekFrom::Start(offset))?;
             let mut writer = Counter {

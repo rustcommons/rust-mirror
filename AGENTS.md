@@ -155,8 +155,8 @@ Keep current first and always protected; preserve distinct protected closures.
 For directory-backed GUI plans, list generations/runs without payload verification,
 retain the exact next-previous anchor and paused-run dependencies, and bind apply to
 managed content/state and membership. Refuse locked/unknown runs; preserve incomplete
-and private workspaces. Keep mtime ordering distinct from active routing. General
-observer/cancel/events support and full workspace cleanup are separate work.
+and private workspaces. Keep mtime ordering distinct from active routing. General observer/cancel/events support is part of 0.2.0; full workspace cleanup
+remains separate work.
 
 Preview must be read-only and return exact file paths/sizes and keep reasons.
 Apply requires explicit authorization, writer locks and complete plan revalidation;
@@ -168,11 +168,32 @@ whole-generation granularity and interrupted-deletion recovery limits explicit.
 
 No real Nexus deletion is authorized. Remote pruning remains deferred until active
 routing/client/concurrent-writer protection can be established and separately approved.
-Do not publish 0.2.0 without separate owner authorization; maintain Unreleased notes.
+The owner authorized 0.2.0 publication on 2026-11-11 after implementation, merge and
+full release qualification. Include retention plus protocol/observer/cancel/typed
+errors and no-write publish preflight; follow docs/RELEASING.md.
+
+## Protocol 1 and controlled operations
+
+Maintain [docs/EVENTS.md](docs/EVENTS.md) as the stable CLI/GUI wire contract. Keep
+stdout JSON-only in events mode, hello first, one final typed result last and an
+independent heartbeat during blocked work. Include stage/operation and progress
+sequence; missed heartbeats require the GUI's own watchdog, not optimistic status.
+Existing human mode and convenience library calls remain usable. Controlled calls
+use shared observers and cancellation tokens; check transfer/copy/hash/delete loops.
+Keep initialized frozen fetch/sync state resumable; document new-output and partial
+remote/deletion recovery accurately. Signal handlers belong only to the binary and
+must perform no I/O/allocation. Do not add dependencies without owner approval.
+
+Preflight must perform no PUT/DELETE, validate local closure and all remote absences,
+and distinguish HEAD access from future PUT permission. Publish repeats checks and
+verifies uploads. Test JSON framing/escaping, nulls, monotonic sequence, long blocked
+I/O heartbeats, stdin record/EOF and signals, cancel/resume and typed TLS/auth/refusal
+outcomes. Preserve scoped disposable Nexus and four-host qualification gates.
 
 ## User-facing documentation
 
-The owner authorized docs-only 0.1.1 publication on 2026-11-11. Maintain
+The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
+maintained guides; every exported item still needs meaningful rustdoc. Maintain
 `src/guide.md` as the packaged docs.rs walkthrough included by `src/lib.rs`. Every
 exported item/field needs meaningful rustdoc. Keep missing-doc warnings enabled;
 compile examples and deny rustdoc warnings during release checks. Public README/API

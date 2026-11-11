@@ -1,8 +1,8 @@
 # Command and configuration reference
 
 For the complete first-run/update walkthrough, read the [user guide](USER-GUIDE.md).
-This reference describes the current source CLI, including the unreleased 0.2.0
-`prune` addition. Published 0.1.x binaries do not include pruning. `rust-mirror`
+This reference describes the current source CLI, including the 0.2.0
+retention and events additions. Published 0.1.x binaries do not include these features. `rust-mirror`
 prepares/hosts files; the separate `rustup` application installs client tools.
 
 ## Invocation and common rules
@@ -29,6 +29,23 @@ rust-mirror COMMAND --option VALUE ...
   Resume/force exceptions are explicit below. Completed snapshots are immutable.
 - Remote publication, local preparation and Rustup client settings are independent.
   Neither `sync` nor `rustup` automatically uploads or activates anything.
+
+## Global events and cancellation
+
+`--events jsonl` is an opt-in global flag. Stdout becomes protocol-1 JSON lines;
+human diagnostics stay on stderr. `--events jsonl --version` is cheap local backend/
+protocol discovery. Add `--cancel-stdin` to accept a literal `{"type":"cancel"}`
+line or EOF as an idempotent stop request; otherwise stdin is not a control channel.
+Ctrl-C and supported process-stop signals request cooperative cancellation too.
+Independent 1-second heartbeats include stage, operation, current path, last progress
+sequence and pending cancellation. The GUI owns watchdog/grace/kill behavior and
+must drain both output pipes. Exit codes are 0/1/130 for success/failure/cancel.
+
+See [protocol 1](EVENTS.md) for fields, nullable sizes, typed result kinds, sequencing,
+limits of blocked reads and command-specific recovery. Fetch/sync initialized state
+supports explicit resume; assemble/rustup require a new output after interruption;
+publish/prune may have partial effects. No global events flag changes deletion or
+overwrite authority.
 
 ## Command overview
 
@@ -219,6 +236,7 @@ rust-mirror publish --source complete-002/mirror --base-url https://nexus.exampl
 | --- | --- | --- |
 | `--source MIRROR` | Yes | Complete validated schema 1/2/3 static tree |
 | `--base-url HTTPS_URL` | Yes | Fresh remote prefix receiving `dist/`, `rustup/`, inventory beneath it |
+| `--preflight` | No | Validate local closure/TLS/auth responses and HEAD-absence of all remote paths; no PUT/DELETE, not a reservation or proof of upload permission |
 | `--ca-file PEM` | No | Explicit CA bundle for this publisher connection instead of default roots |
 | `--allow-loopback-http` | No | Test-only literal `127.0.0.1`/`[::1]` HTTP; never with credentials or CA option |
 
@@ -266,7 +284,7 @@ At most 128 immediate entries are inspected; no files/locks/network requests are
 
 ### prune
 
-Available from the source checkout for the planned 0.2.0 feature:
+Available in 0.2.0:
 
 ```sh
 cargo run --locked -- prune --config mirror.toml --as-of 2025-09-22 --generation ./generation-002/mirror --generation ./generation-001/mirror --dry-run
@@ -439,6 +457,10 @@ headers, metadata traffic, assembly copies and already-verified workspace cache
 reuse are not all counted as payload bytes. A failed invocation has no completed
 report; an older completed report is not evidence a new attempt succeeded.
 
+Use `publish --preflight` for the no-write route. It returns `schema`, `files`,
+`local_bytes`, `inventory_sha256` and `absent_paths`; actual publish always repeats
+checks. Upload/GET progress and typed results are available in events mode.
+
 Publication report fields are `schema` (source inventory schema), `files` (includes
 its uploaded inventory marker), `remote_bytes_verified` (GET-verified file bytes,
 not TLS traffic) and `inventory_sha256` (hash of the source inventory).
@@ -536,6 +558,24 @@ transport; `fetch_from` adds optional range handling using `Transfer`. Callers o
 custom transport authentication/trust; `Source` must honor the supplied URL and
 byte limit, and `Transfer::Restart` must write no bytes. Integrity checks do not
 create an independent trust root. Keep the same path/byte/immutability boundaries as the CLI.
+
+## Controlled library operations
+
+`events::{Observer, CancelToken, Control, JsonLines, Event, EventKind,
+PROTOCOL_VERSION}` share the CLI progress model. Observers are thread-safe, quick
+callbacks; do not reenter the same control. `_with_control` variants of sync run/
+forced run, fetch/resuming fetch, collection assemble, rustup prepare, publish/
+preflight and retention previews/apply take `&Control`. The calling-thread context
+propagates through private helpers; heartbeat emission runs independently. Existing
+convenience signatures remain usable. The library installs no process signal handler.
+Root `Error`, `ErrorKind` and `error_kind(&*error)` expose categories without parsing
+messages. Controlled errors normalize to `Error`; custom legacy errors without a
+known category become Invalid. `Error::report` can carry partial prune evidence.
+
+`cli::run_with_events(args, writer, cancel)` is a shared adapter with hello/result
+framing. Its writer is owned, Send and static; it returns 0/1/130 without installing
+signal handlers. Standalone execution adds its binary-only signal bridge. Detailed
+contracts and names are in [EVENTS.md](EVENTS.md).
 
 ## QA tools, compatibility and release status
 

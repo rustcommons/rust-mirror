@@ -110,6 +110,14 @@ impl Source for HttpsSource {
         if response.status() != 200 {
             return Err("source did not return HTTP 200".into());
         }
+        events::artifact(
+            path,
+            "download",
+            0,
+            response
+                .header("Content-Length")
+                .and_then(|s| s.parse::<u64>().ok()),
+        )?;
         copy_bounded(
             response.into_reader(),
             &mut events::ProgressWriter {
@@ -395,13 +403,19 @@ impl Write for HashWriter<'_> {
 }
 fn save(root: &Path, path: &str, data: &[u8], files: &mut Vec<SnapshotFile>) -> Result<()> {
     safe_path(path)?;
+    events::artifact(path, "copy", 0, Some(data.len() as u64))?;
     let destination = root.join(path);
     fs::create_dir_all(destination.parent().ok_or("missing parent")?)?;
     let mut file = File::options()
         .create_new(true)
         .write(true)
         .open(&destination)?;
-    file.write_all(data)?;
+    events::ProgressWriter {
+        inner: &mut file,
+        path: path.into(),
+        count: 0,
+    }
+    .write_all(data)?;
     file.sync_all()?;
     files.push(SnapshotFile {
         path: path.into(),

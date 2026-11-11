@@ -91,6 +91,13 @@ pub(crate) fn http_range(
         )
         .into());
     }
+    let total = expected.or(length).and_then(|n| n.checked_add(offset));
+    crate::events::artifact(
+        url.strip_prefix(ORIGIN).unwrap_or("HTTP artifact"),
+        if offset > 0 { "resume" } else { "download" },
+        offset,
+        total,
+    )?;
     let mut reader = response.into_reader();
     let mut bytes = 0;
     let mut buffer = [0; 64 * 1024];

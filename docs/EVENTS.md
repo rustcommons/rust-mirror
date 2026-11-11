@@ -1,7 +1,7 @@
 # Events protocol 1
 
 This is the owner-approved CLI/GUI contract for rust-mirror 0.2.0, approved
-2026-11-11. **Implementation is in progress; 0.1.x does not implement it.**
+2026-11-11. **Implemented in the 0.2.0 release candidate; 0.1.x does not implement it.**
 The GUI launches the rust-mirror binary and consumes this protocol. It need not
 link the backend library, parse human diagnostics or reproduce mirroring logic.
 
@@ -131,7 +131,7 @@ Keep no-redeploy server policy and exclusive publishers. Credentials remain in
 
 ## Rust embedding API
 
-The planned 0.2.0 public names are `events::{PROTOCOL_VERSION, Event, EventKind,
+The 0.2.0 public names are `events::{PROTOCOL_VERSION, Event, EventKind,
 Observer, CancelToken, Control, JsonLines}`, root `ErrorKind`, `Error` and
 `error_kind`, plus `cli::run_with_events(args, writer, cancel)` for a shared command
 adapter. `JsonLines<W: Write>` is the canonical serializer so embeddings need not
@@ -145,5 +145,5 @@ Observers receive structured progress and heartbeats; callbacks must be quick,
 thread-safe and must not reenter the same control. The library does not install
 process signal handlers. A CLI session owns hello/result framing, signal/control
 input handling and final flushing; library-only callers use the same event types,
-control and serializer. Names marked planned here must not be described as released
-until the corresponding implementation and 0.2.0 publication are verified.
+control and serializer. A source implementation does not establish registry publication; publication is
+verified separately in the release record.

@@ -57,7 +57,11 @@ fn read(path: &Path, limit: u64) -> Result<Vec<u8>> {
     let mut bytes = Vec::new();
     f.take(limit + 1).read_to_end(&mut bytes)?;
     if bytes.len() as u64 > limit {
-        return Err("publication metadata exceeds byte budget".into());
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "publication metadata exceeds byte budget",
+        )
+        .into());
     }
     Ok(bytes)
 }
@@ -359,7 +363,11 @@ fn client(options: &Options) -> Result<Client> {
         for cert in CertificateDer::pem_slice_iter(&raw) {
             count += 1;
             if count > 256 {
-                return Err("CA bundle exceeds certificate budget".into());
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Budget,
+                    "CA bundle exceeds certificate budget",
+                )
+                .into());
             }
             roots
                 .add(cert.map_err(|_| crate::Error::new(crate::ErrorKind::Tls, "invalid CA PEM"))?)
@@ -418,6 +426,7 @@ fn absent(client: &Client, files: &[SnapshotFile]) -> Result<()> {
             }
         }
     }
+    crate::events::check()?;
     Ok(())
 }
 /// Read-only local closure and remote-absence evidence; not a reservation or PUT permission.

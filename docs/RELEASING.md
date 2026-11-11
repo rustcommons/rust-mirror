@@ -12,8 +12,9 @@ compatibility explicit and migrations documented. The current release scope is
 selected modern Rustup distributions, offline clients and verified Nexus Raw
 publication. Scheduling, Cargo registry mirroring, GUI and pruning were excluded
 from 0.1.x. Local whole-generation retention/pruning is the unreleased 0.2.0 feature;
-Nexus pruning and in-generation compaction remain gaps. This work does not authorize
-0.2.0 publication or change the package version.
+Nexus pruning and in-generation compaction remain gaps. The owner authorized 0.2.0 publication on 2026-11-11 after completion, merge and
+qualification, including protocol/controls/typed errors and publish preflight.
+This authorization does not waive any permanent release gate.
 
 ## Before merge and publication
 
@@ -54,7 +55,7 @@ Nexus pruning and in-generation compaction remain gaps. This work does not autho
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.1.1.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.2.0.md) as the GitHub Release, latest and
   without attached standalone binaries unless separately authorized.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.

@@ -214,3 +214,13 @@ mirrored. A dependency-free Cargo offline build is proof of the installed toolch
 not proof that arbitrary Cargo projects build offline. The GUI is not implemented.
 
 See [the exact proof record](evals/2026-11-09-offline-toolchain.md).
+
+## Read-only preflight and controlled publication (0.2.0)
+
+Use `rust-mirror --events jsonl publish --preflight --source MIRROR --base-url URL`
+to validate local closure, TLS/auth responses and every HEAD absence without PUT or
+DELETE. It does not prove future PUT permission or reserve paths. Actual publish
+always repeats preflight, sends the inventory last and verifies GET bytes.
+`publish::{preflight_with_control,publish_with_control}` provide the same library
+route with an observer/token. CLI credentials stay in NEXUS_USERNAME/NEXUS_PASSWORD;
+no credential material belongs in events. See [protocol and interruption recovery](EVENTS.md).

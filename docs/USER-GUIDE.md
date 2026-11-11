@@ -638,3 +638,14 @@ and run states without verifying payloads. Directory-backed pruning additionally
 protects the exact next `--previous` and paused-run dependencies, and refuses changes
 since preview. Private run cleanup and general progress/cancel integration remain
 deferred; see [discovery and directory planning](RETENTION.md#discover-generations-and-sync-runs).
+
+## Machine progress and Stop (0.2.0)
+
+Use `--events jsonl` for the versioned [CLI/GUI stream](EVENTS.md). Add
+`--cancel-stdin` only when a parent keeps the input pipe open and will send cancel
+or close it to request Stop. Heartbeats continue during blocked work; unchanged
+progress means waiting, while missing heartbeats require the GUI watchdog and
+possibly a process kill. Cancellation is cooperative, not rollback. Resume initialized
+fetch/sync state explicitly; use a new output for interrupted assembly/finishing,
+and inspect partial publication/pruning before retry. Use `publish --preflight`
+for a no-write check; actual publication repeats it.
