@@ -20,8 +20,8 @@ try {
     foreach ($relative in @("rustup-init.exe", "cargo/bin/rustup.exe", "cargo/bin/rustup-init.exe", "cargo/bin/cargo.exe", "cargo/bin/rustc.exe")) {
         $program = [IO.Path]::GetFullPath((Join-Path $evidenceRoot $relative))
         $ruleName = $group + "-" + $rules.Count
-        New-NetFirewallRule -Name $ruleName -DisplayName $ruleName -Group $group -Direction Outbound -Action Block -Enabled True -Profile Any -Program $program -RemoteAddress @("0.0.0.0/2", "64.0.0.0/3", "96.0.0.0/4", "112.0.0.0/5", "120.0.0.0/6", "124.0.0.0/7", "126.0.0.0/8", "128.0.0.0/1", "::/0") | Out-Null
-        $rules += @{ name=$ruleName; program=$program; remote="all except IPv4 loopback" }
+        New-NetFirewallRule -Name $ruleName -DisplayName $ruleName -Group $group -Direction Outbound -Action Block -Enabled True -Profile Any -Program $program -RemoteAddress Any | Out-Null
+        $rules += @{ name=$ruleName; program=$program; remote="Any (loopback access must pass the live lifecycle proof)" }
     }
     @{disposable_runner=$true; rules=$rules; profiles=@(Get-NetFirewallProfile | Select-Object Name,Enabled)} | ConvertTo-Json -Depth 6 | Set-Content -Encoding utf8 -LiteralPath $proof
     if ($ValidateOnly) { return }

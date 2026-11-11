@@ -34,17 +34,3 @@ class RustupTLSFixture(unittest.TestCase):
 
             finally:
                 server.shutdown(); server.server_close(); thread.join(timeout=5); cleanup()
-
-class WindowsIsolationPolicy(unittest.TestCase):
-    def test_cidr_policy_covers_exactly_non_loopback_ipv4_and_all_ipv6(self):
-        import ipaddress
-        import re
-        text=(Path(__file__).resolve().parents[1]/"scripts/prove_rustup_windows.ps1").read_text()
-        addresses=re.search(r'-RemoteAddress @\(([^)]+)\)',text).group(1)
-        networks=[ipaddress.ip_network(v) for v in re.findall(r'"([0-9a-fA-F.:/]+)"',addresses)]
-        ipv4=[n for n in networks if n.version==4]
-        loopback=ipaddress.ip_network("127.0.0.0/8")
-        self.assertTrue(all(not n.overlaps(loopback) for n in ipv4))
-        self.assertEqual(sum(n.num_addresses for n in ipv4),2**32-2**24)
-        self.assertEqual(len(list(ipaddress.collapse_addresses(ipv4))),len(ipv4))
-        self.assertIn(ipaddress.ip_network("::/0"),networks)

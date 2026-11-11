@@ -17,7 +17,7 @@ publication is authorized by this implementation request.
   unchanged repeat, Rustup self-update and already-current self-update.
 - Actual Nexus Raw schema 2 and 3 publication/GET verification, TLS/private CA,
   scoped writer/read-only clients, no-redeploy, missing/corrupt controls and an
-  existing-client old/new generation update. No production server writes.
+  existing-client old/new generation update through a fixed Raw group URL. No production server writes.
 - Native Windows/macOS/Linux proof jobs, with external-access isolation controls
   recorded separately from ordinary endpoint-redirection checks.
 - A repeatable demonstration, final package/install qualification, release notes,

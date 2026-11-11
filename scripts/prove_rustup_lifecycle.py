@@ -46,7 +46,7 @@ def isolation(evidence, windows_firewall_proof=None):
     raise RuntimeError("no native isolation contract for this platform")
 
 
-def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=(), requests=None, set_fault=None):
+def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=(), requests=None, set_fault=None, activate=None):
     old_doc, old_files = publish_raw.local_files(old)
     new_doc, new_files = publish_raw.local_files(new)
     old_manifest = tomllib.loads((old / "dist/channel-rust-stable.toml").read_text(encoding="utf-8"))
@@ -101,6 +101,7 @@ def exercise(old, new, old_url, new_url, host, evidence, ca_file=None, prefix=()
         dated="stable-"+old_manifest["date"]
         invoke("install-old-dated",[rustup,"toolchain","install",dated,"--profile","minimal","--no-self-update"])
         # Existing CARGO_HOME/RUSTUP_HOME survive promotion to the next immutable generation.
+        if activate: activate()
         env.update(RUSTUP_DIST_SERVER=new_url,RUSTUP_UPDATE_ROOT=new_url+"/rustup")
         invoke("update-existing-stable",[rustup,"update","stable","--no-self-update"])
         compiler=invoke("new-compiler",[rustup,"run","stable","rustc","--version"])

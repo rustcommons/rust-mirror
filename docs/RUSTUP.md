@@ -79,6 +79,31 @@ your published generation includes and has verified these endpoints for the host
 Updating a mirror generation alone does not switch client environment settings;
 there is no automatic Nexus routing change or multi-file transactional overwrite.
 
+## Keep one client URL with a Nexus Raw group
+
+For a fixed `RUSTUP_DIST_SERVER`, an operator can create one no-redeploy Raw hosted
+repository per **complete generation**, publish each at its repository root, and
+expose a Raw group containing the active hosted repository. Clients use the group
+root and its `/rustup` subdirectory. Publish and verify the new repository completely,
+then explicitly switch the group's member to it in Nexus. This keeps client URLs
+unchanged without overwriting artifact files or changing credentials on clients.
+The mirror CLI/publisher does not silently make this administrative change.
+
+Every new generation must retain old immutable archives and dated manifests that
+existing clients need. Do not configure a group that mixes incomplete subsets:
+[Nexus returns the first matching member](https://help.sonatype.com/en/raw-repositories.html),
+not a semantically merged Rustup release. Keep old hosted repositories available
+for rollback and pinned clients; no pruning is performed here. Scope publication
+credentials to the new hosted repository and group-administration privileges to
+an operator, with clients read-only.
+
+A group switch is not a transaction across requests already in flight. A client
+fetching a checksum during activation can need a retry; do not claim globally atomic
+client updates. The actual Nexus fixture checks an existing client installing the
+old stable release and then advancing stable and Rustup through the **same group
+URL** after explicit activation. This supplements the separately recorded
+old-prefix/new-prefix client workflow; it does not configure a production server.
+
 ## Bootstrap new clients
 
 Use the pinned host `rustup/archive/VERSION/HOST/rustup-init[.exe]` and check its

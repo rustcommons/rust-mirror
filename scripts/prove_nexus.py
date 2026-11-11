@@ -8,6 +8,7 @@ import argparse
 import base64
 import http.client
 import http.server
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -359,21 +360,45 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             case("fresh_anonymous_rustup_bootstrap_and_install_over_trusted_https")
             case("dependency_free_offline_cargo_build_and_run")
             if next_snapshot is not None:
-                next_base = base.rsplit("/", 1)[0] + "/proof-002"
+                old_repo, new_repo, active = "rust-mirror-generation-old", "rust-mirror-generation-new", "rust-mirror-active"
+                if any(r["name"] in (old_repo, new_repo, active) for r in api("GET", "repositories")):
+                    raise RuntimeError("refusing to alter existing generation repositories")
+                if not allow_raw_mime_types:
+                    raise RuntimeError("new disposable generation repositories require explicit MIME-policy test opt-in")
+                for name in (old_repo, new_repo):
+                    api("POST", "repositories/raw/hosted", {"name":name,"online":True,"storage":{"blobStoreName":"default","strictContentTypeValidation":False,"writePolicy":"ALLOW_ONCE"},"cleanup":{"policyNames":[]},"raw":{"contentDisposition":"ATTACHMENT"}})
+                def group_body(member):
+                    return {"name":active,"online":True,"storage":{"blobStoreName":"default","strictContentTypeValidation":False},"group":{"memberNames":[member]}}
+                api("POST","repositories/raw/group",group_body(old_repo))
+                # These grants affect only the new disposable test repositories.
+                for role, actions in [(publisher_role,["browse","read","add","edit"]),(reader_role,["browse","read"])]:
+                    current=api("GET","security/roles/"+role)
+                    privileges=current["privileges"]+[f"nx-repository-view-raw-{name}-{action}" for name in (old_repo,new_repo) for action in actions]
+                    if role==reader_role: privileges += [f"nx-repository-view-raw-{active}-{a}" for a in ("browse","read")]
+                    api("PUT","security/roles/"+role,{"id":role,"name":role,"description":"Disposable rust-mirror generation proof","privileges":privileges,"roles":[]})
+                server_base=base.split("/repository/")[0]
                 os.environ["NEXUS_USERNAME"] = publisher
                 os.environ["NEXUS_PASSWORD"] = publisher_password
                 try:
-                    result["next_publication"] = publish_raw.publish(next_snapshot, next_base, ca_file=ca_file)
+                    result["old_generation_publication"]=publish_raw.publish(snapshot,server_base+"/repository/"+old_repo,ca_file=ca_file)
+                    result["new_generation_publication"]=publish_raw.publish(next_snapshot,server_base+"/repository/"+new_repo,ca_file=ca_file)
                 finally:
-                    os.environ.pop("NEXUS_USERNAME", None)
-                    os.environ.pop("NEXUS_PASSWORD", None)
+                    os.environ.pop("NEXUS_USERNAME",None);os.environ.pop("NEXUS_PASSWORD",None)
+                fixed_url=server_base+"/repository/"+active
+                def activate():
+                    before=api("GET","repositories/raw/group/"+active)
+                    if before["group"]["memberNames"] != [old_repo]: raise RuntimeError("unexpected group state before activation")
+                    api("PUT","repositories/raw/group/"+active,group_body(new_repo))
+                    after=api("GET","repositories/raw/group/"+active)
+                    if after["group"]["memberNames"] != [new_repo]: raise RuntimeError("group activation not retained")
+                    status,data=request("GET",f"/repository/{active}/snapshot.toml")
+                    if status!=200 or hashlib.sha256(data).hexdigest()!=publish_raw.digest(next_snapshot/"snapshot.toml"):
+                        raise RuntimeError("group URL did not expose verified new generation")
+                    case("fixed_group_url_activation",old_member=old_repo,new_member=new_repo)
                 import prove_rustup_lifecycle
-                lifecycle = evidence / "lifecycle"
-                lifecycle.mkdir()
-                result["lifecycle"] = prove_rustup_lifecycle.exercise(
-                    snapshot, next_snapshot, base, next_base, host, lifecycle,
-                    ca_file=ca_file, requests=requests, set_fault=lambda mode: fault.update(mode=mode))
-                case("actual_nexus_existing_client_update_components_targets_and_self_update")
+                lifecycle=evidence/"lifecycle";lifecycle.mkdir()
+                result["lifecycle"]=prove_rustup_lifecycle.exercise(snapshot,next_snapshot,fixed_url,fixed_url,host,lifecycle,ca_file=ca_file,requests=requests,set_fault=lambda mode:fault.update(mode=mode),activate=activate)
+                case("actual_nexus_fixed_url_existing_client_update_components_targets_and_self_update")
             result["status"] = "passed"
             result["release"] = release
             result["host"] = host
