@@ -1,5 +1,6 @@
 //! Saved selections and metadata-only, replayable download plans.
 pub mod collection;
+pub mod rustup;
 pub mod sync;
 use crate::{
     bytes, checksum, safe_path, sha256, valid_hash, version, Manifest, Result, SnapshotFile,

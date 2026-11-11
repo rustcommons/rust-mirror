@@ -1,0 +1,114 @@
+# Rustup lifecycle mirror
+
+This is the implemented distribution workflow being qualified for 0.1.0. The
+[release gates](RELEASE-0.1.0-PLAN.md) are not yet all complete; no release is published.
+Scheduling is excluded. Rustup remains the installer and manages clients normally.
+
+## Choose platforms, tools and versions
+
+Use named [selections](SELECTIONS.md). Explicit hosts may include
+`x86_64-pc-windows-msvc`, `aarch64-pc-windows-msvc`, `x86_64-apple-darwin`,
+`aarch64-apple-darwin`, GNU/musl Linux and other upstream-advertised platforms.
+Discovery and planning reject unavailable hosts/components instead of substituting.
+Select `minimal` or `default`, additional components, compilation targets, and
+numeric/stable/beta/nightly/date selectors. Compiler SDKs and system libraries
+are supplied by the client OS, not Rustup or this mirror. In particular, Windows
+MSVC still needs Microsoft build tools and macOS needs its platform developer tools.
+
+Run `sync` to resolve/freeze/download/verify/assemble all selections. Interrupted
+runs need explicit `--resume`; destructive `--force` discards the old run with no backup.
+
+## Add Rustup bootstrap and self-update endpoints
+
+```sh
+rust-mirror rustup --snapshot ./run-001/mirror --version 1.29.3 --output ./complete-001
+```
+
+The fresh `complete-001/mirror` retains all verified toolchains and archived
+installers. For every recorded host it supplies the chosen pinned Rustup installer
+under `rustup/archive/VERSION/HOST/` and `rustup/dist/HOST/`, including checksums.
+It copies the original upstream shell installer to `rustup/rustup-init.sh`.
+`rustup/release-stable.toml` is a **generated mirror policy catalog** selecting the
+requested Rustup version; it is not represented as an original signed upstream
+manifest. Rust toolchain manifests/signatures remain byte-identical originals.
+
+All metadata/checksums are frozen before new installer payload transfers. Existing
+verified archives can be reused; changed immutable archive identities refuse.
+Copy-time hashes, whole installer hashes, byte/file bounds and final inventory
+validation precede exposing the completed tree. Only new output is accepted; this
+small finishing stage has no resume/reset option. Its budget is the completed
+snapshot, plus a private staging copy and the retained external input on disk.
+A failure leaves no completed mirror. The default byte budget is 10 GiB; select
+`--max-bytes` explicitly if needed. No serving, publication or client activation
+happens automatically.
+
+## Promote a channel and update existing clients
+
+For reproducible historical promotion, select e.g. `stable-2025-09-18` during sync,
+then explicitly make that original dated metadata the stable root in a new generation:
+
+```sh
+rust-mirror rustup --snapshot ./run-002/mirror --version 1.29.3 --promote stable-2025-09-18 --output ./complete-002
+```
+
+`--promote` accepts one dated selector each for stable, beta or nightly. The verified
+snapshot must contain a matching original dated selection and metadata triplet.
+There is no guessed version, backwards date search or mixed manifest/checksum/signature.
+An undated `stable` selection already supplies its resolved stable root.
+
+Publish each generation to a new [Nexus Raw prefix](NEXUS-RAW.md). Keep the old prefix
+available so pinned clients retain historical artifacts. Point clients at the new
+verified generation (or deliberately switch an operator-managed gateway route):
+
+```sh
+export RUSTUP_DIST_SERVER=https://nexus.example/repository/rust/complete-002
+export RUSTUP_UPDATE_ROOT="$RUSTUP_DIST_SERVER/rustup"
+rustup update stable --no-self-update
+rustup component add clippy rustfmt rust-src --toolchain stable
+rustup target add wasm32-unknown-unknown --toolchain stable
+rustup self update
+```
+
+PowerShell uses `$env:RUSTUP_DIST_SERVER = 'https://...'` and
+`$env:RUSTUP_UPDATE_ROOT = "$env:RUSTUP_DIST_SERVER/rustup"`.
+The same installed CARGO_HOME/RUSTUP_HOME is retained: `stable` advances while a
+pinned dated toolchain remains pinned. Repeat updates should download no toolchain
+archives when unchanged. Self-update selects the **mirrored Rustup catalog**, not
+the latest Rustup on the public internet. Only enable automatic self-updates after
+your published generation includes and has verified these endpoints for the host.
+Updating a mirror generation alone does not switch client environment settings;
+there is no automatic Nexus routing change or multi-file transactional overwrite.
+
+## Bootstrap new clients
+
+Use the pinned host `rustup/archive/VERSION/HOST/rustup-init[.exe]` and check its
+SHA-256 before execution, or use the original mirrored Unix installer script over
+trusted HTTPS with `RUSTUP_UPDATE_ROOT` set to the mirrored `rustup` directory.
+Initialize with `--no-modify-path` and `--default-toolchain none`, then install the
+selected toolchain/profile/components/targets. Use disposable CARGO_HOME/RUSTUP_HOME
+for testing. Never copy the mirror's private `.sync` or `.download` state to clients.
+
+## Permanent qualification
+
+`scripts/prepare_rustup_lifecycle.py` builds real old/new generations for a native
+host. `scripts/prove_rustup_lifecycle.py` checks fresh bootstrap, existing-client
+updates, pinned history, component/target changes, offline builds, self-update,
+repeat operations and missing/corrupt download controls. The dedicated workflow
+runs Linux network namespaces, macOS sandboxing and program-scoped Windows firewall
+rules. Temporary CA trust changes on macOS/Windows are restricted to disposable
+CI runners and removed afterward. Never run that Windows wrapper on a workstation.
+
+The extended Nexus runner accepts selected/collection snapshots and an optional
+`--next-snapshot` for the same lifecycle through actual Raw storage with a trusted
+TLS proxy, scoped writer and read-only clients. It uses an already-pulled explicit
+image in an owned isolated container and never accepts license agreements.
+The previously completed legacy Nexus proof is historical; new results must be
+recorded before claiming the expanded release gates pass.
+
+HTTPS/upstream checksum and administrative inventory trust are required. Original
+OpenPGP signatures are retained; independent signature verification is not added
+by this finishing command. All supported selections are mirrored, not every
+historical release or unavailable upstream component. Native results establish only
+the host/version/server combinations actually recorded. No Cargo registry mirroring,
+GUI, SDK provisioning, scheduling, retention pruning or production Nexus qualification
+is implied.

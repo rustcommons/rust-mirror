@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add `rustup` generation finishing: pinned self-update catalog, current/archive
+  installers for selected hosts, original Unix installer and explicit dated channel
+  promotion. Add native client lifecycle and expanded actual-Nexus proof drivers;
+  release qualification remains in progress.
+
 - Require an explicit choice for existing sync runs: `--resume` continues saved
   progress; `--force` discards the old managed run without backup and starts fresh.
   Reject combining them, active writers, unrelated outputs and previous-mirror overlap.

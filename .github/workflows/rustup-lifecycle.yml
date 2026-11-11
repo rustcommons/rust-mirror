@@ -1,0 +1,61 @@
+name: Rustup lifecycle qualification
+on:
+  pull_request:
+    paths:
+      - 'src/selection/rustup.rs'
+      - 'scripts/*rustup*'
+      - '.github/workflows/rustup-lifecycle.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build CLI and identify native host
+        shell: bash
+        run: |
+          cargo build --locked
+          rustc -vV | sed -n 's/^host: /HOST=/p' >> "$GITHUB_ENV"
+      - name: Prepare genuine old and new generations
+        shell: bash
+        run: python scripts/prepare_rustup_lifecycle.py --cli target/debug/rust-mirror${{ runner.os == 'Windows' && '.exe' || '' }} --host "$HOST" --output "$RUNNER_TEMP/rustup-generations"
+      - name: Isolated Linux lifecycle
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --old "$2/rustup-generations/old/mirror" --new "$2/rustup-generations/new/mirror" --host "$3" --evidence "$2/rustup-lifecycle"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$HOST"
+      - name: Sandboxed macOS lifecycle
+        if: runner.os == 'macOS'
+        shell: bash
+        run: python3 scripts/prove_rustup_lifecycle.py --old "$RUNNER_TEMP/rustup-generations/old/mirror" --new "$RUNNER_TEMP/rustup-generations/new/mirror" --host "$HOST" --evidence "$RUNNER_TEMP/rustup-lifecycle"
+      - name: Firewall-isolated Windows lifecycle
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/prove_rustup_windows.ps1 -Generations "$env:RUNNER_TEMP/rustup-generations" -Evidence "$env:RUNNER_TEMP/rustup-lifecycle" -HostTriple "$env:HOST"
+      - name: Save bounded proof logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustup-lifecycle-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/rustup-generations/*.toml
+            ${{ runner.temp }}/rustup-generations/*.json
+            ${{ runner.temp }}/rustup-generations/*.stdout
+            ${{ runner.temp }}/rustup-generations/*.stderr
+            ${{ runner.temp }}/rustup-generations/*/mirror/snapshot.toml
+            ${{ runner.temp }}/rustup-lifecycle/*.json
+            ${{ runner.temp }}/rustup-lifecycle/*.stdout
+            ${{ runner.temp }}/rustup-lifecycle/*.stderr
+            ${{ runner.temp }}/rustup-lifecycle-firewall.json

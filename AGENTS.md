@@ -73,8 +73,9 @@ Explicit unavailable selections must fail, not silently shrink or change date.
 
 Validate cached-plan replay, aliases/global components, multi-host closure, byte
 budgets, path/hash/schema refusal and existing-output preservation. Exercise the
-publisher against both inventory schemas. The real-Nexus harness currently supports
-schema 1 only; do not describe schema 2 HTTP-fixture evidence as a new Nexus pass.
+publisher against both inventory schemas. The real-Nexus harness now accepts selected/collection pairs, but its previously
+completed proof remains schema 1 until expanded actual results are recorded.
+Do not describe HTTP-fixture evidence as an actual Nexus pass.
 Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
 independent signature validation and foreign-platform execution gaps explicit.
 

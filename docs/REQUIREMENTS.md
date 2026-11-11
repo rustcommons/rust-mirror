@@ -67,6 +67,9 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-025 | Run all saved selections through one resolve/freeze/download/verify/assemble command with previous-data reuse, explicit frozen-cohort resume and mutually exclusive destructive force restart. Source: owner one-shot synchronization request, 2026-11-10. | [Core](../src/selection/sync.rs); [guide](SYNC.md); [tests](../tests/sync.rs). | [Force reset evidence](evals/2026-11-10-sync-force.md), deletion/containment/lock/previous-preservation and CLI conflict tests; lifecycle, no-op, killed-process, corruption/config/plan/lock/budget/report controls and the [dated evaluation](evals/2026-11-10-one-shot-sync.md). | Implemented—partial verification; one-shot local workflow only, no scheduler, publication, activation, pruning or global cache. |
 | ROM-REQ-026 | Provide runnable demonstrations and understandable results, separating fixtures, actual data and unqualified scope. Source: owner request to start testing and see demos, 2026-11-10. | [PowerShell demo](../scripts/demo-sync.ps1); [demo config](../examples/sync-demo.toml); [results/counters](SYNC.md#results-and-counter-meaning). | Quick synthetic create/interruption/resume/no-change demo; recorded real two-version incremental/no-op runs and live metadata cases in the dated evaluation. | Implemented—partial verification; actual-data native route is recorded GNU Linux only. No GUI implementation or new foreign-host/Nexus qualification. |
 
+| ROM-REQ-027 | Complete pinned Rustup distribution endpoints and original dated channel promotion for selected platforms. Source: owner's complete Rustup 0.1.0 direction, 2026-11-11. | [Core](../src/selection/rustup.rs); [guide](RUSTUP.md). | Catalog/archive identity, promotion, input preservation, budget/hash and refusal tests; live installer metadata sweep. | Implemented—partial verification; native and actual Nexus lifecycle gates pending. Generated Rustup catalog is mirror policy, not a signed upstream manifest. |
+| ROM-REQ-028 | Qualify fresh and existing Rustup clients on Windows/macOS/Linux and actual Nexus Raw before 0.1.0; scheduling excluded. Source: owner direction, 2026-11-11. | [Release gates](RELEASE-0.1.0-PLAN.md); [native driver](../scripts/prove_rustup_lifecycle.py); [Nexus driver](../scripts/prove_nexus.py). | Native isolation and old/new generation proof drivers prepared; no passing candidate matrix claimed yet. | Planned; release-blocking until exact native/server evidence is recorded. No production writes or EULA acceptance. |
+
 ## Documentation map
 
 | Document | Role |
@@ -78,6 +81,8 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [Prototype assessment](evals/2026-11-09-prototype-assessment.md) | Dated source assessment, reproduced gaps and proposed milestones; not release qualification. |
 | [Selection guide](SELECTIONS.md) | Current configuration, discovery, import, frozen plans and limits. |
 | [One-shot sync and demos](SYNC.md) | Primary testing workflow, saved cohort/reuse/report semantics and limits. |
+| [Rustup lifecycle](RUSTUP.md) | Maintained bootstrap/self-update, promotion and native/Nexus qualification contract. |
+| [0.1.0 gates](RELEASE-0.1.0-PLAN.md) | Owner-required completion checklist; pending work is not a qualification claim. |
 | [One-shot evidence](evals/2026-11-10-one-shot-sync.md) | Dated synthetic and actual-data demonstrations, identities and gaps. |
 | [Multi-version guide](MULTI-VERSION.md) | Immutable generations, explicit alias updates, conflicts, budgets and shared hosting. |
 | [Multi-version evidence](evals/2026-11-10-multi-version.md) | Dated local/real multi-toolchain and preservation results. |

@@ -221,6 +221,41 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
             }
         }
     }
+    if let Some(catalog) = entries.get("rustup/release-stable.toml") {
+        let doc: toml::Value =
+            toml::from_str(std::str::from_utf8(&read_file(&catalog.source, 4096)?)?)?;
+        if doc.get("schema-version").and_then(toml::Value::as_str) != Some("1")
+            || doc.get("version").and_then(toml::Value::as_str) != Some(rustup.as_str())
+        {
+            return Err("Rustup catalog differs from inventory version".into());
+        }
+        for host in records.iter().flat_map(|r| &r.selection.hosts) {
+            let archive = super::bootstrap_path(&rustup, host);
+            let current = format!(
+                "rustup/dist/{host}/rustup-init{}",
+                if host.contains("-windows-") {
+                    ".exe"
+                } else {
+                    ""
+                }
+            );
+            let installer = entries.get(&archive).ok_or("missing Rustup archive")?;
+            let alias = entries
+                .get(&current)
+                .ok_or("missing current Rustup installer")?;
+            let sidecar = entries
+                .get(&format!("{current}.sha256"))
+                .ok_or("missing current Rustup checksum")?;
+            if alias.sha256 != installer.sha256
+                || checksum(&read_file(&sidecar.source, 4096)?)? != alias.sha256
+            {
+                return Err("Rustup current installer differs from pinned archive".into());
+            }
+        }
+        if !entries.contains_key("rustup/rustup-init.sh") {
+            return Err("missing original Rustup shell installer".into());
+        }
+    }
     Ok(Input {
         rustup,
         records,

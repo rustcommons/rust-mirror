@@ -1,0 +1,93 @@
+[
+  {
+    "host": "x86_64-unknown-linux-gnu",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-unknown-linux-gnu/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "d1d6bdab8155ccade0f7d267a05bd4968e78bd420b45f13787d927d9ff539c1b",
+    "seconds": 0.187
+  },
+  {
+    "host": "aarch64-unknown-linux-gnu",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/aarch64-unknown-linux-gnu/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "adc38812df0b9226a00d45668cbb70c9b8acaa3311dafbcc8a6242349b65cd0c",
+    "seconds": 0.063
+  },
+  {
+    "host": "x86_64-unknown-linux-musl",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-unknown-linux-musl/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "2bf8ed39fc2866cdfdcabf614f76ade6cb8d7d05b84616593248a07c84c2c9e4",
+    "seconds": 0.047
+  },
+  {
+    "host": "aarch64-unknown-linux-musl",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/aarch64-unknown-linux-musl/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "5976870efdce7bab4e9e6e370f9bec7df2518c52645c23ee56748d739b9fe4ff",
+    "seconds": 0.031
+  },
+  {
+    "host": "x86_64-pc-windows-msvc",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-pc-windows-msvc/rustup-init.exe.sha256",
+    "status": 200,
+    "sidecar_sha256": "d473f79bffe135e27b42aed2da0cf7065a9afaf71ec5bd2ada642a9b85fe17f0",
+    "seconds": 0.297
+  },
+  {
+    "host": "aarch64-pc-windows-msvc",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/aarch64-pc-windows-msvc/rustup-init.exe.sha256",
+    "status": 200,
+    "sidecar_sha256": "0ddc1ad50756d41d29e560dc17ba92957200837839d554547792939a6cce4bd3",
+    "seconds": 0.219
+  },
+  {
+    "host": "i686-pc-windows-msvc",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/i686-pc-windows-msvc/rustup-init.exe.sha256",
+    "status": 200,
+    "sidecar_sha256": "28bc21501bac428a2061c9740aacbc232f784396ca0da40c59fb836d4b5c7f06",
+    "seconds": 0.328
+  },
+  {
+    "host": "x86_64-pc-windows-gnu",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-pc-windows-gnu/rustup-init.exe.sha256",
+    "status": 200,
+    "sidecar_sha256": "10a4904e90bac725ca921f9a01df7edb272888f1d353ec84894537625ec5f9a6",
+    "seconds": 0.015
+  },
+  {
+    "host": "x86_64-apple-darwin",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-apple-darwin/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "74a54033a09b49e53c08366792c0d5c83119e31cc81261b0e6422bd3e9f81b9a",
+    "seconds": 0.047
+  },
+  {
+    "host": "aarch64-apple-darwin",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/aarch64-apple-darwin/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "f3c8b31d37b798f20ad8eaf8db3fef00e1186f37910e67623e02dddcdcac51ad",
+    "seconds": 0.063
+  },
+  {
+    "host": "armv7-unknown-linux-gnueabihf",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/armv7-unknown-linux-gnueabihf/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "068f9ec4c4d9755c794960558a5f9ff236ad8f3c576ce5c9e89c57531104e7e6",
+    "seconds": 0.062
+  },
+  {
+    "host": "riscv64gc-unknown-linux-gnu",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/riscv64gc-unknown-linux-gnu/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "c45d146f04e145e90c041272a165684a69277e9d974441ce72426d51e28f52c7",
+    "seconds": 0.031
+  },
+  {
+    "host": "loongarch64-unknown-linux-gnu",
+    "url": "https://static.rust-lang.org/rustup/archive/1.29.3/loongarch64-unknown-linux-gnu/rustup-init.sha256",
+    "status": 200,
+    "sidecar_sha256": "6fa4326b0fe3d174d10b9b1e38324aea460e48bd3e4d180bf62041af409e82ab",
+    "seconds": 0.11
+  }
+]

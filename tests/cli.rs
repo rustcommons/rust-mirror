@@ -114,3 +114,19 @@ fn sync_force_and_resume_are_exclusive_and_singleton_before_io() {
         assert!(err.contains("mutually exclusive") || err.contains("duplicate"));
     }
 }
+
+#[test]
+fn rustup_generation_options_refuse_duplicates_and_unknowns_without_network() {
+    for args in [
+        vec!["rustup", "--version", "1.28.2", "--version", "1.29.3"],
+        vec!["rustup", "--unknown", "x"],
+        vec!["rustup", "--promote"],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+    }
+}

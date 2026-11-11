@@ -10,6 +10,7 @@ rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustu
 rust-mirror plan --config FILE --selection NAME --output NEW_PLAN_DIRECTORY
 rust-mirror fetch --plan PLAN_DIRECTORY --output SNAPSHOT_DIRECTORY [--resume]
 rust-mirror sync --config FILE --output RUN_DIRECTORY [--previous MIRROR] [--resume | --force]
+rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [--promote CHANNEL-DATE ...] [--max-bytes BYTES]
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
@@ -76,6 +77,9 @@ fn run() -> Result<()> {
     }
     if command == "assemble" {
         return assemble(args);
+    }
+    if command == "rustup" {
+        return rustup_generation(args);
     }
     if command == "sync" {
         return sync(args);
@@ -229,6 +233,58 @@ fn assemble(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         budget,
     )?;
     writeln!(io::stdout().lock(), "{}", path.display())?;
+    Ok(())
+}
+
+fn rustup_generation(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+    let mut values = BTreeMap::new();
+    let mut channels = Vec::new();
+    while let Some(key) = args.next() {
+        let key = key.into_string().map_err(|_| "option must be UTF-8")?;
+        if ![
+            "--snapshot",
+            "--version",
+            "--output",
+            "--promote",
+            "--max-bytes",
+        ]
+        .contains(&key.as_str())
+        {
+            return Err("unknown rustup option".into());
+        }
+        let value = args.next().ok_or("missing rustup option value")?;
+        if value.to_str().is_some_and(|v| v.starts_with("--")) {
+            return Err("missing rustup option value".into());
+        }
+        if key == "--promote" {
+            channels.push(value.into_string().map_err(|_| "channel must be UTF-8")?);
+        } else if values.insert(key, value).is_some() {
+            return Err("duplicate rustup option".into());
+        }
+    }
+    let snapshot = PathBuf::from(values.remove("--snapshot").ok_or("--snapshot required")?);
+    let output = PathBuf::from(values.remove("--output").ok_or("--output required")?);
+    let version = values
+        .remove("--version")
+        .ok_or("--version required")?
+        .into_string()
+        .map_err(|_| "version must be UTF-8")?;
+    let budget = values
+        .remove("--max-bytes")
+        .map(|v| v.into_string().map_err(|_| "budget must be UTF-8"))
+        .transpose()?
+        .map(|s| s.parse::<u64>())
+        .transpose()?
+        .unwrap_or(10 * 1024 * 1024 * 1024);
+    let result = rust_mirror::selection::rustup::prepare(
+        &snapshot,
+        &version,
+        &channels,
+        &output,
+        budget,
+        &HttpsSource::default(),
+    )?;
+    writeln!(io::stdout().lock(), "{}", result.display())?;
     Ok(())
 }
 
