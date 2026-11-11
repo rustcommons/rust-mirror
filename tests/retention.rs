@@ -559,3 +559,23 @@ fn non_utf8_root_refuses_before_any_apply() {
     assert!(preview(&policy(), &[roots[0].clone(), target.clone()], DATE).is_err());
     assert!(target.join("snapshot.toml").exists());
 }
+
+#[cfg(windows)]
+#[test]
+fn windows_open_file_refusal_reports_partial_deletion() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let plan = preview(&policy(), &roots, DATE).unwrap();
+    // FILE_SHARE_READ allows preflight/hash reads, while refusing unlink.
+    let file = &plan.files[1].path;
+    let handle = fs::File::options().read(true).share_mode(1).open(file).unwrap();
+    let report = apply(&plan, true).unwrap();
+    drop(handle);
+    assert_eq!(report.failure.as_ref().unwrap().path, *file);
+    assert_eq!(report.deleted_files, plan.files[..1]);
+    assert!(report.removed_generations.is_empty());
+    assert!(roots[0].join("snapshot.toml").is_file());
+    assert!(!roots[1].join("snapshot.toml").exists());
+    assert!(file.is_file());
+}
