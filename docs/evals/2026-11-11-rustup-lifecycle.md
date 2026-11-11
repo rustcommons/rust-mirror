@@ -126,9 +126,12 @@ Implementation/native/server/package gates are complete. Registry publication,
 official archive/install, docs.rs, tag and GitHub Release are still pending the
 owner's separate authorization; no completion of those future steps is claimed.
 
-## Frozen clean-source package
+## Previous frozen clean-source package
 
 Release candidate: `0b38e4595a09e5e2a5b781c39b509fb60eff3d9c` (PR13 merge).
+This is now a historical qualified package: the later user-manual/README/changelog
+update supersedes it for publication. Preserve its evidence; do not upload that
+older archive as the documentation-complete candidate.
 Final `cargo package --locked` verification and a fresh-Cargo-home unpacked locked
 install both passed with Cargo/Rust 1.90.0. The 18-file archive is 48,883 bytes:
 

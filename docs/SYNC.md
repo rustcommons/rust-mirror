@@ -1,5 +1,8 @@
 # One-shot synchronization and demos
 
+New here? Start with the [complete user guide](USER-GUIDE.md). For all flags,
+defaults and outputs see the [command reference](CLI-REFERENCE.md).
+
 `sync` automates **resolve -> freeze -> fetch/reuse -> verify -> assemble** for all
 named selections in one configuration. It runs once and exits. It does not publish,
 activate a Nexus URL, schedule itself, prune history or install toolchains.

@@ -1,5 +1,8 @@
 # Select Rustup toolchains and platforms
 
+New here? Start with the [complete user guide](USER-GUIDE.md). For all flags,
+defaults and outputs see the [command reference](CLI-REFERENCE.md).
+
 This experimental workflow chooses what to mirror before downloading archives.
 It is not a Rustup replacement. Rustup remains the client installer.
 

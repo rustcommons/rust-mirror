@@ -14,7 +14,9 @@ publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
 
 ## Before merge and publication
 
-1. Update the changelog, versioned notes, guides and stable ROM-REQ trace together.
+1. Update the changelog, versioned notes, user guide, complete CLI reference and
+   stable ROM-REQ trace together. Audit every command/option against the source,
+   including defaults, outputs, local/remote effects and recovery.
    Keep historical failures and bounds; metadata checks are not native evidence.
 2. Run Rust 1.90 fmt, tests, Clippy and rustdoc with warnings denied, Python tests,
    link/render checks and release-documentation CI. Inspect the exact final diff.
@@ -35,7 +37,9 @@ publication. Scheduling, Cargo registry mirroring, GUI and pruning are excluded.
    using the installed executable. A source-tree pass is not a package-install pass.
 6. Freeze the reviewed candidate, merge normally, verify tree equality and repackage
    at the exact merge. Compare payloads; only VCS metadata may differ. Record the
-   archive hash. Require owner publication authorization before `cargo publish`.
+   archive hash. Packaged README/changelog changes require a refreshed archive and
+   candidate identity even when native evidence carries by unchanged code. Require
+   owner publication authorization before `cargo publish`.
 
 ## After publication
 
