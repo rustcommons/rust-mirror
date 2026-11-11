@@ -5,7 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Version 0.1.0 is published; see docs/evals/2026-11-11-publication.md.
+publication helper. Versions 0.1.0 and documentation-only 0.1.1 are published; see
+docs/evals/2026-11-11-docs-0.1.1.md.
 Describe only demonstrated functionality
 as implemented; broader mirroring and the GUI remain planned.
 
