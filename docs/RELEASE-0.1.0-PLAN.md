@@ -45,8 +45,10 @@ All implementation, native client and actual Nexus gates above passed at qualifi
 [final prepublication record](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification)
 and [structured evidence](evals/rustup-0.1.0-qualification.json).
 
-0.1.0 is ready for final clean-merge package verification and owner publication
-approval. No crate, source tag or GitHub Release has been published. Official
+Final clean-merge Rust 1.90 package verification, fresh unpacked installation and
+installed publisher TLS checks have passed. 0.1.0 is ready for owner publication
+approval at frozen `0b38e4595a09e5e2a5b781c39b509fb60eff3d9c`; later bookkeeping
+does not change the released package inputs. No crate, source tag or GitHub Release has been published. Official
 archive/registry-install/docs.rs/tag/Release checks follow authorization under the
 [release checklist](RELEASING.md). Scheduling remains excluded. Unlisted native
 hosts, production Nexus policy, current CE onboarding, SDKs and Cargo dependencies

@@ -125,3 +125,26 @@ All 21 original prototype hashes remain unchanged.
 Implementation/native/server/package gates are complete. Registry publication,
 official archive/install, docs.rs, tag and GitHub Release are still pending the
 owner's separate authorization; no completion of those future steps is claimed.
+
+## Frozen clean-source package
+
+Release candidate: `0b38e4595a09e5e2a5b781c39b509fb60eff3d9c` (PR13 merge).
+Final `cargo package --locked` verification and a fresh-Cargo-home unpacked locked
+install both passed with Cargo/Rust 1.90.0. The 18-file archive is 48,883 bytes:
+
+```text
+360885af0d2b89a1ec0ae7146ea3ea30c1e901943cc5b8d51999477efb8fdd9f
+```
+
+Clean VCS names that exact commit. Every included source/original-manifest/lock/
+README/example/license byte matches it. Compared with installed/qualified `a82d390`,
+only VCS metadata and the changelog differ; normalized manifests are byte-identical.
+The final installed CLI passed version/help/init/existing-output/unknown-option
+checks and the namespace-isolated private-CA publisher proof, including unknown-CA,
+wrong-hostname and repeat-prefix refusals. All 24 exported evidence-file hashes
+were verified. Broad native/Nexus evidence carries by unchanged compiled inputs;
+it was not misleadingly described as a new full runtime rerun.
+
+This later bookkeeping changes excluded docs only. Keep publication/tag source at
+the frozen candidate above; it is still unpublished. Official registry installation,
+docs.rs, tag and Release verification must follow the owner's publication go-ahead.
