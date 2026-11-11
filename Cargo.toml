@@ -6,7 +6,8 @@ rust-version = "1.90"
 license = "Apache-2.0"
 description = "Prepare pinned Rust toolchain snapshots for offline static hosting"
 repository = "https://github.com/rustcommons/rust-mirror"
-publish = false
+readme = "README.md"
+include = ["src/**", "examples/**", "Cargo.toml", "Cargo.lock", "README.md", "CHANGELOG.md", "LICENSE"]
 
 [dependencies]
 hex = "0.4"

@@ -221,6 +221,98 @@ pub(super) fn read_input(root: &Path) -> Result<Input> {
             }
         }
     }
+    if let Some(catalog) = entries.get("rustup/release-stable.toml") {
+        let doc: toml::Value =
+            toml::from_str(std::str::from_utf8(&read_file(&catalog.source, 4096)?)?)?;
+        if doc.get("schema-version").and_then(toml::Value::as_str) != Some("1")
+            || doc.get("version").and_then(toml::Value::as_str) != Some(rustup.as_str())
+        {
+            return Err("Rustup catalog differs from inventory version".into());
+        }
+        for host in records.iter().flat_map(|r| &r.selection.hosts) {
+            let archive = super::bootstrap_path(&rustup, host);
+            let current = format!(
+                "rustup/dist/{host}/rustup-init{}",
+                if host.contains("-windows-") {
+                    ".exe"
+                } else {
+                    ""
+                }
+            );
+            let installer = entries.get(&archive).ok_or("missing Rustup archive")?;
+            let alias = entries
+                .get(&current)
+                .ok_or("missing current Rustup installer")?;
+            let sidecar = entries
+                .get(&format!("{current}.sha256"))
+                .ok_or("missing current Rustup checksum")?;
+            if alias.sha256 != installer.sha256
+                || checksum(&read_file(&sidecar.source, 4096)?)? != alias.sha256
+            {
+                return Err("Rustup current installer differs from pinned archive".into());
+            }
+        }
+        if !entries.contains_key("rustup/rustup-init.sh") {
+            return Err("missing original Rustup shell installer".into());
+        }
+    }
+    if let Some(aliases) = entries.get("rustup/toolchain-aliases.toml") {
+        let doc: toml::Value = toml::from_str(std::str::from_utf8(&read_file(
+            &aliases.source,
+            INVENTORY_LIMIT,
+        )?)?)?;
+        if doc.get("schema").and_then(toml::Value::as_integer) != Some(1) {
+            return Err("invalid numeric alias schema".into());
+        }
+        let table = doc
+            .get("aliases")
+            .and_then(toml::Value::as_table)
+            .ok_or("missing numeric aliases")?;
+        if table.len() > 256 {
+            return Err("numeric alias limit exceeded".into());
+        }
+        for (alias, value) in table {
+            let full = value.as_str().ok_or("invalid numeric alias version")?;
+            crate::version(full)?;
+            if full.rsplit_once('.').map(|(prefix, _)| prefix) != Some(alias.as_str()) {
+                return Err("numeric alias/version mismatch".into());
+            }
+            let exact = format!("dist/channel-rust-{full}.toml");
+            let minor = format!("dist/channel-rust-{alias}.toml");
+            let original = entries
+                .get(&exact)
+                .ok_or("missing canonical numeric manifest")?;
+            if entries
+                .get(&minor)
+                .is_none_or(|e| e.sha256 != original.sha256)
+            {
+                return Err("numeric alias manifest mismatch".into());
+            }
+            for name in [&exact, &minor] {
+                let side = entries
+                    .get(&format!("{name}.sha256"))
+                    .ok_or("missing numeric alias checksum")?;
+                if checksum(&read_file(&side.source, 4096)?)? != original.sha256
+                    || !entries.contains_key(&format!("{name}.asc"))
+                {
+                    return Err("invalid numeric alias metadata triplet".into());
+                }
+            }
+            let matches = records.iter().filter(|r| r.release == full).any(|r| {
+                Toolchain::parse(&r.selection.toolchain).is_ok_and(|spec| {
+                    entries
+                        .get(&format!(
+                            "dist/{}/channel-rust-{}.toml",
+                            r.date, spec.channel
+                        ))
+                        .is_some_and(|e| e.sha256 == original.sha256)
+                })
+            });
+            if !matches {
+                return Err("numeric alias has no matching original toolchain record".into());
+            }
+        }
+    }
     Ok(Input {
         rustup,
         records,
@@ -386,4 +478,18 @@ pub(super) fn write_prepared(
     }
     super::write_new(&staging.join("snapshot.toml"), serialized.as_bytes())?;
     Ok(())
+}
+
+/// Reuse the full selected/collection validation boundary for publication.
+pub(crate) fn publication_files(root: &Path) -> Result<Vec<SnapshotFile>> {
+    let input = read_input(root)?;
+    Ok(input
+        .files
+        .into_iter()
+        .map(|(path, e)| SnapshotFile {
+            path,
+            bytes: e.bytes,
+            sha256: e.sha256,
+        })
+        .collect())
 }

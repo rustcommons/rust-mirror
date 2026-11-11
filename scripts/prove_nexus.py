@@ -8,6 +8,7 @@ import argparse
 import base64
 import http.client
 import http.server
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import tomllib
 from urllib.request import urlopen
 import publish_raw
 
@@ -30,10 +32,20 @@ def credentials(user, password):
     return "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
 
 
-def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False):
+def native_selection(document):
+    if document["schema"] == 1:
+        return document["release"], document["host"], document["release"]
+    records = document.get("toolchains", [document])
+    record = next((r for r in sorted(records, key=lambda r:r["date"], reverse=True)
+                   if "x86_64-unknown-linux-gnu" in r["selection"]["hosts"]), None)
+    if record is None: raise ValueError("Nexus native proof needs a GNU x86-64 selection")
+    return record["release"], "x86_64-unknown-linux-gnu", record["pinned_toolchain"]
+
+def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False, next_snapshot=None, publisher_cli=None):
     evidence.mkdir(parents=True, exist_ok=False, mode=0o700)
     result = {"status": "running", "cases": [], "commands": [], "scope": "Disposable actual Nexus Raw hosted, with a temporary TLS reverse proxy"}
     requests = []
+    fault = {"mode": None}
     server = None
     worker = None
     try:
@@ -49,9 +61,18 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
         except OSError:
             result["external_connection_refused"] = True
         document, files = publish_raw.local_files(snapshot)
-        if document["schema"] != 1:
-            raise ValueError("this Nexus fixture qualifies legacy schema-1 minimal snapshots; use prove_offline.py for selection snapshots")
+        result["snapshot_schema"] = document["schema"]
+        if next_snapshot is not None:
+            next_document, _ = publish_raw.local_files(next_snapshot)
+            if next_document["schema"] != 3 or document["schema"] not in (2, 3):
+                raise ValueError("lifecycle proof requires selected/collection generations")
         result["inventory_sha256"] = publish_raw.digest(snapshot / "snapshot.toml")
+        def publish_snapshot(source, destination, ca_file):
+            if publisher_cli is None: return publish_raw.publish(source,destination,ca_file=ca_file)
+            command=[str(publisher_cli),"publish","--source",str(source),"--base-url",destination,"--ca-file",str(ca_file)]
+            completed=subprocess.run(command,capture_output=True,timeout=900)
+            if completed.returncode: raise ValueError(completed.stderr.decode("utf-8",errors="replace"))
+            return tomllib.loads(completed.stdout.decode("utf-8"))
         admin_password = password_file.read_text().strip()
         administrator = credentials("admin", admin_password)
 
@@ -148,6 +169,11 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                     pass
 
                 def forward(self):
+                    if self.command == "GET" and fault["mode"] and self.path.endswith((".tar.gz", ".tar.xz", ".tar.zst")):
+                        if fault["mode"] == "missing": self.send_error(404); return
+                        data = b"deliberately corrupt proxy control"
+                        self.send_response(200); self.send_header("Content-Length", str(len(data))); self.end_headers(); self.wfile.write(data); return
+
                     if not self.path.startswith("/repository/") or "?" in self.path:
                         self.send_error(400)
                         return
@@ -262,11 +288,11 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             os.environ["NEXUS_USERNAME"] = publisher
             os.environ["NEXUS_PASSWORD"] = publisher_password
             try:
-                result["publication"] = publish_raw.publish(snapshot, base, ca_file=ca_file)
+                result["publication"] = publish_snapshot(snapshot, base, ca_file)
                 case("authenticated_snapshot_publication_and_get_hashes", files=result["publication"]["files"])
                 before = sum(r["method"] == "PUT" for r in requests)
                 try:
-                    publish_raw.publish(snapshot, base, ca_file=ca_file)
+                    publish_snapshot(snapshot, base, ca_file)
                 except ValueError as error:
                     if "destination is not absent" not in str(error):
                         raise
@@ -298,7 +324,8 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
 
             # Read-only anonymous client with completely fresh homes and real TLS checks.
             client_request_start = len(requests)
-            release, host, rustup_version = (document[k] for k in ("release", "host", "rustup_version"))
+            rustup_version = document["rustup_version"]
+            release, host, selector = native_selection(document)
             bootstrap_name = f"rustup/archive/{rustup_version}/{host}/rustup-init"
             bootstrap = evidence / "rustup-init"
             with urlopen(base + "/" + bootstrap_name, context=context, timeout=30) as source, bootstrap.open("xb") as output:
@@ -323,16 +350,16 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             invoke("bootstrap", [bootstrap, "-y", "--no-modify-path", "--default-host", host, "--default-toolchain", "none"])
             rustup = evidence / "cargo/bin/rustup"
             invoke("disable-self-update", [rustup, "set", "auto-self-update", "disable"])
-            invoke("install", [rustup, "toolchain", "install", release, "--profile", "minimal", "--no-self-update"])
-            version = invoke("rustc-version", [rustup, "run", release, "rustc", "--version"])
+            invoke("install", [rustup, "toolchain", "install", selector, "--profile", "minimal", "--no-self-update"])
+            version = invoke("rustc-version", [rustup, "run", selector, "rustc", "--version"])
             if not version.stdout.startswith(f"rustc {release} ".encode()):
                 raise RuntimeError("wrong installed compiler")
-            invoke("cargo-version", [rustup, "run", release, "cargo", "--version"])
+            invoke("cargo-version", [rustup, "run", selector, "cargo", "--version"])
             project = evidence / "hello"
             (project / "src").mkdir(parents=True)
             (project / "Cargo.toml").write_text('[package]\nname = "nexus-offline-proof"\nversion = "0.1.0"\nedition = "2021"\n')
             (project / "src/main.rs").write_text('fn main() { println!("nexus offline proof ok"); }\n')
-            invoke("cargo-offline-build", [rustup, "run", release, "cargo", "build", "--offline"], cwd=project)
+            invoke("cargo-offline-build", [rustup, "run", selector, "cargo", "build", "--offline"], cwd=project)
             program = invoke("run-program", [project / "target/debug/nexus-offline-proof"])
             if program.stdout != b"nexus offline proof ok\n":
                 raise RuntimeError("unexpected compiled output")
@@ -340,12 +367,53 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                 raise RuntimeError("client unexpectedly sent credentials")
             case("fresh_anonymous_rustup_bootstrap_and_install_over_trusted_https")
             case("dependency_free_offline_cargo_build_and_run")
+            if next_snapshot is not None:
+                old_repo, new_repo, active = "rust-mirror-generation-old", "rust-mirror-generation-new", "rust-mirror-active"
+                if any(r["name"] in (old_repo, new_repo, active) for r in api("GET", "repositories")):
+                    raise RuntimeError("refusing to alter existing generation repositories")
+                if not allow_raw_mime_types:
+                    raise RuntimeError("new disposable generation repositories require explicit MIME-policy test opt-in")
+                for name in (old_repo, new_repo):
+                    api("POST", "repositories/raw/hosted", {"name":name,"online":True,"storage":{"blobStoreName":"default","strictContentTypeValidation":False,"writePolicy":"ALLOW_ONCE"},"cleanup":{"policyNames":[]},"raw":{"contentDisposition":"ATTACHMENT"}})
+                def group_body(member):
+                    return {"name":active,"online":True,"storage":{"blobStoreName":"default","strictContentTypeValidation":False},"group":{"memberNames":[member]}}
+                api("POST","repositories/raw/group",group_body(old_repo))
+                # These grants affect only the new disposable test repositories.
+                for role, actions in [(publisher_role,["browse","read","add","edit"]),(reader_role,["browse","read"])]:
+                    current=api("GET","security/roles/"+role)
+                    privileges=current["privileges"]+[f"nx-repository-view-raw-{name}-{action}" for name in (old_repo,new_repo) for action in actions]
+                    if role==reader_role: privileges += [f"nx-repository-view-raw-{active}-{a}" for a in ("browse","read")]
+                    api("PUT","security/roles/"+role,{"id":role,"name":role,"description":"Disposable rust-mirror generation proof","privileges":privileges,"roles":[]})
+                server_base=base.split("/repository/")[0]
+                os.environ["NEXUS_USERNAME"] = publisher
+                os.environ["NEXUS_PASSWORD"] = publisher_password
+                try:
+                    result["old_generation_publication"]=publish_snapshot(snapshot,server_base+"/repository/"+old_repo,ca_file)
+                    result["new_generation_publication"]=publish_snapshot(next_snapshot,server_base+"/repository/"+new_repo,ca_file)
+                finally:
+                    os.environ.pop("NEXUS_USERNAME",None);os.environ.pop("NEXUS_PASSWORD",None)
+                fixed_url=server_base+"/repository/"+active
+                def activate():
+                    before=api("GET","repositories/raw/group/"+active)
+                    if before["group"]["memberNames"] != [old_repo]: raise RuntimeError("unexpected group state before activation")
+                    api("PUT","repositories/raw/group/"+active,group_body(new_repo))
+                    after=api("GET","repositories/raw/group/"+active)
+                    if after["group"]["memberNames"] != [new_repo]: raise RuntimeError("group activation not retained")
+                    status,data=request("GET",f"/repository/{active}/snapshot.toml")
+                    if status!=200 or hashlib.sha256(data).hexdigest()!=publish_raw.digest(next_snapshot/"snapshot.toml"):
+                        raise RuntimeError("group URL did not expose verified new generation")
+                    case("fixed_group_url_activation",old_member=old_repo,new_member=new_repo)
+                import prove_rustup_lifecycle
+                lifecycle=evidence/"lifecycle";lifecycle.mkdir()
+                result["lifecycle"]=prove_rustup_lifecycle.exercise(snapshot,next_snapshot,fixed_url,fixed_url,host,lifecycle,ca_file=ca_file,requests=requests,set_fault=lambda mode:fault.update(mode=mode),activate=activate)
+                case("actual_nexus_fixed_url_existing_client_update_components_targets_and_self_update")
             result["status"] = "passed"
             result["release"] = release
+            result["installed_selector"] = selector
             result["host"] = host
             result["rustup_version"] = rustup_version
             result["tls"] = "Temporary TLS reverse proxy; verified custom CA and IP SAN; HTTP backend on isolated loopback"
-            result["limits"] = ["Only recorded Nexus image and Linux/Rustup/Rust combination", "Anonymous read-only Rustup downloads, not authenticated client downloads", "Temporary CA/proxy, not production CA/proxy/SSO configuration", "No production writes or independently verified OpenPGP signatures", "No rolling channels, crate/index mirroring, GUI or extra platforms"]
+            result["limits"] = ["Only recorded Nexus image and Linux/Rustup/Rust combination", "Anonymous read-only Rustup downloads, not authenticated client downloads", "Temporary CA/proxy, not production CA/proxy/SSO configuration", "No production writes or independently verified OpenPGP signatures", ("No automatic client routing, Cargo registry mirroring, GUI or production deployment" if next_snapshot else "No rolling channels, crate/index mirroring, GUI or extra platforms")]
     except Exception:
         if result["status"] != "held":
             result["status"] = "failed"
@@ -369,8 +437,11 @@ def main():
     parser.add_argument("--initial-password-file", type=Path, required=True)
     parser.add_argument("--allow-raw-mime-types", action="store_true", help="Opt in to non-strict MIME in this disposable repository only")
     parser.add_argument("--nexus-port", type=int, default=8081)
+    parser.add_argument("--next-snapshot", type=Path, help="New immutable generation for full existing-client/self-update proof")
+    parser.add_argument("--publisher-cli",type=Path,help="Use the real Rust publish subcommand instead of Python reference publisher")
     args = parser.parse_args()
-    prove(args.snapshot.resolve(), args.evidence.resolve(), args.initial_password_file, args.nexus_port, args.allow_raw_mime_types)
+    prove(args.snapshot.resolve(), args.evidence.resolve(), args.initial_password_file, args.nexus_port, args.allow_raw_mime_types,
+          args.next_snapshot.resolve() if args.next_snapshot else None,args.publisher_cli.resolve() if args.publisher_cli else None)
 
 
 if __name__ == "__main__":

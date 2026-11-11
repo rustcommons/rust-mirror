@@ -117,9 +117,11 @@ user toolchain home or original prototype is changed by this iteration.
 
 ## Selection inventory boundary
 
-The actual server proof above remains the schema 1 minimal-toolchain case.
-`prove_nexus.py` refuses schemas 2/3 rather than implying its fixed installation
-commands qualify arbitrary selections. The publisher accepts schemas 1/2/3;
-[selection publication/install](SELECTIONS.md) is separately exercised through the
-local HTTP contract fixture. Collection assembly and schema 3 local fixture evidence are in [the generation guide](MULTI-VERSION.md).
-No new actual-Nexus or Community Edition pass is claimed.
+The original result above is the schema 1 minimal-toolchain case. The expanded
+driver now accepts schemas 2/3, validates their selected records and optionally
+exercises an old/new pair through a fixed Raw group URL. Pass `--publisher-cli`
+to the runner to test the installed native Rust publisher rather than the Python
+reference helper. [Current results](evals/2026-11-11-rustup-lifecycle.md) identify
+which exact paths passed; no Community Edition or production-instance pass follows.
+See [Rustup lifecycle and explicit activation](RUSTUP.md) and the
+[generation guide](MULTI-VERSION.md).

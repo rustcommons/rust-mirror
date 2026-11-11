@@ -24,7 +24,7 @@ completed selected snapshots (schema 2) or earlier collection mirrors (schema 3)
 not legacy schema 1. Inputs and output parents must already exist; the output
 itself must be new. Stdout is the completed `OUTPUT/mirror` path. Failures return 1.
 
-Repeat `--snapshot` for 1?32 inputs. `--previous` and `--max-bytes` are singletons;
+Repeat `--snapshot` for 1-32 inputs. `--previous` and `--max-bytes` are singletons;
 duplicates refuse. Paths may contain spaces when quoted. No network is used by
 assembly and no source snapshot is changed or removed. Outputs nested inside an
 input snapshot (including the previous generation) are refused.
@@ -91,14 +91,16 @@ direct input inventory hashes and the combined file inventory. It is accepted by
 the [same verified publisher](NEXUS-RAW.md). Publish to a new immutable prefix;
 archives precede metadata and the inventory marker is last. The publisher does not
 switch clients, overwrite old releases or perform a remote multi-file transaction.
-Actual Nexus schema 3 compatibility remains unqualified; the original schema 1
-legacy OSS proof is separate. Community Edition onboarding is unchanged.
+Actual Nexus schema 2/3 and fixed-URL lifecycle evidence is separately tracked in
+[the current record](evals/2026-11-11-rustup-lifecycle.md). The original schema 1
+proof remains historical; Community Edition license onboarding is unchanged.
 
 Point `RUSTUP_DIST_SERVER` at the generation root and install the explicit versions
 or dated selectors recorded in its inventory. All selected versions share that
-root and can coexist in one Rustup home. Bootstrap paths are unchanged. Disable
-automatic Rustup self-update; update hosting remains pending. Cargo crate mirroring
-and native SDK/linker prerequisites are not supplied by this feature.
+root and can coexist in one Rustup home. Use the [Rustup finishing stage](RUSTUP.md)
+to add pinned current/archive bootstrap paths, numeric aliases and self-update
+metadata. Keep automatic self-update disabled until those endpoints are verified.
+Cargo crate mirroring and native SDK/linker prerequisites are not supplied.
 
 ## Offline qualification
 

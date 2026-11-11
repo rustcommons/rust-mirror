@@ -1,6 +1,21 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
+
+No additional changes queued.
+
+## [0.1.0] - 2026-11-11
+
+First release of selected modern Rustup mirroring and Nexus Raw publication.
+See [versioned notes](docs/releases/v0.1.0.md) for availability and qualification.
+
+- Add native verified HTTPS `publish` for Nexus Raw/static hosting, explicit private
+  CA and scoped credential support, whole-prefix absence checks and remote hash
+  verification. Add normal Rustup full/minor numeric lookup aliases and `--version`.
+
+- Add `rustup` generation finishing: pinned self-update catalog, current/archive
+  installers for selected hosts, original Unix installer and explicit dated channel
+  promotion. Add native client lifecycle and expanded actual-Nexus proof drivers.
 
 - Require an explicit choice for existing sync runs: `--resume` continues saved
   progress; `--force` discards the old managed run without backup and starts fresh.
@@ -29,7 +44,7 @@
 - Add an experimental CLI/library for pinned, minimal-profile Linux toolchain snapshots.
 - Preserve upstream manifests and signature files; check downloaded SHA-256 values.
 - Add static-host/Nexus Raw publication helper and isolated offline-install proof.
-- No version has been released. Cargo crate mirroring and the GUI remain planned.
+- Cargo crate mirroring and the GUI remain planned; scheduling is outside 0.1.0.
 
 - Add publisher `--ca-file` for verified private-CA HTTPS connections.
 - Add a disposable actual-Nexus OSS compatibility proof with scoped access, MIME-policy controls and isolated offline installation; keep the Community Edition EULA gate explicit.

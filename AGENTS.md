@@ -52,6 +52,15 @@ policy. See `docs/NEXUS-INTEGRATION.md` before running it. Legacy OSS test image
 must not be presented as recommended production versions. Generated passwords and
 private keys must not enter logs, commits or uploaded artifacts.
 
+## 0.1.0 completion scope
+
+The owner requires complete selected Rustup lifecycle and actual Nexus testing for
+0.1.0; scheduling is excluded. Follow [release gates](docs/RELEASE-0.1.0-PLAN.md).
+Do not substitute metadata availability for Windows/macOS native client evidence,
+or fixture HTTP for actual Nexus. Preserve isolated homes, existing generations,
+upstream manifests, license gates and documented trust limits. Publication still
+requires separate authorization.
+
 ## Selection workflow constraints
 
 Keep saved selections strict and hosts explicit. Distinguish host compiler platforms
@@ -64,10 +73,21 @@ Explicit unavailable selections must fail, not silently shrink or change date.
 
 Validate cached-plan replay, aliases/global components, multi-host closure, byte
 budgets, path/hash/schema refusal and existing-output preservation. Exercise the
-publisher against both inventory schemas. The real-Nexus harness currently supports
-schema 1 only; do not describe schema 2 HTTP-fixture evidence as a new Nexus pass.
+publisher against both inventory schemas. The real-Nexus harness accepts selected/collection pairs; distinguish the original
+schema 1 proof from current expanded results in the lifecycle evaluation.
+Do not describe HTTP-fixture evidence as an actual Nexus pass.
 Never touch the user's Rustup/Cargo homes. Keep unimplemented scheduling/retention,
 independent signature validation and foreign-platform execution gaps explicit.
+
+## Native publication validation
+
+`publish` must work from the installed binary without Python. Reuse the full local
+inventory/closure checks, refuse credentials in URLs and plain HTTP, disable
+redirect/proxy discovery, validate explicit private-CA bundles, check all destination
+absences before any PUT and verify each GET hash with the inventory marker last.
+Never print auth data or alter Nexus settings. Test legacy/selected/collection,
+existing late markers, malformed inputs, redirects, bad GETs, TLS/auth and actual
+no-redeploy Nexus. Local sync force must never become remote overwrite authority.
 
 ## Resume validation
 
@@ -95,8 +115,8 @@ Validate every source inventory and selected artifact closure before writing;
 hash copy-time bytes and enforce file/record/inventory/final-byte bounds. Test
 multi-version retention, alias history, immutable/new-input conflicts, missing
 payloads, budgets and symbolic-link refusal. Keep publisher/proof schemas and
-requirements aligned. Actual Nexus schema 2/3, scheduling, pruning and remote
-client switching remain unqualified or unimplemented as documented. Use bounded
+requirements aligned. Record actual Nexus schema 2/3 and explicit Raw-group client
+activation separately from local assembly. Scheduling/pruning remain unimplemented. Use bounded
 local fixtures and reused baseline files before downloading another toolchain.
 
 ## One-shot sync and demos

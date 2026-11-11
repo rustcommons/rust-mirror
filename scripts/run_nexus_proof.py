@@ -27,6 +27,8 @@ def main():
     parser.add_argument("--allow-raw-mime-types", action="store_true", help="Opt in to arbitrary MIME types in the new disposable Raw repository only")
     parser.add_argument("--snapshot", type=Path, required=True)
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--next-snapshot", type=Path, help="New generation for native client update/self-update qualification")
+    parser.add_argument("--publisher-cli",type=Path,help="Real Rust publish CLI for the actual Nexus proof")
     args = parser.parse_args()
     if os.geteuid() != 0:
         parser.error("run as root for rootful runtime and namespace entry")
@@ -72,6 +74,10 @@ def main():
         else:
             raise TimeoutError("Nexus initialization timed out")
         command = ["nsenter", "--target", str(pid), "--net", "python3", str(Path(__file__).with_name("prove_nexus.py").resolve()), "--snapshot", str(args.snapshot.resolve()), "--evidence", str(args.evidence / "proof"), "--initial-password-file", str(initial)]
+        if args.publisher_cli:
+            command.extend(["--publisher-cli",str(args.publisher_cli.resolve())])
+        if args.next_snapshot:
+            command.extend(["--next-snapshot", str(args.next_snapshot.resolve())])
         if args.allow_raw_mime_types:
             command.append("--allow-raw-mime-types")
         proof = subprocess.run(command, capture_output=True, timeout=900)

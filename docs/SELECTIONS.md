@@ -128,13 +128,15 @@ Rustup self-update. Then install the plan's `pinned_toolchain` with the same pro
 components and targets. See the [bootstrap/client commands](NEXUS-RAW.md#install-on-the-disconnected-linux-machine).
 Unselected components and arbitrary update requests are not supplied by the mirror.
 
-The current real-Nexus harness is deliberately limited to its original schema 1
-case. Schema 2 publication/install is tested through the local HTTP contract fixture,
-not a new Nexus product qualification. See [actual Nexus boundaries](NEXUS-INTEGRATION.md).
+The current real-Nexus harness accepts schema 2 and schema 3 inputs, and checks
+publication, bootstrap and installation. For full bootstrap/self-update endpoints,
+channel promotion and existing-client updates, finish a generation through the
+[Rustup lifecycle workflow](RUSTUP.md). See the [current dated results](evals/2026-11-11-rustup-lifecycle.md)
+and [actual Nexus boundaries](NEXUS-INTEGRATION.md).
 
 ## Limits and trust
 
-- Strict schema 1 configuration: 1?32 unique named selections, 1?16 unique hosts per
+- Strict schema 1 configuration: 1-32 unique named selections, 1-16 unique hosts per
   selection, at most 64 explicit components and 64 targets. Identifier/path checks apply.
 - At most 1,024 payload files; manifests up to 4 MiB; config/plan up to 1 MiB;
   signatures up to 64 KiB; individual downloads up to 512 MiB.
@@ -150,10 +152,10 @@ not a new Nexus product qualification. See [actual Nexus boundaries](NEXUS-INTEG
   original signature files are retained; independent OpenPGP verification is not
   implemented. Plan hashes detect inconsistency, not an attacker rewriting a whole
   plan. Treat transferred plans/snapshots as trusted administrative inputs.
-- Real execution is demonstrated only for the recorded Linux GNU toolchain and
-  selected components. Windows/macOS/musl/ARM availability checks do not qualify
-  native installation. Native prerequisites, Cargo crate mirroring, GUI, scheduled
-  synchronization, retention and Rustup self-update remain outside this iteration.
+- Native lifecycle qualification is tracked separately in the [current record](evals/2026-11-11-rustup-lifecycle.md);
+  metadata availability never proves an untested host works. Native prerequisites,
+  Cargo crate mirroring, GUI, scheduling and pruning are not supplied. Rustup
+  self-update requires the explicit [finishing stage](RUSTUP.md).
 
 ## Offline proof
 
