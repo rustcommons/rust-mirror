@@ -140,6 +140,12 @@ fn numeric(value: &str) -> Option<(u64, u64, u64)> {
 }
 // Reject links in every component before canonicalizing, including ancestors.
 fn real_directory(path: &Path) -> Result<PathBuf> {
+    if path
+        .components()
+        .any(|part| matches!(part, Component::ParentDir))
+    {
+        return Err("retention paths must not contain parent traversal".into());
+    }
     let absolute = if path.is_absolute() {
         path.to_path_buf()
     } else {

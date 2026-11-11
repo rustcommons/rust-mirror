@@ -274,7 +274,12 @@ fn duplicates_overlaps_traversal_missing_and_empty_inputs_refuse() {
         vec![roots[0].clone(), roots[0].clone()],
         vec![roots[0].clone(), roots[0].join("dist")],
         vec![t.path().join("missing")],
-        vec![roots[0].join("dist/..")],
+        vec![PathBuf::from(format!(
+            "{}{}dist{}..",
+            roots[0].display(),
+            std::path::MAIN_SEPARATOR,
+            std::path::MAIN_SEPARATOR
+        ))],
     ] {
         assert!(preview(&policy(), &paths, DATE).is_err());
     }
