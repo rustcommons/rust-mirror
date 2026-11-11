@@ -1,5 +1,5 @@
 {
-  "state": "full user documentation added; package/candidate identity refresh pending",
+  "state": "documentation-complete candidate qualified; awaiting owner publication authorization",
   "qualified_head": "4738aef30187431886c67aa931af0eeaef681fc4",
   "implementation_merge": "7c020b58b9893d41775157710d98a895ede66dd8",
   "workflow_run": 42961977999,
@@ -1354,7 +1354,26 @@
       "CHANGELOG.md"
     ],
     "compiled_source_manifest_lock_examples_license_unchanged": true,
-    "new_candidate_identity_pending": true
+    "new_candidate_identity_pending": false,
+    "source": "93f38921000ba4e8cc1d55006afd326c077d8f7e",
+    "archive_sha256": "b6e01cc29cefc18121c54c23230238a076c9935b8823523073021f8cdba7a69c",
+    "archive_bytes": 49142,
+    "files": 18,
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "vcs": {
+      "git": {
+        "sha1": "93f38921000ba4e8cc1d55006afd326c077d8f7e"
+      },
+      "path_in_vcs": ""
+    },
+    "differences_from_previous_0b38_archive": [
+      ".cargo_vcs_info.json",
+      "CHANGELOG.md",
+      "README.md"
+    ],
+    "package_verification": "passed; new archive compiled",
+    "fresh_unpacked_install": "not repeated; prior evidence carries by unchanged executable/dependency inputs",
+    "record": "2026-11-11-user-documentation.md#documentation-complete-clean-package"
   },
   "previous_final_clean_package": {
     "source": "0b38e4595a09e5e2a5b781c39b509fb60eff3d9c",
@@ -1589,5 +1608,6 @@
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       }
     ]
-  }
+  },
+  "frozen_release_candidate": "93f38921000ba4e8cc1d55006afd326c077d8f7e"
 }
