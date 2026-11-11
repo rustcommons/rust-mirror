@@ -70,7 +70,7 @@ impl Policy {
 }
 
 /// One exact regular file approved for deletion; bytes are logical, not disk blocks.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Deletion {
     /// Absolute path within a validated generation.
     pub path: PathBuf,
@@ -80,7 +80,7 @@ pub struct Deletion {
     pub sha256: String,
 }
 /// One whole completed folder approved for deletion.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FolderDeletion {
     /// Absolute snapshot root; never a private sync/fetch workspace.
     pub path: PathBuf,
@@ -88,7 +88,7 @@ pub struct FolderDeletion {
     pub bytes: u64,
 }
 /// A generation protected by current/rollback order or declared toolchain coverage.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct KeptGeneration {
     /// Absolute completed snapshot root.
     pub path: PathBuf,
@@ -97,10 +97,14 @@ pub struct KeptGeneration {
 }
 /// Structured dry-run output. Apply always reconstructs this plan before deletion.
 ///
-/// Keep this in memory for GUI confirmation. There is deliberately no deserialized
-/// plan execution route. A CLI invocation recomputes its preview before applying.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+/// Keep in memory or round-trip with Serde between identical library builds.
+/// Deserialization grants no authority: apply bounds and reconstructs every field.
+/// A CLI invocation recomputes its preview before applying.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct PrunePlan {
+    /// Plan representation revision; currently 1, independent of any event protocol.
+    pub schema: u32,
     /// Calendar reference date used for nightly policy, independent of filesystem times.
     pub as_of: String,
     /// Whole snapshot roots that would be removed; enclosing workspaces are preserved.
@@ -121,7 +125,7 @@ pub struct PrunePlan {
     binding: Option<catalog::Binding>,
 }
 /// An apply failure after preflight, including any preceding successful deletions.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct ApplyFailure {
     /// File or directory whose removal failed.
     pub path: PathBuf,
@@ -129,7 +133,7 @@ pub struct ApplyFailure {
     pub message: String,
 }
 /// Structured apply outcome. A failure stops processing; no rollback is promised.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct ApplyReport {
     /// Successfully unlinked regular files, in order.
     pub deleted_files: Vec<Deletion>,
@@ -205,7 +209,8 @@ fn real_directory(path: &Path) -> Result<PathBuf> {
 /// this set, never upstream. Every distinct protected toolchain record (including
 /// platforms/components and bootstrap version) retains its newest exact copy.
 /// Pins must exist. The current generation is always kept, even with zero counts.
-/// Reads/hashes every input; creates no files, locks or network requests.
+/// Reads/hashes every input; creates no files/persistent locks or network requests.
+/// Only existing writer locks are probed transiently.
 ///
 /// # Errors
 /// Refuses missing pins, invalid policy/date, duplicate/overlapping/linked roots,
@@ -370,6 +375,7 @@ fn preview_inner(
         return Err("a pinned release is absent from the supplied generations".into());
     }
     let mut plan = PrunePlan {
+        schema: 1,
         as_of: as_of.into(),
         generations: vec![],
         folders: vec![],
@@ -460,6 +466,25 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
     if !allow_delete {
         return Err("deletion is disabled; explicitly authorize apply".into());
     }
+    plan.policy.validate()?;
+    if plan.schema != 1
+        || plan.roots.is_empty()
+        || plan.roots.len() > 32
+        || plan.identities.len() != plan.roots.len()
+        || plan.generations.len() > 32
+        || plan.folders.len() > 32
+        || plan.kept.len() > 32
+        || plan.files.len() > 32 * 4097
+        || plan.binding.as_ref().is_some_and(|b| b.runs.len() > 128)
+        || plan.catalog.as_ref().is_some_and(|c| {
+            c.runs.len() > 128
+                || c.generations.len() > 32
+                || c.unmanaged.len() > 128
+                || c.issues.len() > 128
+        })
+    {
+        return Err("unsupported or excessive retention plan envelope".into());
+    }
     let parents: BTreeSet<_> = plan
         .roots
         .iter()
@@ -469,14 +494,6 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
     let mut owned = BTreeSet::new();
     for parent in parents {
         real_directory(parent)?;
-        let paused = plan.catalog.as_ref().is_some_and(|c| {
-            c.runs
-                .iter()
-                .any(|r| r.path == parent && r.state == RunState::InProgress)
-        });
-        if !paused {
-            locks.push(lock_file(&parent.join(".rust-mirror-prune.lock"), true)?);
-        }
         for name in [".sync.lock", ".fetch.lock"] {
             let p = parent.join(name);
             match fs::symlink_metadata(&p) {
@@ -487,6 +504,9 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
                 Err(e) => return Err(e.into()),
             }
+        }
+        if !catalog::workspace_paused(parent, &owned)? {
+            locks.push(lock_file(&parent.join(".rust-mirror-prune.lock"), true)?);
         }
     }
     if let Some(binding) = &plan.binding {

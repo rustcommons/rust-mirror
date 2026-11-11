@@ -93,7 +93,7 @@ changes during planning. Apply locks existing run writers, repeats discovery and
 hashing, and refuses a changed managed file, run state or immediate directory
 membership before deleting any inventory marker. Empty regular pruning-lock files
 are excluded from this binding so acquiring persistent maintenance locks does not
-invalidate the preview. Access times and directory mtimes are excluded because
+invalidate the preview. Access times and managed-directory mtimes are excluded because
 reads/maintenance lock creation can change them. Contents of unmanaged directories
 and paths outside the declared directory are outside the binding and are never
 traversed or deleted.
@@ -126,7 +126,8 @@ empty directory removals are implied by the listed roots/files. Sizes are logica
 lengths, not physical reclaimed disk blocks (hardlinks, compression and open handles
 can change actual savings).
 
-Preview reads and hashes all inputs; it creates no files/locks and uses no network.
+Preview reads and hashes all inputs; it creates no files/lock files and uses no
+network. Existing writer locks are probed transiently without blocking.
 It validates complete inventory/selected-artifact closure and refuses inputs belonging
 to locked, unknown or incomplete sync runs, as well as corruption,
 legacy schema 1, unrelated files or empty directories, duplicate/overlapping roots,
@@ -150,7 +151,11 @@ The CLI computes a fresh preview and applies that in-memory plan. It does not re
 a saved TOML preview as execution authority. For confirmation across a GUI interaction,
 retain the `PrunePlan` in memory and call the library `apply` on that same object.
 The GUI must present it and require explicit user authorization; passing `false`
-refuses deletion. Every apply reconstructs/recompares the plan before any unlink.
+refuses deletion. `PrunePlan` supports Serde serialization/deserialization between
+identical library builds, including a GUI's embedding worker and parent. Schema 1
+is a retention-plan revision, not an EVENTS protocol version. Apply checks envelope
+bounds and reconstructs all plan fields before deletion; deserialized data is never
+trusted as authorization. Callers must bound transport/deserialization input size. Every apply reconstructs/recompares the plan before any unlink.
 
 Apply acquires persistent empty `.rust-mirror-prune.lock` files in all supplied
 roots' enclosing workspaces, plus any existing `.sync.lock`/`.fetch.lock`. Busy or
@@ -184,8 +189,8 @@ before deletion use the common `Result`; post-preflight I/O failures carry the
 successful prefix in `ApplyReport::failure`. General progress/cancellation hooks, typed cancellation errors, heartbeats and the
 shared EVENTS serializer are deferred to the common library design; no placeholder
 observer API is claimed. Existing entry points can remain convenience wrappers
-around future observer-aware variants. There is no persistent execution-plan format
-in this iteration; serialized previews are display data, not execution authority. See the compiled
+around future observer-aware variants. Same-build Serde round trips are supported; no durable cross-version saved-plan
+compatibility is promised. Serialized previews do not grant deletion authority. See the compiled
 [packaged API example](../src/guide.md#local-retention-unreleased).
 
 Adding optional `Config::retention` preserves existing TOML without the table.

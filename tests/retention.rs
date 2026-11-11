@@ -835,3 +835,25 @@ fn direct_snapshot_named_mirror_does_not_expand_discovery_to_unmanaged_trees() {
     assert!(apply(&plan, true).unwrap().failure.is_none());
     assert!(unknown.is_dir());
 }
+
+#[test]
+fn serde_roundtrip_plans_are_revalidated_and_require_explicit_authority() {
+    let t = tempfile::tempdir().unwrap();
+    let roots = roots(t.path());
+    let plan = preview(&policy(), &roots, DATE).unwrap();
+    let serialized = toml::to_string(&plan).unwrap();
+    let loaded: PrunePlan = toml::from_str(&serialized).unwrap();
+    assert_eq!(loaded, plan);
+    assert!(apply(&loaded, false).is_err());
+    let mut modified = loaded.clone();
+    modified.schema = 2;
+    assert!(apply(&modified, true).is_err());
+    let mut modified = loaded.clone();
+    modified.files.clear();
+    assert!(apply(&modified, true).is_err());
+    assert!(roots[1].join("snapshot.toml").is_file());
+    let directory = preview_directory(&policy(), t.path(), &roots[0], DATE).unwrap();
+    let roundtrip: PrunePlan = toml::from_str(&toml::to_string(&directory).unwrap()).unwrap();
+    assert_eq!(directory, roundtrip);
+    assert!(apply(&roundtrip, true).unwrap().failure.is_none());
+}

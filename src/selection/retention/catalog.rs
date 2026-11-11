@@ -5,7 +5,7 @@ use sha2::{Digest, Sha256};
 use std::time::UNIX_EPOCH;
 
 /// Display metadata from a completed inventory marker; payload verification is separate.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct GenerationInfo {
     /// Absolute schema-2/3 snapshot root.
     pub path: PathBuf,
@@ -21,7 +21,7 @@ pub struct GenerationInfo {
     pub toolchains: Vec<ToolchainRecord>,
 }
 /// Conservative display state of a managed sync/fetch workspace.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum RunState {
     /// Completed marker/report present; preview still verifies the generation.
@@ -34,7 +34,7 @@ pub enum RunState {
     Unknown,
 }
 /// One immediate managed sync/fetch workspace, retained intact by this API.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct RunInfo {
     /// Absolute workspace path, not its served mirror child.
     pub path: PathBuf,
@@ -48,7 +48,7 @@ pub struct RunInfo {
     pub previous_inventory_sha256: Option<String>,
 }
 /// A managed path that could not be classified safely.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct CatalogIssue {
     /// Affected local path.
     pub path: PathBuf,
@@ -57,8 +57,8 @@ pub struct CatalogIssue {
 }
 /// Serializable listing of immediate local generations and managed workspaces.
 ///
-/// No recursive discovery of arbitrary user directories, downloads or lock creation.
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+/// No recursive discovery of arbitrary user directories, downloads or lock-file creation.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Catalog {
     /// Explicit directory selected by the operator.
     pub directory: PathBuf,
@@ -71,7 +71,7 @@ pub struct Catalog {
     /// Unsafe managed entries; preview refuses these instead of guessing.
     pub issues: Vec<CatalogIssue>,
 }
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub(super) struct Binding {
     pub(super) directory: PathBuf,
     pub(super) next_previous: PathBuf,
@@ -229,7 +229,7 @@ fn run(workspace: &Path, owned: &BTreeSet<PathBuf>) -> Result<Option<RunInfo>> {
 /// List immediate `DIR/mirror` generations, direct schema-2/3 roots and sync/fetch runs.
 ///
 /// Reads bounded inventory/state/report metadata only, never payload archives.
-/// Existing lock probing is nonblocking and creates no files. Unknown/locked runs
+/// Existing lock probing is transient/nonblocking and creates no files. Unknown/locked runs
 /// are displayed conservatively. Newest means inventory mtime, not active routing.
 ///
 /// # Errors
@@ -534,4 +534,14 @@ pub(super) fn check_roots(
         }
     }
     Ok(())
+}
+
+pub(super) fn workspace_paused(parent: &Path, owned: &BTreeSet<PathBuf>) -> Result<bool> {
+    match run(parent, owned)? {
+        Some(info) if matches!(info.state, RunState::Locked | RunState::Unknown) => {
+            Err("workspace is locked or unknown".into())
+        }
+        Some(info) => Ok(info.state == RunState::InProgress),
+        None => Ok(false),
+    }
 }
