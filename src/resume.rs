@@ -36,7 +36,9 @@ pub(crate) fn http_range(
     if offset > 0 {
         request = request.set("Range", &format!("bytes={offset}-"));
     }
-    let response = match request.call() {
+    let response = request.call();
+    crate::events::check()?;
+    let response = match response {
         Ok(r) => r,
         Err(ureq::Error::Status(416, _)) if offset > 0 => return Ok(Transfer::Restart),
         Err(e) => return Err(crate::network::transport_error(e)),

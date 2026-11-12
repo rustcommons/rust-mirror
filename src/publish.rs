@@ -253,6 +253,7 @@ impl Client {
         } else {
             request.call()
         };
+        crate::events::check()?;
         match result {
             Ok(r) | Err(ureq::Error::Status(_, r)) => Ok(r),
             Err(error) => Err(crate::Error::new(

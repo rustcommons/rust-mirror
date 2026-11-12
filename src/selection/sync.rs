@@ -774,6 +774,21 @@ fn run_inner(
     } else {
         None
     };
+    let _hints = crate::events::SizeHints::new(
+        progress
+            .as_ref()
+            .map(|p| {
+                p.lock()
+                    .unwrap()
+                    .lengths
+                    .iter()
+                    .filter_map(|(url, size)| {
+                        size.map(|n| (url.strip_prefix(crate::ORIGIN).unwrap_or(url).to_owned(), n))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+    );
     let mut known: BTreeMap<_, _> = old
         .as_ref()
         .map(|i| {

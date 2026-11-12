@@ -449,8 +449,27 @@ pub(crate) fn stage(name: &str) -> Result<()> {
     }
     Ok(())
 }
+thread_local! {static SIZE_HINTS:RefCell<std::collections::BTreeMap<String,u64>>=const{RefCell::new(std::collections::BTreeMap::new())};}
+pub(crate) struct SizeHints(std::collections::BTreeMap<String, u64>);
+impl SizeHints {
+    pub(crate) fn new(hints: std::collections::BTreeMap<String, u64>) -> Self {
+        Self(SIZE_HINTS.with(|s| s.replace(hints)))
+    }
+}
+impl Drop for SizeHints {
+    fn drop(&mut self) {
+        SIZE_HINTS.with(|s| *s.borrow_mut() = std::mem::take(&mut self.0));
+    }
+}
 pub(crate) fn artifact(path: &str, action: &str, offset: u64, total: Option<u64>) -> Result<()> {
     check()?;
+    let total = total.or_else(|| {
+        if ["download", "resume", "restart"].contains(&action) {
+            SIZE_HINTS.with(|s| s.borrow().get(path).copied())
+        } else {
+            None
+        }
+    });
     if let Some(c) = current() {
         {
             let mut s = c.0.state.lock().unwrap_or_else(|p| p.into_inner());

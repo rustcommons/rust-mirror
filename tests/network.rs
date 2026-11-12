@@ -27,7 +27,7 @@ struct State {
     requests: Vec<(String, String)>,
     head: Option<String>,
     denied: bool,
-    delay: bool,
+    delay_millis: u64,
     remote: BTreeMap<String, Vec<u8>>,
 }
 struct Proxy {
@@ -213,10 +213,10 @@ fn serve(
             "CONNECT".into(),
             first.split_whitespace().nth(1).unwrap_or("").into(),
         ));
-        (s.denied, s.delay)
+        (s.denied, s.delay_millis)
     };
-    if delay {
-        thread::sleep(Duration::from_millis(600));
+    if delay > 0 {
+        thread::sleep(Duration::from_millis(delay));
     }
     if deny || !authorized {
         socket.write_all(
@@ -414,13 +414,35 @@ fn inspect_connect_auth_trust_chain_head_and_refusals() {
 #[test]
 fn timeouts_cancel_and_no_secret_in_cli_results() {
     let proxy = Proxy::new();
-    proxy.state.lock().unwrap().delay = true;
+    proxy.state.lock().unwrap().delay_millis = 600;
     let mut options = proxy.options();
     options.read_timeout = Duration::from_millis(100);
     let start = std::time::Instant::now();
     let report = check_network_with_control(&options, &Control::default()).unwrap();
     assert!(!report.ok);
     assert!(start.elapsed() < Duration::from_secs(2));
+    proxy.state.lock().unwrap().delay_millis = 1200;
+    let seen = Arc::new(Seen::default());
+    let token = CancelToken::new();
+    let stop = token.clone();
+    let canceller = thread::spawn(move || {
+        thread::sleep(Duration::from_millis(200));
+        stop.cancel();
+    });
+    let blocked = check_network_with_control(&proxy.options(), &Control::new(seen.clone(), token))
+        .unwrap_err();
+    canceller.join().unwrap();
+    assert_eq!(
+        rust_mirror::error_kind(blocked.as_ref()),
+        ErrorKind::Cancelled
+    );
+    assert!(seen.0.lock().unwrap().iter().any(|e| matches!(
+        e.kind,
+        EventKind::Heartbeat {
+            cancel_requested: true,
+            ..
+        }
+    )));
     let token = CancelToken::new();
     token.cancel();
     let e = check_network_with_control(&options, &Control::new(Arc::new(Seen::default()), token))
@@ -673,4 +695,79 @@ fn unknown_sizes_overflow_budget_and_network_settings_do_not_change_resume_recip
     assert!(selection::write_config(&invalid, &t.path().join("config.toml")).is_err());
     assert!(!t.path().join("config.toml").exists());
     assert!(!format!("{invalid:?}").contains("do-not-save"));
+}
+
+#[test]
+fn literal_exclusions_and_refresh_fallback_are_bounded() {
+    assert!(!is_excluded("evil.127.0.0.1", 443, &["127.0.0.1".into()]).unwrap());
+    assert!(is_excluded("[::1]", 443, &["::1".into()]).unwrap());
+    assert!(is_excluded("[::1]", 443, &["[::1]:443".into()]).unwrap());
+    struct Fail;
+    impl Source for Fail {
+        fn fetch(&self, _: &str, _: &mut dyn Write, _: u64) -> rust_mirror::Result<()> {
+            Err(rust_mirror::Error::new(ErrorKind::Network, "synthetic unreachable source").into())
+        }
+    }
+    struct Index;
+    impl Source for Index {
+        fn fetch(&self, _: &str, w: &mut dyn Write, _: u64) -> rust_mirror::Result<()> {
+            w.write_all(b"static.rust-lang.org/dist/2025-09-18/channel-rust-1.90.0.toml\n")?;
+            Ok(())
+        }
+    }
+    let t = tempfile::tempdir().unwrap();
+    let dir = t.path().join("cache");
+    let c = Control::default();
+    rust_mirror::releases::load(&Index, &dir, rust_mirror::releases::CacheMode::Refresh, &c)
+        .unwrap();
+    let fallback = rust_mirror::releases::load(
+        &Fail,
+        &dir,
+        rust_mirror::releases::CacheMode::RefreshOrCached,
+        &c,
+    )
+    .unwrap();
+    assert!(fallback.cached);
+    assert_eq!(fallback.warning.unwrap().kind, ErrorKind::Network);
+    let lock = fs::File::options()
+        .read(true)
+        .write(true)
+        .open(dir.join(".releases.lock"))
+        .unwrap();
+    lock.try_lock().unwrap();
+    let e =
+        rust_mirror::releases::load(&Index, &dir, rust_mirror::releases::CacheMode::Refresh, &c)
+            .unwrap_err();
+    assert_eq!(rust_mirror::error_kind(e.as_ref()), ErrorKind::Locked);
+    drop(lock);
+    fs::write(dir.join("unrelated.txt"), "preserve me").unwrap();
+    assert!(rust_mirror::releases::load(
+        &Index,
+        &dir,
+        rust_mirror::releases::CacheMode::Offline,
+        &c
+    )
+    .is_err());
+    fs::remove_file(dir.join("unrelated.txt")).unwrap();
+    fs::write(dir.join("releases.toml"), "corrupt").unwrap();
+    assert!(rust_mirror::releases::load(
+        &Index,
+        &dir,
+        rust_mirror::releases::CacheMode::Refresh,
+        &c
+    )
+    .is_err());
+    assert_eq!(
+        fs::read_to_string(dir.join("releases.toml")).unwrap(),
+        "corrupt"
+    );
+    let absent = t.path().join("absent");
+    let e = rust_mirror::releases::load(
+        &Fail,
+        &absent,
+        rust_mirror::releases::CacheMode::RefreshOrCached,
+        &c,
+    )
+    .unwrap_err();
+    assert_eq!(rust_mirror::error_kind(e.as_ref()), ErrorKind::Network);
 }

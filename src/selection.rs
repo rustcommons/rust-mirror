@@ -1293,11 +1293,25 @@ pub fn measure_sizes(
             safe_path(&artifact.path)?;
             let size = source.content_length(&format!("{ORIGIN}{}", artifact.path))?;
             if let Some(n) = size {
+                if n > i64::MAX as u64 {
+                    return Err(crate::Error::new(
+                        crate::ErrorKind::Budget,
+                        "size estimate exceeds event integer bounds",
+                    )
+                    .into());
+                }
                 report.known_bytes = report.known_bytes.checked_add(n).ok_or_else(|| {
                     crate::Error::new(crate::ErrorKind::Budget, "size estimate sum overflow")
                 })?;
             } else {
                 report.unknown_artifacts += 1;
+            }
+            if report.known_bytes > i64::MAX as u64 {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Budget,
+                    "estimate sum exceeds event integer bounds",
+                )
+                .into());
             }
             report.artifacts.push(ArtifactSize {
                 path: artifact.path.clone(),

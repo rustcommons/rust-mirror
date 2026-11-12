@@ -305,12 +305,13 @@ fn run_prepared(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()
             };
             resolved.save(&output)?;
             if let Some(sizes) = sizes {
+                let mut value = toml::map::Map::new();
+                value.insert("plan".into(), toml::Value::try_from(&resolved.plan)?);
+                value.insert("sizes".into(), toml::Value::try_from(&sizes)?);
                 if capturing() {
-                    let mut value = toml::map::Map::new();
-                    value.insert("plan".into(), toml::Value::try_from(&resolved.plan)?);
-                    value.insert("sizes".into(), toml::Value::try_from(&sizes)?);
-                    REPORT.with(|r| *r.borrow_mut() = Some(toml::Value::Table(value)));
+                    REPORT.with(|r| *r.borrow_mut() = Some(toml::Value::Table(value.clone())));
                 }
+                output!("{}", toml::to_string_pretty(&value)?)?;
                 let _ = writeln!(
                     io::stderr().lock(),
                     "Estimated known bytes: {}; unknown artifacts: {}; exceeds budget: {}",
@@ -319,8 +320,10 @@ fn run_prepared(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()
                     sizes.exceeds_budget
                 );
             }
-            let _=writeln!(io::stderr().lock(),"{} artifacts; archive sizes unknown until download; budget {} bytes. Saved plan: {}",resolved.plan.artifacts.len(),resolved.plan.max_download_bytes,output.display());
-            output!("{}", toml::to_string_pretty(&resolved.plan)?)?;
+            if !network_options::estimate() {
+                let _=writeln!(io::stderr().lock(),"{} artifacts; archive sizes unknown until download; budget {} bytes. Saved plan: {}",resolved.plan.artifacts.len(),resolved.plan.max_download_bytes,output.display());
+                output!("{}", toml::to_string_pretty(&resolved.plan)?)?;
+            }
         }
         "fetch" => {
             let output = path("--output")?;

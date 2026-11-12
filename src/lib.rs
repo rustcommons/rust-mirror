@@ -78,8 +78,9 @@ pub trait Source {
 /// Official upstream HTTPS transport with bounded reads and no redirects.
 ///
 /// Create with [`Default::default`]. Requests must remain under
-/// `https://static.rust-lang.org/`. The default request timeout is 180 seconds;
-/// resume uses verified range handling. This does not configure publisher or client trust.
+/// `https://static.rust-lang.org/`. Connect and per-read/write timeouts default to
+/// 180 seconds; system DNS is separate. Resume uses verified range handling.
+/// This does not configure publisher or client trust.
 pub struct HttpsSource(ureq::Agent);
 impl HttpsSource {
     /// Build explicit upstream transport; origin/path validation still applies to every request.
@@ -129,6 +130,13 @@ impl Source for HttpsSource {
             let n = value
                 .parse::<u64>()
                 .map_err(|_| Error::new(ErrorKind::Budget, "HEAD length exceeds integer bounds"))?;
+            if n > i64::MAX as u64 {
+                return Err(Error::new(
+                    ErrorKind::Budget,
+                    "HEAD length exceeds event integer bounds",
+                )
+                .into());
+            }
             if size.is_some_and(|old| old != n) {
                 return Err(Error::new(ErrorKind::Integrity, "conflicting HEAD lengths").into());
             }
@@ -157,7 +165,9 @@ impl Source for HttpsSource {
         safe_path(path)?;
         let _ = writeln!(io::stderr().lock(), "Downloading {path}");
         events::artifact(path, "download", 0, None)?;
-        let response = self.0.get(url).call().map_err(network::transport_error)?;
+        let response = self.0.get(url).call();
+        events::check()?;
+        let response = response.map_err(network::transport_error)?;
         if response.status() != 200 {
             return Err("source did not return HTTP 200".into());
         }
@@ -189,8 +199,9 @@ fn copy_bounded(mut input: impl Read, output: &mut dyn Write, limit: u64) -> Res
         let cap = buffer
             .len()
             .min(remaining.min(buffer.len() as u64) as usize);
-        let n = input.read(&mut buffer[..cap])?;
+        let n = input.read(&mut buffer[..cap]);
         events::check()?;
+        let n = n?;
         if n == 0 {
             break;
         }

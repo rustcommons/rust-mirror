@@ -350,6 +350,9 @@ fn exclusion(value: &str) -> Result<(String, Option<u16>)> {
     if !clean(value) || value.len() > 255 || value.contains(['/', '@', '*', ' ']) {
         return Err(invalid("unsupported NO_PROXY entry"));
     }
+    if value.parse::<std::net::Ipv6Addr>().is_ok() {
+        return Ok((value.to_ascii_lowercase(), None));
+    }
     let (host, port) = if let Some(rest) = value.strip_prefix('[') {
         let (host, tail) = rest
             .split_once(']')
@@ -405,7 +408,9 @@ pub fn is_excluded(host: &str, port: u16, entries: &[String]) -> Result<bool> {
     for e in entries {
         let (h, p) = exclusion(e)?;
         matched |= (p.is_none() || p == Some(port))
-            && (h == "*" || host == h || (!h.contains(':') && host.ends_with(&format!(".{h}"))));
+            && (h == "*"
+                || host == h
+                || (h.parse::<std::net::IpAddr>().is_err() && host.ends_with(&format!(".{h}"))));
     }
     Ok(matched)
 }
