@@ -338,7 +338,7 @@ pub fn detect_environment() -> Result<EnvironmentProxy> {
     })
 }
 fn validate_credentials(c: &ProxyCredentials) -> Result<()> {
-    if !clean(&c.username) || !clean(&c.password) || c.username.contains([':', '@']) {
+    if !clean(&c.username) || !clean(&c.password) || c.username.contains(':') {
         return Err(invalid("invalid proxy credentials"));
     }
     Ok(())

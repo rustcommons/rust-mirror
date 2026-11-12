@@ -881,6 +881,13 @@ fn normal_transfers_send_the_same_programmatic_proxy_credentials_as_diagnostics(
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(!String::from_utf8_lossy(&output.stdout).contains("pw-123"));
+    proxy.state.lock().unwrap().expected_token = Some("YWxpY2VAZXhhbXBsZS5jb206cHctMTIz".into());
+    let mut upn = options.clone();
+    upn.proxy_credentials.as_mut().unwrap().username = "alice@example.com".into();
+    let source = rust_mirror::HttpsSource::with_network(&upn).unwrap();
+    let mut upn_bytes = vec![];
+    source.fetch(url, &mut upn_bytes, 1000).unwrap();
+    assert_eq!(upn_bytes, b"test artifact");
     let requests = &proxy.state.lock().unwrap().requests;
     assert!(requests.iter().any(|(m, _)| m == "GET"));
     assert!(requests.iter().any(|(m, _)| m == "HEAD"));
