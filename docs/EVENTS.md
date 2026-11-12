@@ -22,7 +22,8 @@ init/list/import/plan/fetch/sync/assemble/rustup/publish/generations/prune and t
 legacy fetch-toolchain command. Help/version are local, cheap discovery operations.
 
 A normal stream starts with `hello`, ends with exactly one `result`, and contains
-no events after the result. The first event identifies protocol and backend version.
+no events after the result. The first event identifies protocol and backend version. Invalid command labels
+use `invalid-command` rather than reflecting potentially sensitive malformed argv.
 The version command's successful report repeats `protocol` and `tool_version`.
 Do not infer a library ABI or a release from the protocol version.
 

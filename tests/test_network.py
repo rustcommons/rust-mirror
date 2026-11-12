@@ -50,3 +50,10 @@ class NetworkProtocol(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse(path.exists())
             self.assertEqual(events[-1]['error']['kind'], 'invalid')
+
+    def test_malformed_equals_proxy_flags_do_not_echo_userinfo(self):
+        for args in [ ['--proxy=http://user:never-echo-this@localhost:9', 'check-network'], ['plan', '--proxy=http://user:never-echo-this@localhost:9'] ]:
+            result, events = self.invoke(args)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn(b'never-echo-this', result.stdout + result.stderr)
+            self.assertEqual(events[-1]['error']['kind'], 'invalid')

@@ -56,6 +56,8 @@ pub(super) fn prepare(
             {
                 return Err("missing or duplicate network option value".into());
             }
+        } else if key.starts_with("--proxy") {
+            return Err("unsupported proxy option syntax; use separate flag/value arguments and named-secret or stdin credential inputs".into());
         } else {
             clean.push(arg);
         }
@@ -211,7 +213,32 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
                 | "--estimate-sizes"
                 | "--cancel-stdin",
             ) => {}
-            _ => return arg.to_str().unwrap_or("invalid-command").to_owned(),
+            Some(name)
+                if [
+                    "--help",
+                    "-h",
+                    "--version",
+                    "-V",
+                    "init",
+                    "list",
+                    "import",
+                    "plan",
+                    "fetch",
+                    "sync",
+                    "assemble",
+                    "rustup",
+                    "publish",
+                    "generations",
+                    "prune",
+                    "fetch-toolchain",
+                    "check-network",
+                    "releases",
+                ]
+                .contains(&name) =>
+            {
+                return name.to_owned()
+            }
+            _ => return "invalid-command".into(),
         }
     }
     "--help".into()
