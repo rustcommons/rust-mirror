@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://docs.rs/crate/rust-mirror/0.2.0",
+    "status": 200,
+    "final_url": "https://docs.rs/crate/rust-mirror/0.2.0",
+    "bytes": 23607
+  },
+  {
+    "url": "https://docs.rs/rust-mirror/0.2.0/rust_mirror/",
+    "status": 200,
+    "final_url": "https://docs.rs/rust-mirror/0.2.0/rust_mirror/",
+    "bytes": 29615
+  },
+  {
+    "url": "https://docs.rs/rust-mirror/0.2.0/rust_mirror/events/",
+    "status": 200,
+    "final_url": "https://docs.rs/rust-mirror/0.2.0/rust_mirror/events/",
+    "bytes": 19599
+  },
+  {
+    "url": "https://docs.rs/rust-mirror/0.2.0/rust_mirror/enum.ErrorKind.html",
+    "status": 200,
+    "final_url": "https://docs.rs/rust-mirror/0.2.0/rust_mirror/enum.ErrorKind.html",
+    "bytes": 61553
+  },
+  {
+    "url": "https://crates.io/api/v1/crates/rust-mirror/0.2.0/readme",
+    "status": 200,
+    "final_url": "https://static.crates.io/readmes/rust-mirror/rust-mirror-0.2.0.html",
+    "bytes": 3569
+  }
+]

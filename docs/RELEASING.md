@@ -11,7 +11,7 @@ for compatible fixes and documentation-only package corrections. Keep saved sche
 compatibility explicit and migrations documented. The current release scope is
 selected modern Rustup distributions, offline clients and verified Nexus Raw
 publication. Scheduling, Cargo registry mirroring, GUI and pruning were excluded
-from 0.1.x. Local whole-generation retention/pruning is the unreleased 0.2.0 feature;
+from 0.1.x. Local whole-generation retention/pruning shipped in 0.2.0;
 Nexus pruning and in-generation compaction remain gaps. The owner authorized 0.2.0 publication on 2026-11-11 after completion, merge and
 qualification, including protocol/controls/typed errors and publish preflight.
 This authorization does not waive any permanent release gate.
