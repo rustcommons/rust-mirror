@@ -1,0 +1,31 @@
+{
+  "phase": "initial postpublication check; crate listed in docs.rs queue",
+  "observations": [
+    {
+      "url": "https://docs.rs/crate/rust-mirror/0.3.0",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/network/",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/network/struct.NetworkOptions.html",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/releases/",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://crates.io/api/v1/crates/rust-mirror/0.3.0/readme",
+      "status": 200,
+      "final_url": "https://static.crates.io/readmes/rust-mirror/rust-mirror-0.3.0.html",
+      "bytes": 3815
+    }
+  ]
+}

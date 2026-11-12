@@ -1,0 +1,68 @@
+{
+  "source": "50bc1895eab5ed305a30ed6e44fafc2bc057e7a9",
+  "qualified_source": "7a00908bc5ad906391173bfc09ceaf546bd18b1c",
+  "tree_equal": true,
+  "archive_sha256": "fcfd258dce7328ce54a5096b80f6b90e550642f9bb324baf262acaa1cecf11f9",
+  "non_yanked": true,
+  "api_index_agree": true,
+  "source_files_verified": [
+    "CHANGELOG.md",
+    "Cargo.lock",
+    "Cargo.toml.orig",
+    "LICENSE",
+    "README.md",
+    "examples/mirror.toml",
+    "examples/multi-version.toml",
+    "examples/retention.toml",
+    "examples/sync-demo.toml",
+    "src/cli/network_options.rs",
+    "src/cli.rs",
+    "src/error.rs",
+    "src/events.rs",
+    "src/guide.md",
+    "src/lib.rs",
+    "src/main.rs",
+    "src/network.rs",
+    "src/publish.rs",
+    "src/releases.rs",
+    "src/resume.rs",
+    "src/selection/collection.rs",
+    "src/selection/retention/catalog.rs",
+    "src/selection/retention.rs",
+    "src/selection/rustup.rs",
+    "src/selection/sync.rs",
+    "src/selection.rs",
+    "src/signals.rs"
+  ],
+  "qualified_archive_sha256": "0b32c4b96aae9a5934d4da877c7d86ab0498e0266f36a7f75827407be7980e3b",
+  "qualified_file_content_differences": [
+    ".cargo_vcs_info.json"
+  ],
+  "tar_header_differences": {
+    "rust-mirror-0.3.0/.cargo_vcs_info.json": {
+      "mtime": [
+        1153704088,
+        1
+      ]
+    },
+    "rust-mirror-0.3.0/Cargo.lock": {
+      "mtime": [
+        1153704088,
+        1
+      ]
+    },
+    "rust-mirror-0.3.0/Cargo.toml": {
+      "mtime": [
+        1153704088,
+        1
+      ]
+    }
+  },
+  "vcs": {
+    "git": {
+      "sha1": "50bc1895eab5ed305a30ed6e44fafc2bc057e7a9"
+    },
+    "path_in_vcs": ""
+  },
+  "created_at": "2026-11-12T10:13:30.799403Z"
+}

@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature release 0.2.0 are published;
-see docs/evals/2026-11-12-publication-0.2.0.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0 are published;
+see docs/evals/2026-11-12-publication-0.3.0.md.
 Describe only demonstrated functionality
 as implemented; broader mirroring and the GUI remain planned.
 
@@ -201,8 +201,9 @@ uses its independent direct default unless separately configured. No real Nexus
 changes are authorized. The owner approved direct `webpki-roots` and `x509-parser` 0.18 with default
 features disabled on 2026-11-12, for additive roots and display-only certificate
 metadata. Rustls retains all trust decisions. Other new dependencies require
-owner approval before being added. Prepare/qualify 0.3.0 without publishing or creating a
-release tag: publication goes through the coordinator after owner confirmation.
+owner approval before being added. The owner separately authorized 0.3.0 publication
+on 2026-11-12; the coordinator published from the owner's machine after normal merge.
+See the publication record. Later publication still requires its own authorization.
 
 Network fixture tests require preinstalled OpenSSL (Git's bundled executable on
 Windows) only to generate ephemeral CA/server keys. Runtime uses Rust libraries,
