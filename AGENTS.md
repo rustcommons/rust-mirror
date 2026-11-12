@@ -204,6 +204,13 @@ metadata. Rustls retains all trust decisions. Other new dependencies require
 owner approval before being added. Prepare/qualify 0.3.0 without publishing or creating a
 release tag: publication goes through the coordinator after owner confirmation.
 
+Network fixture tests require preinstalled OpenSSL (Git's bundled executable on
+Windows) only to generate ephemeral CA/server keys. Runtime uses Rust libraries,
+never an external OpenSSL command. Keep fixture keys out of logs/artifacts and
+remove their temporary directories. Test proxy auth/exclusions, additive roots,
+chain diagnostics, socket deadlines, cancellation/heartbeats, HEAD estimates and
+cache corruption/locking. Network config never changes frozen payload identity.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to

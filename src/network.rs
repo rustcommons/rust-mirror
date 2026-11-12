@@ -457,6 +457,9 @@ fn route(options: &NetworkOptions, host: &str, port: u16) -> Result<Option<Proxy
 }
 /// Bounded PEM loader shared with publication. Certificates are not private keys.
 pub(crate) fn ca_certificates(path: &Path) -> Result<Vec<CertificateDer<'static>>> {
+    if !std::fs::metadata(path)?.is_file() {
+        return Err(invalid("CA bundle must be a regular file"));
+    }
     let file = File::open(path)?;
     if !file.metadata()?.is_file() {
         return Err(invalid("CA bundle must be a regular file"));
@@ -573,10 +576,21 @@ fn tls_config(
     path: Option<&Path>,
     seen: Option<Arc<Mutex<Vec<CertificateInfo>>>>,
 ) -> Result<Arc<rustls::ClientConfig>> {
-    let mut roots = rustls::RootCertStore {
-        roots: webpki_roots::TLS_SERVER_ROOTS.to_vec(),
+    tls_config_with_base(None, path, seen)
+}
+fn tls_config_with_base(
+    base: Option<&Path>,
+    extra: Option<&Path>,
+    seen: Option<Arc<Mutex<Vec<CertificateInfo>>>>,
+) -> Result<Arc<rustls::ClientConfig>> {
+    let mut roots = if base.is_some() {
+        rustls::RootCertStore::empty()
+    } else {
+        rustls::RootCertStore {
+            roots: webpki_roots::TLS_SERVER_ROOTS.to_vec(),
+        }
     };
-    if let Some(path) = path {
+    for path in [base, extra].into_iter().flatten() {
         for c in ca_certificates(path)? {
             roots
                 .add(c)
@@ -601,6 +615,14 @@ fn tls_config(
 }
 /// Construct an explicit target transport; caller still enforces target/origin policy.
 pub(crate) fn agent(options: &NetworkOptions, host: &str, port: u16) -> Result<ureq::Agent> {
+    agent_with_base_ca(options, host, port, None)
+}
+pub(crate) fn agent_with_base_ca(
+    options: &NetworkOptions,
+    host: &str,
+    port: u16,
+    base: Option<&Path>,
+) -> Result<ureq::Agent> {
     let proxy = route(options, host, port)?;
     let mut builder = ureq::AgentBuilder::new()
         .redirects(0)
@@ -608,7 +630,11 @@ pub(crate) fn agent(options: &NetworkOptions, host: &str, port: u16) -> Result<u
         .timeout_connect(options.connect_timeout)
         .timeout_read(options.read_timeout)
         .timeout_write(options.read_timeout)
-        .tls_config(tls_config(options.extra_ca_file.as_deref(), None)?);
+        .tls_config(tls_config_with_base(
+            base,
+            options.extra_ca_file.as_deref(),
+            None,
+        )?);
     if let Some(p) = proxy {
         let url = match p.credentials {
             Some(c) => format!("http://{}:{}@{}:{}", c.username, c.password, p.host, p.port),

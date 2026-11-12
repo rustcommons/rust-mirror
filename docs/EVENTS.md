@@ -150,11 +150,14 @@ input handling and final flushing; library-only callers use the same event types
 control and serializer. A source implementation does not establish registry publication; publication is
 verified separately in the release record.
 
-## Planned 0.3.0 additive network operations
+<a id="planned-030-additive-network-operations"></a>
 
-The [corporate-network contract](NETWORK.md) specifies planned public API names,
+## 0.3.0 additive network operations
+
+The [corporate-network contract](NETWORK.md) specifies public API names,
 configuration, secret handling, certificate diagnostics, estimates and caching.
-These additions retain protocol 1; 0.2.0 does not implement them.
+These additions are implemented in the unreleased 0.3.0 candidate and retain
+protocol 1; 0.2.0 does not implement them.
 
 `check-network`, `releases` and opt-in size measurement use the existing hello,
 stage/artifact/bytes/heartbeat and final typed-result framing. Check failures use
@@ -163,7 +166,7 @@ Proxy/environment/certificate details in reports are bounded and sanitized.
 No credential values, authorization headers or private keys enter events. A TLS
 error can include only certificates actually presented; it never changes trust.
 
-An additive `transfer_summary` event will carry `completed_bytes`,
+An additive `transfer_summary` event carries `completed_bytes`,
 `transferred_bytes`, nullable `expected_bytes`, nullable `bytes_per_second`, nullable
 `eta_seconds` and `estimated: true`. Completed bytes represent logical transfer
 coverage including resumed prefixes; transferred bytes count newly received bytes

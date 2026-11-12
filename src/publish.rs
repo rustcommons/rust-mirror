@@ -476,24 +476,14 @@ fn configured_client(
     network: &crate::network::NetworkOptions,
 ) -> Result<Client> {
     let mut client = client(options)?;
-    let mut network = network.clone();
-    if let Some(ca) = &options.ca_file {
-        if network.extra_ca_file.is_some() {
-            return Err(crate::Error::new(
-                crate::ErrorKind::Invalid,
-                "choose publication ca-file or explicit network extra-ca-file, not both",
-            )
-            .into());
-        }
-        network.extra_ca_file = Some(ca.clone());
-    }
     let target = ureq::get(&client.base).request_url()?;
-    client.agent = crate::network::agent(
-        &network,
+    client.agent = crate::network::agent_with_base_ca(
+        network,
         target.host(),
         target
             .port()
             .unwrap_or(if target.scheme() == "https" { 443 } else { 80 }),
+        options.ca_file.as_deref(),
     )?;
     Ok(client)
 }

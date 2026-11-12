@@ -23,3 +23,9 @@ Dependency approval requested: direct access to existing locked `webpki-roots`
 plus `x509-parser` with default features disabled. Neither was added. TLS
 inspection/proxy fixtures, default-root retention and credential redaction remain
 unverified until implementation. Publication is not authorized in this task.
+
+## Subsequent authorization and implementation
+
+On 2026-11-12 the owner approved both dependencies. The implementation and bounded
+fixture/live observations are tracked in the [0.3.0 candidate record](2026-11-12-network-030.md).
+The planning observations above remain historical; they do not certify the candidate.

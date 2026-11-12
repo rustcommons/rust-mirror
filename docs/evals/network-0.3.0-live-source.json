@@ -1,0 +1,171 @@
+{
+  "version": "0.3.0",
+  "operations": [
+    {
+      "name": "direct-extra-root",
+      "seconds": 0.023
+    },
+    {
+      "name": "releases-refresh",
+      "seconds": 0.416
+    },
+    {
+      "name": "releases-offline",
+      "seconds": 0.396
+    },
+    {
+      "name": "four-host-head",
+      "seconds": 3.279
+    }
+  ],
+  "public_roots_with_extra_ca_passed": true,
+  "index_records": 4445,
+  "offline_reuse_equal": true,
+  "head_sizes": {
+    "artifacts": [
+      {
+        "expected_bytes": 12592387,
+        "path": "dist/2025-09-18/cargo-1.90.0-aarch64-apple-darwin.tar.gz"
+      },
+      {
+        "expected_bytes": 8523620,
+        "path": "dist/2025-09-18/cargo-1.90.0-aarch64-apple-darwin.tar.xz"
+      },
+      {
+        "expected_bytes": 12948727,
+        "path": "dist/2025-09-18/cargo-1.90.0-x86_64-apple-darwin.tar.gz"
+      },
+      {
+        "expected_bytes": 9145256,
+        "path": "dist/2025-09-18/cargo-1.90.0-x86_64-apple-darwin.tar.xz"
+      },
+      {
+        "expected_bytes": 14011601,
+        "path": "dist/2025-09-18/cargo-1.90.0-x86_64-pc-windows-msvc.tar.gz"
+      },
+      {
+        "expected_bytes": 9749472,
+        "path": "dist/2025-09-18/cargo-1.90.0-x86_64-pc-windows-msvc.tar.xz"
+      },
+      {
+        "expected_bytes": 15110842,
+        "path": "dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.gz"
+      },
+      {
+        "expected_bytes": 10679724,
+        "path": "dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.xz"
+      },
+      {
+        "expected_bytes": 44872106,
+        "path": "dist/2025-09-18/rust-std-1.90.0-aarch64-apple-darwin.tar.gz"
+      },
+      {
+        "expected_bytes": 29010092,
+        "path": "dist/2025-09-18/rust-std-1.90.0-aarch64-apple-darwin.tar.xz"
+      },
+      {
+        "expected_bytes": 47252675,
+        "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-apple-darwin.tar.gz"
+      },
+      {
+        "expected_bytes": 30175192,
+        "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-apple-darwin.tar.xz"
+      },
+      {
+        "expected_bytes": 37589899,
+        "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-pc-windows-msvc.tar.gz"
+      },
+      {
+        "expected_bytes": 21696816,
+        "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-pc-windows-msvc.tar.xz"
+      },
+      {
+        "expected_bytes": 51017986,
+        "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.gz"
+      },
+      {
+        "expected_bytes": 29115852,
+        "path": "dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.xz"
+      },
+      {
+        "expected_bytes": 108857954,
+        "path": "dist/2025-09-18/rustc-1.90.0-aarch64-apple-darwin.tar.gz"
+      },
+      {
+        "expected_bytes": 63724992,
+        "path": "dist/2025-09-18/rustc-1.90.0-aarch64-apple-darwin.tar.xz"
+      },
+      {
+        "expected_bytes": 129773489,
+        "path": "dist/2025-09-18/rustc-1.90.0-x86_64-apple-darwin.tar.gz"
+      },
+      {
+        "expected_bytes": 76392588,
+        "path": "dist/2025-09-18/rustc-1.90.0-x86_64-apple-darwin.tar.xz"
+      },
+      {
+        "expected_bytes": 129684050,
+        "path": "dist/2025-09-18/rustc-1.90.0-x86_64-pc-windows-msvc.tar.gz"
+      },
+      {
+        "expected_bytes": 79909984,
+        "path": "dist/2025-09-18/rustc-1.90.0-x86_64-pc-windows-msvc.tar.xz"
+      },
+      {
+        "expected_bytes": 130697487,
+        "path": "dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.gz"
+      },
+      {
+        "expected_bytes": 82519204,
+        "path": "dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.xz"
+      },
+      {
+        "expected_bytes": 11408656,
+        "path": "rustup/archive/1.29.3/aarch64-apple-darwin/rustup-init"
+      },
+      {
+        "expected_bytes": 13041240,
+        "path": "rustup/archive/1.29.3/x86_64-apple-darwin/rustup-init"
+      },
+      {
+        "expected_bytes": 12839424,
+        "path": "rustup/archive/1.29.3/x86_64-pc-windows-msvc/rustup-init.exe"
+      },
+      {
+        "expected_bytes": 21347088,
+        "path": "rustup/archive/1.29.3/x86_64-unknown-linux-gnu/rustup-init"
+      }
+    ],
+    "complete": true,
+    "estimated": true,
+    "exceeds_budget": true,
+    "known_bytes": 1243688403,
+    "unknown_artifacts": 0
+  },
+  "payload_archives_downloaded": 0,
+  "fixture_private_key_removed": true,
+  "source_base": "41948e56a49872ee51703b88f5b14ce10fa559ba",
+  "source_committed_after_sweep": "f73890eec78b255dfe5862586bf72db4fb5c49b4",
+  "source_note": "Live sweep used tracked working-tree source based on source_base; committed without subsequent runtime edits. No clean package identity is inferred.",
+  "binary_sha256": "5175fb6ca2a6cebf2c7b9fea2df130be147693b5c53925d24bda7687b1c0d665",
+  "runtime_file_sha256": {
+    "src/cli.rs": "70f145e58fbb815373e0eac437e5ea5bb92419668632945af8e74d575c2d36b8",
+    "src/error.rs": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0",
+    "src/events.rs": "5cb4b1620d3a869c2ce1a357b75cc1899e2cd22fa060782dc13e4faf70bbc660",
+    "src/guide.md": "37f64892b84b511c12eeeca8705158237c5af3050d917317d2f3d0f6cd91b843",
+    "src/lib.rs": "c6537f583d73f86ca156efcb068334515778f9fa22579d442318bbcb5c7f338b",
+    "src/main.rs": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f",
+    "src/publish.rs": "e80e1fd862cebe30dfa1383fa327428384abe7216a9e52adf42a09327d053b1c",
+    "src/resume.rs": "4b5ea518c9f681d9d873291cb75755f8c0bf64da162651aedc502297c32c8f30",
+    "src/selection.rs": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd",
+    "src/signals.rs": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6",
+    "src/network.rs": "a461fc50e60a3281d0c6bb3cdc800dbe8212ea8e30ff616c7b02d8ed6c2e5443",
+    "src/releases.rs": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78",
+    "src/selection/collection.rs": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc",
+    "src/selection/retention.rs": "054678db1493a0af9426925409f9f7ef4bece2ebaff19ec9aa805735d4873d31",
+    "src/selection/rustup.rs": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11",
+    "src/selection/sync.rs": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3",
+    "src/selection/retention/catalog.rs": "189cd2b7d7df05e98c2ad49a3d06f0ac635815109ea5f5ae43f16181acd6d9a5",
+    "src/cli/network_options.rs": "209d2d35d1b9c47cad4d60dea229185dcbd7fa2b17b2a983cbe35fcb63bf6054"
+  }
+}
