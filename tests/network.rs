@@ -341,7 +341,7 @@ fn config() -> selection::Config {
 }
 #[test]
 fn inspect_connect_auth_trust_chain_head_and_refusals() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     let proxy = Proxy::new();
     let options = proxy.options();
     let ca = inspect_ca_file(options.extra_ca_file.as_ref().unwrap()).unwrap();
@@ -446,7 +446,7 @@ fn inspect_connect_auth_trust_chain_head_and_refusals() {
 }
 #[test]
 fn timeouts_cancel_and_no_secret_in_cli_results() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     let proxy = Proxy::new();
     proxy.state.lock().unwrap().delay_millis = 600;
     let mut options = proxy.options();
@@ -499,7 +499,7 @@ fn timeouts_cancel_and_no_secret_in_cli_results() {
 }
 #[test]
 fn estimates_sync_progress_cached_offline_and_explicit_publish() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     let proxy = Proxy::new();
     let source = rust_mirror::HttpsSource::with_network(&proxy.options()).unwrap();
     let t = tempfile::tempdir().unwrap();
@@ -609,7 +609,7 @@ fn estimates_sync_progress_cached_offline_and_explicit_publish() {
 
 #[test]
 fn environment_detection_is_explicit_sanitized_and_has_deterministic_precedence() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     if let Ok(mode) = std::env::var("ROM_NETWORK_ENV_CASE") {
         if mode == "valid" {
             let env = detect_environment().unwrap();
@@ -652,21 +652,24 @@ fn environment_detection_is_explicit_sanitized_and_has_deterministic_precedence(
                     "socks5://bad.example:1080"
                 },
             )
-            .env("https_proxy", "http://second.example:8081")
             .env("ALL_PROXY", "http://third.example:8082")
-            .env("NO_PROXY", ".rust-lang.org:443")
-            .env("no_proxy", "wrong.example");
+            .env("NO_PROXY", ".rust-lang.org:443");
+        if !cfg!(windows) {
+            cmd.env("https_proxy", "http://second.example:8081")
+                .env("no_proxy", "wrong.example");
+        }
         let output = cmd.output().unwrap();
         assert!(
             output.status.success(),
-            "{}",
+            "{}\n{}",
+            String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );
     }
 }
 #[test]
 fn unknown_sizes_overflow_budget_and_network_settings_do_not_change_resume_recipe() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     struct Head {
         inner: common::Fixture,
         value: Option<u64>,
@@ -736,7 +739,7 @@ fn unknown_sizes_overflow_budget_and_network_settings_do_not_change_resume_recip
 
 #[test]
 fn literal_exclusions_and_refresh_fallback_are_bounded() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     assert!(!is_excluded("evil.127.0.0.1", 443, &["127.0.0.1".into()]).unwrap());
     assert!(is_excluded("[::1]", 443, &["::1".into()]).unwrap());
     assert!(is_excluded("[::1]", 443, &["[::1]:443".into()]).unwrap());
@@ -812,7 +815,7 @@ fn literal_exclusions_and_refresh_fallback_are_bounded() {
 
 #[test]
 fn normal_transfers_send_the_same_programmatic_proxy_credentials_as_diagnostics() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|p| p.into_inner());
     let proxy = Proxy::new();
     proxy.state.lock().unwrap().expected_token = Some("YWxpY2U6cHctMTIz".into());
     let mut options = proxy.options();

@@ -57,7 +57,8 @@ No proxy or CA option can authorize a different upstream origin or a redirect.
 in serializable output. Selection precedence is `HTTPS_PROXY`, `https_proxy`,
 `ALL_PROXY`, `all_proxy`; exclusions prefer `NO_PROXY` over `no_proxy`. Empty values
 are ignored, and a malformed selected value is refused rather than silently skipped.
-The API reads environment only when explicitly called. `Environment` mode is an
+On Windows, case variants name the same OS variable rather than independent
+values. The API reads environment only when explicitly called. `Environment` mode is an
 explicit opt-in to resolve those values; direct/manual modes never discover them.
 
 Extra CA PEM certificates are **added to the existing Mozilla/webpki roots**,
