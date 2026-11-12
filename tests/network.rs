@@ -477,6 +477,22 @@ fn timeouts_cancel_and_no_secret_in_cli_results() {
             ..
         }
     )));
+    let source = rust_mirror::HttpsSource::with_network(&proxy.options()).unwrap();
+    let token = CancelToken::new();
+    let stop = token.clone();
+    let seen = Arc::new(Seen::default());
+    let canceller = thread::spawn(move || {
+        thread::sleep(Duration::from_millis(200));
+        stop.cancel();
+    });
+    let head = Control::new(seen, token).run("head", || {
+        source.content_length("https://static.rust-lang.org/dist/channel-rust-1.90.0.toml")
+    });
+    canceller.join().unwrap();
+    assert_eq!(
+        rust_mirror::error_kind(head.unwrap_err().as_ref()),
+        ErrorKind::Cancelled
+    );
     let token = CancelToken::new();
     token.cancel();
     let e = check_network_with_control(&options, &Control::new(Arc::new(Seen::default()), token))

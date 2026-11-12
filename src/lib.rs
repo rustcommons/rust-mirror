@@ -100,7 +100,9 @@ impl Source for HttpsSource {
                 .ok_or("source must be the official HTTPS origin")?,
         )?;
         events::artifact(url.strip_prefix(ORIGIN).unwrap(), "head", 0, None)?;
-        let response = match self.0.head(url).set("Accept-Encoding", "identity").call() {
+        let response = self.0.head(url).set("Accept-Encoding", "identity").call();
+        events::check()?;
+        let response = match response {
             Ok(r) => r,
             Err(ureq::Error::Status(405 | 501, _)) => return Ok(None),
             Err(e) => return Err(network::transport_error(e)),
