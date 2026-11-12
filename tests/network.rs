@@ -18,6 +18,7 @@ use std::{
     thread,
     time::Duration,
 };
+static SERIAL: Mutex<()> = Mutex::new(());
 use ureq::rustls::{
     self,
     pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer},
@@ -27,6 +28,8 @@ struct State {
     requests: Vec<(String, String)>,
     head: Option<String>,
     denied: bool,
+    legacy_auth_header: bool,
+    expected_token: Option<String>,
     delay_millis: u64,
     remote: BTreeMap<String, Vec<u8>>,
 }
@@ -141,9 +144,7 @@ impl Proxy {
                 let config = config.clone();
                 let state = shared.clone();
                 threads.push(thread::spawn(move || {
-                    if let Err(e) = serve(socket, config, state) {
-                        eprintln!("fixture IO category {:?}", e.kind());
-                    }
+                    let _ = serve(socket, config, state);
                 }));
             }
             for t in threads {
@@ -204,9 +205,21 @@ fn serve(
     if !first.starts_with("CONNECT ") {
         return Ok(());
     }
-    let authorized = text.lines().any(|line| {
-        line.eq_ignore_ascii_case("Proxy-Authorization: Basic cHJveHktdXNlcjpwcm94eS1zZWNyZXQ=")
-    });
+    let expected = state
+        .lock()
+        .unwrap()
+        .expected_token
+        .clone()
+        .unwrap_or_else(|| "cHJveHktdXNlcjpwcm94eS1zZWNyZXQ=".into());
+    let authorized = text
+        .lines()
+        .filter_map(|line| line.split_once(':'))
+        .filter(|(name, _)| name.eq_ignore_ascii_case("Proxy-Authorization"))
+        .any(|(_, value)| {
+            value.trim().split_once(' ').is_some_and(|(scheme, token)| {
+                scheme.eq_ignore_ascii_case("Basic") && token == expected
+            })
+        });
     let (deny, delay) = {
         let mut s = state.lock().unwrap();
         s.requests.push((
@@ -219,6 +232,10 @@ fn serve(
         thread::sleep(Duration::from_millis(delay));
     }
     if deny || !authorized {
+        if state.lock().unwrap().legacy_auth_header {
+            socket.write_all(b"HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm=\"Corp\xff\"\r\nContent-Length: 0\r\n\r\n")?;
+            return Ok(());
+        }
         socket.write_all(
             b"HTTP/1.1 407 Proxy Authentication Required\r\nContent-Length: 0\r\n\r\n",
         )?;
@@ -324,6 +341,7 @@ fn config() -> selection::Config {
 }
 #[test]
 fn inspect_connect_auth_trust_chain_head_and_refusals() {
+    let _serial = SERIAL.lock().unwrap();
     let proxy = Proxy::new();
     let options = proxy.options();
     let ca = inspect_ca_file(options.extra_ca_file.as_ref().unwrap()).unwrap();
@@ -365,6 +383,21 @@ fn inspect_connect_auth_trust_chain_head_and_refusals() {
     assert_eq!(rust_mirror::error_kind(e.as_ref()), ErrorKind::Auth);
     assert!(!format!("{e:?}").contains("wrong-password"));
     assert!(!format!("{options:?}").contains("proxy-secret"));
+    {
+        let mut s = proxy.state.lock().unwrap();
+        s.denied = true;
+        s.legacy_auth_header = true;
+    }
+    let legacy = check_network_with_control(&options, &control).unwrap();
+    assert!(legacy
+        .steps
+        .iter()
+        .any(|s| s.error_kind == Some(ErrorKind::Auth)));
+    {
+        let mut s = proxy.state.lock().unwrap();
+        s.denied = false;
+        s.legacy_auth_header = false;
+    }
     let source = rust_mirror::HttpsSource::with_network(&options).unwrap();
     let url = "https://static.rust-lang.org/dist/channel-rust-1.90.0.toml";
     assert!(source.content_length(url).unwrap().unwrap() > 100);
@@ -413,6 +446,7 @@ fn inspect_connect_auth_trust_chain_head_and_refusals() {
 }
 #[test]
 fn timeouts_cancel_and_no_secret_in_cli_results() {
+    let _serial = SERIAL.lock().unwrap();
     let proxy = Proxy::new();
     proxy.state.lock().unwrap().delay_millis = 600;
     let mut options = proxy.options();
@@ -465,6 +499,7 @@ fn timeouts_cancel_and_no_secret_in_cli_results() {
 }
 #[test]
 fn estimates_sync_progress_cached_offline_and_explicit_publish() {
+    let _serial = SERIAL.lock().unwrap();
     let proxy = Proxy::new();
     let source = rust_mirror::HttpsSource::with_network(&proxy.options()).unwrap();
     let t = tempfile::tempdir().unwrap();
@@ -574,6 +609,7 @@ fn estimates_sync_progress_cached_offline_and_explicit_publish() {
 
 #[test]
 fn environment_detection_is_explicit_sanitized_and_has_deterministic_precedence() {
+    let _serial = SERIAL.lock().unwrap();
     if let Ok(mode) = std::env::var("ROM_NETWORK_ENV_CASE") {
         if mode == "valid" {
             let env = detect_environment().unwrap();
@@ -630,6 +666,7 @@ fn environment_detection_is_explicit_sanitized_and_has_deterministic_precedence(
 }
 #[test]
 fn unknown_sizes_overflow_budget_and_network_settings_do_not_change_resume_recipe() {
+    let _serial = SERIAL.lock().unwrap();
     struct Head {
         inner: common::Fixture,
         value: Option<u64>,
@@ -699,6 +736,7 @@ fn unknown_sizes_overflow_budget_and_network_settings_do_not_change_resume_recip
 
 #[test]
 fn literal_exclusions_and_refresh_fallback_are_bounded() {
+    let _serial = SERIAL.lock().unwrap();
     assert!(!is_excluded("evil.127.0.0.1", 443, &["127.0.0.1".into()]).unwrap());
     assert!(is_excluded("[::1]", 443, &["::1".into()]).unwrap());
     assert!(is_excluded("[::1]", 443, &["[::1]:443".into()]).unwrap());
@@ -770,4 +808,61 @@ fn literal_exclusions_and_refresh_fallback_are_bounded() {
     )
     .unwrap_err();
     assert_eq!(rust_mirror::error_kind(e.as_ref()), ErrorKind::Network);
+}
+
+#[test]
+fn normal_transfers_send_the_same_programmatic_proxy_credentials_as_diagnostics() {
+    let _serial = SERIAL.lock().unwrap();
+    let proxy = Proxy::new();
+    proxy.state.lock().unwrap().expected_token = Some("YWxpY2U6cHctMTIz".into());
+    let mut options = proxy.options();
+    options.proxy_credentials = Some(ProxyCredentials {
+        username: "alice".into(),
+        password: "pw-123".into(),
+    });
+    let source = rust_mirror::HttpsSource::with_network(&options).unwrap();
+    let url = "https://static.rust-lang.org/dist/2025-09-18/cargo.tar.gz";
+    let mut bytes = vec![];
+    source.fetch(url, &mut bytes, 1000).unwrap();
+    assert_eq!(bytes, b"test artifact");
+    assert_eq!(source.content_length(url).unwrap(), Some(13));
+    let mut ranged = vec![];
+    assert_eq!(
+        source.fetch_from(url, &mut ranged, 1, 1000).unwrap(),
+        rust_mirror::Transfer::Restart
+    );
+    assert!(ranged.is_empty());
+    selection::resolve(&config(), "test", &source).unwrap();
+    let report = check_network_with_control(&options, &Control::default()).unwrap();
+    assert!(report.ok, "{report:?}");
+    let mut child = Command::new(env!("CARGO_BIN_EXE_rust-mirror"))
+        .args([
+            "--events",
+            "jsonl",
+            "check-network",
+            "--proxy",
+            &format!("http://{}", proxy.addr),
+            "--proxy-username-env",
+            "ROM_ALICE_USER",
+            "--proxy-password-stdin",
+            "--extra-ca-file",
+        ])
+        .arg(proxy.dir.path().join("ca.pem"))
+        .env("ROM_ALICE_USER", "alice")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    child.stdin.take().unwrap().write_all(b"pw-123\n").unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(!String::from_utf8_lossy(&output.stdout).contains("pw-123"));
+    let requests = &proxy.state.lock().unwrap().requests;
+    assert!(requests.iter().any(|(m, _)| m == "GET"));
+    assert!(requests.iter().any(|(m, _)| m == "HEAD"));
 }

@@ -647,7 +647,6 @@ pub(crate) fn agent_with_base_ca(
 }
 /// Sanitize transport failures at the credential-bearing transport boundary.
 pub(crate) fn transport_error(e: ureq::Error) -> Box<dyn std::error::Error + Send + Sync> {
-    eprintln!("transport category {:?}", e.kind());
     let kind = match &e {
         ureq::Error::Status(401 | 403 | 407, _) => ErrorKind::Auth,
         ureq::Error::Transport(t) if t.kind() == ureq::ErrorKind::ProxyUnauthorized => {
@@ -845,17 +844,25 @@ fn check(options: &NetworkOptions) -> Result<NetworkCheckReport> {
                 }
                 header.push(b[0]);
             }
-            let line = std::str::from_utf8(&header)
-                .map_err(|_| Error::new(ErrorKind::Network, "invalid proxy response"))?
-                .lines()
-                .next()
-                .unwrap_or("");
-            let status = line
-                .split_whitespace()
-                .nth(1)
-                .and_then(|v| v.parse::<u16>().ok())
-                .unwrap_or(0);
-            if status == 407 {
+            let end = header
+                .windows(2)
+                .position(|v| v == b"\r\n")
+                .ok_or_else(|| Error::new(ErrorKind::Network, "invalid proxy status line"))?;
+            let line = std::str::from_utf8(&header[..end])
+                .map_err(|_| Error::new(ErrorKind::Network, "invalid proxy status line"))?;
+            let mut words = line.split_ascii_whitespace();
+            let protocol = words.next().unwrap_or("");
+            let code = words.next().unwrap_or("");
+            if !["HTTP/1.0", "HTTP/1.1"].contains(&protocol)
+                || code.len() != 3
+                || !code.bytes().all(|b| b.is_ascii_digit())
+            {
+                return Err(Error::new(ErrorKind::Network, "invalid proxy status line").into());
+            }
+            let status = code
+                .parse::<u16>()
+                .map_err(|_| Error::new(ErrorKind::Network, "invalid proxy status code"))?;
+            if [401, 403, 407].contains(&status) {
                 return Err(Error::new(ErrorKind::Auth, "proxy authentication refused").into());
             }
             if status != 200 {
