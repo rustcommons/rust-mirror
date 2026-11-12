@@ -1,0 +1,42 @@
+{
+  "source": "9cdf22f58ab61e894bebf07ffc2bdaa8e3b5de45",
+  "archive_sha256": "6674adce8e30a48b4586c972fa0ef628b69da9f21fc023f2be892435abcd2358",
+  "non_yanked": true,
+  "api_index_agree": true,
+  "source_files_verified": [
+    "CHANGELOG.md",
+    "Cargo.lock",
+    "Cargo.toml.orig",
+    "LICENSE",
+    "README.md",
+    "examples/mirror.toml",
+    "examples/multi-version.toml",
+    "examples/retention.toml",
+    "examples/sync-demo.toml",
+    "src/cli.rs",
+    "src/error.rs",
+    "src/events.rs",
+    "src/guide.md",
+    "src/lib.rs",
+    "src/main.rs",
+    "src/publish.rs",
+    "src/resume.rs",
+    "src/selection/collection.rs",
+    "src/selection/retention/catalog.rs",
+    "src/selection/retention.rs",
+    "src/selection/rustup.rs",
+    "src/selection/sync.rs",
+    "src/selection.rs",
+    "src/signals.rs"
+  ],
+  "linux_archive_differences": [],
+  "vcs": {
+    "git": {
+      "sha1": "9cdf22f58ab61e894bebf07ffc2bdaa8e3b5de45"
+    },
+    "path_in_vcs": ""
+  },
+  "created_at": "2026-11-12T02:44:16.945073Z",
+  "uncompressed_tar_equal": false,
+  "linux_archive_sha256": "d7da9df9d0f824bcf5703a551ca5c783a2b04f2c751706d6b934cff934823653"
+}

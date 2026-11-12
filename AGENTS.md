@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0 and documentation-only 0.1.1 are published; see
-docs/evals/2026-11-11-docs-0.1.1.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature release 0.2.0 are published;
+see docs/evals/2026-11-12-publication-0.2.0.md.
 Describe only demonstrated functionality
 as implemented; broader mirroring and the GUI remain planned.
 
@@ -147,7 +147,7 @@ resource/platform limits in `docs/SYNC.md`; no new dependencies without approval
 
 ## Retention and pruning
 
-The owner authorized local retention/pruning for the unreleased 0.2.0 feature on
+The owner authorized local retention/pruning for the published 0.2.0 feature on
 2026-11-11. Follow [the retention contract](docs/RETENTION.md) and stable trace.
 Keep policies explicit: pinned releases, latest stable count, nightly calendar days
 and preceding rollback generations. Offline clients cannot discover protection for us.

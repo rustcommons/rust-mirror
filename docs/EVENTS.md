@@ -1,9 +1,11 @@
 # Events protocol 1
 
 This is the owner-approved CLI/GUI contract for rust-mirror 0.2.0, approved
-2026-11-11. **Implemented in the 0.2.0 release candidate; 0.1.x does not implement it.**
-The GUI launches the rust-mirror binary and consumes this protocol. It need not
-link the backend library, parse human diagnostics or reproduce mirroring logic.
+2026-11-11. **Published in 0.2.0; 0.1.x does not implement it.**
+Consumers may launch the rust-mirror binary or embed the public library in a
+worker child process of their own executable, using the shared event serializer.
+Both routes use this protocol without parsing human diagnostics or reproducing
+mirroring logic.
 
 ## Invocation and discovery
 
