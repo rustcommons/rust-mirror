@@ -6,6 +6,7 @@ fn config(toolchain: &str) -> Config {
     Config {
         schema: 1,
         retention: None,
+        network: None,
         rustup_version: "1.28.2".into(),
         max_download_bytes: 10_000_000,
         selections: vec![Selection {

@@ -16,6 +16,11 @@ Nexus pruning and in-generation compaction remain gaps. The owner authorized 0.2
 qualification, including protocol/controls/typed errors and publish preflight.
 This authorization does not waive any permanent release gate.
 
+0.3.0 corporate networking is being prepared under the owner-approved 2026-11-12
+scope. It is not authorized for publication in this thread; the coordinator publishes
+from the owner's machine after separate confirmation. Do not create its release tag
+or claim registry/docs.rs availability during preparation.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and

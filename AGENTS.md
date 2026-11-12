@@ -198,9 +198,18 @@ and protocol 1. Keep upstream origins fixed, redirects/proxy discovery disabled 
 default, extra CAs additive and all TLS checks enabled. Keep secrets out of persisted
 config, argv, debug/errors/events; support programmatic worker credentials. Publishing
 uses its independent direct default unless separately configured. No real Nexus
-changes are authorized. New dependencies require owner approval; record any needed
-approval before adding them. Prepare/qualify 0.3.0 without publishing or creating a
+changes are authorized. The owner approved direct `webpki-roots` and `x509-parser` 0.18 with default
+features disabled on 2026-11-12, for additive roots and display-only certificate
+metadata. Rustls retains all trust decisions. Other new dependencies require
+owner approval before being added. Prepare/qualify 0.3.0 without publishing or creating a
 release tag: publication goes through the coordinator after owner confirmation.
+
+Network fixture tests require preinstalled OpenSSL (Git's bundled executable on
+Windows) only to generate ephemeral CA/server keys. Runtime uses Rust libraries,
+never an external OpenSSL command. Keep fixture keys out of logs/artifacts and
+remove their temporary directories. Test proxy auth/exclusions, additive roots,
+chain diagnostics, socket deadlines, cancellation/heartbeats, HEAD estimates and
+cache corruption/locking. Network config never changes frozen payload identity.
 
 ## User-facing documentation
 

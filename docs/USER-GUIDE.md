@@ -649,3 +649,14 @@ possibly a process kill. Cancellation is cooperative, not rollback. Resume initi
 fetch/sync state explicitly; use a new output for interrupted assembly/finishing,
 and inspect partial publication/pruning before retry. Use `publish --preflight`
 for a no-write check; actual publication repeats it.
+
+## Corporate network setup (0.3.0)
+
+Start with the [network guide](NETWORK.md). Explicitly choose direct, environment
+or manual proxy settings; run `check-network` before a large sync. If TLS inspection
+is present, inspect the received issuer and choose the company-approved PEM file;
+adding a CA remains your explicit trust decision. Credentials go only through
+programmatic worker memory or named secret inputs, never saved settings/argv.
+Plan can estimate sizes with HEAD; unknown lengths stay unknown and hashes still
+verify downloads. Use `releases --cache DIRECTORY --refresh`, then `--offline` for
+cached selectors, and check the reported cache age before choosing a release.

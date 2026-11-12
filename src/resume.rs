@@ -36,10 +36,12 @@ pub(crate) fn http_range(
     if offset > 0 {
         request = request.set("Range", &format!("bytes={offset}-"));
     }
-    let response = match request.call() {
+    let response = request.call();
+    crate::events::check()?;
+    let response = match response {
         Ok(r) => r,
         Err(ureq::Error::Status(416, _)) if offset > 0 => return Ok(Transfer::Restart),
-        Err(e) => return Err(e.into()),
+        Err(e) => return Err(crate::network::transport_error(e)),
     };
     if offset > 0 && response.status() == 200 {
         return Ok(Transfer::Restart);
@@ -98,7 +100,7 @@ pub(crate) fn http_range(
         offset,
         total,
     )?;
-    let mut reader = response.into_reader();
+    let mut reader = crate::network::NetworkReader(response.into_reader());
     let mut bytes = 0;
     let mut buffer = [0; 64 * 1024];
     loop {

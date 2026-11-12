@@ -102,6 +102,21 @@ pub enum EventKind {
         /// Pending cooperative stop.
         cancel_requested: bool,
     },
+    /// Estimated aggregate payload coverage; not a verified completion signal.
+    TransferSummary {
+        /// Logical payload coverage including resumed/reused prefixes.
+        completed_bytes: u64,
+        /// Newly received bytes in this invocation, excluding local reuse/copy/hash.
+        transferred_bytes: u64,
+        /// Advertised total, absent if any artifact is unknown.
+        expected_bytes: Option<u64>,
+        /// Observed network rate, absent before any bytes/time are available.
+        bytes_per_second: Option<f64>,
+        /// Estimated seconds remaining; absent without known total/rate.
+        eta_seconds: Option<f64>,
+        /// Always true; byte/hash verification remains separate.
+        estimated: bool,
+    },
     /// Last CLI event; a killed process or broken output may lack this event.
     Result {
         /// Whether the operation completed successfully.
@@ -163,13 +178,49 @@ pub(crate) fn json_value(value: &toml::Value) -> String {
             "[{}]",
             v.iter().map(json_value).collect::<Vec<_>>().join(",")
         ),
-        toml::Value::Table(v) => format!(
-            "{{{}}}",
-            v.iter()
-                .map(|(k, v)| format!("{}:{}", quote(k), json_value(v)))
-                .collect::<Vec<_>>()
-                .join(",")
-        ),
+        toml::Value::Table(v) => format!("{{{}}}", {
+            let mut fields = v
+                .iter()
+                .map(|(k, x)| {
+                    let json = if k == "artifacts"
+                        && v.get("estimated").and_then(toml::Value::as_bool) == Some(true)
+                    {
+                        if let Some(items) = x.as_array() {
+                            format!(
+                                "[{}]",
+                                items
+                                    .iter()
+                                    .map(|item| {
+                                        let encoded = json_value(item);
+                                        if item.get("expected_bytes").is_none() {
+                                            format!(
+                                                "{},\"expected_bytes\":null}}",
+                                                encoded.trim_end_matches('}')
+                                            )
+                                        } else {
+                                            encoded
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join(",")
+                            )
+                        } else {
+                            json_value(x)
+                        }
+                    } else {
+                        json_value(x)
+                    };
+                    format!("{}:{}", quote(k), json)
+                })
+                .collect::<Vec<_>>();
+            if v.contains_key("certificates")
+                && v.contains_key("status")
+                && !v.contains_key("error_kind")
+            {
+                fields.push("\"error_kind\":null".into());
+            }
+            fields.join(",")
+        }),
     }
 }
 impl<W: Write + Send> Observer for JsonLines<W> {
@@ -180,6 +231,9 @@ impl<W: Write + Send> Observer for JsonLines<W> {
             .as_table_mut()
             .ok_or_else(|| io::Error::other("event must be object"))?;
         let nullable: &[&str] = match event.kind {
+            EventKind::TransferSummary { .. } => {
+                &["expected_bytes", "bytes_per_second", "eta_seconds"]
+            }
             EventKind::Stage { .. } => &["total"],
             EventKind::Artifact { .. } => &["expected_bytes"],
             EventKind::Hashing { .. } => &["total"],
@@ -395,8 +449,27 @@ pub(crate) fn stage(name: &str) -> Result<()> {
     }
     Ok(())
 }
+thread_local! {static SIZE_HINTS:RefCell<std::collections::BTreeMap<String,u64>>=const{RefCell::new(std::collections::BTreeMap::new())};}
+pub(crate) struct SizeHints(std::collections::BTreeMap<String, u64>);
+impl SizeHints {
+    pub(crate) fn new(hints: std::collections::BTreeMap<String, u64>) -> Self {
+        Self(SIZE_HINTS.with(|s| s.replace(hints)))
+    }
+}
+impl Drop for SizeHints {
+    fn drop(&mut self) {
+        SIZE_HINTS.with(|s| *s.borrow_mut() = std::mem::take(&mut self.0));
+    }
+}
 pub(crate) fn artifact(path: &str, action: &str, offset: u64, total: Option<u64>) -> Result<()> {
     check()?;
+    let total = total.or_else(|| {
+        if ["download", "resume", "restart"].contains(&action) {
+            SIZE_HINTS.with(|s| s.borrow().get(path).copied())
+        } else {
+            None
+        }
+    });
     if let Some(c) = current() {
         {
             let mut s = c.0.state.lock().unwrap_or_else(|p| p.into_inner());

@@ -593,3 +593,56 @@ policies retain the [user-guide limits](USER-GUIDE.md#limits-demos-and-further-r
 Scheduling, Nexus pruning, in-generation compaction, Cargo registry/index mirroring and rust-mirror-gui are future
 work. See the [release notes](releases/v0.1.0.md) for actual publication state and
 [release checklist](RELEASING.md) for the remaining authorized-release process.
+
+## Corporate network options (0.3.0)
+
+See the [network guide](NETWORK.md) for routing, precedence, credentials, TLS trust,
+cache format/limits and library API details. No settings are discovered implicitly.
+All upstream commands (`list`, `plan`, `fetch`, `sync`, `rustup`, `fetch-toolchain`)
+accept the global options below; they may appear before or after the command.
+`check-network` and `releases` use them too. Publish networking requires its own
+explicit flags or `--network-config`; upstream settings are never inherited.
+
+| Option | Meaning and default |
+| --- | --- |
+| `--proxy URL` | Explicit credential-free `http://host:port` CONNECT proxy; default direct |
+| `--proxy-from-env` | Opt in to HTTPS_PROXY/https_proxy/ALL_PROXY/all_proxy precedence and NO_PROXY/no_proxy |
+| `--no-proxy LIST` | Comma-separated exact hosts/IPs, domain suffixes, optional ports or `*`; default none |
+| `--proxy-username-env NAME` | Explicit username variable name; pair with a password source |
+| `--proxy-password-env NAME` | Explicit password variable name; never pass the value in argv |
+| `--proxy-password-stdin` | Read one bounded UTF-8 password line before optional cancellation input; conflicts with a password variable |
+| `--extra-ca-file PEM` | Add PEM certificates to Mozilla roots; default no extra CA, never disable TLS |
+| `--connect-timeout SECONDS` | Positive socket-connect seconds, default 180, maximum 86400; OS DNS is separate |
+| `--read-timeout SECONDS` | Positive per-read/write seconds, default 180, maximum 86400; not an overall deadline |
+| `--network-config FILE` | Load `[network]` from a validated mirror TOML; CLI settings override it |
+| `--estimate-sizes` | Plan/sync only; opt-in HEAD estimates, default off; no payload download for measurement |
+
+Plan with estimates returns `plan` plus `sizes`; without it the existing Plan output
+is unchanged. Estimates are not saved into frozen plans or used as hash evidence.
+Sync estimates emit protocol-1 `transfer_summary`, with nullable totals/rate/ETA;
+resume still requires the same frozen payload recipe and previous generation.
+`Config.network` is not part of that recipe, allowing explicit route/trust changes.
+
+### check-network
+
+`rust-mirror [--events jsonl] check-network [NETWORK_OPTIONS]` reads connection
+settings and optional CA/secret inputs, probes DNS/connect/proxy auth/TLS and fetches
+a small official checksum file. No local mirror or remote publication is written.
+Returns ordered passed/failed/skipped steps, typed failure kinds and actually
+presented certificate metadata when available. No CA is automatically trusted.
+On failure exit 1 with the diagnostic report in `error.report`; cancellation exits
+130. Correct settings and repeat explicitly; no automatic retries occur.
+
+### releases
+
+`rust-mirror [--events jsonl] releases --cache DIRECTORY [--refresh | --offline]`
+loads the bounded official root manifest index and lists stable versions/dates and
+beta/nightly selectors. `--refresh` requires network success; `--offline` reads an
+existing valid cache with zero source requests. Default attempts refresh and may
+fall back to valid cached bytes with a typed warning. Reports include cache age,
+source and original-index SHA-256. Index entries do not prove component availability.
+Cache directories must be new or contain only managed regular cache/lock files;
+corrupt, linked, unrelated or competing-writer state is refused. Cache writes use a
+locked atomic replacement; inspect/repair invalid state explicitly before retrying.
+No mirror, payload archive or remote server is written. Cancellation preserves any
+previous complete cache. See the [cache contract](NETWORK.md#release-discovery-and-cache).

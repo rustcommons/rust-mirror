@@ -51,6 +51,7 @@ fn make(root: &Path, name: &str, release: &str, date: &str, selector: &str) -> P
         rustup_version: "1.28.2".into(),
         max_download_bytes: BUDGET,
         retention: None,
+        network: None,
         selections: vec![Selection {
             name: name.into(),
             toolchain: selector.into(),

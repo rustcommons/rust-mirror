@@ -93,16 +93,100 @@ impl<S: Source> Source for MetadataSource<'_, S> {
         self.inner.fetch(url, out, limit)
     }
 }
+thread_local! {static ESTIMATE_SIZES:std::cell::Cell<bool>=const {std::cell::Cell::new(false)};}
+/// Optional sync execution controls; estimates never change frozen plan identities.
+#[derive(Clone, Debug, Default)]
+pub struct RunOptions {
+    /// Resume exactly the initialized frozen config/previous cohort.
+    pub resume: bool,
+    /// Explicitly discard old managed output/progress; mutually exclusive with resume.
+    pub force: bool,
+    /// Opt in to HEAD estimates and aggregate progress events.
+    pub estimate_sizes: bool,
+}
+/// Run sync with explicit estimate/resume/force options and ordinary control semantics.
+pub fn run_with_options(
+    config: &Config,
+    previous: Option<&Path>,
+    output: &Path,
+    options: &RunOptions,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<SyncResult> {
+    if options.resume && options.force {
+        return Err(crate::Error::new(
+            crate::ErrorKind::Invalid,
+            "resume and force are mutually exclusive",
+        )
+        .into());
+    }
+    struct Restore(bool);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            ESTIMATE_SIZES.with(|v| v.set(self.0));
+        }
+    }
+    let _restore = Restore(ESTIMATE_SIZES.with(|v| v.replace(options.estimate_sizes)));
+    control.run("sync", || {
+        if options.force {
+            run_forced(config, previous, output, source)
+        } else {
+            run(config, previous, output, options.resume, source)
+        }
+    })
+}
+struct Progress {
+    lengths: BTreeMap<String, Option<u64>>,
+    coverage: BTreeMap<String, u64>,
+    transferred: u64,
+    start: std::time::Instant,
+}
+impl Progress {
+    fn emit(&self) -> Result<()> {
+        let total = self
+            .lengths
+            .values()
+            .try_fold(0u64, |sum, n| sum.checked_add((*n)?));
+        let completed = self
+            .coverage
+            .values()
+            .try_fold(0u64, |sum, n| sum.checked_add(*n))
+            .ok_or_else(|| crate::Error::new(crate::ErrorKind::Budget, "progress sum overflow"))?;
+        let elapsed = self.start.elapsed().as_secs_f64();
+        let rate = if self.transferred > 0 && elapsed > 0.0 {
+            Some(self.transferred as f64 / elapsed)
+        } else {
+            None
+        };
+        if let Some(control) = crate::events::current() {
+            control.emit(crate::events::EventKind::TransferSummary {
+                completed_bytes: completed,
+                transferred_bytes: self.transferred,
+                expected_bytes: total,
+                bytes_per_second: rate,
+                eta_seconds: total
+                    .zip(rate)
+                    .map(|(total, rate)| total.saturating_sub(completed) as f64 / rate),
+                estimated: true,
+            })?;
+        }
+        Ok(())
+    }
+}
 struct PayloadSource<'a, S> {
     inner: &'a S,
     known: &'a BTreeMap<String, PathBuf>,
     expected: &'a BTreeMap<String, String>,
     counts: &'a Mutex<Counts>,
+    progress: Option<&'a Mutex<Progress>>,
 }
 struct Counter<'a> {
     out: &'a mut dyn Write,
     counts: &'a Mutex<Counts>,
     local: bool,
+    progress: Option<&'a Mutex<Progress>>,
+    path: String,
+    position: u64,
 }
 impl Write for Counter<'_> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
@@ -112,6 +196,17 @@ impl Write for Counter<'_> {
             c.local += n as u64;
         } else {
             c.upstream += n as u64;
+        }
+        drop(c);
+        self.position += n as u64;
+        if let Some(progress) = self.progress {
+            let mut p = progress.lock().unwrap();
+            let old = p.coverage.entry(self.path.clone()).or_default();
+            *old = (*old).max(self.position);
+            if !self.local {
+                p.transferred += n as u64;
+            }
+            p.emit().map_err(io::Error::other)?;
         }
         Ok(n)
     }
@@ -168,15 +263,30 @@ impl<S: Source> Source for PayloadSource<'_, S> {
                 out,
                 counts: self.counts,
                 local: true,
+                progress: self.progress,
+                path: url.into(),
+                position: offset,
             };
             crate::copy_bounded(file, &mut writer, limit)?;
             Ok(Transfer::Complete)
         } else {
             self.counts.lock().unwrap().attempts += 1;
+            if let Some(progress) = self.progress {
+                let p = progress.lock().unwrap();
+                crate::events::artifact(
+                    url.strip_prefix(crate::ORIGIN).unwrap_or("artifact"),
+                    if offset > 0 { "resume" } else { "download" },
+                    offset,
+                    p.lengths.get(url).copied().flatten(),
+                )?;
+            }
             let mut writer = Counter {
                 out,
                 counts: self.counts,
                 local: false,
+                progress: self.progress,
+                path: url.into(),
+                position: offset,
             };
             self.inner.fetch_from(url, &mut writer, offset, limit)
         }
@@ -501,7 +611,9 @@ fn run_inner(
     {
         return Err("previous and configured Rustup bootstrap versions differ".into());
     }
-    let config_hash = sha256(toml::to_string_pretty(config)?.as_bytes());
+    let mut frozen_config = config.clone();
+    frozen_config.network = None; // Routing/trust options never change the frozen payload recipe.
+    let config_hash = sha256(toml::to_string_pretty(&frozen_config)?.as_bytes());
     let previous_hash = old.as_ref().map(|i| i.identity.clone());
     let root = output.join(".sync");
     let plan_root = root.join("plans");
@@ -637,6 +749,46 @@ fn run_inner(
                 .map(|a| (format!("{}{}", crate::ORIGIN, a.path), a.sha256.clone()))
         })
         .collect();
+    let progress = if ESTIMATE_SIZES.with(|v| v.get()) {
+        stage("estimate payload sizes (HEAD)")?;
+        let mut lengths = BTreeMap::new();
+        let mut sum = 0u64;
+        for url in expected.keys() {
+            crate::events::check()?;
+            let n = source.content_length(url)?;
+            if let Some(n) = n {
+                sum = sum.checked_add(n).ok_or_else(|| {
+                    crate::Error::new(crate::ErrorKind::Budget, "estimate sum overflow")
+                })?;
+            }
+            lengths.insert(url.clone(), n);
+        }
+        let progress = Mutex::new(Progress {
+            lengths,
+            coverage: BTreeMap::new(),
+            transferred: 0,
+            start: std::time::Instant::now(),
+        });
+        progress.lock().unwrap().emit()?;
+        Some(progress)
+    } else {
+        None
+    };
+    let _hints = crate::events::SizeHints::new(
+        progress
+            .as_ref()
+            .map(|p| {
+                p.lock()
+                    .unwrap()
+                    .lengths
+                    .iter()
+                    .filter_map(|(url, size)| {
+                        size.map(|n| (url.strip_prefix(crate::ORIGIN).unwrap_or(url).to_owned(), n))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+    );
     let mut known: BTreeMap<_, _> = old
         .as_ref()
         .map(|i| {
@@ -662,6 +814,7 @@ fn run_inner(
             known: &known,
             expected: &expected,
             counts: &counts,
+            progress: progress.as_ref(),
         };
         let mirror = super::fetch_limited(
             &plan_root.join(index.to_string()),
@@ -678,6 +831,16 @@ fn run_inner(
                 "selected working snapshots exceed configured byte budget",
             )
         })?;
+        if let Some(progress) = &progress {
+            let mut p = progress.lock().unwrap();
+            for (path, file) in &input.files {
+                let url = format!("{}{path}", crate::ORIGIN);
+                if p.lengths.contains_key(&url) {
+                    p.coverage.insert(url, file.bytes);
+                }
+            }
+            p.emit()?;
+        }
         for e in input.files.values() {
             known.insert(e.sha256.clone(), e.source.clone());
         }
