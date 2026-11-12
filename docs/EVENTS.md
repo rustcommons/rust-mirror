@@ -157,7 +157,7 @@ verified separately in the release record.
 
 The [corporate-network contract](NETWORK.md) specifies public API names,
 configuration, secret handling, certificate diagnostics, estimates and caching.
-These additions are implemented in the unreleased 0.3.0 candidate and retain
+These additions are published in 0.3.0 and retain
 protocol 1; 0.2.0 does not implement them.
 
 `check-network`, `releases` and opt-in size measurement use the existing hello,

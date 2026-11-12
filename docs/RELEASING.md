@@ -16,10 +16,11 @@ Nexus pruning and in-generation compaction remain gaps. The owner authorized 0.2
 qualification, including protocol/controls/typed errors and publish preflight.
 This authorization does not waive any permanent release gate.
 
-0.3.0 corporate networking is being prepared under the owner-approved 2026-11-12
-scope. It is not authorized for publication in this thread; the coordinator publishes
-from the owner's machine after separate confirmation. Do not create its release tag
-or claim registry/docs.rs availability during preparation.
+The owner separately authorized 0.3.0 publication on 2026-11-12. The coordinator
+published corporate networking from the owner's machine after normal merge;
+[postpublication verification](evals/2026-11-12-publication-0.3.0.md) records the
+registry, tag/release, installed proof and docs.rs. Later versions still require
+separate owner authorization and all applicable gates.
 
 ## Before merge and publication
 
@@ -60,7 +61,7 @@ or claim registry/docs.rs availability during preparation.
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.2.0.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.3.0.md) as the GitHub Release, latest and
   without attached standalone binaries unless separately authorized.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.

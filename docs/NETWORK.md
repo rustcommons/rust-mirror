@@ -1,9 +1,9 @@
 # Corporate-network contract for 0.3.0
 
-Owner-approved scope, 2026-11-12. **Implemented in the unreleased 0.3.0 candidate;
+Owner-approved scope, 2026-11-12. **Published in 0.3.0;
 not available in 0.2.0.** This guide defines the library/GUI contract and bounded
-validation. The coordinator handles publication after owner confirmation; this
-thread does not publish or create the 0.3.0 release tag.
+validation. The coordinator published after owner confirmation; see the
+[publication verification](evals/2026-11-12-publication-0.3.0.md).
 
 ## Network options and secrets
 

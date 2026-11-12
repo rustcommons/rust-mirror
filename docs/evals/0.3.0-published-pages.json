@@ -1,0 +1,48 @@
+{
+  "observed_at_utc": "2026-11-12T10:19:24.352716+00:00",
+  "initial_404_resolved": true,
+  "pages": [
+    {
+      "url": "https://docs.rs/crate/rust-mirror/0.3.0",
+      "status": 200,
+      "final_url": "https://docs.rs/crate/rust-mirror/0.3.0",
+      "bytes": 24481,
+      "content_marker_verified": "rust-mirror"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/",
+      "bytes": 33490,
+      "content_marker_verified": "Corporate networks"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/network/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/network/",
+      "bytes": 21147,
+      "content_marker_verified": "inspect_ca_file"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/network/struct.NetworkOptions.html",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/network/struct.NetworkOptions.html",
+      "bytes": 55022,
+      "content_marker_verified": "proxy_credentials"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/releases/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.3.0/rust_mirror/releases/",
+      "bytes": 19419,
+      "content_marker_verified": "CacheMode"
+    },
+    {
+      "url": "https://crates.io/api/v1/crates/rust-mirror/0.3.0/readme",
+      "status": 200,
+      "final_url": "https://static.crates.io/readmes/rust-mirror/rust-mirror-0.3.0.html",
+      "bytes": 3815,
+      "content_marker_verified": "Quick start"
+    }
+  ]
+}

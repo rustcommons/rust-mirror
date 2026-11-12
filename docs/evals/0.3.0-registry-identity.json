@@ -1,0 +1,43 @@
+{
+  "version": "0.3.0",
+  "source": "50bc1895eab5ed305a30ed6e44fafc2bc057e7a9",
+  "archive_sha256": "fcfd258dce7328ce54a5096b80f6b90e550642f9bb324baf262acaa1cecf11f9",
+  "vcs": {
+    "git": {
+      "sha1": "50bc1895eab5ed305a30ed6e44fafc2bc057e7a9"
+    },
+    "path_in_vcs": ""
+  },
+  "binary_sha256": "67b85bb72e0d9befb5d1c2d99beb02e07dc995961e92ef4240e5854f082816de",
+  "events": [
+    {
+      "command": "--version",
+      "elapsed_ms": 0,
+      "protocol": 1,
+      "seq": 0,
+      "tool_version": "0.3.0",
+      "type": "hello"
+    },
+    {
+      "elapsed_ms": 0,
+      "index": 1,
+      "name": "--version",
+      "seq": 1,
+      "total": null,
+      "type": "stage"
+    },
+    {
+      "elapsed_ms": 0,
+      "error": null,
+      "ok": true,
+      "report": {
+        "protocol": 1,
+        "tool_version": "0.3.0"
+      },
+      "seq": 2,
+      "type": "result"
+    }
+  ],
+  "registry_install": true,
+  "fresh_cargo_home": true
+}
