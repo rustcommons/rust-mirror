@@ -39,6 +39,22 @@ See the [versioned protocol and recovery contract](https://github.com/rustcommon
 explicit; the library does not read CLI credential environment variables. See
 [hosting/trust](https://github.com/rustcommons/rust-mirror/blob/main/docs/NEXUS-RAW.md).
 
+## Corporate networks and release discovery
+
+[`NetworkOptions`] and [`HttpsSource::with_network`] configure explicit proxy/auth,
+exclusions, extra CA trust and socket timeouts. Defaults stay direct; extra CAs add
+to Mozilla roots. [`network::detect_environment`] is an explicit inspection call;
+[`network::inspect_ca_file`] returns display-only certificate metadata.
+[`network::check_network_with_control`] diagnoses connection stages without bypassing
+TLS. Secrets are memory-only; GUI workers pass [`network::ProxyCredentials`] directly.
+See the [network guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/NETWORK.md).
+
+[`selection::measure_sizes`] returns opt-in HEAD estimates, while
+[`selection::sync::run_with_options`] enables estimated aggregate progress. Hashes and
+actual budgets still decide verification. [`releases::load`] supports fresh discovery
+and explicit offline cache reads, reporting cache age. Publishing uses its separate
+[`publish::preflight_with_network`] and [`publish::publish_with_network`] APIs.
+
 ## Local retention
 
 [`selection::retention::discover`] lists metadata;

@@ -8,7 +8,7 @@ Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 Rust/Cargo 1.90 or newer:
 
 ```sh
-cargo install rust-mirror --version 0.2.0 --locked
+cargo install rust-mirror --locked
 ```
 
 ## Quick start
@@ -29,6 +29,7 @@ prefix and does not activate Nexus routing. Start with a disposable local setup.
 | [User guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md) | Full Windows/Unix workflow, prerequisites, hosting and recovery |
 | [Command reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md) | Commands, configuration, effects and limits |
 | [API docs](https://docs.rs/rust-mirror/latest/rust_mirror/) | Rust library and controlled operations |
+| [Corporate networks](https://github.com/rustcommons/rust-mirror/blob/main/docs/NETWORK.md) | Proxy/CA/timeouts, connection diagnostics, size estimates and cached release discovery (0.3.0+) |
 | [Events protocol](https://github.com/rustcommons/rust-mirror/blob/main/docs/EVENTS.md) | Loosely coupled CLI/GUI JSON lines, heartbeat and cancellation |
 | [Retention](https://github.com/rustcommons/rust-mirror/blob/main/docs/RETENTION.md) | Declared protection, exact previews and opt-in local pruning |
 | [Nexus](https://github.com/rustcommons/rust-mirror/blob/main/docs/NEXUS-RAW.md) | TLS/auth, no-write preflight and publication |

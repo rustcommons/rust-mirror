@@ -47,6 +47,9 @@ pub struct Config {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     /// Optional explicit generation retention; absent disables pruning. Sync never prunes.
     pub retention: Option<retention::Policy>,
+    /// Optional upstream network settings; credentials are variable names only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub network: Option<crate::network::NetworkConfig>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -96,7 +99,7 @@ fn unique(values: &[String], limit: usize) -> Result<()> {
     }
     Ok(())
 }
-fn valid_date(s: &str) -> bool {
+pub(crate) fn valid_date(s: &str) -> bool {
     let p: Vec<_> = s.split('-').collect();
     if p.len() != 3
         || p[0].len() != 4
@@ -204,7 +207,12 @@ impl Config {
     /// Refuses malformed/unknown fields, unsupported schema, invalid manager version/budget
     /// or missing/duplicate/invalid selections.
     pub fn parse(text: &str) -> Result<Self> {
-        let c: Self = toml::from_str(text)?;
+        let c: Self = toml::from_str(text).map_err(|_| {
+            crate::Error::new(
+                crate::ErrorKind::Invalid,
+                "invalid selection config syntax or fields (input omitted to protect secrets)",
+            )
+        })?;
         c.validate()?;
         Ok(c)
     }
@@ -223,6 +231,9 @@ impl Config {
     /// # Errors
     /// Returns an error if any configuration or selection constraint is violated.
     pub fn validate(&self) -> Result<()> {
+        if let Some(network) = &self.network {
+            network.validate()?;
+        }
         if self.schema != 1 {
             return Err("unsupported configuration schema".into());
         }
@@ -715,6 +726,7 @@ pub fn load_plan(root: &Path) -> Result<ResolvedPlan> {
         max_download_bytes: plan.max_download_bytes,
         selections: vec![plan.selection.clone()],
         retention: None,
+        network: None,
     }
     .validate()?;
     let mut meta = Metadata {
@@ -1200,6 +1212,7 @@ pub fn import_toolchain(
         max_download_bytes: default_budget(),
         selections: vec![selection],
         retention: None,
+        network: None,
     };
     config.validate()?;
     Ok(config)
@@ -1234,4 +1247,65 @@ pub fn fetch_resuming_with_control(
     control: &crate::events::Control,
 ) -> Result<PathBuf> {
     control.run("fetch resume", || fetch_resuming(plan, output, source))
+}
+
+/// Per-artifact HEAD estimate, not a verified payload size.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ArtifactSize {
+    /// Frozen relative upstream path.
+    pub path: String,
+    /// Optional advertised byte length; absent is unknown.
+    pub expected_bytes: Option<u64>,
+}
+/// Opt-in advertised lengths compared with a plan's transfer budget.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SizeReport {
+    /// One estimate per frozen artifact.
+    pub artifacts: Vec<ArtifactSize>,
+    /// Checked sum of known lengths, excluding unknowns.
+    pub known_bytes: u64,
+    /// Count with no advertised length.
+    pub unknown_artifacts: usize,
+    /// True if all lengths were advertised.
+    pub complete: bool,
+    /// Known advertised bytes alone exceed the declared budget.
+    pub exceeds_budget: bool,
+    /// Always true; hashes and actual byte limits still decide verification.
+    pub estimated: bool,
+}
+/// Measure HEAD lengths without refetching metadata or changing a frozen plan.
+pub fn measure_sizes(
+    plan: &ResolvedPlan,
+    source: &impl Source,
+    control: &crate::events::Control,
+) -> Result<SizeReport> {
+    control.run("measure sizes", || {
+        let mut report = SizeReport {
+            artifacts: vec![],
+            known_bytes: 0,
+            unknown_artifacts: 0,
+            complete: true,
+            exceeds_budget: false,
+            estimated: true,
+        };
+        for artifact in &plan.plan.artifacts {
+            crate::events::check()?;
+            safe_path(&artifact.path)?;
+            let size = source.content_length(&format!("{ORIGIN}{}", artifact.path))?;
+            if let Some(n) = size {
+                report.known_bytes = report.known_bytes.checked_add(n).ok_or_else(|| {
+                    crate::Error::new(crate::ErrorKind::Budget, "size estimate sum overflow")
+                })?;
+            } else {
+                report.unknown_artifacts += 1;
+            }
+            report.artifacts.push(ArtifactSize {
+                path: artifact.path.clone(),
+                expected_bytes: size,
+            });
+        }
+        report.complete = report.unknown_artifacts == 0;
+        report.exceeds_budget = report.known_bytes > plan.plan.max_download_bytes;
+        Ok(report)
+    })
 }

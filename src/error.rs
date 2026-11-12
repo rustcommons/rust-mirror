@@ -93,10 +93,11 @@ pub fn error_kind(error: &(dyn std::error::Error + 'static)) -> ErrorKind {
     }
     if let Some(e) = error.downcast_ref::<ureq::Error>() {
         return match e {
-            ureq::Error::Status(401 | 403, _) => ErrorKind::Auth,
+            ureq::Error::Status(401 | 403 | 407, _) => ErrorKind::Auth,
             ureq::Error::Status(409 | 412, _) => ErrorKind::RemoteExists,
             ureq::Error::Status(_, _) => ErrorKind::Network,
             ureq::Error::Transport(t) => match t.kind() {
+                ureq::ErrorKind::ProxyUnauthorized => ErrorKind::Auth,
                 ureq::ErrorKind::ConnectionFailed
                     if t.message() == Some("tls connection init failed") =>
                 {

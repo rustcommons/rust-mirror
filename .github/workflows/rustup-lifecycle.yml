@@ -5,6 +5,12 @@ on:
       - 'src/selection/**'
       - 'src/publish.rs'
       - 'src/lib.rs'
+      - 'src/network.rs'
+      - 'src/releases.rs'
+      - 'src/cli.rs'
+      - 'src/cli/**'
+      - 'src/events.rs'
+      - 'src/resume.rs'
       - 'src/main.rs'
       - 'Cargo.toml'
       - 'Cargo.lock'
@@ -38,24 +44,26 @@ jobs:
         shell: bash
         run: |
           cargo build --release --locked
+          python3 -c "import pathlib,tomllib;print('PACKAGE_VERSION='+tomllib.loads(pathlib.Path('Cargo.toml').read_text())['package']['version'])" >> "$GITHUB_ENV"
           rustc -vV | sed -n 's/^host: /HOST=/p' >> "$GITHUB_ENV"
       - name: Install the clean qualified package in a fresh Cargo home (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           cargo package --locked
-          CARGO_HOME="$RUNNER_TEMP/package-cargo-home" cargo install --path target/package/rust-mirror-0.2.0 --locked --root "$RUNNER_TEMP/package-install" -j 2
+          CARGO_HOME="$RUNNER_TEMP/package-cargo-home" cargo install --path "target/package/rust-mirror-$PACKAGE_VERSION" --locked --root "$RUNNER_TEMP/package-install" -j 2
           cp "$RUNNER_TEMP/package-install/bin/rust-mirror" target/release/rust-mirror
           python3 - "$RUNNER_TEMP/package-qualification.json" <<'PYCODE'
-          import hashlib,json,pathlib,subprocess,sys,tarfile
-          archive=pathlib.Path('target/package/rust-mirror-0.2.0.crate')
+          import hashlib,json,os,pathlib,subprocess,sys,tarfile
+          version=os.environ['PACKAGE_VERSION']
+          archive=pathlib.Path(f'target/package/rust-mirror-{version}.crate')
           with tarfile.open(archive) as tar:
-              vcs=json.load(tar.extractfile('rust-mirror-0.2.0/.cargo_vcs_info.json'))
+              vcs=json.load(tar.extractfile(f'rust-mirror-{version}/.cargo_vcs_info.json'))
           assert not vcs['git'].get('dirty',False)
           binary=pathlib.Path('target/release/rust-mirror')
           output=subprocess.check_output([str(binary.resolve()),'--events','jsonl','--version'],text=True)
           events=[json.loads(line) for line in output.splitlines()]
-          assert events[0]['protocol']==1 and events[-1]['report']['tool_version']=='0.2.0'
+          assert events[0]['protocol']==1 and events[-1]['report']['tool_version']==version
           result={'vcs':vcs,'archive_sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'installed_from_clean_package':True,'fresh_cargo_home':True,'events':events}
           pathlib.Path(sys.argv[1]).write_text(json.dumps(result,indent=2)+'\n')
           PYCODE

@@ -278,8 +278,11 @@ impl Client {
 pub fn publish(root: &Path, options: &Options) -> Result<Report> {
     crate::events::stage("publish preflight")?;
     let client = client(options)?;
+    publish_client(root, &client)
+}
+fn publish_client(root: &Path, client: &Client) -> Result<Report> {
     let (schema, files, inventory_sha256) = files(root)?;
-    absent(&client, &files)?;
+    absent(client, &files)?;
     crate::events::stage("upload and verify publication")?;
     let mut total = 0u64;
     for f in &files {
@@ -353,30 +356,11 @@ fn client(options: &Options) -> Result<Client> {
         .try_proxy_from_env(false)
         .timeout(Duration::from_secs(180));
     if let Some(path) = &options.ca_file {
-        use ureq::rustls::{
-            pki_types::{pem::PemObject, CertificateDer},
-            RootCertStore,
-        };
-        let raw = read(path, 4 * 1024 * 1024)?;
-        let mut roots = RootCertStore::empty();
-        let mut count = 0;
-        for cert in CertificateDer::pem_slice_iter(&raw) {
-            count += 1;
-            if count > 256 {
-                return Err(crate::Error::new(
-                    crate::ErrorKind::Budget,
-                    "CA bundle exceeds certificate budget",
-                )
-                .into());
-            }
+        let mut roots = ureq::rustls::RootCertStore::empty();
+        for cert in crate::network::ca_certificates(path)? {
             roots
-                .add(cert.map_err(|_| crate::Error::new(crate::ErrorKind::Tls, "invalid CA PEM"))?)
+                .add(cert)
                 .map_err(|_| crate::Error::new(crate::ErrorKind::Tls, "invalid CA certificate"))?;
-        }
-        if count == 0 {
-            return Err(
-                crate::Error::new(crate::ErrorKind::Tls, "CA bundle has no certificates").into(),
-            );
         }
         let config = ureq::rustls::ClientConfig::builder_with_provider(Arc::new(
             ureq::rustls::crypto::ring::default_provider(),
@@ -450,8 +434,11 @@ pub struct Preflight {
 pub fn preflight(root: &Path, options: &Options) -> Result<Preflight> {
     crate::events::stage("publish preflight")?;
     let client = client(options)?;
+    preflight_client(root, &client)
+}
+fn preflight_client(root: &Path, client: &Client) -> Result<Preflight> {
     let (schema, files, inventory_sha256) = files(root)?;
-    absent(&client, &files)?;
+    absent(client, &files)?;
     Ok(Preflight {
         schema,
         files: files.len(),
@@ -482,6 +469,57 @@ pub fn publish_with_control(
 ) -> Result<Report> {
     control.run("publish", || publish(root, options))
 }
+
+fn configured_client(
+    options: &Options,
+    network: &crate::network::NetworkOptions,
+) -> Result<Client> {
+    let mut client = client(options)?;
+    let mut network = network.clone();
+    if let Some(ca) = &options.ca_file {
+        if network.extra_ca_file.is_some() {
+            return Err(crate::Error::new(
+                crate::ErrorKind::Invalid,
+                "choose publication ca-file or explicit network extra-ca-file, not both",
+            )
+            .into());
+        }
+        network.extra_ca_file = Some(ca.clone());
+    }
+    let target = ureq::get(&client.base).request_url()?;
+    client.agent = crate::network::agent(
+        &network,
+        target.host(),
+        target
+            .port()
+            .unwrap_or(if target.scheme() == "https" { 443 } else { 80 }),
+    )?;
+    Ok(client)
+}
+/// Explicit publisher network settings; never inherited from upstream config.
+/// Performs only validated local reads and remote absence checks, no writes.
+pub fn preflight_with_network(
+    root: &Path,
+    options: &Options,
+    network: &crate::NetworkOptions,
+    control: &crate::events::Control,
+) -> Result<Preflight> {
+    control.run("publish preflight", || {
+        preflight_client(root, &configured_client(options, network)?)
+    })
+}
+/// Explicit publisher network settings and cancellation; remote partial effects remain possible.
+pub fn publish_with_network(
+    root: &Path,
+    options: &Options,
+    network: &crate::NetworkOptions,
+    control: &crate::events::Control,
+) -> Result<Report> {
+    control.run("publish", || {
+        publish_client(root, &configured_client(options, network)?)
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

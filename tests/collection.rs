@@ -53,6 +53,7 @@ fn make(
     let c = Config {
         schema: 1,
         retention: None,
+        network: None,
         rustup_version: rustup.into(),
         max_download_bytes: BUDGET,
         selections: vec![Selection {

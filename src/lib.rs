@@ -3,6 +3,9 @@
 pub mod cli;
 mod error;
 pub mod events;
+pub mod network;
+pub mod releases;
+pub use network::NetworkOptions;
 pub mod publish;
 pub use error::{error_kind, Error, ErrorKind};
 mod resume;
@@ -16,7 +19,6 @@ use std::{
     fs::{self, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
-    time::Duration,
 };
 
 /// Error result used by synchronous library operations.
@@ -51,6 +53,10 @@ pub trait Source {
     /// Errors may leave partial output. The caller verifies the planned whole-file hash;
     /// implementations must not silently substitute another origin or artifact.
     fn fetch(&self, url: &str, output: &mut dyn Write, limit: u64) -> Result<()>;
+    /// Optional HEAD Content-Length estimate; never an integrity proof. Default sources return unknown.
+    fn content_length(&self, _url: &str) -> Result<Option<u64>> {
+        Ok(None)
+    }
     /// Append bytes beginning at offset, within the remaining byte budget. Restart must
     /// write nothing. Errors may leave a prefix; only a final whole-file hash proves it.
     /// Sources without range support safely restart that file.
@@ -75,17 +81,62 @@ pub trait Source {
 /// `https://static.rust-lang.org/`. The default request timeout is 180 seconds;
 /// resume uses verified range handling. This does not configure publisher or client trust.
 pub struct HttpsSource(ureq::Agent);
+impl HttpsSource {
+    /// Build explicit upstream transport; origin/path validation still applies to every request.
+    pub fn with_network(options: &NetworkOptions) -> Result<Self> {
+        Ok(Self(network::agent(options, "static.rust-lang.org", 443)?))
+    }
+}
 impl Default for HttpsSource {
     fn default() -> Self {
-        Self(
-            ureq::AgentBuilder::new()
-                .timeout(Duration::from_secs(180))
-                .redirects(0)
-                .build(),
-        )
+        Self::with_network(&NetworkOptions::default()).expect("default network options are valid")
     }
 }
 impl Source for HttpsSource {
+    fn content_length(&self, url: &str) -> Result<Option<u64>> {
+        safe_path(
+            url.strip_prefix(ORIGIN)
+                .ok_or("source must be the official HTTPS origin")?,
+        )?;
+        events::artifact(url.strip_prefix(ORIGIN).unwrap(), "head", 0, None)?;
+        let response = match self.0.head(url).set("Accept-Encoding", "identity").call() {
+            Ok(r) => r,
+            Err(ureq::Error::Status(405 | 501, _)) => return Ok(None),
+            Err(e) => return Err(network::transport_error(e)),
+        };
+        if response.status() != 200 {
+            return Err(Error::new(ErrorKind::Network, "HEAD did not return HTTP 200").into());
+        }
+        if response
+            .header("Content-Encoding")
+            .is_some_and(|v| v != "identity")
+        {
+            return Err(Error::new(
+                ErrorKind::Integrity,
+                "HEAD response uses an unexpected encoding",
+            )
+            .into());
+        }
+        let values = response.all("Content-Length");
+        if values.is_empty() {
+            return Ok(None);
+        }
+        let mut size = None;
+        for value in values {
+            if value.is_empty() || !value.bytes().all(|c| c.is_ascii_digit()) {
+                return Err(Error::new(ErrorKind::Integrity, "invalid HEAD Content-Length").into());
+            }
+            let n = value
+                .parse::<u64>()
+                .map_err(|_| Error::new(ErrorKind::Budget, "HEAD length exceeds integer bounds"))?;
+            if size.is_some_and(|old| old != n) {
+                return Err(Error::new(ErrorKind::Integrity, "conflicting HEAD lengths").into());
+            }
+            size = Some(n);
+        }
+        Ok(size)
+    }
+
     fn fetch_from(
         &self,
         url: &str,
@@ -106,7 +157,7 @@ impl Source for HttpsSource {
         safe_path(path)?;
         let _ = writeln!(io::stderr().lock(), "Downloading {path}");
         events::artifact(path, "download", 0, None)?;
-        let response = self.0.get(url).call()?;
+        let response = self.0.get(url).call().map_err(network::transport_error)?;
         if response.status() != 200 {
             return Err("source did not return HTTP 200".into());
         }
@@ -119,7 +170,7 @@ impl Source for HttpsSource {
                 .and_then(|s| s.parse::<u64>().ok()),
         )?;
         copy_bounded(
-            response.into_reader(),
+            network::NetworkReader(response.into_reader()),
             &mut events::ProgressWriter {
                 inner: output,
                 path: path.into(),

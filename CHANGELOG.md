@@ -4,6 +4,26 @@
 
 No additional changes queued.
 
+## [0.3.0] - 2026-11-12
+
+- Add explicit upstream HTTP CONNECT proxy/auth, NO_PROXY exclusions, environment
+  opt-in, additive corporate CA bundles and connect/read timeouts. Keep official
+  origins, no redirects and the independent direct publisher default.
+- Add staged `check-network` diagnostics and public certificate/CA metadata APIs;
+  display the presented issuer/chain on TLS refusal without bypassing verification.
+- Add opt-in plan HEAD estimates and sync aggregate transfer/rate/ETA events,
+  retaining actual byte budgets, frozen payload identity and hash verification.
+- Add official stable/beta/nightly release discovery with explicit refresh,
+  zero-network offline cache reads, cache age and typed fallback warnings.
+- Add public `NetworkOptions` and separately opted-in publisher networking. Existing
+  library entry points remain; `Config` literals need optional `network`.
+- Keep proxy credentials in memory or explicitly selected secret inputs, never
+  saved values in config/argv/events. Protocol 1 gains additive progress events.
+
+- Record owner approval (2026-11-12) for direct `webpki-roots` and `x509-parser`
+  0.18 with default features disabled for corporate-network support. Certificate
+  metadata is display-only; rustls retains TLS trust decisions.
+
 ## [0.2.0] - 2026-11-11
 
 - Add protocol-1 JSON lines for CLI/GUI operation, independent heartbeat/watchdog

@@ -1,5 +1,6 @@
 //! Shared human/event CLI adapter. The standalone binary installs signal handling;
 //! library embeddings supply their own cancellation token and process policy.
+mod network_options;
 use crate::events::{CancelToken, Control, EventKind, JsonLines, PROTOCOL_VERSION};
 use std::{
     cell::RefCell,
@@ -29,6 +30,8 @@ use std::{
     path::PathBuf,
 };
 const HELP: &str = "rust-mirror [--events jsonl] [--cancel-stdin] COMMAND ...
+rust-mirror check-network [NETWORK_FLAGS]
+rust-mirror releases --cache DIRECTORY [--refresh | --offline] [NETWORK_FLAGS]
 rust-mirror init --config FILE
 rust-mirror list --toolchain TOOLCHAIN [--host HOST]
 rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustup-version VERSION --output FILE
@@ -43,7 +46,7 @@ rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [-
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
-Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. No crates or GUI yet.";
+Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. No Cargo registry mirroring. Upstream network flags: --proxy URL | --proxy-from-env, --no-proxy LIST, --proxy-username-env NAME, --proxy-password-env NAME | --proxy-password-stdin, --extra-ca-file PEM, --connect-timeout SECONDS, --read-timeout SECONDS, --network-config FILE. Plan/sync accept --estimate-sizes.";
 fn legacy(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     let mut args = args;
     let mut values = BTreeMap::new();
@@ -71,7 +74,7 @@ fn legacy(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         rustup_version: text("--rustup-version")?,
         output,
     };
-    let path = prepare(&options, &HttpsSource::default())?;
+    let path = prepare(&options, &network_options::source(None)?)?;
     output!("{}", path.display())?;
     Ok(())
 }
@@ -93,7 +96,11 @@ fn new_output(path: &std::path::Path) -> Result<()> {
     }
     Ok(())
 }
-fn run(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+fn run(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
+    let (args, _reset) = network_options::prepare(args)?;
+    run_prepared(args.into_iter())
+}
+fn run_prepared(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     use crate::selection;
     let command = args
         .next()
@@ -109,6 +116,67 @@ fn run(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     }
     if command == "--version" || command == "-V" {
         output!("rust-mirror {}", env!("CARGO_PKG_VERSION"))?;
+        return Ok(());
+    }
+    if command == "check-network" {
+        if args.next().is_some() {
+            return Err("check-network accepts only global network flags".into());
+        }
+        let report = crate::network::check_network_with_control(
+            &network_options::options(None)?,
+            &crate::events::current().unwrap_or_default(),
+        )?;
+        if !report.ok {
+            let kind = report
+                .steps
+                .iter()
+                .find_map(|s| s.error_kind)
+                .unwrap_or(crate::ErrorKind::Network);
+            let mut error = crate::Error::new(
+                kind,
+                "connection check failed; inspect the ordered diagnostic report",
+            );
+            error.report = Some(toml::Value::try_from(&report)?);
+            return Err(error.into());
+        }
+        output!("{}", toml::to_string_pretty(&report)?)?;
+        return Ok(());
+    }
+    if command == "releases" {
+        let mut directory = None;
+        let mut mode = crate::releases::CacheMode::RefreshOrCached;
+        let mut chosen = false;
+        while let Some(arg) = args.next() {
+            match arg.to_str() {
+                Some("--cache") => {
+                    if directory.is_some() {
+                        return Err("duplicate --cache".into());
+                    }
+                    directory = Some(PathBuf::from(
+                        args.next().ok_or("cache directory required")?,
+                    ));
+                }
+                Some("--refresh" | "--offline") => {
+                    if chosen {
+                        return Err("choose --refresh or --offline once".into());
+                    }
+                    chosen = true;
+                    mode = if arg == "--offline" {
+                        crate::releases::CacheMode::Offline
+                    } else {
+                        crate::releases::CacheMode::Refresh
+                    };
+                }
+                _ => return Err("unknown releases option".into()),
+            }
+        }
+        let report = crate::releases::load(
+            &network_options::source(None)?,
+            &directory.ok_or("--cache required")?,
+            mode,
+            &crate::events::current().unwrap_or_default(),
+        )?;
+        output!("{}", toml::to_string_pretty(&report)?)?;
         return Ok(());
     }
     if command == "assemble" {
@@ -190,7 +258,7 @@ fn run(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
                     .ok_or_else(|| format!("{key} must be UTF-8").into())
             })
     };
-    let source = HttpsSource::default();
+    let source = network_options::source(None)?;
     match command.as_str() {
         "init" => {
             let output = path("--config")?;
@@ -224,8 +292,33 @@ fn run(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
             let output = path("--output")?;
             new_output(&output)?;
             let config = selection::Config::read(&path("--config")?)?;
+            let source = network_options::source(config.network.as_ref())?;
             let resolved = selection::resolve(&config, &text("--selection")?, &source)?;
+            let sizes = if network_options::estimate() {
+                Some(selection::measure_sizes(
+                    &resolved,
+                    &source,
+                    &crate::events::current().unwrap_or_default(),
+                )?)
+            } else {
+                None
+            };
             resolved.save(&output)?;
+            if let Some(sizes) = sizes {
+                if capturing() {
+                    let mut value = toml::map::Map::new();
+                    value.insert("plan".into(), toml::Value::try_from(&resolved.plan)?);
+                    value.insert("sizes".into(), toml::Value::try_from(&sizes)?);
+                    REPORT.with(|r| *r.borrow_mut() = Some(toml::Value::Table(value)));
+                }
+                let _ = writeln!(
+                    io::stderr().lock(),
+                    "Estimated known bytes: {}; unknown artifacts: {}; exceeds budget: {}",
+                    sizes.known_bytes,
+                    sizes.unknown_artifacts,
+                    sizes.exceeds_budget
+                );
+            }
             let _=writeln!(io::stderr().lock(),"{} artifacts; archive sizes unknown until download; budget {} bytes. Saved plan: {}",resolved.plan.artifacts.len(),resolved.plan.max_download_bytes,output.display());
             output!("{}", toml::to_string_pretty(&resolved.plan)?)?;
         }
@@ -337,10 +430,28 @@ fn publish_generation(mut args: impl Iterator<Item = std::ffi::OsString>) -> Res
         allow_loopback_http: local,
     };
     if check_only {
-        let report = crate::publish::preflight(&root, &options)?;
+        let report = if network_options::explicit() {
+            crate::publish::preflight_with_network(
+                &root,
+                &options,
+                &network_options::options(None)?,
+                &crate::events::current().unwrap_or_default(),
+            )?
+        } else {
+            crate::publish::preflight(&root, &options)?
+        };
         output!("{}", toml::to_string_pretty(&report)?)?;
     } else {
-        let report = crate::publish::publish(&root, &options)?;
+        let report = if network_options::explicit() {
+            crate::publish::publish_with_network(
+                &root,
+                &options,
+                &network_options::options(None)?,
+                &crate::events::current().unwrap_or_default(),
+            )?
+        } else {
+            crate::publish::publish(&root, &options)?
+        };
         output!("{}", toml::to_string_pretty(&report)?)?;
     }
     Ok(())
@@ -392,7 +503,7 @@ fn rustup_generation(mut args: impl Iterator<Item = std::ffi::OsString>) -> Resu
         &channels,
         &output,
         budget,
-        &HttpsSource::default(),
+        &network_options::source(None)?,
     )?;
     output!("{}", result.display())?;
     Ok(())
@@ -437,12 +548,19 @@ fn sync(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     ))?;
     let output = PathBuf::from(values.remove("--output").ok_or("--output is required")?);
     let previous = values.remove("--previous").map(PathBuf::from);
-    let source = HttpsSource::default();
-    let result = if force {
-        crate::selection::sync::run_forced(&config, previous.as_deref(), &output, &source)
-    } else {
-        crate::selection::sync::run(&config, previous.as_deref(), &output, resume, &source)
-    }?;
+    let source = network_options::source(config.network.as_ref())?;
+    let result = crate::selection::sync::run_with_options(
+        &config,
+        previous.as_deref(),
+        &output,
+        &crate::selection::sync::RunOptions {
+            force,
+            resume,
+            estimate_sizes: network_options::estimate(),
+        },
+        &source,
+        &crate::events::current().unwrap_or_default(),
+    )?;
     if capturing() {
         let mut report = toml::map::Map::new();
         report.insert(
@@ -589,12 +707,7 @@ pub fn run_with_events<W: Write + Send + 'static>(
     cancel: CancelToken,
 ) -> i32 {
     let control = Control::new(Arc::new(JsonLines::new(writer)), cancel.clone());
-    let command = args
-        .iter()
-        .find(|s| s.as_os_str() != "--cancel-stdin")
-        .and_then(|s| s.to_str())
-        .unwrap_or("--help")
-        .to_string();
+    let command = network_options::command(&args);
     if control
         .emit(EventKind::Hello {
             protocol: PROTOCOL_VERSION,
@@ -618,42 +731,6 @@ pub fn run_with_events<W: Write + Send + 'static>(
             clean.push(arg);
         }
     }
-    if input {
-        std::thread::spawn(move || {
-            let input = std::io::stdin();
-            let mut reader = input.lock();
-            loop {
-                let mut line = String::new();
-                match reader.by_ref().take(1025).read_line(&mut line) {
-                    Ok(0) => {
-                        cancel.cancel();
-                        break;
-                    }
-                    Ok(_) => {
-                        let mut text = line.trim();
-                        let tokens = ["{", "\"type\"", ":", "\"cancel\"", "}"];
-                        let mut valid = true;
-                        for token in tokens {
-                            if let Some(rest) = text.trim_start().strip_prefix(token) {
-                                text = rest;
-                            } else {
-                                valid = false;
-                                break;
-                            }
-                        }
-                        if valid && text.trim().is_empty() {
-                            cancel.cancel();
-                            break;
-                        }
-                    }
-                    Err(_) => {
-                        cancel.cancel();
-                        break;
-                    }
-                }
-            }
-        });
-    }
     CAPTURE.with(|c| *c.borrow_mut() = Some(String::new()));
     REPORT.with(|r| *r.borrow_mut() = None);
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -665,7 +742,44 @@ pub fn run_with_events<W: Write + Send + 'static>(
                 )
                 .into());
             }
-            run(clean.into_iter())?;
+            let (prepared, _reset) = network_options::prepare(clean.into_iter())?;
+            if input {
+                std::thread::spawn(move || {
+                    let input = std::io::stdin();
+                    let mut reader = input.lock();
+                    loop {
+                        let mut line = String::new();
+                        match reader.by_ref().take(1025).read_line(&mut line) {
+                            Ok(0) => {
+                                cancel.cancel();
+                                break;
+                            }
+                            Ok(_) => {
+                                let mut text = line.trim();
+                                let tokens = ["{", "\"type\"", ":", "\"cancel\"", "}"];
+                                let mut valid = true;
+                                for token in tokens {
+                                    if let Some(rest) = text.trim_start().strip_prefix(token) {
+                                        text = rest;
+                                    } else {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                                if valid && text.trim().is_empty() {
+                                    cancel.cancel();
+                                    break;
+                                }
+                            }
+                            Err(_) => {
+                                cancel.cancel();
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+            run_prepared(prepared.into_iter())?;
             let text = CAPTURE.with(|c| c.borrow().clone().unwrap_or_default());
             report(&command, &text)
         })

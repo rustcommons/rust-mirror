@@ -1,6 +1,6 @@
 [package]
 name = "rust-mirror"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.90"
 license = "Apache-2.0"
@@ -16,3 +16,5 @@ sha2 = "0.10"
 toml = "0.8"
 ureq = { version = "2.9", features = ["tls"] }
 tempfile = "3.10"
+webpki-roots = "0.26"
+x509-parser = { version = "0.18", default-features = false }
