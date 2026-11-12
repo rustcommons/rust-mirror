@@ -149,3 +149,25 @@ process signal handlers. A CLI session owns hello/result framing, signal/control
 input handling and final flushing; library-only callers use the same event types,
 control and serializer. A source implementation does not establish registry publication; publication is
 verified separately in the release record.
+
+## Planned 0.3.0 additive network operations
+
+The [corporate-network contract](NETWORK.md) specifies planned public API names,
+configuration, secret handling, certificate diagnostics, estimates and caching.
+These additions retain protocol 1; 0.2.0 does not implement them.
+
+`check-network`, `releases` and opt-in size measurement use the existing hello,
+stage/artifact/bytes/heartbeat and final typed-result framing. Check failures use
+`error.report` for the ordered diagnostic report; success returns it in `report`.
+Proxy/environment/certificate details in reports are bounded and sanitized.
+No credential values, authorization headers or private keys enter events. A TLS
+error can include only certificates actually presented; it never changes trust.
+
+An additive `transfer_summary` event will carry `completed_bytes`,
+`transferred_bytes`, nullable `expected_bytes`, nullable `bytes_per_second`, nullable
+`eta_seconds` and `estimated: true`. Completed bytes represent logical transfer
+coverage including resumed prefixes; transferred bytes count newly received bytes
+in this invocation, excluding reuse/copy/hash. Unknown whole-operation totals and
+rate/ETA remain null. Consumers must not treat an estimate as verified completion.
+Existing `artifact.expected_bytes` continues to describe that artifact operation.
+Unknown additive events/fields remain ignorable; no existing meaning changes.
