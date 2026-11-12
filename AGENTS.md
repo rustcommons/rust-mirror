@@ -190,6 +190,18 @@ verifies uploads. Test JSON framing/escaping, nulls, monotonic sequence, long bl
 I/O heartbeats, stdin record/EOF and signals, cancel/resume and typed TLS/auth/refusal
 outcomes. Preserve scoped disposable Nexus and four-host qualification gates.
 
+## Corporate networking for 0.3.0
+
+The owner approved network options, connection diagnostics, opt-in HEAD estimates
+and cached official release discovery on 2026-11-12. Follow [the contract](docs/NETWORK.md)
+and protocol 1. Keep upstream origins fixed, redirects/proxy discovery disabled by
+default, extra CAs additive and all TLS checks enabled. Keep secrets out of persisted
+config, argv, debug/errors/events; support programmatic worker credentials. Publishing
+uses its independent direct default unless separately configured. No real Nexus
+changes are authorized. New dependencies require owner approval; record any needed
+approval before adding them. Prepare/qualify 0.3.0 without publishing or creating a
+release tag: publication goes through the coordinator after owner confirmation.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
