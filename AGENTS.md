@@ -212,6 +212,15 @@ remove their temporary directories. Test proxy auth/exclusions, additive roots,
 chain diagnostics, socket deadlines, cancellation/heartbeats, HEAD estimates and
 cache corruption/locking. Network config never changes frozen payload identity.
 
+## Crate mirroring design boundary
+
+The owner requested a design-only crate-mirroring review on 2026-11-12. Maintain
+[the draft design](docs/CRATES-DESIGN.md) and [roadmap](docs/ROADMAP.md), distinguishing
+confirmed catalog/output constraints from proposed implementation choices. No crate
+mirroring implementation, dependency addition or publication is authorized by this
+design task. Cargo.lock import remains future work; existing toolchain behavior,
+common instructions and published evidence remain unchanged.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
