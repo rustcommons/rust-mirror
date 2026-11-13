@@ -81,14 +81,14 @@ fn files(root: &Path, destination: &str) -> Result<(u32, Vec<SnapshotFile>, Stri
         .get("schema")
         .and_then(toml::Value::as_integer)
         .ok_or("missing snapshot schema")?;
-    if schema != 4 && raw.len() > 1024 * 1024 {
+    if !matches!(schema, 4 | 5) && raw.len() > 1024 * 1024 {
         return Err(crate::Error::new(
             crate::ErrorKind::Budget,
             "toolchain publication metadata exceeds byte budget",
         )
         .into());
     }
-    let mut files = if schema == 4 {
+    let mut files = if matches!(schema, 4 | 5) {
         let inventory = crate::crates::mirror::Inventory::load(root)?;
         let configured = inventory
             .plan

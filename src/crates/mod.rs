@@ -3,6 +3,7 @@
 //! No Cargo executable is invoked at runtime. The schema-0 report remains a research
 //! format; approved frozen MVP operations live in [`mirror`].
 pub mod catalog;
+pub mod lockfile;
 pub mod mirror;
 pub mod retention;
 pub mod source;

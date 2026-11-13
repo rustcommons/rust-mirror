@@ -1,12 +1,13 @@
 //! Crate pin protection layered on the shared whole-generation deletion engine.
 use super::{
     catalog::Catalog,
-    mirror::{Identity, Inventory},
+    lockfile::{validate_sources, LockSource},
+    mirror::{Identity, Inventory, SourceReason, SourceReasonKind},
 };
 use crate::{selection::retention as core, Error, ErrorKind, Result};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
 };
 
@@ -45,12 +46,23 @@ pub struct PinnedCrate {
     pub features: Vec<String>,
     /// Whether the root requests defaults.
     pub default_features: bool,
+    /// Manual alias requiring this exact profile.
+    pub alias: String,
+}
+/// Typed source badges for one retained generation, alongside the shared policy reasons.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct KeepSources {
+    /// Exact completed generation root.
+    pub path: PathBuf,
+    /// Sorted lock/manual/explicit-pin provenance; empty for ordering-only protection.
+    pub sources: Vec<SourceReason>,
 }
 /// Structured preview bound to the directory, next-previous anchor and declared exact crate pins.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct PrunePlan {
-    /// Wrapper schema 1, independent of inventory/event schemas.
+    /// Wrapper schema 2, independent of inventory/event schemas.
     pub schema: u32,
     /// Exact shared-engine file/folder deletions, bytes and keep reasons.
     pub deletion: core::PrunePlan,
@@ -58,6 +70,10 @@ pub struct PrunePlan {
     pub policy: Policy,
     /// Exact pins derived from catalog rules; feature closure is protected as part of the whole generation.
     pub pinned_crates: Vec<PinnedCrate>,
+    /// Copied current lock policy needed to reconstruct and revalidate apply.
+    pub lock_sources: BTreeMap<String, LockSource>,
+    /// Structured lock/manual/pinned keep-reasons, keyed by the same generation paths as deletion.kept.
+    pub keep_sources: Vec<KeepSources>,
     /// Explicit candidate directory.
     pub directory: PathBuf,
     /// Exact generation needed as the next previous input, never an mtime guess.
@@ -68,11 +84,19 @@ pub struct PrunePlan {
 fn preview_pins(
     policy: &Policy,
     pins: &[PinnedCrate],
+    lock_sources: &BTreeMap<String, LockSource>,
     directory: &Path,
     next_previous: &Path,
     as_of: &str,
 ) -> Result<PrunePlan> {
     policy.validate()?;
+    validate_sources(lock_sources)?;
+    let mut source_reasons: BTreeMap<PathBuf, BTreeSet<SourceReason>> = BTreeMap::new();
+    let mut remaining_sources: BTreeSet<_> = lock_sources
+        .iter()
+        .filter(|(_, s)| !s.pins.is_empty())
+        .map(|(n, _)| n.clone())
+        .collect();
     let listing = core::discover(directory)?;
     if !listing.issues.is_empty() || listing.generations.iter().any(|g| g.kind != "crates") {
         return Err(Error::new(
@@ -93,6 +117,16 @@ fn preview_pins(
         .collect::<std::io::Result<_>>()?;
     if protected.len() != policy.pinned_generations.len() {
         return Err(Error::new(ErrorKind::Invalid, "duplicate pinned generation").into());
+    }
+    for path in &protected {
+        source_reasons
+            .entry(path.clone())
+            .or_default()
+            .insert(SourceReason {
+                kind: SourceReasonKind::Pinned,
+                name: path.to_string_lossy().into_owned(),
+                digest: None,
+            });
     }
     let mut remaining: BTreeSet<_> = pins.iter().cloned().collect();
     if remaining.len() != pins.len() {
@@ -130,7 +164,42 @@ fn preview_pins(
             protected.insert(generation.path.clone());
         }
         for pin in covered {
+            source_reasons
+                .entry(generation.path.clone())
+                .or_default()
+                .insert(SourceReason {
+                    kind: SourceReasonKind::Manual,
+                    name: pin.alias.clone(),
+                    digest: None,
+                });
             remaining.remove(&pin);
+        }
+        let mut covered_sources = Vec::new();
+        for name in &remaining_sources {
+            crate::events::check()?;
+            let source = &lock_sources[name];
+            if source.pins.iter().all(|p| {
+                inventory.plan.versions.iter().any(|r| {
+                    r.name == p.name
+                        && r.version == p.version
+                        && r.cksum.eq_ignore_ascii_case(&p.checksum)
+                })
+            }) {
+                super::mirror::covers_lock_source(name, source, &inventory.plan.versions)?;
+                covered_sources.push(name.clone());
+            }
+        }
+        for name in covered_sources {
+            protected.insert(generation.path.clone());
+            source_reasons
+                .entry(generation.path.clone())
+                .or_default()
+                .insert(SourceReason {
+                    kind: SourceReasonKind::Lock,
+                    name: name.clone(),
+                    digest: Some(lock_sources[&name].sha256.clone()),
+                });
+            remaining_sources.remove(&name);
         }
     }
     if !remaining.is_empty() {
@@ -139,6 +208,17 @@ fn preview_pins(
             "a pinned crate version is absent from completed generations",
         )
         .into());
+    }
+    if !remaining_sources.is_empty() {
+        let mut error = Error::new(
+            ErrorKind::Invalid,
+            "a lock source has no completed generation covering all exact pins",
+        );
+        error.report = Some(toml::Value::try_from(BTreeMap::from([(
+            "source_names",
+            remaining_sources.into_iter().collect::<Vec<_>>(),
+        )]))?);
+        return Err(error.into());
     }
     let shared = core::Policy {
         pinned_releases: Vec::new(),
@@ -149,11 +229,25 @@ fn preview_pins(
         pinned_generations: protected.into_iter().collect(),
     };
     let deletion = core::preview_directory(&shared, directory, next_previous, as_of)?;
+    let keep_sources = deletion
+        .kept
+        .iter()
+        .map(|g| KeepSources {
+            path: g.path.clone(),
+            sources: source_reasons
+                .remove(&g.path)
+                .unwrap_or_default()
+                .into_iter()
+                .collect(),
+        })
+        .collect();
     Ok(PrunePlan {
-        schema: 1,
+        schema: 2,
         deletion,
         policy: policy.clone(),
         pinned_crates: pins.to_vec(),
+        lock_sources: lock_sources.clone(),
+        keep_sources,
         directory: directory.canonicalize()?,
         next_previous: next_previous.canonicalize()?,
         as_of: as_of.into(),
@@ -179,6 +273,7 @@ pub fn preview_directory(
         let dependency = &catalog.crates[alias];
         for version in &rule.pins {
             pins.insert(PinnedCrate {
+                alias: alias.clone(),
                 identity: Identity {
                     name: dependency.package.as_deref().unwrap_or(alias).into(),
                     version: version.clone(),
@@ -197,6 +292,7 @@ pub fn preview_directory(
     preview_pins(
         policy,
         &pins.into_iter().collect::<Vec<_>>(),
+        &catalog.crate_locks,
         directory,
         next_previous,
         as_of,
@@ -212,12 +308,13 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<core::ApplyReport> 
         )
         .into());
     }
-    if plan.schema != 1 {
+    if plan.schema != 2 {
         return Err(Error::new(ErrorKind::Invalid, "unsupported crate retention plan").into());
     }
     let fresh = preview_pins(
         &plan.policy,
         &plan.pinned_crates,
+        &plan.lock_sources,
         &plan.directory,
         &plan.next_previous,
         &plan.as_of,

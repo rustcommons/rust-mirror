@@ -5,6 +5,9 @@ use super::*;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Cohort {
+    /// Original frozen-plan schema; legacy cohorts omit the field for identity compatibility.
+    #[serde(default = "legacy_schema", skip_serializing_if = "is_legacy")]
+    pub schema: u32,
     /// Nonsecret catalog selecting this cohort, including its historical output URL.
     pub catalog: Catalog,
     /// UTC Unix seconds of this observation.
@@ -37,9 +40,16 @@ pub struct RetentionObservation {
     /// Length of that complete sparse metadata file.
     pub index_bytes: u64,
 }
+fn legacy_schema() -> u32 {
+    1
+}
+fn is_legacy(schema: &u32) -> bool {
+    *schema == 1
+}
 impl Cohort {
     fn capture(plan: &FrozenPlan) -> Self {
         Self {
+            schema: plan.schema,
             catalog: plan.catalog.clone(),
             observed_at: plan.observed_at,
             roots: plan.roots.clone(),
@@ -51,7 +61,7 @@ impl Cohort {
     }
     fn first(&self) -> Result<FrozenPlan> {
         let mut plan = FrozenPlan {
-            schema: 1,
+            schema: self.schema,
             plan_id: String::new(),
             catalog: self.catalog.clone(),
             observed_at: self.observed_at,
@@ -69,6 +79,7 @@ impl Cohort {
             retention_observations: Vec::new(),
         };
         plan.changes.added = plan.versions.iter().map(VersionRow::identity).collect();
+        plan.changes.source_changes = locks::source_changes(None, &plan.catalog);
         let (counts, sizes, budgets) = summaries(&plan)?;
         plan.counts = counts;
         plan.size_estimate = sizes;
@@ -126,6 +137,10 @@ fn merge(
             for reason in &mut row.reasons {
                 reason.root += offset;
             }
+            if value.schema == 2 && cohort.schema == 1 {
+                row.sources
+                    .extend(locks::manual_sources(&row.reasons, &value.roots));
+            }
             if let Some(old) = rows.get_mut(&id) {
                 if old.source_ordinal != row.source_ordinal
                     || !same_immutable(&old.index_line, &row.index_line)?
@@ -138,6 +153,7 @@ fn merge(
                 }
                 old.reasons.extend(row.reasons);
                 old.root_aliases.extend(row.root_aliases);
+                old.sources.extend(row.sources);
             } else {
                 rows.insert(id, row);
             }
@@ -186,6 +202,8 @@ fn merge(
         row.reasons.dedup();
         row.root_aliases.sort();
         row.root_aliases.dedup();
+        row.sources.sort();
+        row.sources.dedup();
         row.primary_reason = row.reasons.first().cloned();
         row.lock_only = row.reasons.iter().all(|r| r.lock_only);
         row.retained_from_previous = prior.contains(&id);
@@ -200,6 +218,8 @@ fn merge(
         } else {
             value.changes.added.push(id.clone());
         }
+        row.locked_yanked =
+            row.yanked && row.sources.iter().any(|s| s.kind == SourceReasonKind::Lock);
         value.versions.push(row);
     }
     let mut current_metadata = BTreeMap::new();
@@ -227,6 +247,10 @@ fn merge(
             "retained closure exceeds current version/metadata bounds",
         ));
     }
+    value.changes.source_changes = locks::source_changes(
+        cohorts.get(cohorts.len() - 2).map(|c| &c.catalog),
+        &value.catalog,
+    );
     value.previous_inventory_sha256 = Some(previous_hash);
     value.cohorts = cohorts;
     value.retention_observations = observations;
@@ -238,7 +262,10 @@ fn merge(
     Ok(value)
 }
 pub(super) fn validate(value: &FrozenPlan, replay: bool) -> Result<()> {
-    if value.schema != 1 || value.catalog.network.is_some() || value.cohorts.len() > 128 {
+    if ![1, 2].contains(&value.schema)
+        || value.catalog.network.is_some()
+        || value.cohorts.len() > 128
+    {
         return Err(invalid("unsupported retained plan"));
     }
     for cohort in &value.cohorts {
@@ -273,7 +300,10 @@ pub(super) fn validate(value: &FrozenPlan, replay: bool) -> Result<()> {
             .map(|root| root.profile.clone())
             .collect();
         let mut filtered = FilteredIndex::new(&value.versions)?;
-        super::super::plan(&mut filtered, &profiles, native_bounds(&value.catalog))?;
+        locks::native(&mut filtered, &profiles, native_bounds(&value.catalog))?;
+        for cohort in &value.cohorts {
+            locks::validate(&cohort.catalog, &value.versions)?;
+        }
     }
     Ok(())
 }

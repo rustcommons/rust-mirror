@@ -1,0 +1,446 @@
+{
+  "scope": "Clean unpublished 0.5.0 candidate; not a registry upload",
+  "source_head": "21346ecb69e4ddda3c22d0ab8e4344aed1253345",
+  "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+  "archive_sha256": "997e58046547f89cf338b5204fac3a43582db397c3a432f5767e129c0e21e4f1",
+  "source_files": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "5583d14318d06f848154ce196b73068652753b268baaf69ac06d0d2118458697",
+      "bytes": 9153
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "aac9727fbbf8e9014aa37ced33edcc4f89929a63cdc4313dea6355335254aef2",
+      "bytes": 30230
+    },
+    {
+      "path": "Cargo.toml.orig",
+      "sha256": "f7116de09835e6028997f4aab85f3cf24b835882e4d12f3156e0aa1e5f12f20e",
+      "bytes": 675
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357
+    },
+    {
+      "path": "README.md",
+      "sha256": "577cf9acbd6b2f2c64d7df17616aa01c490e623dae339936bdacf8198758b0a9",
+      "bytes": 3568
+    },
+    {
+      "path": "examples/crates_mvp.rs",
+      "sha256": "1a59641b23c3a64ec594558beb4d2c0cc9d5754fa7fc939ad3ce48579fe250ea",
+      "bytes": 2253
+    },
+    {
+      "path": "examples/crates_phase0.rs",
+      "sha256": "20834e686340a1412047f32059eb08a8356c25ed2a69d402809f59a5350225ae",
+      "bytes": 2060
+    },
+    {
+      "path": "examples/mirror.toml",
+      "sha256": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e",
+      "bytes": 541
+    },
+    {
+      "path": "examples/multi-version.toml",
+      "sha256": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d",
+      "bytes": 292
+    },
+    {
+      "path": "examples/retention.toml",
+      "sha256": "7d0d6ac740ebccd768e4b237fd6a12ea9b30281fc14efe86893a2032b0d2e5dd",
+      "bytes": 528
+    },
+    {
+      "path": "examples/sync-demo.toml",
+      "sha256": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc",
+      "bytes": 366
+    },
+    {
+      "path": "src/cli/crates.rs",
+      "sha256": "0ab8b32cc1f41c713c0b2b9ff5e0f27b93c91089b4226e56713b23bdcb788ed6",
+      "bytes": 13835
+    },
+    {
+      "path": "src/cli/lock_import.rs",
+      "sha256": "5bdb90ddf17a87df8da87d1163eb5aed71db01e659e52c3fa6b530dce7f65098",
+      "bytes": 4285
+    },
+    {
+      "path": "src/cli/network_options.rs",
+      "sha256": "00a61a04ef75e929d5dd9c4aec1fa14294baeba5263a439cd652a9f4b897955b",
+      "bytes": 10458
+    },
+    {
+      "path": "src/cli.rs",
+      "sha256": "10d2505ab74d4e36e49c31a8efacfdf3bccf07daccc7626af31aa9bb53fa3c76",
+      "bytes": 34548
+    },
+    {
+      "path": "src/crates/catalog.rs",
+      "sha256": "f826ef7088b174b207fb6ba4019c86874d6f0804728bf57480b9c2aa96cc821d",
+      "bytes": 25322
+    },
+    {
+      "path": "src/crates/lockfile/parse.rs",
+      "sha256": "8c67e4fb8c2ecd23cba775bf47a75ca8c498020374f440a5f8ef2baf3486b749",
+      "bytes": 17979
+    },
+    {
+      "path": "src/crates/lockfile.rs",
+      "sha256": "4698f78075a1e8cfd0406af16154ef3a75c71b0571a4a67a8ce599c67ec60bb9",
+      "bytes": 25840
+    },
+    {
+      "path": "src/crates/mirror/fetch.rs",
+      "sha256": "fcb800237a5d51af7ebc764dec28dbda43bab932dfa7223fc61a5814350b6da8",
+      "bytes": 34478
+    },
+    {
+      "path": "src/crates/mirror/locks.rs",
+      "sha256": "b1bdf2f31c009bc1a03cbd6a5244c1945542b902301eff305a48eaf8496858a5",
+      "bytes": 13637
+    },
+    {
+      "path": "src/crates/mirror/retained.rs",
+      "sha256": "33c05c6463fb9ad5248bc31e51bb551b833a4d0b41f4b368ee9203ff635a12b7",
+      "bytes": 17432
+    },
+    {
+      "path": "src/crates/mirror/sync.rs",
+      "sha256": "7ff0d0c8f0e138385f711cf319a1297c988947a51b0c1d443e3c837d9bb5eac4",
+      "bytes": 6221
+    },
+    {
+      "path": "src/crates/mirror.rs",
+      "sha256": "3623f6a121086516ca0de5ccb5e667ab6a7be724fc7dc5cf321a805a97928946",
+      "bytes": 48207
+    },
+    {
+      "path": "src/crates/mod.rs",
+      "sha256": "e4937a22e3fc109301a6e70362e805de48fef9d5629bc4a71984c465f534d2d0",
+      "bytes": 34997
+    },
+    {
+      "path": "src/crates/retention.rs",
+      "sha256": "756856b48ca63d9381153ad880ccc2b17360a87893997fa958fbc737f4fc677b",
+      "bytes": 12997
+    },
+    {
+      "path": "src/crates/source.rs",
+      "sha256": "2c6c0ba62638593dbda9bb3f70283f37fde6067b37179732f439c7ccdbbd13e8",
+      "bytes": 23215
+    },
+    {
+      "path": "src/error.rs",
+      "sha256": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0",
+      "bytes": 4427
+    },
+    {
+      "path": "src/events.rs",
+      "sha256": "339a65f891172a46aca29c1905c72efb5e25541eb55392ecb94328d9a004a407",
+      "bytes": 24825
+    },
+    {
+      "path": "src/guide.md",
+      "sha256": "5d615f890cd143c92cb87bf33e1c43c68bf657376336d4b0659783b177736c74",
+      "bytes": 4954
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "ca9ed8d984431cdc650ca8df0e979763dcc176e57a7f1dc80ea1ef4254088485",
+      "bytes": 22974
+    },
+    {
+      "path": "src/main.rs",
+      "sha256": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f",
+      "bytes": 364
+    },
+    {
+      "path": "src/network.rs",
+      "sha256": "577d048ad404af81840adc7a6d72c3d932b69b8a495be1d1eb6c928b5acaf4ed",
+      "bytes": 33985
+    },
+    {
+      "path": "src/publish.rs",
+      "sha256": "c3491eb0960568a1cd1904471c67786a9df40600f06154b98220f2ee9771e13e",
+      "bytes": 21754
+    },
+    {
+      "path": "src/releases.rs",
+      "sha256": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78",
+      "bytes": 9005
+    },
+    {
+      "path": "src/resume.rs",
+      "sha256": "0b475598ad56c9c94c3d2cba1f9a3189a680f3cd913120b7eed2988a8ee0002c",
+      "bytes": 19602
+    },
+    {
+      "path": "src/selection/collection.rs",
+      "sha256": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc",
+      "bytes": 23744
+    },
+    {
+      "path": "src/selection/retention/catalog.rs",
+      "sha256": "a7a4540f3d44ac934a68f4b39e89fca7fa1c7d82121a3993097168e514ee5bdd",
+      "bytes": 25643
+    },
+    {
+      "path": "src/selection/retention.rs",
+      "sha256": "85d619a455b19faaaa433972e6de7c269ed8eb307bc8501c7b9d968591b6782b",
+      "bytes": 27057
+    },
+    {
+      "path": "src/selection/rustup.rs",
+      "sha256": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11",
+      "bytes": 14387
+    },
+    {
+      "path": "src/selection/sync.rs",
+      "sha256": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3",
+      "bytes": 33937
+    },
+    {
+      "path": "src/selection.rs",
+      "sha256": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd",
+      "bytes": 48714
+    },
+    {
+      "path": "src/signals.rs",
+      "sha256": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6",
+      "bytes": 2239
+    }
+  ],
+  "vcs": {
+    "git": {
+      "sha1": "21346ecb69e4ddda3c22d0ab8e4344aed1253345"
+    },
+    "path_in_vcs": ""
+  },
+  "members": 44,
+  "installed_binary_sha256": "3695a7fad37512394fb7d75137e2ac68acceb6a1e7a6c18128a49819f3e5c0fa",
+  "installed_operations": {
+    "import_sources": 4,
+    "archives_reused": 326,
+    "transferred_bytes": 0,
+    "structured_lock_sources": 4,
+    "retention_deletions": 0
+  },
+  "client_reuse_summary": {
+    "schema": 1,
+    "backend_source": "21346ecb69e4ddda3c22d0ab8e4344aed1253345",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)\nbinary: rustc\ncommit-hash: 1159e78c4747b02ef996e55082b704c09b970588\ncommit-date: 2025-09-14\nhost: aarch64-unknown-linux-gnu\nrelease: 1.90.0\nLLVM version: 20.1.8\n",
+    "plan_id": "577aa6106a51cadb26b5e2e3dc9f3c73954c1c32b6f957be92a137b0912b544d",
+    "versions": 326,
+    "planning_archive_gets": 0,
+    "archive_version_overfetch": 0,
+    "archive_bytes": 54373445,
+    "locked_yanked": [
+      {
+        "name": "crossbeam-deque",
+        "version": "0.7.3"
+      },
+      {
+        "name": "crossbeam-queue",
+        "version": "0.2.2"
+      },
+      {
+        "name": "miow",
+        "version": "0.2.1"
+      },
+      {
+        "name": "net2",
+        "version": "0.2.34"
+      },
+      {
+        "name": "smallvec",
+        "version": "1.4.0"
+      }
+    ],
+    "projects": [
+      {
+        "repo": "BurntSushi/ripgrep",
+        "ref": "12.1.1",
+        "commit": "7cb211378a2ac6d421c5f6f3f71411937af23136",
+        "version": 1,
+        "lock_sha256": "3d352f4b7f04d18323f760a27ed8d91a3a2aa59c2e3b8b2162e86937020cd5e9",
+        "name": "ripgrep-12.1.1",
+        "build_args": [],
+        "unextracted_links": [
+          "HomebrewFormula"
+        ],
+        "source_url": "https://github.com/BurntSushi/ripgrep/tree/7cb211378a2ac6d421c5f6f3f71411937af23136",
+        "license_files": [
+          {
+            "path": "COPYING",
+            "url": "https://github.com/BurntSushi/ripgrep/blob/7cb211378a2ac6d421c5f6f3f71411937af23136/COPYING"
+          },
+          {
+            "path": "LICENSE-MIT",
+            "url": "https://github.com/BurntSushi/ripgrep/blob/7cb211378a2ac6d421c5f6f3f71411937af23136/LICENSE-MIT"
+          },
+          {
+            "path": "UNLICENSE",
+            "url": "https://github.com/BurntSushi/ripgrep/blob/7cb211378a2ac6d421c5f6f3f71411937af23136/UNLICENSE"
+          }
+        ],
+        "cases": [
+          {
+            "case": "mirror-fetch-locked",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "offline-build-locked",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "missing-archive-refusal",
+            "exit": 101,
+            "expected_success": false
+          },
+          {
+            "case": "corrupt-archive-refusal",
+            "exit": 101,
+            "expected_success": false
+          }
+        ],
+        "registry_cache_initially_empty": true,
+        "git_provisioned_separately": false
+      },
+      {
+        "repo": "rust-lang/rust-analyzer",
+        "ref": "2020-06-01",
+        "commit": "7ae247f03c639d6e704159df7f0120466afc3c30",
+        "version": 2,
+        "lock_sha256": "c5713e4609de12822e159fefcdf80938c7ea30ef1f16171e0f45ab3d5e1e2e51",
+        "name": "rust-analyzer-2020-06-01",
+        "build_args": [
+          "--package",
+          "ra_hir_ty"
+        ],
+        "unextracted_links": [],
+        "source_url": "https://github.com/rust-lang/rust-analyzer/tree/7ae247f03c639d6e704159df7f0120466afc3c30",
+        "license_files": [
+          {
+            "path": "LICENSE-APACHE",
+            "url": "https://github.com/rust-lang/rust-analyzer/blob/7ae247f03c639d6e704159df7f0120466afc3c30/LICENSE-APACHE"
+          },
+          {
+            "path": "LICENSE-MIT",
+            "url": "https://github.com/rust-lang/rust-analyzer/blob/7ae247f03c639d6e704159df7f0120466afc3c30/LICENSE-MIT"
+          }
+        ],
+        "cases": [
+          {
+            "case": "provision-git-independently",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "mirror-fetch-locked",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "offline-build-locked",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "missing-git-offline-refusal",
+            "exit": 101,
+            "expected_success": false
+          }
+        ],
+        "registry_cache_initially_empty": true,
+        "git_provisioned_separately": true
+      },
+      {
+        "repo": "BurntSushi/ripgrep",
+        "ref": "15.1.0",
+        "commit": "af60c2de9d85e7f3d81c78601669468cf02dabab",
+        "version": 4,
+        "lock_sha256": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+        "name": "ripgrep-15.1.0",
+        "build_args": [],
+        "unextracted_links": [
+          "HomebrewFormula"
+        ],
+        "source_url": "https://github.com/BurntSushi/ripgrep/tree/af60c2de9d85e7f3d81c78601669468cf02dabab",
+        "license_files": [
+          {
+            "path": "COPYING",
+            "url": "https://github.com/BurntSushi/ripgrep/blob/af60c2de9d85e7f3d81c78601669468cf02dabab/COPYING"
+          },
+          {
+            "path": "LICENSE-MIT",
+            "url": "https://github.com/BurntSushi/ripgrep/blob/af60c2de9d85e7f3d81c78601669468cf02dabab/LICENSE-MIT"
+          },
+          {
+            "path": "UNLICENSE",
+            "url": "https://github.com/BurntSushi/ripgrep/blob/af60c2de9d85e7f3d81c78601669468cf02dabab/UNLICENSE"
+          }
+        ],
+        "cases": [
+          {
+            "case": "mirror-fetch-locked",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "offline-build-locked",
+            "exit": 0,
+            "expected_success": true
+          }
+        ],
+        "registry_cache_initially_empty": true,
+        "git_provisioned_separately": false
+      },
+      {
+        "repo": "sharkdp/fd",
+        "ref": "v10.4.2",
+        "commit": "7027d45303b412be6fa9c09d689cc6276748fb38",
+        "version": 4,
+        "lock_sha256": "8a3bac0e2c4583e8839ed0009341cfb1eb98121ecbeb595c750099c81e1699a6",
+        "name": "fd-v10.4.2",
+        "build_args": [],
+        "unextracted_links": [],
+        "source_url": "https://github.com/sharkdp/fd/tree/7027d45303b412be6fa9c09d689cc6276748fb38",
+        "license_files": [
+          {
+            "path": "LICENSE-APACHE",
+            "url": "https://github.com/sharkdp/fd/blob/7027d45303b412be6fa9c09d689cc6276748fb38/LICENSE-APACHE"
+          },
+          {
+            "path": "LICENSE-MIT",
+            "url": "https://github.com/sharkdp/fd/blob/7027d45303b412be6fa9c09d689cc6276748fb38/LICENSE-MIT"
+          }
+        ],
+        "cases": [
+          {
+            "case": "mirror-fetch-locked",
+            "exit": 0,
+            "expected_success": true
+          },
+          {
+            "case": "offline-build-locked",
+            "exit": 0,
+            "expected_success": true
+          }
+        ],
+        "registry_cache_initially_empty": true,
+        "git_provisioned_separately": false
+      }
+    ],
+    "scope": "Exact registry pins only; git/path sources supplied independently. Builds are the named packages, not arbitrary projects/targets/features.",
+    "private_tls_keys_destroyed": true
+  },
+  "client_reuse_scope": "Client rerun against earlier source 3f95e92 mirror; installed operations separately verified at candidate source. No registry publication."
+}

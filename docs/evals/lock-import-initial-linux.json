@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "backend_source": "3f95e92060f7f89257e756bef79045e85af6e848",
+  "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+  "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)\nbinary: rustc\ncommit-hash: 1159e78c4747b02ef996e55082b704c09b970588\ncommit-date: 2025-09-14\nhost: aarch64-unknown-linux-gnu\nrelease: 1.90.0\nLLVM version: 20.1.8\n",
+  "plan_id": "577aa6106a51cadb26b5e2e3dc9f3c73954c1c32b6f957be92a137b0912b544d",
+  "versions": 326,
+  "archive_bytes": 54373445,
+  "locked_yanked": [
+    {
+      "name": "crossbeam-deque",
+      "version": "0.7.3"
+    },
+    {
+      "name": "crossbeam-queue",
+      "version": "0.2.2"
+    },
+    {
+      "name": "miow",
+      "version": "0.2.1"
+    },
+    {
+      "name": "net2",
+      "version": "0.2.34"
+    },
+    {
+      "name": "smallvec",
+      "version": "1.4.0"
+    }
+  ],
+  "projects": [
+    {
+      "repo": "BurntSushi/ripgrep",
+      "ref": "12.1.1",
+      "commit": "7cb211378a2ac6d421c5f6f3f71411937af23136",
+      "version": 1,
+      "lock_sha256": "3d352f4b7f04d18323f760a27ed8d91a3a2aa59c2e3b8b2162e86937020cd5e9",
+      "name": "ripgrep-12.1.1",
+      "build_args": [],
+      "unextracted_links": [
+        "HomebrewFormula"
+      ],
+      "source_url": "https://github.com/BurntSushi/ripgrep/tree/7cb211378a2ac6d421c5f6f3f71411937af23136",
+      "license_files": [
+        {
+          "path": "COPYING",
+          "url": "https://github.com/BurntSushi/ripgrep/blob/7cb211378a2ac6d421c5f6f3f71411937af23136/COPYING"
+        },
+        {
+          "path": "LICENSE-MIT",
+          "url": "https://github.com/BurntSushi/ripgrep/blob/7cb211378a2ac6d421c5f6f3f71411937af23136/LICENSE-MIT"
+        },
+        {
+          "path": "UNLICENSE",
+          "url": "https://github.com/BurntSushi/ripgrep/blob/7cb211378a2ac6d421c5f6f3f71411937af23136/UNLICENSE"
+        }
+      ],
+      "cases": [
+        {
+          "case": "mirror-fetch-locked",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-build-locked",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "missing-archive-refusal",
+          "exit": 101,
+          "expected_success": false
+        },
+        {
+          "case": "corrupt-archive-refusal",
+          "exit": 101,
+          "expected_success": false
+        }
+      ],
+      "registry_cache_initially_empty": true,
+      "git_provisioned_separately": false
+    },
+    {
+      "repo": "rust-lang/rust-analyzer",
+      "ref": "2020-06-01",
+      "commit": "7ae247f03c639d6e704159df7f0120466afc3c30",
+      "version": 2,
+      "lock_sha256": "c5713e4609de12822e159fefcdf80938c7ea30ef1f16171e0f45ab3d5e1e2e51",
+      "name": "rust-analyzer-2020-06-01",
+      "build_args": [
+        "--package",
+        "stdx"
+      ],
+      "unextracted_links": [],
+      "source_url": "https://github.com/rust-lang/rust-analyzer/tree/7ae247f03c639d6e704159df7f0120466afc3c30",
+      "license_files": [
+        {
+          "path": "LICENSE-APACHE",
+          "url": "https://github.com/rust-lang/rust-analyzer/blob/7ae247f03c639d6e704159df7f0120466afc3c30/LICENSE-APACHE"
+        },
+        {
+          "path": "LICENSE-MIT",
+          "url": "https://github.com/rust-lang/rust-analyzer/blob/7ae247f03c639d6e704159df7f0120466afc3c30/LICENSE-MIT"
+        }
+      ],
+      "cases": [
+        {
+          "case": "provision-git-independently",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "mirror-fetch-locked",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-build-locked",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "missing-git-offline-refusal",
+          "exit": 101,
+          "expected_success": false
+        }
+      ],
+      "registry_cache_initially_empty": true,
+      "git_provisioned_separately": true
+    },
+    {
+      "repo": "BurntSushi/ripgrep",
+      "ref": "15.1.0",
+      "commit": "af60c2de9d85e7f3d81c78601669468cf02dabab",
+      "version": 4,
+      "lock_sha256": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+      "name": "ripgrep-15.1.0",
+      "build_args": [],
+      "unextracted_links": [
+        "HomebrewFormula"
+      ],
+      "source_url": "https://github.com/BurntSushi/ripgrep/tree/af60c2de9d85e7f3d81c78601669468cf02dabab",
+      "license_files": [
+        {
+          "path": "COPYING",
+          "url": "https://github.com/BurntSushi/ripgrep/blob/af60c2de9d85e7f3d81c78601669468cf02dabab/COPYING"
+        },
+        {
+          "path": "LICENSE-MIT",
+          "url": "https://github.com/BurntSushi/ripgrep/blob/af60c2de9d85e7f3d81c78601669468cf02dabab/LICENSE-MIT"
+        },
+        {
+          "path": "UNLICENSE",
+          "url": "https://github.com/BurntSushi/ripgrep/blob/af60c2de9d85e7f3d81c78601669468cf02dabab/UNLICENSE"
+        }
+      ],
+      "cases": [
+        {
+          "case": "mirror-fetch-locked",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-build-locked",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "registry_cache_initially_empty": true,
+      "git_provisioned_separately": false
+    },
+    {
+      "repo": "sharkdp/fd",
+      "ref": "v10.4.2",
+      "commit": "7027d45303b412be6fa9c09d689cc6276748fb38",
+      "version": 4,
+      "lock_sha256": "8a3bac0e2c4583e8839ed0009341cfb1eb98121ecbeb595c750099c81e1699a6",
+      "name": "fd-v10.4.2",
+      "build_args": [],
+      "unextracted_links": [],
+      "source_url": "https://github.com/sharkdp/fd/tree/7027d45303b412be6fa9c09d689cc6276748fb38",
+      "license_files": [
+        {
+          "path": "LICENSE-APACHE",
+          "url": "https://github.com/sharkdp/fd/blob/7027d45303b412be6fa9c09d689cc6276748fb38/LICENSE-APACHE"
+        },
+        {
+          "path": "LICENSE-MIT",
+          "url": "https://github.com/sharkdp/fd/blob/7027d45303b412be6fa9c09d689cc6276748fb38/LICENSE-MIT"
+        }
+      ],
+      "cases": [
+        {
+          "case": "mirror-fetch-locked",
+          "exit": 0,
+          "expected_success": true
+        },
+        {
+          "case": "offline-build-locked",
+          "exit": 0,
+          "expected_success": true
+        }
+      ],
+      "registry_cache_initially_empty": true,
+      "git_provisioned_separately": false
+    }
+  ],
+  "scope": "Initial exact-source Linux/aarch64 evidence at 3f95e92; later hardening/release metadata and CI qualify the reviewed candidate separately.",
+  "private_tls_keys_destroyed": true,
+  "additional_mixed_build": {
+    "package": "ra_hir_ty",
+    "cargo": "1.90.0",
+    "platform": "aarch64-unknown-linux-gnu",
+    "exit": 0,
+    "lock_unchanged": true,
+    "stderr_sha256": "0ca4d654d8c853eb174b75a87d40238ea46a381ee346db0f861687a77b7c26d2",
+    "upstream_future_compatibility_warning": "chalk-solve 0.10.1-dev; no future compiler compatibility claimed"
+  }
+}

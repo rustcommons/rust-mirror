@@ -43,7 +43,8 @@ as recorded above.
 ## Approved next iteration: lock import
 
 On 2026-11-13 the owner approved the Cargo.lock input subset of Phase 3 for 0.5.0.
-[Contract](LOCK-IMPORT.md) review precedes implementation. Named copied pin sources,
+[Contract](LOCK-IMPORT.md) was reviewed/merged first; development implementation and
+[bounded evidence](evals/2026-11-13-lock-import.md) follow it. Named copied pin sources,
 reimport/removal diffs, v1–v4 checksums, source-scoped yanks and served-index checks
 must be self-contained and preserve manual rules. Real-project Linux/Windows Cargo
 qualification and existing gates are required. Publication is owner-authorized once

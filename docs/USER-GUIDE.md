@@ -683,3 +683,26 @@ Run `cargo fetch --locked` and `cargo build --locked` while the internal mirror 
 reachable; populated caches can subsequently build with `--offline`. Client CA/proxy
 settings remain independent. Pruning requires an explicit crate-retention policy,
 a preview and `--apply`; remote deletion remains outside this workflow.
+
+## Import project locks (development source for 0.5.0)
+
+Keep an organization catalog; lock imports add exact pin sources alongside manual
+rules. Preview locally first, then explicitly save the proposed catalog:
+
+```sh
+rust-mirror crates import-lock --config crates.toml --lock service-a=../service-a/Cargo.lock
+rust-mirror crates import-lock --config crates.toml --lock service-a=../service-a/Cargo.lock --write
+```
+
+PowerShell accepts a quoted `"service-a=C:\src\service-a\Cargo.lock"` value too.
+Names are explicit; reusing one replaces only that source and reports its diff.
+`crates remove-lock --config crates.toml --source service-a` previews removal;
+add `--write` to save it. Canonical rewriting loses comments/formatting.
+
+The catalog copies pins, edges, original basename, digest and import time; originals
+are unnecessary for later plan/fetch/resume. Use ordinary crates plan/sync and whole-
+preview approval afterward. Every locked registry package is included, including
+dev packages. Yanked lock pins are flagged; new manual yanked selections still refuse.
+Git/path/workspace entries are reported, never mirrored; provision those sources
+independently for client builds. See [formats, refusals and client evidence](LOCK-IMPORT.md).
+This feature is absent from published 0.4.0; 0.5.0 publication follows qualification.

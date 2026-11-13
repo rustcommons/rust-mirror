@@ -1,6 +1,7 @@
 //! Shared human/event CLI adapter. The standalone binary installs signal handling;
 //! library embeddings supply their own cancellation token and process policy.
 mod crates;
+mod lock_import;
 mod network_options;
 use crate::events::{CancelToken, Control, EventKind, JsonLines, PROTOCOL_VERSION};
 use std::{

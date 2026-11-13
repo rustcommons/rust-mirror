@@ -32,7 +32,9 @@ version rules. [`crates::source::RegistrySource`] reuses explicit network option
 [`crates::mirror::plan_with_control`] freezes the native closure without archive
 downloads; [`crates::mirror::sync_with_control`] first returns a saved preview for
 whole-plan approval. Fetching verifies index checksums and produces a static sparse
-registry. Use the [crate guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)
+registry. [`crates::lockfile`] adds copied, named project lock pins with import/removal
+diffs and shared file/name validation; see its rustdoc for the development API.
+Use the [crate guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)
 for catalog, approval, resume, publication and Cargo source-replacement examples.
 Historical/current cohort combinations requiring unmirrored edges are refused;
 bounded client builds do not guarantee arbitrary crate/target compatibility.

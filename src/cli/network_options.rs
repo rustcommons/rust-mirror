@@ -249,7 +249,9 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
             Some(name) if crate_namespace => {
                 return match name {
                     "plan" | "show" | "explain" | "fetch" | "sync" | "catalog" | "paste"
-                    | "generations" | "prune" => format!("crates-{name}"),
+                    | "generations" | "prune" | "import-lock" | "remove-lock" => {
+                        format!("crates-{name}")
+                    }
                     "--help" | "-h" => "crates-help".into(),
                     _ => "invalid-command".into(),
                 }

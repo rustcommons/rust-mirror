@@ -1,0 +1,468 @@
+{
+  "schema": 1,
+  "plan_id": "65836f6c14a4156c86b10424e890fede1cc8b88c515e56112921ec0f775d19e6",
+  "catalog": {
+    "crates": {
+      "itoa": {
+        "version": "=1.0.15",
+        "features": [],
+        "default-features": true,
+        "optional": false
+      }
+    },
+    "crate-rules": {},
+    "crate-policy": {
+      "features": "declared",
+      "resolver": "2",
+      "hosts": [
+        "aarch64-unknown-linux-gnu"
+      ],
+      "targets": [
+        "aarch64-unknown-linux-gnu"
+      ],
+      "max-versions": 3000,
+      "max-files": 10000,
+      "max-metadata-bytes": 268435456,
+      "max-file-bytes": 536870912,
+      "max-final-bytes": 10737418240,
+      "max-transfer-bytes": 10737418240
+    },
+    "crate-output": {
+      "base-url": "https://localhost:18443/legacy-successor"
+    },
+    "crate-network": {
+      "contact": "https://github.com/rustcommons/rust-mirror/issues",
+      "concurrency": 4,
+      "attempts": 4,
+      "max-wait-seconds": 60
+    }
+  },
+  "observed_at": 1794591711,
+  "roots": [
+    {
+      "alias": "itoa",
+      "requirement": "=1.0.15",
+      "profile": {
+        "name": "itoa",
+        "version": "1.0.15",
+        "features": [],
+        "default_features": true
+      }
+    },
+    {
+      "alias": "itoa",
+      "requirement": "=1.0.15",
+      "profile": {
+        "name": "itoa",
+        "version": "1.0.15",
+        "features": [],
+        "default_features": true
+      }
+    }
+  ],
+  "versions": [
+    {
+      "name": "itoa",
+      "version": "1.0.15",
+      "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c",
+      "expected_bytes": 11231,
+      "yanked": false,
+      "lock_only": false,
+      "root_aliases": [
+        "itoa"
+      ],
+      "primary_reason": {
+        "root": 0,
+        "parent": null,
+        "alias": "itoa",
+        "requirement": "=1.0.15",
+        "target": null,
+        "conservative": false,
+        "lock_only": false,
+        "features": [],
+        "default_features": true
+      },
+      "reasons": [
+        {
+          "root": 0,
+          "parent": null,
+          "alias": "itoa",
+          "requirement": "=1.0.15",
+          "target": null,
+          "conservative": false,
+          "lock_only": false,
+          "features": [],
+          "default_features": true
+        },
+        {
+          "root": 0,
+          "parent": null,
+          "alias": "itoa",
+          "requirement": "=1.0.15",
+          "target": null,
+          "conservative": true,
+          "lock_only": false,
+          "features": [],
+          "default_features": true
+        },
+        {
+          "root": 1,
+          "parent": null,
+          "alias": "itoa",
+          "requirement": "=1.0.15",
+          "target": null,
+          "conservative": false,
+          "lock_only": false,
+          "features": [],
+          "default_features": true
+        },
+        {
+          "root": 1,
+          "parent": null,
+          "alias": "itoa",
+          "requirement": "=1.0.15",
+          "target": null,
+          "conservative": true,
+          "lock_only": false,
+          "features": [],
+          "default_features": true
+        }
+      ],
+      "retained_from_previous": true,
+      "index_line": "{\"name\":\"itoa\",\"vers\":\"1.0.15\",\"deps\":[{\"name\":\"no-panic\",\"req\":\"^0.1\",\"features\":[],\"optional\":true,\"default_features\":true,\"target\":null,\"kind\":\"normal\"}],\"cksum\":\"4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c\",\"features\":{},\"yanked\":false,\"rust_version\":\"1.36\",\"pubtime\":\"2025-03-03T23:42:45Z\"}\n",
+      "source_ordinal": 33
+    }
+  ],
+  "witnesses": [
+    {
+      "root": {
+        "name": "itoa",
+        "version": "1.0.15",
+        "features": [],
+        "default_features": true
+      },
+      "versions": [
+        "itoa@1.0.15"
+      ]
+    },
+    {
+      "root": {
+        "name": "itoa",
+        "version": "1.0.15",
+        "features": [],
+        "default_features": true
+      },
+      "versions": [
+        "itoa@1.0.15"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "name": "itoa",
+      "sha256": "0997bac1899829d1597b4e7843de9ddf54d2a1c1059e99e78b1aa94350550cef",
+      "bytes": 9919
+    }
+  ],
+  "counts": {
+    "crates": 1,
+    "versions": 1,
+    "files": 4,
+    "roots": 2
+  },
+  "size_estimate": {
+    "estimated": true,
+    "known_archive_bytes": 11231,
+    "unknown_archives": 0,
+    "expected_archive_bytes": 11231,
+    "generated_index_bytes": 411
+  },
+  "budgets": {
+    "exceeds_final_budget": false,
+    "exceeds_transfer_budget": false,
+    "oversized_files": []
+  },
+  "changes": {
+    "added": [],
+    "retained": [
+      {
+        "name": "itoa",
+        "version": "1.0.15"
+      }
+    ],
+    "newly_yanked_retained": [],
+    "no_longer_selected_retained": []
+  },
+  "previous_inventory_sha256": "af37124e094542f2114426b97da6f27d61569a825f24122eb47c4c7d3bc907ad",
+  "warnings": [
+    "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+    "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+  ],
+  "cohorts": [
+    {
+      "catalog": {
+        "crates": {
+          "itoa": {
+            "version": "=1.0.15",
+            "features": [],
+            "default-features": true,
+            "optional": false
+          }
+        },
+        "crate-rules": {},
+        "crate-policy": {
+          "features": "declared",
+          "resolver": "2",
+          "hosts": [
+            "aarch64-unknown-linux-gnu"
+          ],
+          "targets": [
+            "aarch64-unknown-linux-gnu"
+          ],
+          "max-versions": 3000,
+          "max-files": 10000,
+          "max-metadata-bytes": 268435456,
+          "max-file-bytes": 536870912,
+          "max-final-bytes": 10737418240,
+          "max-transfer-bytes": 10737418240
+        },
+        "crate-output": {
+          "base-url": "https://localhost:18443/client-generation"
+        },
+        "crate-network": {
+          "contact": "https://github.com/rustcommons/rust-mirror/issues",
+          "concurrency": 4,
+          "attempts": 4,
+          "max-wait-seconds": 60
+        }
+      },
+      "observed_at": 1794571262,
+      "roots": [
+        {
+          "alias": "itoa",
+          "requirement": "=1.0.15",
+          "profile": {
+            "name": "itoa",
+            "version": "1.0.15",
+            "features": [],
+            "default_features": true
+          }
+        }
+      ],
+      "versions": [
+        {
+          "name": "itoa",
+          "version": "1.0.15",
+          "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c",
+          "expected_bytes": null,
+          "yanked": false,
+          "lock_only": false,
+          "root_aliases": [
+            "itoa"
+          ],
+          "primary_reason": {
+            "root": 0,
+            "parent": null,
+            "alias": "itoa",
+            "requirement": "=1.0.15",
+            "target": null,
+            "conservative": false,
+            "lock_only": false,
+            "features": [],
+            "default_features": true
+          },
+          "reasons": [
+            {
+              "root": 0,
+              "parent": null,
+              "alias": "itoa",
+              "requirement": "=1.0.15",
+              "target": null,
+              "conservative": false,
+              "lock_only": false,
+              "features": [],
+              "default_features": true
+            },
+            {
+              "root": 0,
+              "parent": null,
+              "alias": "itoa",
+              "requirement": "=1.0.15",
+              "target": null,
+              "conservative": true,
+              "lock_only": false,
+              "features": [],
+              "default_features": true
+            }
+          ],
+          "retained_from_previous": false,
+          "index_line": "{\"name\":\"itoa\",\"vers\":\"1.0.15\",\"deps\":[{\"name\":\"no-panic\",\"req\":\"^0.1\",\"features\":[],\"optional\":true,\"default_features\":true,\"target\":null,\"kind\":\"normal\"}],\"cksum\":\"4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c\",\"features\":{},\"yanked\":false,\"rust_version\":\"1.36\",\"pubtime\":\"2025-03-03T23:42:45Z\"}\n",
+          "source_ordinal": 33
+        }
+      ],
+      "witnesses": [
+        {
+          "root": {
+            "name": "itoa",
+            "version": "1.0.15",
+            "features": [],
+            "default_features": true
+          },
+          "versions": [
+            "itoa@1.0.15"
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "name": "itoa",
+          "sha256": "0997bac1899829d1597b4e7843de9ddf54d2a1c1059e99e78b1aa94350550cef",
+          "bytes": 9919
+        }
+      ],
+      "warnings": [
+        "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+        "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+      ]
+    },
+    {
+      "catalog": {
+        "crates": {
+          "itoa": {
+            "version": "=1.0.15",
+            "features": [],
+            "default-features": true,
+            "optional": false
+          }
+        },
+        "crate-rules": {},
+        "crate-policy": {
+          "features": "declared",
+          "resolver": "2",
+          "hosts": [
+            "aarch64-unknown-linux-gnu"
+          ],
+          "targets": [
+            "aarch64-unknown-linux-gnu"
+          ],
+          "max-versions": 3000,
+          "max-files": 10000,
+          "max-metadata-bytes": 268435456,
+          "max-file-bytes": 536870912,
+          "max-final-bytes": 10737418240,
+          "max-transfer-bytes": 10737418240
+        },
+        "crate-output": {
+          "base-url": "https://localhost:18443/legacy-successor"
+        },
+        "crate-network": {
+          "contact": "https://github.com/rustcommons/rust-mirror/issues",
+          "concurrency": 4,
+          "attempts": 4,
+          "max-wait-seconds": 60
+        }
+      },
+      "observed_at": 1794591711,
+      "roots": [
+        {
+          "alias": "itoa",
+          "requirement": "=1.0.15",
+          "profile": {
+            "name": "itoa",
+            "version": "1.0.15",
+            "features": [],
+            "default_features": true
+          }
+        }
+      ],
+      "versions": [
+        {
+          "name": "itoa",
+          "version": "1.0.15",
+          "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c",
+          "expected_bytes": null,
+          "yanked": false,
+          "lock_only": false,
+          "root_aliases": [
+            "itoa"
+          ],
+          "primary_reason": {
+            "root": 0,
+            "parent": null,
+            "alias": "itoa",
+            "requirement": "=1.0.15",
+            "target": null,
+            "conservative": false,
+            "lock_only": false,
+            "features": [],
+            "default_features": true
+          },
+          "reasons": [
+            {
+              "root": 0,
+              "parent": null,
+              "alias": "itoa",
+              "requirement": "=1.0.15",
+              "target": null,
+              "conservative": false,
+              "lock_only": false,
+              "features": [],
+              "default_features": true
+            },
+            {
+              "root": 0,
+              "parent": null,
+              "alias": "itoa",
+              "requirement": "=1.0.15",
+              "target": null,
+              "conservative": true,
+              "lock_only": false,
+              "features": [],
+              "default_features": true
+            }
+          ],
+          "retained_from_previous": false,
+          "index_line": "{\"name\":\"itoa\",\"vers\":\"1.0.15\",\"deps\":[{\"name\":\"no-panic\",\"req\":\"^0.1\",\"features\":[],\"optional\":true,\"default_features\":true,\"target\":null,\"kind\":\"normal\"}],\"cksum\":\"4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c\",\"features\":{},\"yanked\":false,\"rust_version\":\"1.36\",\"pubtime\":\"2025-03-03T23:42:45Z\"}\n",
+          "source_ordinal": 33
+        }
+      ],
+      "witnesses": [
+        {
+          "root": {
+            "name": "itoa",
+            "version": "1.0.15",
+            "features": [],
+            "default_features": true
+          },
+          "versions": [
+            "itoa@1.0.15"
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "name": "itoa",
+          "sha256": "0997bac1899829d1597b4e7843de9ddf54d2a1c1059e99e78b1aa94350550cef",
+          "bytes": 9919
+        }
+      ],
+      "warnings": [
+        "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+        "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+      ]
+    }
+  ],
+  "retention_observations": [
+    {
+      "identity": {
+        "name": "itoa",
+        "version": "1.0.15"
+      },
+      "index_line": "{\"name\":\"itoa\",\"vers\":\"1.0.15\",\"deps\":[{\"name\":\"no-panic\",\"req\":\"^0.1\",\"features\":[],\"optional\":true,\"default_features\":true,\"target\":null,\"kind\":\"normal\"}],\"cksum\":\"4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c\",\"features\":{},\"yanked\":false,\"rust_version\":\"1.36\",\"pubtime\":\"2025-03-03T23:42:45Z\"}\n",
+      "bytes": 11231,
+      "previously_yanked": false,
+      "index_sha256": "0997bac1899829d1597b4e7843de9ddf54d2a1c1059e99e78b1aa94350550cef",
+      "index_bytes": 9919
+    }
+  ]
+}

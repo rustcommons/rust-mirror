@@ -40,6 +40,9 @@ pub enum RunState {
     Completed,
     /// Paused/unlocked work; never a deletion candidate.
     InProgress,
+    /// Valid completed crate receipt with the entire served mirror absent; not paused work.
+    /// The mirror may have been pruned or removed externally; private state stays intact.
+    Pruned,
     /// A writer owns a lock, or an existing lock cannot be safely inspected.
     Locked,
     /// State is missing/malformed; directory pruning is refused.
@@ -135,7 +138,11 @@ fn busy(workspace: &Path, owned: &BTreeSet<PathBuf>) -> bool {
 pub(super) fn read_inventory(root: &Path) -> Result<Vec<u8>> {
     let raw = read_regular(&root.join("snapshot.toml"), 64 * 1024 * 1024)?;
     let value: toml::Value = toml::from_str(std::str::from_utf8(&raw)?)?;
-    if value.get("schema").and_then(toml::Value::as_integer) != Some(4) && raw.len() > 1024 * 1024 {
+    if !matches!(
+        value.get("schema").and_then(toml::Value::as_integer),
+        Some(4 | 5)
+    ) && raw.len() > 1024 * 1024
+    {
         return Err(crate::Error::new(
             crate::ErrorKind::Budget,
             "toolchain inventory display bound exceeded",
@@ -168,17 +175,17 @@ fn generation(path: &Path) -> Result<GenerationInfo> {
             let s: collection::CollectionSnapshot = toml::from_str(text)?;
             (3, s.toolchains, s.files)
         }
-        Some(4) => {
+        Some(schema @ (4 | 5)) => {
             let inventory = crate::crates::mirror::Inventory::inspect(&path)?;
             crate_counts = Some((inventory.plan.counts.crates, inventory.plan.counts.versions));
-            (4, Vec::new(), inventory.files)
+            (schema as u32, Vec::new(), inventory.files)
         }
         _ => return Err("discovery accepts only schema-2/3/4 inventories".into()),
     };
-    if (schema != 4 && toolchains.is_empty())
+    if (!matches!(schema, 4 | 5) && toolchains.is_empty())
         || toolchains.len() > 256
         || files.is_empty()
-        || files.len() > if schema == 4 { 40000 } else { 4096 }
+        || files.len() > if matches!(schema, 4 | 5) { 40000 } else { 4096 }
     {
         return Err("inventory display bounds exceeded".into());
     }
@@ -197,7 +204,12 @@ fn generation(path: &Path) -> Result<GenerationInfo> {
         recorded_bytes,
         inventory_modified_ns,
         toolchains,
-        kind: if schema == 4 { "crates" } else { "toolchains" }.into(),
+        kind: if matches!(schema, 4 | 5) {
+            "crates"
+        } else {
+            "toolchains"
+        }
+        .into(),
         crate_count: crate_counts.map(|(crates, _)| crates),
         version_count: crate_counts.map(|(_, versions)| versions),
     })
@@ -216,15 +228,17 @@ fn run(workspace: &Path, owned: &BTreeSet<PathBuf>) -> Result<Option<RunInfo>> {
             return Ok(Some(info));
         }
         let plan = crate::crates::mirror::FrozenPlan::load(&workspace.join("plan.json"))?;
-        crate::crates::mirror::inspect_run_metadata(workspace, &plan)?;
+        let completed = crate::crates::mirror::inspect_run_metadata(workspace, &plan)?;
         info.previous_inventory_sha256 = plan.previous_inventory_sha256;
         if present(&workspace.join("mirror/snapshot.toml"))? {
             let generation = generation(&workspace.join("mirror"))?;
-            if generation.schema != 4 {
+            if !matches!(generation.schema, 4 | 5) {
                 return Err("crate run has a toolchain marker".into());
             }
             info.mirror = Some(generation.path);
             info.state = RunState::Completed;
+        } else if completed && !present(&workspace.join("mirror"))? {
+            info.state = RunState::Pruned;
         }
         return Ok(Some(info));
     }

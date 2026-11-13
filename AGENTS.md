@@ -269,8 +269,8 @@ Later versions and GUI Phase 2 still require separate authorization.
 ## 0.5.0 lock import authorization
 
 The owner approved implementing Cargo.lock import on 2026-11-13. Land the short
-[contract](docs/LOCK-IMPORT.md) first for coordinator/GUI review before implementation,
-then a separate implementation PR. Copy named, digest/time-bearing exact pins and
+[contract](docs/LOCK-IMPORT.md) was reviewed from the GUI side by the coordinator
+and merged in PR #36 before implementation. Continue in a separate implementation PR. Copy named, digest/time-bearing exact pins and
 resolved edges into the self-contained catalog; preserve manual rules and other
 sources. Support standard lock formats 1–4, typed bounded diagnostics, official
 registry identities only, index checksum matching and lock-scoped yanked permission.
@@ -278,6 +278,11 @@ Do not resolve extra closure or fetch git/path entries. Preserve source-aware
 preview/explain/retention and all existing security/qualification gates. Prove real
 project locks and Cargo clients on Linux/Windows, including old/current formats,
 yanks, skips and refusal cases. Existing dependencies only.
+Retain typed `keep_sources` lock/manual/pinned reasons so GUI callers do not parse
+policy prose. Expose shared bounded `read_input` and `validate_source_name` helpers.
+Recognize valid completed crate receipts with an entirely absent mirror as pruned,
+not paused; keep private workspaces intact and qualify prune twice on a real chain.
+[Iteration evidence](docs/evals/2026-11-13-lock-import.md) names code/results and gaps.
 
 On 2026-11-13 the owner separately authorized publishing 0.5.0 once implementation
 is complete and qualified under [the release policy](docs/RELEASING.md), including

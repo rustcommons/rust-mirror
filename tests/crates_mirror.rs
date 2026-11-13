@@ -187,7 +187,7 @@ fn payload_fixture() -> (Catalog, PayloadSource) {
     )
 }
 #[test]
-fn approved_fetch_exposes_only_verified_schema_four_sparse_output() {
+fn approved_fetch_exposes_only_verified_current_sparse_output() {
     use mirror::{Approval, FetchOptions, Inventory};
     let (catalog, source) = payload_fixture();
     let plan = mirror::plan(&catalog, &source, None, false).unwrap();
@@ -221,7 +221,7 @@ fn approved_fetch_exposes_only_verified_schema_four_sparse_output() {
     assert_eq!(report.transferred_bytes, 7);
     assert_eq!(report.files_completed, 1);
     let inventory = Inventory::load(&report.mirror).unwrap();
-    assert_eq!(inventory.schema, 4);
+    assert_eq!(inventory.schema, 5);
     assert_eq!(
         std::fs::read(report.mirror.join("cargo/index/1/x")).unwrap(),
         source.metadata
@@ -922,4 +922,71 @@ fn malformed_generation_hosts_ports_are_refused_before_any_archive_call() {
         assert!(mirror::plan(&catalog, &source, None, false).is_err());
     }
     assert_eq!(source.archives.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn pruned_crate_chain_can_be_pruned_again() {
+    use mirror::{Approval, SyncOptions, SyncReport};
+    use rust_mirror::crates::retention;
+    let (mut catalog, mut source) = payload_fixture();
+    catalog.crate_retention = Some(retention::Policy {
+        keep_newest: 1,
+        ..Default::default()
+    });
+    let dir = tempfile::tempdir().unwrap();
+    let original: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    source.metadata.clear();
+    let mut previous = None;
+    for index in 1..=3 {
+        let mut record = original.clone();
+        record["vers"] = json!(format!("{index}.0.0"));
+        source.metadata.extend(serde_json::to_vec(&record).unwrap());
+        source.metadata.push(b'\n');
+        catalog.crates.get_mut("x").unwrap().version = format!("={index}.0.0");
+        catalog.crate_output.base_url = format!("https://mirror.example/generation-{index}");
+        let options = SyncOptions {
+            output: dir.path().join(format!("run-{index}")),
+            resume: false,
+            previous: previous.clone(),
+            estimate_sizes: false,
+        };
+        let SyncReport::NeedsApproval { plan_id, .. } =
+            mirror::sync(&catalog, &source, &options, None).unwrap()
+        else {
+            panic!("preview expected")
+        };
+        let SyncReport::Completed { report, .. } =
+            mirror::sync(&catalog, &source, &options, Some(&Approval { plan_id })).unwrap()
+        else {
+            panic!("completion expected")
+        };
+        let time = std::time::UNIX_EPOCH + std::time::Duration::from_secs(1700000000 + index);
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(report.mirror.join("snapshot.toml"))
+            .unwrap()
+            .set_modified(time)
+            .unwrap();
+        previous = Some(report.mirror);
+    }
+    let anchor = previous.unwrap();
+    let first = retention::preview_directory(&catalog, dir.path(), &anchor, "2026-11-13").unwrap();
+    assert_eq!(first.deletion.generations.len(), 2);
+    assert!(retention::apply(&first, true).unwrap().failure.is_none());
+    let second = retention::preview_directory(&catalog, dir.path(), &anchor, "2026-11-13").unwrap();
+    assert!(second.deletion.generations.is_empty());
+    assert!(retention::apply(&second, true).unwrap().failure.is_none());
+    let listing = rust_mirror::selection::retention::discover(dir.path()).unwrap();
+    assert_eq!(
+        listing
+            .runs
+            .iter()
+            .filter(|r| r.state == rust_mirror::selection::retention::RunState::Pruned)
+            .count(),
+        2
+    );
+    assert!(
+        dir.path().join("run-1/plan.json").exists()
+            && dir.path().join("run-2/.download/state.json").exists()
+    );
 }
