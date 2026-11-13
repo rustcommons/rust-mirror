@@ -115,6 +115,54 @@ Reports/plan JSON have independent `schema` fields. Existing Phase 0 `crates::Pl
 inventory. All exported types/functions will have rustdoc. Detailed stable field
 shapes are recorded with implementation and tests before claiming API availability.
 
+## GUI field shapes and local editing
+
+`Catalog` has a public serde/JSON representation of all five crate tables plus
+optional network settings; the GUI need not parse TOML. `Catalog::to_toml` validates
+and writes canonical TOML. Rewriting loses comments, original formatting and key
+ordering; warn before replacing a hand-edited catalog. File replacement is explicit,
+atomic within its directory, and refuses symlinks/unrelated paths.
+
+`Catalog::from_dependencies` returns `PasteReport { catalog, accepted, rejected }`.
+`accepted` lists aliases; rejected diagnostics have optional alias/field and
+one-based line/column when known, a typed kind and message. Kinds include `syntax`,
+`git`, `path`, `workspace`, `alternate_registry`, `unknown_field`, `invalid_value`
+and `whole_manifest`. A whole manifest is refused as one typed diagnostic; the
+GUI does not extract tables itself. Partial accepted values are not automatically
+written or approved. A caller must explicitly choose to retain them.
+
+Each preview version row has `name`, `version`, `cksum`, nullable `expected_bytes`,
+`yanked`, `lock_only`, `root_aliases`, `primary_reason`, `retained_from_previous`
+and the full structured reasons. `changes` reports added, retained,
+newly-yanked-retained and no-longer-selected-retained identities. `observed_at`
+identifies the UTC observation; `FrozenPlan::load` performs bounded local validation
+without network and returns that same saved preview. `crates show --plan FILE`
+exposes the local load. Needs-approval sync results include the preview, not a
+newly resolved approximation. GUI callers must show that frozen object before consent.
+
+`explain` returns `chains`, `total_chains`, `truncated`, with a strict caller/server
+chain bound; chains use the same reason objects as the preview. Budget summaries
+have `exceeds_final_budget`, `exceeds_transfer_budget`, known over-size file rows
+and unknown-size counts, computed by the library. Resolution errors use
+`error.report` with a typed resolution kind and available alias, requirement,
+feature/native-link context plus a bounded sample of candidate versions.
+
+Concurrent operations emit `artifact_complete` for each successful artifact
+operation, identifying path/action, observed bytes and whether hash verification
+completed. `crate_summary` carries `files_completed`, nullable `files_total`,
+transferred/reused bytes. Retry waits emit `retry` notices with path, attempt,
+wait seconds and a sanitized reason; independent heartbeats continue. A failed
+artifact has no successful completion event; the final result remains authoritative.
+
+Publish preflight refuses a destination different from the generation-local base
+URL with `invalid` and both validated credential-free URLs, before any write.
+`client_config` returns the exact project Cargo source-replacement TOML for a
+completed generation. Schema-4 generation discovery reports `kind: "crates"` and
+crate/version counts. Planning cancellation is checked between index requests and
+inside native feature/search loops; blocked reads retain existing socket deadlines
+and the independent heartbeat. These fields are backend work; GUI pages remain a
+separately authorized phase.
+
 ## Sparse output, schema 4 and retention
 
 A completed crate generation contains `cargo/index/config.json`, standard lowercase
