@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-13
+
+- Import Cargo.lock formats 1–4 as copied named pin/graph sources with digest/time
+  provenance and typed replacement/removal diffs. Keep manual catalog rules;
+  checksum-check every exact registry pin, including dev/target packages and scoped
+  locked yanks, without runtime Cargo or lock-source closure expansion.
+- Add public bounded file/name helpers, source-aware preview/explain and structured
+  lock/manual/pinned retention reasons; write frozen schema 2 / inventory schema 5
+  while retaining old schema 1/4 readers.
+- Fix repeated crate pruning: completed receipts with an entirely absent mirror
+  are recognized as pruned rather than mistaken for paused runs needing deleted
+  predecessors. Private plans/receipts remain intact; partial/active runs stay protected.
+
 ## [0.4.0] - 2026-11-13
 
 - Mirror organization-wide curated crate catalogs with Cargo-compatible registry

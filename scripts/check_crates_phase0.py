@@ -86,7 +86,7 @@ def main():
     plan_file = args.work / "plan.json"
     if args.frozen_plan:
         frozen = json.loads(args.frozen_plan.read_text())
-        assert frozen["schema"] == 1 and not frozen["previous_inventory_sha256"]
+        assert frozen["schema"] in (1, 2) and not frozen["previous_inventory_sha256"]
         expected = {(r["name"], r["version"]) for r in roots}
         profiles = [r["profile"] for r in frozen["roots"]]
         assert len(profiles) == len(roots) and {(r["name"], r["version"]) for r in profiles} == expected

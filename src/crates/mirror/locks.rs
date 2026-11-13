@@ -1,5 +1,5 @@
 use super::*;
-use crate::crates::lockfile::{LockSource, SourceKind};
+use crate::crates::lockfile::LockSource;
 /// Typed origin of protection/inclusion, independent of display prose.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "snake_case")]
@@ -115,6 +115,21 @@ pub(super) fn add(
     for (source_name, source) in &catalog.crate_locks {
         for pin in &source.pins {
             events::check()?;
+            if let Some(other) = rows.iter().find(|r| {
+                r.name != pin.name
+                    && r.name.to_ascii_lowercase().replace('_', "-")
+                        == pin.name.to_ascii_lowercase().replace('_', "-")
+            }) {
+                return Err(refusal(
+                    ("lock_inconsistent", source_name),
+                    &pin.name,
+                    &pin.version,
+                    Some(&other.name),
+                    Some("registry names collide after normalization"),
+                    None,
+                    None,
+                ));
+            }
             let bytes = cache.index(&pin.name, 32 * 1024 * 1024)?;
             let parsed = records(&bytes).map_err(|_| {
                 refusal(
@@ -339,8 +354,7 @@ pub(crate) fn covers(source_name: &str, source: &LockSource, rows: &[VersionRow]
             })?;
             if !dep.optional
                 && !pin.dependencies.iter().any(|edge| {
-                    edge.source_kind == SourceKind::CratesIo
-                        && edge.name == dep.package()
+                    edge.name == dep.package()
                         && Version::parse(&edge.version).is_ok_and(|v| req.matches(&v))
                 })
             {
@@ -355,11 +369,7 @@ pub(crate) fn covers(source_name: &str, source: &LockSource, rows: &[VersionRow]
                 ));
             }
         }
-        for edge in pin
-            .dependencies
-            .iter()
-            .filter(|e| e.source_kind == SourceKind::CratesIo)
-        {
+        for edge in &pin.dependencies {
             if !deps.iter().any(|d| {
                 d.package() == edge.name
                     && VersionReq::parse(&d.req).is_ok_and(|req| {

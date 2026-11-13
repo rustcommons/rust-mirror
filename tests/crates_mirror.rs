@@ -187,7 +187,7 @@ fn payload_fixture() -> (Catalog, PayloadSource) {
     )
 }
 #[test]
-fn approved_fetch_exposes_only_verified_schema_four_sparse_output() {
+fn approved_fetch_exposes_only_verified_current_sparse_output() {
     use mirror::{Approval, FetchOptions, Inventory};
     let (catalog, source) = payload_fixture();
     let plan = mirror::plan(&catalog, &source, None, false).unwrap();

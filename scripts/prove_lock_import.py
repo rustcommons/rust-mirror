@@ -102,6 +102,8 @@ def main():
         expected = {(p["name"], p["version"], p["checksum"]) for s in imported["catalog"]["crate-locks"].values() for p in s["pins"]}
         assert {(v["name"], v["version"], v["cksum"]) for v in plan["versions"]} == expected
         assert any(v.get("locked_yanked") for v in plan["versions"])
+        planning_events=[json.loads(line) for line in (root/"plan.jsonl").read_text().splitlines()]
+        assert not any(e.get("type")=="artifact" and e.get("path","").endswith(".crate") and e.get("action")!="head" for e in planning_events)
         # The backend can replay/fetch after every original lockfile has disappeared.
         moved = []
         try:
@@ -219,7 +221,7 @@ def main():
             thread.join(timeout=10)
             (root / "requests.json").write_text(json.dumps(requests, indent=2)+"\n")
             shutil.copyfile(pki / "crl-requests.json", root / "revocation-requests.json")
-    summary = {"schema": 1, "backend_source": subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip(), "cargo": command([cargo,"--version"]).stdout.strip(), "rustc": command([rustc,"-vV"]).stdout, "plan_id": inventory["plan"]["plan_id"], "versions": inventory["plan"]["counts"]["versions"], "archive_bytes": sum(f["bytes"] for f in inventory["files"] if f["path"].endswith(".crate")), "locked_yanked": [{"name":v["name"],"version":v["version"]} for v in inventory["plan"]["versions"] if v.get("locked_yanked")], "projects": reports, "scope": "Exact registry pins only; git/path sources supplied independently. Builds are the named packages, not arbitrary projects/targets/features.", "private_tls_keys_destroyed": True}
+    summary = {"schema": 1, "backend_source": subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip(), "cargo": command([cargo,"--version"]).stdout.strip(), "rustc": command([rustc,"-vV"]).stdout, "plan_id": inventory["plan"]["plan_id"], "versions": inventory["plan"]["counts"]["versions"], "planning_archive_gets": 0, "archive_version_overfetch": 0, "archive_bytes": sum(f["bytes"] for f in inventory["files"] if f["path"].endswith(".crate")), "locked_yanked": [{"name":v["name"],"version":v["version"]} for v in inventory["plan"]["versions"] if v.get("locked_yanked")], "projects": reports, "scope": "Exact registry pins only; git/path sources supplied independently. Builds are the named packages, not arbitrary projects/targets/features.", "private_tls_keys_destroyed": True}
     (root / "summary.json").write_text(json.dumps(summary,indent=2)+"\n")
     print(json.dumps(summary), flush=True)
 

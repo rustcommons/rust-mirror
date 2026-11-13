@@ -1,4 +1,4 @@
-//! Private, locked crate transfers; completed immutable schema-4 output is exposed only after verification.
+//! Private, locked crate transfers; completed immutable schema-4/5 output is exposed only after verification.
 use super::*;
 use crate::{resume, SnapshotFile, Transfer};
 use sha2::{Digest, Sha256};
@@ -25,7 +25,7 @@ pub struct FetchOptions {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Inventory {
-    /// Inventory schema 4, refused by older toolchain-only readers.
+    /// Inventory schema 5 for plan 2, or legacy schema 4 for plan 1. Older readers refuse new schemas.
     pub schema: u32,
     /// Exactly `crates`.
     pub kind: String,
@@ -510,7 +510,7 @@ fn copy_checked(
     Ok(count)
 }
 impl Inventory {
-    /// Verify full local schema-4 closure and all bytes. Does not publish or activate anything.
+    /// Verify full local schema-4/5 closure and all bytes. Does not publish or activate anything.
     pub fn load(root: &Path) -> Result<Self> {
         Self::read(root, true)
     }

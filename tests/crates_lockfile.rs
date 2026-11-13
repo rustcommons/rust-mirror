@@ -387,3 +387,76 @@ fn cli_import_preview_write_and_remove_share_library_shapes() {
         .crates
         .contains_key("manual"));
 }
+
+#[test]
+fn mixed_checksum_encodings_and_ambiguous_local_refs_refuse() {
+    let text=package(4)+&format!("[metadata]\n\"checksum itoa 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)\"=\"{}\"\n","a".repeat(64));
+    assert!(
+        !parse_with_control(&input(text), &Control::default())
+            .unwrap()
+            .accepted
+    );
+    let text=package(4)+"[[package]]\nname=\"itoa\"\nversion=\"2.0.0\"\n[[package]]\nname=\"app\"\nversion=\"1.0.0\"\ndependencies=[\"itoa\"]\n";
+    let r = parse_with_control(&input(text), &Control::default()).unwrap();
+    assert!(!r.accepted);
+    assert!(r
+        .diagnostics
+        .iter()
+        .any(|d| d.kind == DiagnosticKind::AmbiguousDependency));
+    let text=format!("[[package]]\nname=\"itoa\"\nversion=\"1.0.15\"\nsource=\"sparse+https://index.crates.io/\"\n[metadata]\n\"checksum itoa 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)\"=\"{}\"\n","a".repeat(64));
+    let r = parse_with_control(&input(text), &Control::default()).unwrap();
+    assert!(r.accepted, "{:?}", r.diagnostics);
+}
+
+#[test]
+fn external_patched_edges_remain_external_without_closure_expansion() {
+    let (mut c, mut source) = locked_fixture();
+    let lock = c.crate_locks.get_mut("service-a").unwrap();
+    let external = LockedIdentity {
+        name: "patched".into(),
+        version: "1.0.0".into(),
+        source_kind: SourceKind::Git,
+    };
+    lock.external_packages.push(ExternalPackage {
+        identity: external.clone(),
+        dependencies: vec![],
+    });
+    lock.pins
+        .iter_mut()
+        .find(|p| p.name == "a")
+        .unwrap()
+        .dependencies
+        .push(external);
+    let mut row: serde_json::Value = serde_json::from_slice(&source.index["a"]).unwrap();
+    row["deps"] = serde_json::json!([{"name":"patched","req":"1","optional":false}]);
+    source
+        .index
+        .insert("a".into(), (row.to_string() + "\n").into_bytes());
+    let p = mirror::plan(&c, &source, None, false).unwrap();
+    assert_eq!(p.versions.len(), 2);
+    assert!(!p.versions.iter().any(|v| v.name == "patched"));
+}
+#[test]
+fn legacy_historical_cohort_digest_is_preserved() {
+    let plan = mirror::FrozenPlan::load(std::path::Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/crates-retained-plan-v1.json"
+    )))
+    .unwrap();
+    assert_eq!(plan.schema, 1);
+    assert_eq!(plan.cohorts.len(), 2);
+    assert_eq!(plan.versions.len(), 1);
+}
+
+#[test]
+fn malformed_names_and_unused_patch_values_do_not_echo_credentials() {
+    let text = package(4).replace("name=\"itoa\"", "name=\"https://user:PRIVATE@host\"");
+    let r = parse_with_control(&input(text), &Control::default()).unwrap();
+    assert!(!r.accepted);
+    assert!(!serde_json::to_string(&r).unwrap().contains("PRIVATE"));
+    let text =
+        package(4) + "[[patch.unused]]\nname=\"https://user:PRIVATE@host\"\nversion=\"password\"\n";
+    let r = parse_with_control(&input(text), &Control::default()).unwrap();
+    assert!(!r.accepted);
+    assert!(!serde_json::to_string(&r).unwrap().contains("PRIVATE"));
+}

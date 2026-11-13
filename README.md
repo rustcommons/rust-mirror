@@ -46,6 +46,10 @@ rust-mirror crates show --plan ./crate-run-001/plan.json
 rust-mirror crates sync --config crates.toml --output ./crate-run-001 --approve-plan PLAN_ID
 ```
 
+0.5.0 also copies named Cargo.lock pin sources into the catalog; preview with
+`rust-mirror crates import-lock --config crates.toml --lock service-a=../service-a/Cargo.lock`
+and explicitly add `--write` to save. See the [lock guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/LOCK-IMPORT.md).
+
 The experimental crate MVP starts in 0.4.0. Client build evidence is bounded;
 historical/current cohort combinations that need unmirrored edges are refused.
 Scheduling, in-generation compaction and Nexus pruning remain deferred.

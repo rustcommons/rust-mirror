@@ -38,7 +38,7 @@
       "name": "rust-analyzer-2020-06-01",
       "build_args": [
         "--package",
-        "stdx"
+        "ra_hir_ty"
       ],
       "unextracted_links": [],
       "source_url": "https://github.com/rust-lang/rust-analyzer/tree/7ae247f03c639d6e704159df7f0120466afc3c30",

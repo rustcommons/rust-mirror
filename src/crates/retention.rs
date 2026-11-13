@@ -62,7 +62,7 @@ pub struct KeepSources {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct PrunePlan {
-    /// Wrapper schema 1, independent of inventory/event schemas.
+    /// Wrapper schema 2, independent of inventory/event schemas.
     pub schema: u32,
     /// Exact shared-engine file/folder deletions, bytes and keep reasons.
     pub deletion: core::PrunePlan,

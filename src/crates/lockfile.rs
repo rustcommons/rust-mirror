@@ -22,8 +22,22 @@ pub struct LockInput {
 impl std::fmt::Debug for LockInput {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LockInput")
-            .field("source_name", &safe(&self.source_name, 128))
-            .field("file_name", &safe(&self.file_name, 255))
+            .field(
+                "source_name",
+                &if valid_name(&self.source_name) {
+                    self.source_name.as_str()
+                } else {
+                    "<invalid>"
+                },
+            )
+            .field(
+                "file_name",
+                &if valid_file(&self.file_name) {
+                    self.file_name.as_str()
+                } else {
+                    "<invalid>"
+                },
+            )
             .field("text", &"<redacted>")
             .finish()
     }
@@ -254,9 +268,13 @@ impl ParseReport {
             .map(|(a, b)| (Some(a), Some(b)))
             .unwrap_or((None, None));
         self.diagnostics.push(ImportDiagnostic {
-            source_name: safe(&input.source_name, 128),
-            package: package.map(|x| safe(x, 128)),
-            field: field.map(|x| safe(x, 128)),
+            source_name: if valid_name(&input.source_name) {
+                input.source_name.clone()
+            } else {
+                "<invalid>".into()
+            },
+            package: package.filter(|x| valid_name(x)).map(str::to_owned),
+            field: field.filter(|x| valid_name(x)).map(str::to_owned),
             line,
             column,
             registry_origin: None,
@@ -264,9 +282,6 @@ impl ParseReport {
             message: message.into(),
         });
     }
-}
-fn safe(s: &str, limit: usize) -> String {
-    s.chars().filter(|c| !c.is_control()).take(limit).collect()
 }
 fn valid_name(name: &str) -> bool {
     !name.is_empty()

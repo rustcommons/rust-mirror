@@ -132,6 +132,19 @@ pub(super) fn parse(input: &LockInput) -> Result<ParseReport> {
         );
         return Ok(report);
     }
+    let has_inline = packages.iter().any(|p| p.get_ref().checksum.is_some());
+    if (has_inline || raw.version.is_some())
+        && raw.metadata.keys().any(|k| k.starts_with("checksum "))
+    {
+        report.issue(
+            input,
+            None,
+            Some("metadata"),
+            raw.metadata.values().next().map(|v| v.span().start),
+            DiagnosticKind::ConflictingChecksum,
+            "legacy checksum metadata cannot be mixed with inline/versioned encodings",
+        );
+    }
     let mut entries = Vec::new();
     let mut unique = BTreeSet::new();
     let mut edge_count = 0usize;
@@ -230,7 +243,7 @@ pub(super) fn parse(input: &LockInput) -> Result<ParseReport> {
                     let (name, vers, src) = reference(key.strip_prefix("checksum ")?)?;
                     if name == identity.name
                         && vers.as_deref() == Some(&identity.version)
-                        && src.as_deref() == source.as_deref()
+                        && src.as_deref().map(canonical) == source.as_deref().map(canonical)
                     {
                         Some(value)
                     } else {
@@ -315,7 +328,7 @@ pub(super) fn parse(input: &LockInput) -> Result<ParseReport> {
             line,
             column,
             identity,
-            source,
+            source: source.map(|s| canonical(&s).to_owned()),
             checksum,
             deps: pkg
                 .dependencies
@@ -340,7 +353,23 @@ pub(super) fn parse(input: &LockInput) -> Result<ParseReport> {
         }
         for pkg in patch.unused {
             let (line, col) = report.location(input, pkg.span().start);
+            let offset = pkg.span().start;
             let p = pkg.into_inner();
+            if p.name.as_ref().is_none_or(|n| !valid_name(n.get_ref()))
+                || p.version
+                    .as_ref()
+                    .is_none_or(|v| semver::Version::parse(v.get_ref()).is_err())
+            {
+                report.issue(
+                    input,
+                    None,
+                    None,
+                    Some(offset),
+                    DiagnosticKind::InvalidPackage,
+                    "unused patch needs a valid name and exact version",
+                );
+                continue;
+            }
             report.skipped.push(SkippedEntry {
                 name: p.name.map(Spanned::into_inner).unwrap_or_default(),
                 version: p.version.map(Spanned::into_inner).unwrap_or_default(),
@@ -358,13 +387,35 @@ pub(super) fn parse(input: &LockInput) -> Result<ParseReport> {
         for (dep, offset) in &entry.deps {
             events::check()?;
             let parsed = reference(dep);
+            if parsed.as_ref().is_some_and(|(name, v, _)| {
+                v.is_none()
+                    && entries
+                        .iter()
+                        .filter(|e| e.identity.name == *name)
+                        .map(|e| &e.identity.version)
+                        .collect::<BTreeSet<_>>()
+                        .len()
+                        > 1
+            }) {
+                report.issue(
+                    input,
+                    Some(&entry.identity.name),
+                    Some("dependencies"),
+                    Some(*offset),
+                    DiagnosticKind::AmbiguousDependency,
+                    "dependency name needs a version to disambiguate",
+                );
+                continue;
+            }
             let mut candidates: Vec<_> = entries
                 .iter()
                 .filter(|e| {
                     parsed.as_ref().is_some_and(|(name, version, source)| {
                         e.identity.name == *name
                             && version.as_ref().is_none_or(|v| *v == e.identity.version)
-                            && source.as_ref().is_none_or(|s| Some(s) == e.source.as_ref())
+                            && source
+                                .as_ref()
+                                .is_none_or(|s| Some(canonical(s)) == e.source.as_deref())
                     })
                 })
                 .collect();
@@ -461,4 +512,12 @@ fn origin(source: &str) -> Option<String> {
         return None;
     }
     Some(format!("{scheme}://{authority}"))
+}
+
+fn canonical(source: &str) -> &str {
+    match source {
+        "registry+https://github.com/rust-lang/crates.io-index"
+        | "sparse+https://index.crates.io/" => "crates-io",
+        _ => source,
+    }
 }

@@ -201,11 +201,11 @@ pub struct BudgetFlags {
     /// Known archives exceeding their individual cap.
     pub oversized_files: Vec<OversizedFile>,
 }
-/// Serializable approved-input boundary. Schema 1 is unrelated to inventory schema 4/protocol 1.
+/// Serializable approved-input boundary. New writers use schema 2; schema 1 remains readable. Inventory/protocol schemas are independent.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct FrozenPlan {
-    /// Frozen-plan schema (currently 1).
+    /// Frozen-plan schema 2 (legacy 1 is read/validated).
     pub schema: u32,
     /// SHA-256 of canonical typed JSON with this field empty.
     pub plan_id: String,
@@ -854,7 +854,7 @@ fn summaries(plan: &FrozenPlan) -> Result<(Counts, SizeEstimate, BudgetFlags)> {
     Ok((counts, sizes, budgets))
 }
 /// Resolve a catalog natively and return a frozen preview, with optional HEAD estimates and no archive calls.
-/// Previous-generation support is integrated with the schema-4 reader; unavailable states refuse rather than drop retention.
+/// Previous-generation support is integrated with the schema-4/5 reader; unavailable states refuse rather than drop retention.
 pub fn plan(
     catalog: &Catalog,
     source: &dyn CrateSource,
@@ -972,6 +972,20 @@ pub fn plan(
             "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative.".into(),
         ],
     };
+    if !value.catalog.crate_locks.is_empty() {
+        if value.roots.is_empty() {
+            value.warnings.remove(0);
+        }
+        value.warnings.push("Imported locks include every exact registry package (including dev/targets); features are not inferred and lock closure is not expanded.".into());
+        if value
+            .catalog
+            .crate_locks
+            .values()
+            .any(|s| !s.external_packages.is_empty())
+        {
+            value.warnings.push("Git/path/workspace sources require independent client provisioning; they are not mirrored.".into());
+        }
+    }
     value.changes.added = value.versions.iter().map(VersionRow::identity).collect();
     value.changes.source_changes = locks::source_changes(None, &value.catalog);
     let (counts, sizes, budgets) = summaries(&value)?;
