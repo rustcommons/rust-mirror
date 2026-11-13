@@ -1,6 +1,6 @@
 # rust-mirror
 
-Prepare verified Rust toolchain mirrors for offline Rustup installation and updates.
+Prepare verified Rust toolchain and curated crate mirrors for offline development.
 Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 
 ## Install
@@ -28,6 +28,7 @@ prefix and does not activate Nexus routing. Start with a disposable local setup.
 | --- | --- |
 | [User guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md) | Full Windows/Unix workflow, prerequisites, hosting and recovery |
 | [Command reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md) | Commands, configuration, effects and limits |
+| [Crate guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md) | Catalogs, approved previews, sparse registry and Cargo client setup |
 | [API docs](https://docs.rs/rust-mirror/latest/rust_mirror/) | Rust library and controlled operations |
 | [Corporate networks](https://github.com/rustcommons/rust-mirror/blob/main/docs/NETWORK.md) | Proxy/CA/timeouts, connection diagnostics, size estimates and cached release discovery (0.3.0+) |
 | [Events protocol](https://github.com/rustcommons/rust-mirror/blob/main/docs/EVENTS.md) | Loosely coupled CLI/GUI JSON lines, heartbeat and cancellation |
@@ -36,9 +37,18 @@ prefix and does not activate Nexus routing. Start with a disposable local setup.
 | [Requirements](https://github.com/rustcommons/rust-mirror/blob/main/docs/REQUIREMENTS.md) | Bounded verification and remaining gaps |
 | [Changelog](https://github.com/rustcommons/rust-mirror/blob/main/CHANGELOG.md) | Release history |
 
-The [crate MVP](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)
-is implemented only in development source; published 0.3.0 has no crate registry
-mirroring. Scheduling, in-generation compaction and Nexus pruning remain deferred.
+For curated crates, save a [catalog](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md#catalog-and-paste), then preview and approve:
+
+```sh
+rust-mirror crates sync --config crates.toml --output ./crate-run-001
+rust-mirror crates show --plan ./crate-run-001/plan.json
+# Review the whole preview, then substitute its exact plan_id:
+rust-mirror crates sync --config crates.toml --output ./crate-run-001 --approve-plan PLAN_ID
+```
+
+The experimental crate MVP starts in 0.4.0. Client build evidence is bounded;
+historical/current cohort combinations that need unmirrored edges are refused.
+Scheduling, in-generation compaction and Nexus pruning remain deferred.
 Upstream signatures are preserved, not independently verified. Native SDKs and
 production server policy remain administrator responsibilities. See the guides for
 trust/platform limits. Inspired by [Panamax](https://github.com/panamax-rs/panamax).

@@ -1,7 +1,7 @@
 //! Native crate dependency closure, curated catalogs and experimental immutable registry workflows.
 //!
 //! No Cargo executable is invoked at runtime. The schema-0 report remains a research
-//! format; approved frozen MVP operations live in [`mirror`] and are under qualification.
+//! format; approved frozen MVP operations live in [`mirror`].
 pub mod catalog;
 pub mod mirror;
 pub mod retention;
@@ -43,7 +43,11 @@ impl IndexSource for SparseIndex {
             .get(&format!("https://index.crates.io/{path}"))
             .set(
                 "User-Agent",
-                "rust-mirror/0.3.0-phase0 (+https://github.com/rustcommons/rust-mirror)",
+                concat!(
+                    "rust-mirror/",
+                    env!("CARGO_PKG_VERSION"),
+                    "-phase0 (+https://github.com/rustcommons/rust-mirror)"
+                ),
             )
             .set("Accept-Encoding", "identity")
             .call()

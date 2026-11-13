@@ -2,23 +2,28 @@
 
 ## [Unreleased]
 
-- Begin the owner-approved crate MVP with typed Cargo-compatible catalog parsing,
-  canonical TOML/JSON editor round-trips and structured multi-error paste previews.
-  Add bounded fixed-origin crate transport and additive completion/retry/counter
-  event shapes. Add native frozen plan/show/explain, one-preview sync approval,
-  bounded concurrent checksum-verified fetch/resume, schema-4 sparse generations,
-  historical closure retention, destination-bound publication and explicit crate-aware
-  whole-generation pruning, with bounded top-100/Cargo, platform HTTPS/resume and
-  actual disposable Nexus qualification. No version bump or publication is included.
+## [0.4.0] - 2026-11-13
 
-- Add an experimental metadata-only native crate-resolution research API and test
-  driver: declared-feature propagation, bounded conservative closure/backtracking,
-  filtered-index replay and inclusion reasons. No Cargo binary/library is needed
-  at runtime. This is Phase 0, not a crate fetch/publish workflow or release promise.
-- Add a real-Cargo CI conformance oracle with popular-crate and synthetic sparse
-  fixtures, plus measured version overfetch. Cargo is used only in test tooling.
-- Record owner approval dated 2026-11-12 for direct `semver`; earlier `serde_json`
-  approval applies. No Cargo, third-party solver, tar or flate2 dependency is added.
+- Mirror organization-wide curated crate catalogs with Cargo-compatible registry
+  dependency syntax, aliases, features, latest-N rules and exact pins. Resolve
+  native all-platform normal/build closure without a runtime Cargo dependency.
+- Preview counts, optional HEAD size estimates, budgets and inclusion chains in a
+  frozen JSON plan. Require one explicit whole-preview approval before archive GETs.
+- Fetch/sync with bounded concurrency, Retry-After/backoff, checksum verification,
+  locks, cooperative cancellation and initialized-state resume. Publish immutable
+  schema-4 static sparse generations to a fresh matching HTTPS/Nexus Raw prefix.
+- Retain verified historical closures; add crate-aware whole-generation pruning
+  with declared pins, exact previews, stale-state refusal and explicit apply.
+  Refuse historical/current combinations requiring an unmirrored dependency edge.
+- Add typed catalog JSON/TOML round-trips and paste diagnostics, metadata-only Cargo
+  config snippets, crate discovery counts and additive protocol-1 completion,
+  retry and file-counter events for library/GUI workers.
+- Qualify the dated 100-root corpus and archive-byte overfetch. Real HTTPS Cargo
+  client builds cover itoa on Linux/Windows/macOS; actual Nexus client evidence is
+  Linux-only. These bounds do not imply arbitrary crates/targets/features work.
+- Include the previously approved native Phase 0 research API/conformance tooling
+  and direct `semver`/`serde_json` dependencies. No runtime Cargo, third-party
+  solver, tar or flate2 dependency is introduced. Rust/Cargo 1.90+ remains required.
 
 ## [0.3.0] - 2026-11-12
 

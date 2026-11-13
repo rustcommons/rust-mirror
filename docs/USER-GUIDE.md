@@ -661,10 +661,9 @@ Plan can estimate sizes with HEAD; unknown lengths stay unknown and hashes still
 verify downloads. Use `releases --cache DIRECTORY --refresh`, then `--offline` for
 cached selectors, and check the reported cache age before choosing a release.
 
-## Curated crate registry (development source)
+## Curated crate registry (0.4.0)
 
-The [crate MVP](CRATES.md) exists in development source; published 0.3.0 does not contain
-these commands. Start with an organization-approved catalog spanning projects,
+The experimental [crate MVP](CRATES.md) starts in 0.4.0. Start with an organization-approved catalog spanning projects,
 explicit hosts/targets, capacity budgets and the eventual immutable HTTPS base URL.
 Keep contact/proxy/CA settings explicit. Do not put credential values in the catalog.
 

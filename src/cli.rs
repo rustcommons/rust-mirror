@@ -48,7 +48,7 @@ rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [-
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
-Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. Crate registry commands are experimental development-source functionality; see crates --help. Upstream network flags: --proxy URL | --proxy-from-env, --no-proxy LIST, --proxy-username-env NAME, --proxy-password-env NAME | --proxy-password-stdin, --extra-ca-file PEM, --connect-timeout SECONDS, --read-timeout SECONDS, --network-config FILE. Plan/sync accept --estimate-sizes.";
+Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. Crate registry commands are experimental; see crates --help. Upstream network flags: --proxy URL | --proxy-from-env, --no-proxy LIST, --proxy-username-env NAME, --proxy-password-env NAME | --proxy-password-stdin, --extra-ca-file PEM, --connect-timeout SECONDS, --read-timeout SECONDS, --network-config FILE. Plan/sync accept --estimate-sizes.";
 fn legacy(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     let mut args = args;
     let mut values = BTreeMap::new();
