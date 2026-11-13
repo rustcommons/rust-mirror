@@ -1,9 +1,8 @@
 # rust-mirror
 
-Prepare selected Rust toolchains for offline Rustup clients, then publish a finished
+Prepare selected Rust toolchains and curated crates for offline clients, then publish a finished
 generation to a fresh Nexus Raw/static HTTPS prefix. Rust/Cargo 1.90+ is required.
-This library does not install client tools or activate routing. The development-source
-crate mirroring MVP is available only in development source; see the [crate contract](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md).
+This library does not install client tools or activate routing.
 
 Use the [user guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md)
 for the full setup/recovery workflow and the
@@ -25,6 +24,18 @@ let finished = selection::rustup::prepare(&run.mirror, "1.29.3", &[],
 println!("{}", finished.display());
 # Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
 ```
+
+## Curated crate registry (experimental)
+
+[`crates::catalog::Catalog`] validates Cargo-compatible registry dependencies and
+version rules. [`crates::source::RegistrySource`] reuses explicit network options.
+[`crates::mirror::plan_with_control`] freezes the native closure without archive
+downloads; [`crates::mirror::sync_with_control`] first returns a saved preview for
+whole-plan approval. Fetching verifies index checksums and produces a static sparse
+registry. Use the [crate guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)
+for catalog, approval, resume, publication and Cargo source-replacement examples.
+Historical/current cohort combinations requiring unmirrored edges are refused;
+bounded client builds do not guarantee arbitrary crate/target compatibility.
 
 ## Progress, stop and publication
 
@@ -68,4 +79,4 @@ Upstream hashes/trusted local storage are the trust model; signatures are preser
 without independent OpenPGP validation. No hostile-filesystem, NFS, globally atomic
 activation or arbitrary-platform guarantee is implied. Read the
 [requirements and evidence](https://github.com/rustcommons/rust-mirror/blob/main/docs/REQUIREMENTS.md)
-and [release notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.2.0.md).
+and [release notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.4.0.md).

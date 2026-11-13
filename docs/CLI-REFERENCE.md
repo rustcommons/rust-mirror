@@ -647,9 +647,9 @@ locked atomic replacement; inspect/repair invalid state explicitly before retryi
 No mirror, payload archive or remote server is written. Cancellation preserves any
 previous complete cache. See the [cache contract](NETWORK.md#release-discovery-and-cache).
 
-## Crate mirroring MVP (development source)
+## Crate mirroring MVP (0.4.0)
 
-These commands are implemented in development source and are absent from published 0.3.0.
+These experimental commands are introduced in 0.4.0; see its [release notes](releases/v0.4.0.md).
 Use a dedicated [crate catalog](CRATES.md); native planning never invokes Cargo.
 All accept protocol-1 `--events jsonl`; network flags apply to plan/fetch/sync.
 

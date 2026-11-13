@@ -1,7 +1,7 @@
 # Release policy and checklist
 
 The first published crate is `rust-mirror` 0.1.0. No placeholder crate is published
-for name reservation; `rust-mirror-gui` remains future work. Publication requires
+for name reservation. GUI work is governed separately. Publication requires
 the owner's separate go-ahead. This policy does not itself authorize publication.
 
 ## Versioning and scope
@@ -21,6 +21,15 @@ published corporate networking from the owner's machine after normal merge;
 [postpublication verification](evals/2026-11-12-publication-0.3.0.md) records the
 registry, tag/release, installed proof and docs.rs. Later versions still require
 separate owner authorization and all applicable gates.
+
+The owner authorized 0.4.0 publication on 2026-11-13: accepted crate MVP plus main.
+The coordinator merges the reviewed release PR and publishes from the owner's
+machine; postpublication verification follows that confirmation. Carry the
+[Phase 1 evidence](evals/2026-11-13-crates-mvp.md) only where code is unchanged.
+Crate qualification additionally requires the dated top-100 corpus/byte comparison,
+isolated HTTPS Cargo clients, kill/cancel/resume and actual schema-4 Nexus proof.
+Keep bounded client builds, Linux-only Nexus client evidence and historical-cohort
+refusal explicit. See [0.4.0 notes](releases/v0.4.0.md). This is not GUI Phase 2 approval.
 
 ## Before merge and publication
 
@@ -61,7 +70,7 @@ separate owner authorization and all applicable gates.
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.3.0.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.4.0.md) as the GitHub Release, latest and
   without attached standalone binaries unless separately authorized.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.

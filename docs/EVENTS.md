@@ -178,7 +178,7 @@ Unknown additive events/fields remain ignorable; no existing meaning changes.
 
 ## Crate mirroring MVP: protocol 1 additions
 
-Owner-approved Phase 1 contract, 2026-11-13; **not shipped in 0.3.0**. Implementation
+Owner-approved Phase 1 contract, 2026-11-13; introduced in 0.4.0. Implementation
 status and library names are tracked in [the crate contract](CRATES.md). This is an
 additive protocol-1 extension: existing envelopes, units, event meanings and terminal
 rules remain unchanged. Phase 0 research report schema 0 is not a fetch plan.

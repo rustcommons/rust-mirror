@@ -1,10 +1,10 @@
 [package]
 name = "rust-mirror"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 rust-version = "1.90"
 license = "Apache-2.0"
-description = "Prepare pinned Rust toolchain snapshots for offline static hosting"
+description = "Prepare verified Rust toolchain and crate mirrors for offline static hosting"
 repository = "https://github.com/rustcommons/rust-mirror"
 readme = "README.md"
 include = ["src/**", "examples/**", "Cargo.toml", "Cargo.lock", "README.md", "CHANGELOG.md", "LICENSE"]

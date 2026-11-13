@@ -1,9 +1,10 @@
 # Crate mirroring MVP contract
 
-Owner-approved implementation scope, 2026-11-13. **Development source only; not
-shipped in 0.3.0.** The catalog, frozen plan, sync/fetch, publication and retention
-APIs are implemented with [bounded qualification](evals/2026-11-13-crates-mvp.md). No version or
-publication is authorized. See [design](CRATES-DESIGN.md), [roadmap](ROADMAP.md)
+Introduced in the experimental 0.4.0 candidate, authorized on 2026-11-13. The
+catalog, frozen plan, sync/fetch, publication and retention APIs have
+[bounded qualification](evals/2026-11-13-crates-mvp.md). See the
+[release notes](releases/v0.4.0.md) for upgrade impact and limits.
+See [design](CRATES-DESIGN.md), [roadmap](ROADMAP.md)
 and [requirements](REQUIREMENTS.md). Runtime dependency resolution stays native.
 
 ## Catalog and paste
@@ -108,8 +109,8 @@ or pruning is part of sync.
 
 ## Commands and public API names
 
-These development-source commands and public library names are covered by the
-named qualification record; they are absent from published 0.3.0:
+These commands and public library names are introduced in 0.4.0 and covered by the
+named qualification record:
 
 | CLI | Library/report |
 | --- | --- |
@@ -129,8 +130,8 @@ library; no Cargo subprocess, network/TLS reproduction or solver logic is requir
 
 Reports/plan JSON have independent `schema` fields. Existing Phase 0 `crates::Plan`
 (schema 0) is research output, never accepted as a frozen fetch plan or completed
-inventory. All exported types/functions will have rustdoc. Detailed stable field
-shapes are recorded with implementation and tests before claiming API availability.
+inventory. Exported types/functions have rustdoc; detailed field shapes are recorded with
+implementation and tests.
 
 ## GUI field shapes and local editing
 

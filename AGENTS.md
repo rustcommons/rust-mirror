@@ -8,8 +8,9 @@ mirroring for offline development, inspired by Panamax. This repository now has 
 publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0 are published;
 see docs/evals/2026-11-12-publication-0.3.0.md.
 Describe only demonstrated functionality
-as implemented. Distinguish the unreleased crate MVP from published toolchain
-features; see its bounded qualification record. Other work remains governed by the roadmap.
+as implemented. Crate mirroring is included in the authorized 0.4.0 candidate;
+publication is not complete until its own postpublication record exists. Other work
+remains governed by the roadmap.
 
 Preserve the earlier Windows-local uncommitted prototype. Assess it before import
 or replacement; do not delete or overwrite it. Keep `ROM-REQ` identifiers stable
@@ -24,7 +25,7 @@ across the rename. Do not publish placeholder crates merely to reserve names.
 - `CLAUDE.md`: compatibility pointer to this file.
 
 - `src/`: toolchain/crate selection, planning, downloading and thin CLI; Rust 1.90+.
-- `src/crates/`: development-source catalog, frozen previews, controlled sparse-registry operations and crate-aware retention; absent from published 0.3.0.
+- `src/crates/`: catalog, frozen previews, controlled sparse-registry operations and crate-aware retention; introduced by the 0.4.0 candidate.
 - `scripts/publish_raw.py`: Python 3.11+ static-host HTTP PUT/GET helper.
 - `scripts/prove_offline.py`: Linux network-namespace proof, including negative controls.
 - `docs/NEXUS-RAW.md`: actual setup, publication behavior and limits.
@@ -237,8 +238,9 @@ clients, resume/kill/corruption/budget/yank/links/prerelease cases, measured arc
 byte overfetch and an actual disposable Nexus Raw crate publication/client proof.
 Never substitute HTTP fixtures for those named HTTPS/Nexus gates. Use only existing
 and already approved dependencies; ask with evidence before adding another. Cargo.lock
-import stays deferred. Coordinator review is required before merging PRs. No version
-bump, package publication, production Nexus writes/deletes or release is authorized.
+import stays deferred. Coordinator review is required before merging PRs. Phase 1
+approval alone did not authorize versioning or publication; the separate 0.4.0
+authorization below applies. Production Nexus writes/deletes remain unauthorized.
 Preserve existing toolchain evidence and exact common instructions. Historical crate cohorts must retain their original index bytes
 and independent proofs, and replay the combined served index across historical and
 current profiles; refuse missing edges or resource-bound exhaustion rather than
@@ -246,6 +248,19 @@ expose an incomplete generation. Metadata-only inspection/snippet access is not
 payload verification. Keep full verification mandatory before publication/pruning.
 See [MVP qualification](docs/evals/2026-11-13-crates-mvp.md) for exact source/run
 identities; do not generalize bounded Cargo-client evidence to every crate/target.
+
+## 0.4.0 release authorization
+
+On 2026-11-13 the owner authorized publishing 0.4.0: crate mirroring MVP plus the
+accepted contents of main. Prepare the version/lock root entry, changelog, committed
+release notes, concise README/docs.rs, applicable qualification and clean package
+audit under [the release policy](docs/RELEASING.md). Reuse exact Phase 1 evidence
+where runtime code is unchanged; preserve its limits and historical observations.
+The coordinator reviews/merges the release PR and publishes from the owner's
+machine. After the coordinator confirms publication, complete registry payload,
+docs.rs, fresh installation, annotated tag/GitHub Release and verification-workflow
+steps, then notify the GUI maintainer that 0.4.0 is live. Do not publish the package
+from this checkout or begin GUI Phase 2 on this authorization.
 
 ## User-facing documentation
 

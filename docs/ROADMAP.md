@@ -8,11 +8,12 @@ implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md
 ## Curated crate mirroring: proposed phases
 
 The coordinator accepted Phase 0 and normal-merged PRs #30/#31. The owner approved
-Phase 1 on 2026-11-13; its development-source implementation and bounded gates are
+Phase 1 on 2026-11-13; its accepted implementation and bounded gates are
 recorded in [MVP qualification](evals/2026-11-13-crates-mvp.md) and [CRATES.md](CRATES.md).
 Later phases, including GUI work, require separate owner authorization.
 Runtime external/downloaded Cargo and the Cargo library remain excluded. Existing
-and approved dependencies only; no version bump/publication is authorized.
+and approved dependencies only. The owner separately authorized the 0.4.0 release
+on 2026-11-13; see [release notes](releases/v0.4.0.md).
 Estimates below
 are rough engineering effort for one maintainer, excluding review/approval delays,
 infrastructure access and unexpected upstream changes. They are not delivery dates.
