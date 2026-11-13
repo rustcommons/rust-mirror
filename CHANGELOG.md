@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Begin the owner-approved crate MVP with typed Cargo-compatible catalog parsing,
+  canonical TOML/JSON editor round-trips and structured multi-error paste previews.
+  Add bounded fixed-origin crate transport and additive completion/retry/counter
+  event shapes. Full crate plan/fetch/publication and qualification remain in progress.
+
 - Add an experimental metadata-only native crate-resolution research API and test
   driver: declared-feature propagation, bounded conservative closure/backtracking,
   filtered-index replay and inclusion reasons. No Cargo binary/library is needed

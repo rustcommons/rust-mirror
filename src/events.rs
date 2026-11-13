@@ -40,6 +40,17 @@ pub struct Event {
     #[serde(flatten)]
     pub kind: EventKind,
 }
+/// Stable sanitized reason for a bounded crate transport retry.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RetryKind {
+    /// HTTP 429; upstream asked to reduce request rate.
+    RateLimited,
+    /// HTTP 503; service temporarily unavailable.
+    Unavailable,
+    /// Transient transport/read failure, excluding TLS/auth/integrity refusal.
+    Transport,
+}
 /// Protocol-1 events. Nullable byte totals mean unknown, never an estimate of zero.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -116,6 +127,41 @@ pub enum EventKind {
         eta_seconds: Option<f64>,
         /// Always true; byte/hash verification remains separate.
         estimated: bool,
+    },
+    /// Successful completion of one concurrent path/action operation.
+    ArtifactComplete {
+        /// Generation-relative artifact path.
+        path: String,
+        /// Operation that completed, for example download/verify/head/reuse.
+        action: String,
+        /// Observed byte count, absent for unknown HEAD estimates.
+        bytes: Option<u64>,
+        /// True only after whole-content hash verification.
+        verified: bool,
+    },
+    /// Whole crate-fetch counters; only verified/reused files count as completed.
+    CrateSummary {
+        /// Number of fully verified archives.
+        files_completed: u64,
+        /// Total planned archive count, absent before selection is complete.
+        files_total: Option<u64>,
+        /// Actual newly received bytes across attempts.
+        transferred_bytes: u64,
+        /// Reused verified bytes, excluding network transfers.
+        reused_bytes: u64,
+    },
+    /// Bounded transport delay; independent heartbeat continues throughout.
+    Retry {
+        /// Generation-relative path, not an authenticated URL.
+        path: String,
+        /// Next one-based request attempt.
+        attempt: u64,
+        /// Bounded delay before another request.
+        wait_seconds: u64,
+        /// Stable category for GUI wording.
+        kind: RetryKind,
+        /// Sanitized human context, never raw headers.
+        reason: String,
     },
     /// Last CLI event; a killed process or broken output may lack this event.
     Result {
@@ -234,6 +280,8 @@ impl<W: Write + Send> Observer for JsonLines<W> {
             EventKind::TransferSummary { .. } => {
                 &["expected_bytes", "bytes_per_second", "eta_seconds"]
             }
+            EventKind::ArtifactComplete { .. } => &["bytes"],
+            EventKind::CrateSummary { .. } => &["files_total"],
             EventKind::Stage { .. } => &["total"],
             EventKind::Artifact { .. } => &["expected_bytes"],
             EventKind::Hashing { .. } => &["total"],
@@ -433,6 +481,18 @@ impl Control {
             total: None,
         })
     }
+}
+pub(crate) fn complete(path: &str, action: &str, bytes: Option<u64>, verified: bool) -> Result<()> {
+    check()?;
+    if let Some(control) = current() {
+        control.emit(EventKind::ArtifactComplete {
+            path: path.into(),
+            action: action.into(),
+            bytes,
+            verified,
+        })?;
+    }
+    Ok(())
 }
 pub(crate) fn current() -> Option<Control> {
     ACTIVE.with(|a| a.borrow().clone())

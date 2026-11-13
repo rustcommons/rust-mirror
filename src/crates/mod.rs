@@ -2,6 +2,8 @@
 //!
 //! This is not a registry fetch/publish workflow. No Cargo executable is invoked.
 //! Plans are bounded research reports, pending Cargo conformance qualification.
+pub mod catalog;
+pub mod source;
 use crate::{events, network, Error, ErrorKind, NetworkOptions, Result};
 use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
@@ -64,21 +66,30 @@ impl IndexSource for SparseIndex {
         Ok(bytes)
     }
 }
-/// Validated lowercase Cargo sparse shard path. Case and underscore spelling are preserved canonically.
+/// Validate a portable registry name and return its lowercase Cargo sparse shard path.
 pub fn index_path(name: &str) -> Result<String> {
+    let lower = name.to_ascii_lowercase();
+    let reserved = [
+        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8",
+        "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+    ];
     if name.is_empty()
         || name.len() > 64
+        || !name.as_bytes()[0].is_ascii_alphabetic()
         || !name
             .bytes()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'-' || c == b'_')
+            .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
+        || reserved.contains(&lower.as_str())
     {
-        return Err(invalid("crate name must be canonical lowercase ASCII"));
+        return Err(invalid(
+            "crate name must be a valid portable crates.io identifier",
+        ));
     }
-    Ok(match name.len() {
-        1 => format!("1/{name}"),
-        2 => format!("2/{name}"),
-        3 => format!("3/{}/{name}", &name[..1]),
-        _ => format!("{}/{}/{name}", &name[..2], &name[2..4]),
+    Ok(match lower.len() {
+        1 => format!("1/{lower}"),
+        2 => format!("2/{lower}"),
+        3 => format!("3/{}/{lower}", &lower[..1]),
+        _ => format!("{}/{}/{lower}", &lower[..2], &lower[2..4]),
     })
 }
 /// One exact registry root and declared feature profile. Catalog range syntax is not implemented here.
@@ -298,7 +309,9 @@ impl Planner<'_> {
             }
             let version =
                 Version::parse(&record.vers).map_err(|_| invalid("invalid index version"))?;
-            if !seen.insert(record.vers.clone()) {
+            let mut unique_version = version.clone();
+            unique_version.build = semver::BuildMetadata::EMPTY;
+            if !seen.insert(unique_version.to_string()) {
                 return Err(invalid("duplicate index version"));
             }
             if record.v != 2 && !record.features2.is_empty() {
@@ -683,8 +696,8 @@ impl Planner<'_> {
 /// Performs conservative closure, bounded backtracking and filtered-index witness replay.
 /// An error refuses the whole plan. This Phase 0 API does not yet freeze fetch state.
 pub fn plan(source: &mut dyn IndexSource, roots: &[Root], bounds: Bounds) -> Result<Plan> {
-    if roots.is_empty() || roots.len() > 128 {
-        return Err(invalid("expected 1..128 exact root profiles"));
+    if roots.is_empty() || roots.len() > 4096 {
+        return Err(invalid("expected 1..4096 exact root profiles"));
     }
     events::stage("resolve")?;
     let mut planner = Planner {
