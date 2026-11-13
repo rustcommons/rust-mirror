@@ -277,8 +277,15 @@ registry identities only, index checksum matching and lock-scoped yanked permiss
 Do not resolve extra closure or fetch git/path entries. Preserve source-aware
 preview/explain/retention and all existing security/qualification gates. Prove real
 project locks and Cargo clients on Linux/Windows, including old/current formats,
-yanks, skips and refusal cases. Existing dependencies only. Publication needs a
-separate owner go-ahead; this approval does not authorize GUI work or a version bump.
+yanks, skips and refusal cases. Existing dependencies only.
+
+On 2026-11-13 the owner separately authorized publishing 0.5.0 once implementation
+is complete and qualified under [the release policy](docs/RELEASING.md), including
+release versioning/notes and package audit. Report each green PR to the coordinator;
+the coordinator reviews, merges and publishes from the owner's machine. After their
+publication confirmation, complete registry/payload/docs.rs/fresh-install/tag/release/
+workflow verification and notify the GUI maintainer. Do not merge or publish from
+this checkout. This does not authorize GUI implementation or waive any gate.
 
 ## User-facing documentation
 

@@ -3,7 +3,8 @@
 Updated 2026-11-13 for owner decisions dated 2026-11-12. This is future work, not a release promise or a description of
 implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md),
 [network contract](NETWORK.md), [retention contract](RETENTION.md) and
-[requirements index](REQUIREMENTS.md). The approved next iteration is planned 0.5.0 lock import; publication is not authorized.
+[requirements index](REQUIREMENTS.md). The approved next iteration is planned 0.5.0 lock import; the owner authorized
+publication once complete and qualified on 2026-11-13.
 
 ## Curated crate mirroring: proposed phases
 
@@ -45,8 +46,9 @@ On 2026-11-13 the owner approved the Cargo.lock input subset of Phase 3 for 0.5.
 [Contract](LOCK-IMPORT.md) review precedes implementation. Named copied pin sources,
 reimport/removal diffs, v1–v4 checksums, source-scoped yanks and served-index checks
 must be self-contained and preserve manual rules. Real-project Linux/Windows Cargo
-qualification and existing gates are required; no new dependencies or publication
-are authorized. Other Phase 3 registry modes and GUI work remain separate.
+qualification and existing gates are required. Publication is owner-authorized once
+ready, through coordinator review/merge and the owner's machine; new dependencies
+and other Phase 3 registry modes or GUI work remain separately governed.
 
 ## Deferred crate work
 

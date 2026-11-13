@@ -1,8 +1,9 @@
 # Cargo.lock import contract (planned 0.5.0)
 
 Owner-approved implementation scope, 2026-11-13. This is the contract for review
-before implementation; 0.4.0 does not provide these APIs/commands. Publication
-requires separate owner authorization. Existing [crate behavior](CRATES.md),
+before implementation; 0.4.0 does not provide these APIs/commands. The owner
+separately authorized 0.5.0 publication once ready on 2026-11-13; the coordinator
+reviews/merges and publishes after qualification. Existing [crate behavior](CRATES.md),
 [protocol 1](EVENTS.md) and qualification gates continue to apply. No new dependency
 or runtime Cargo invocation is approved.
 
