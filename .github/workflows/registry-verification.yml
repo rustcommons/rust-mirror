@@ -51,7 +51,20 @@ jobs:
           PY
       - name: Installed publisher in a loopback-only namespace
         shell: bash
-        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/registry-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/registry-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+        run: |
+          trap 'sudo rm -f -- "$RUNNER_TEMP/registry-publisher/ca.key" "$RUNNER_TEMP/registry-publisher/server.key"' EXIT
+          sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/registry-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/registry-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+      - name: Verify fixture key cleanup
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PYTHON'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          proof=root/'registry-publisher'
+          assert not (proof/'ca.key').exists() and not (proof/'server.key').exists()
+          (root/'registry-cleanup.json').write_text(json.dumps({'private_keys_destroyed': True, 'fixture_created': proof.exists()})+'\n')
+          PYTHON
       - name: Save bounded identity and proof logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -59,6 +72,7 @@ jobs:
           name: published-registry-verification
           path: |
             ${{ runner.temp }}/registry-identity.json
+            ${{ runner.temp }}/registry-cleanup.json
             ${{ runner.temp }}/registry-publisher/*.json
             ${{ runner.temp }}/registry-publisher/*.stdout
             ${{ runner.temp }}/registry-publisher/*.stderr
