@@ -103,7 +103,7 @@ def main():
     native = set()
     for version in plan["versions"]:
         native.add(version["name"] + "@" + version["version"])
-        name = version["name"]
+        name = version["name"].lower()
         path = ("1/" + name if len(name) == 1 else "2/" + name if len(name) == 2 else
                 "3/" + name[0] + "/" + name if len(name) == 3 else name[:2] + "/" + name[2:4] + "/" + name)
         filtered[path] = filtered.get(path, b"") + bytes(version["index_line"])
@@ -207,6 +207,20 @@ def main():
         server.server_close()
         worker.join(timeout=10)
     assert not archive_requests, archive_requests
+    shared_observations = []
+    native_only_observations = []
+    if args.frozen_plan:
+        for observation in frozen["observations"]:
+            name = observation["name"].lower()
+            shard = ("1/" + name if len(name) == 1 else "2/" + name if len(name) == 2 else
+                     "3/" + name[0] + "/" + name if len(name) == 3 else name[:2] + "/" + name[2:4] + "/" + name)
+            file = cache / shard
+            if not file.is_file():
+                native_only_observations.append(observation["name"])
+                continue
+            raw = file.read_bytes()
+            assert len(raw) == observation["bytes"] and hashlib.sha256(raw).hexdigest() == observation["sha256"], "upstream metadata changed between native planning and Cargo oracle; replan rather than compare different observations"
+            shared_observations.append(observation["name"])
     source = Path(__file__).resolve().parent.parent
     source_hashes = {str(path.relative_to(source)): hashlib.sha256(path.read_bytes()).hexdigest()
                      for path in [source / "src/crates/mod.rs", source / "Cargo.toml", source / "Cargo.lock",
@@ -218,7 +232,9 @@ def main():
                   cargo_only=sorted(union - native),
                   overfetch_percent=100 * len(native - union) / len(union),
                   payload_byte_overfetch=None, archive_requests=archive_requests,
-                  metadata_bytes=plan["metadata_bytes"], index_sha256=metadata_hashes)
+                  metadata_bytes=plan["metadata_bytes"], index_sha256=metadata_hashes,
+                  shared_index_observations_verified=shared_observations,
+                  native_only_index_observations=native_only_observations)
     (args.work / "conformance.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({k: v for k, v in report.items() if k not in ("roots", "index_sha256")}), flush=True)
     from crates_phase0_fixtures import check_fixtures

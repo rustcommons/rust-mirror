@@ -1,0 +1,202 @@
+{
+  "scope": "Clean development-source package audit; not a published 0.3.0 archive and not authorized for upload",
+  "source_head": "de2a4324ddbc72ef2d029e29375b59eb2314e52d",
+  "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+  "archive_sha256": "b6023b91eb3bbcc8037a2743ccb56bb567e9ec4e8fc8240e15c03d018400c16b",
+  "source_files": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "ca773468ccb8c00847745e1a3c0974f96daea6bcd0565d3b6ee486f842e62541",
+      "bytes": 8049
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "ab9720010b7d4ae705013ca7009399184770140183eb2833adc85c058e0602d6",
+      "bytes": 30230
+    },
+    {
+      "path": "Cargo.toml.orig",
+      "sha256": "f3ebe2ae0b41d4a04c67ef1c894235fd9c7932e2768a40af94231e842b3d9a8a",
+      "bytes": 665
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357
+    },
+    {
+      "path": "README.md",
+      "sha256": "df9d59402df9b9ddbaf6a652d669d34b432e5e891ccbb9fccdfe35bc1cf3c5ee",
+      "bytes": 2679
+    },
+    {
+      "path": "examples/crates_mvp.rs",
+      "sha256": "1a59641b23c3a64ec594558beb4d2c0cc9d5754fa7fc939ad3ce48579fe250ea",
+      "bytes": 2253
+    },
+    {
+      "path": "examples/crates_phase0.rs",
+      "sha256": "20834e686340a1412047f32059eb08a8356c25ed2a69d402809f59a5350225ae",
+      "bytes": 2060
+    },
+    {
+      "path": "examples/mirror.toml",
+      "sha256": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e",
+      "bytes": 541
+    },
+    {
+      "path": "examples/multi-version.toml",
+      "sha256": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d",
+      "bytes": 292
+    },
+    {
+      "path": "examples/retention.toml",
+      "sha256": "7d0d6ac740ebccd768e4b237fd6a12ea9b30281fc14efe86893a2032b0d2e5dd",
+      "bytes": 528
+    },
+    {
+      "path": "examples/sync-demo.toml",
+      "sha256": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc",
+      "bytes": 366
+    },
+    {
+      "path": "src/cli/crates.rs",
+      "sha256": "8981daa00f90685d51c4c71be8f14a1e07a50eb42651ab594af842198e20e437",
+      "bytes": 12749
+    },
+    {
+      "path": "src/cli/network_options.rs",
+      "sha256": "0b06778fd307aafb0f1201d3d2dd94bd46a545debd80d6cff6b3f3ae13b55ca4",
+      "bytes": 10379
+    },
+    {
+      "path": "src/cli.rs",
+      "sha256": "ce5991fe2e323f6180bd0916ead48caa4ee450e6c068feedd4fd29fef2603984",
+      "bytes": 33754
+    },
+    {
+      "path": "src/crates/catalog.rs",
+      "sha256": "68826891975d839d12e182e066d8171903831fa1f913cb416090deed04f251a1",
+      "bytes": 24956
+    },
+    {
+      "path": "src/crates/mirror/fetch.rs",
+      "sha256": "9b588141f4a25f6e799207c4e5ba2403d84664e1e161b24a8ba1fbd5350f97f4",
+      "bytes": 34248
+    },
+    {
+      "path": "src/crates/mirror/retained.rs",
+      "sha256": "7916653f246d94a05054f417216413a3b06d4b309a7ad2d71089e4c815de5bde",
+      "bytes": 16332
+    },
+    {
+      "path": "src/crates/mirror/sync.rs",
+      "sha256": "7ff0d0c8f0e138385f711cf319a1297c988947a51b0c1d443e3c837d9bb5eac4",
+      "bytes": 6221
+    },
+    {
+      "path": "src/crates/mirror.rs",
+      "sha256": "cf513038771ba0cbeb20d98845319545c312dff6fd94ae5855576977bf3a07b4",
+      "bytes": 43597
+    },
+    {
+      "path": "src/crates/mod.rs",
+      "sha256": "c66061ada344428ac08a5691b3849cd42ff1e037a6f6e2f7ce49928751420f7f",
+      "bytes": 34894
+    },
+    {
+      "path": "src/crates/retention.rs",
+      "sha256": "9ce02b55da250bb7cf118e84247df51a24bba402a2cb19c44292552fc8b56fa1",
+      "bytes": 9212
+    },
+    {
+      "path": "src/crates/source.rs",
+      "sha256": "2c6c0ba62638593dbda9bb3f70283f37fde6067b37179732f439c7ccdbbd13e8",
+      "bytes": 23215
+    },
+    {
+      "path": "src/error.rs",
+      "sha256": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0",
+      "bytes": 4427
+    },
+    {
+      "path": "src/events.rs",
+      "sha256": "6cf2d7007ac1e7d35fa4f8a2e775c40c2931cd04c94f69b13d56c9d85f7d9160",
+      "bytes": 24470
+    },
+    {
+      "path": "src/guide.md",
+      "sha256": "6a2967df9dc1726153847b55fc16478df2ac9e093e38bc8e27bb6864969df768",
+      "bytes": 4168
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "ca9ed8d984431cdc650ca8df0e979763dcc176e57a7f1dc80ea1ef4254088485",
+      "bytes": 22974
+    },
+    {
+      "path": "src/main.rs",
+      "sha256": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f",
+      "bytes": 364
+    },
+    {
+      "path": "src/network.rs",
+      "sha256": "577d048ad404af81840adc7a6d72c3d932b69b8a495be1d1eb6c928b5acaf4ed",
+      "bytes": 33985
+    },
+    {
+      "path": "src/publish.rs",
+      "sha256": "d97c43fb9f4d9797fcc2d32c4d78da2dd2d5646e9449df1a266618a94ddbb4fa",
+      "bytes": 21729
+    },
+    {
+      "path": "src/releases.rs",
+      "sha256": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78",
+      "bytes": 9005
+    },
+    {
+      "path": "src/resume.rs",
+      "sha256": "0b475598ad56c9c94c3d2cba1f9a3189a680f3cd913120b7eed2988a8ee0002c",
+      "bytes": 19602
+    },
+    {
+      "path": "src/selection/collection.rs",
+      "sha256": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc",
+      "bytes": 23744
+    },
+    {
+      "path": "src/selection/retention/catalog.rs",
+      "sha256": "59bc11377ce338859fd02bffb1b1067357bfeba2d842c718ec54b90f92e480d7",
+      "bytes": 25153
+    },
+    {
+      "path": "src/selection/retention.rs",
+      "sha256": "d0951e778261e8b9afcda49676582564af02825454bc489c7f915210d7874af2",
+      "bytes": 27022
+    },
+    {
+      "path": "src/selection/rustup.rs",
+      "sha256": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11",
+      "bytes": 14387
+    },
+    {
+      "path": "src/selection/sync.rs",
+      "sha256": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3",
+      "bytes": 33937
+    },
+    {
+      "path": "src/selection.rs",
+      "sha256": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd",
+      "bytes": 48714
+    },
+    {
+      "path": "src/signals.rs",
+      "sha256": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6",
+      "bytes": 2239
+    }
+  ],
+  "generated_metadata": [
+    "Cargo.toml",
+    ".cargo_vcs_info.json"
+  ]
+}

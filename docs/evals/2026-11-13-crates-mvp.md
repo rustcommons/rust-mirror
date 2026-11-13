@@ -95,7 +95,9 @@ exact review ref and CI are reported in the PR.
 - All 100 dated roots pass full/filtered Cargo conformance; native and Cargo union
   contain 186 versions and **45,125,358 archive bytes** each: **0% archive-byte
   overfetch**. Archive hashes/lengths are rechecked independently by the measurement
-  script. Plan ID `a0e3a7544fa8389d271312650cdc02d9b3534e39ed3f4923e5191f4eeef34256`;
+  script. All 174 shared original sparse metadata files were independently checked
+  against the frozen plan observation hashes; CI now enforces that equality before
+  comparing snapshots. Plan ID `a0e3a7544fa8389d271312650cdc02d9b3534e39ed3f4923e5191f4eeef34256`;
   inventory `2c7f228cf9bee1bdef7c31543577913064b4ca52f8c861815bbbf297e2ad9561`.
 - Linux, Windows and macOS clients pass saved-preview consent, real HTTPS Cargo
   fetch/build with an unchanged lock and populated offline run. Untrusted CA,
@@ -137,3 +139,30 @@ Rust dependency, version bump, package publication, tag, GitHub Release, product
 server write/delete or automatic activation is part of this work. Private registry
 identities/authenticated Cargo readers, lockfile import, in-generation compaction,
 workspace cleanup and remote pruning retain their documented deferred boundaries.
+
+
+## Final handoff checks and refreshed development package
+
+Runtime/source checkpoint `de2a4324ddbc72ef2d029e29375b59eb2314e52d` adds strict
+host/port parsing without network/environment discovery, keeps the preview's yank
+flag current across later generations while preserving historical index bytes, and
+completes successful upload/HEAD event operations. Full local checks pass **168 Rust
+tests, none ignored, and 26 Python tests**, formatting, Clippy over all targets and
+denied-warning rustdoc. The crate fixture suite now has 17 tests, including exact
+pinned-profile protection, stale disk, incomplete cross-cohort refusal and malformed
+output URLs. No dependency/version/lockfile changes accompany these fixes.
+
+The [refreshed package manifest](crates-mvp-package-audit.json) records all **38**
+source/package files checked byte-for-byte against `de2a4324`, plus the clean VCS
+marker and generated Cargo metadata. Cargo verified this development archive:
+`b6023b91eb3bbcc8037a2743ccb56bb567e9ec4e8fc8240e15c03d018400c16b`.
+This supersedes the earlier development audit for handoff, without rewriting it.
+It remains an unpublished development audit with the unchanged 0.3.0 manifest
+version; it is not the registry 0.3.0 archive and must never be uploaded as that
+version. Final evidence-only descendants preserve all packaged source bytes.
+
+The final PR CI repeats the named qualification on the review ref, additionally
+checking that standalone schema-4 publish preflight performs no PUT and that
+shared native/Cargo full-index bytes match the frozen observation hashes. The
+exact final ref/run links live in [PR #33](https://github.com/rustcommons/rust-mirror/pull/33).
+The source is held for independent review; no merge/publication action is implied.

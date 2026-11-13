@@ -65,6 +65,22 @@ contact. Use bounded per-request retries for transient transport/429/503, bounde
 Retry-After/backoff, cancellation-aware waits and a shared transfer-byte budget.
 Authentication/integrity/invalid-input failures are not retried as transient errors.
 
+### Other catalog defaults and limits
+
+| Table / field | Default and meaning |
+| --- | --- |
+| `crate-rules.ALIAS.latest` / `pins` | 1 / empty. Latest is 0–32, pins at most 128 exact versions; latest 0 requires at least one pin. |
+| `crate-policy.features` / `resolver` | `declared` / `2`; other values refuse. |
+| `crate-policy.hosts` / `targets` | Empty while editing; both must be explicit and nonempty before planning, at most 128 each. These describe coverage, not platform pruning. |
+| `crate-policy.max-versions` / `max-files` | 3,000 / 10,000; positive caps at 10,000 / 40,000. Counts include retained records and final served files. |
+| `crate-policy.max-metadata-bytes` | 268,435,456; positive and at most 1 GiB of observed sparse metadata. Individual upstream sparse files are bounded to 32 MiB. |
+| `crate-policy.max-file-bytes` | 536,870,912; positive and at most 512 MiB per served file, including the marker. |
+| `crate-policy.max-final-bytes` / `max-transfer-bytes` | 10,737,418,240 each; positive and at most signed 64-bit range. Final includes retained copies/index/marker; transfer counts accepted archive bytes across retries/resumes. |
+| `crate-output.base-url` | Empty while editing; planning requires a credential-free absolute HTTPS generation URL with valid host/port. It is immutable in the approved plan. |
+| `crate-network.contact` | Empty additional contact by default; the repository URL is always in the identifying User-Agent. A public operator contact may be added (ASCII, at most 512 bytes, no controls). Never use a credential. |
+| `crate-network.concurrency` / `attempts` / `max-wait-seconds` | 4 / 4 / 60; bounds 1–16 / 1–8 / 1–300. Attempts include the first. Retry-After above the wait cap refuses automatic retry instead of shortening the server's request. |
+| `crate-retention` | Omitted disables pruning. See the explicit whole-generation policy below. |
+
 ## Frozen preview and one approval
 
 `crates plan` reads index metadata, and optionally HEAD lengths; never archive GET.
@@ -210,6 +226,10 @@ next-previous remain protected. Exact `crate-rules` pins additionally protect th
 newest generation with that exact declared root feature/default profile and validated
 closure; a missing pinned profile refuses pruning. In-progress/locked/unknown runs
 are preserved/refused as in the shared [retention contract](RETENTION.md).
+Use separate candidate directories for crate and toolchain leaves: `crates prune`
+refuses a mixed-kind directory, and the toolchain `prune` CLI refuses crate leaves
+rather than applying a toolchain-only policy. The generic lower-level deletion
+engine does not infer catalog crate pins; library consumers use `crates::retention`.
 
 A successor retains previous versions and their recorded closure even when latest-N
 selects newer ones. Conflicting immutable checksums/metadata fail; a new yank state

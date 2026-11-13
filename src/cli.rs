@@ -651,6 +651,14 @@ fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         values.remove("--next-previous"),
     ) {
         (Some(directory), Some(previous)) if roots.is_empty() => {
+            let listing = crate::selection::retention::discover(&PathBuf::from(&directory))?;
+            if listing.generations.iter().any(|g| g.kind == "crates") {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Invalid,
+                    "crate generations require crates prune and an explicit crate catalog policy",
+                )
+                .into());
+            }
             crate::selection::retention::preview_directory(
                 policy,
                 &PathBuf::from(directory),
@@ -659,6 +667,16 @@ fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
             )?
         }
         (None, None) if !roots.is_empty() => {
+            if roots
+                .iter()
+                .any(|root| crate::crates::mirror::Inventory::inspect(root).is_ok())
+            {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Invalid,
+                    "crate generations require crates prune and an explicit crate catalog policy",
+                )
+                .into());
+            }
             crate::selection::retention::preview(policy, &roots, &date)?
         }
         _ => {

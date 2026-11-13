@@ -146,7 +146,13 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             if delete {
                 let report = crate::crates::retention::apply(&preview, true)?;
                 let human = serde_json::to_string_pretty(&report)?;
-                output(&report, human)
+                output(&report, human)?;
+                if report.failure.is_some() {
+                    let mut error = Error::new(ErrorKind::Io, "crate pruning stopped after a partial deletion; inspect the structured report");
+                    error.report = Some(toml::Value::try_from(&report)?);
+                    return Err(error.into());
+                }
+                Ok(())
             } else {
                 let human = serde_json::to_string_pretty(&preview)?;
                 output(&preview, human)

@@ -15,7 +15,7 @@ rust-mirror COMMAND --option VALUE ...
 
 - `--help` / `-h` print top-level usage; no command also prints usage. `--version`
   / `-V` print this program's version. These are top-level forms; subcommand
-  `--help` is not implemented. Global help/version return immediately; trailing
+  `--help` is not implemented except for the namespace-level `crates --help`. Global help/version return immediately; trailing
   arguments are not validated by those forms.
 - Supply values as separate arguments (`--output DIR`), not `--output=DIR`.
   Quote paths/names with spaces. There are no positional path arguments or implicit

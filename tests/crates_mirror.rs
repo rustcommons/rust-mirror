@@ -614,6 +614,50 @@ fn crate_directory_prune_keeps_paused_previous_and_refuses_stale_disk() {
             .unwrap();
         mirrors.push(report.mirror);
     }
+    let mut legacy =
+        rust_mirror::selection::Config::parse(include_str!("../examples/mirror.toml")).unwrap();
+    legacy.retention = Some(rust_mirror::selection::retention::Policy {
+        pinned_releases: vec![],
+        latest_stable: 0,
+        nightly_days: 0,
+        previous_generations: 0,
+        keep_newest: 0,
+        pinned_generations: vec![],
+    });
+    let config = dir.path().join("toolchains.toml");
+    std::fs::write(&config, toml::to_string(&legacy).unwrap()).unwrap();
+    for by_directory in [false, true] {
+        let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_rust-mirror"));
+        command
+            .args(["--events", "jsonl", "prune", "--config"])
+            .arg(&config)
+            .args(["--as-of", "2026-11-13", "--apply"]);
+        if by_directory {
+            command
+                .arg("--directory")
+                .arg(dir.path())
+                .arg("--next-previous")
+                .arg(&mirrors[2]);
+        } else {
+            command.arg("--generation").arg(&mirrors[2]);
+        }
+        let result = command.output().unwrap();
+        assert!(!result.status.success());
+        let last: serde_json::Value = serde_json::from_str(
+            String::from_utf8(result.stdout)
+                .unwrap()
+                .lines()
+                .last()
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(last["error"]["kind"], "invalid");
+        assert!(last["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("crates prune"));
+        assert!(mirrors.iter().all(|p| p.exists()));
+    }
     let unpinned =
         retention::preview_directory(&catalog, dir.path(), &mirrors[2], "2026-11-13").unwrap();
     assert_eq!(unpinned.deletion.generations.len(), 2);
