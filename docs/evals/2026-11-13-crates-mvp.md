@@ -166,3 +166,16 @@ checking that standalone schema-4 publish preflight performs no PUT and that
 shared native/Cargo full-index bytes match the frozen observation hashes. The
 exact final ref/run links live in [PR #33](https://github.com/rustcommons/rust-mirror/pull/33).
 The source is held for independent review; no merge/publication action is implied.
+
+
+The final clean packaged source is `03647787a2543b000e4fedd086be4a903e5a513d`;
+archive SHA-256 `cce2744ed45864355a8d592adb42a0de971c99865d57b109dd8e2eb891346c3e`.
+The manifest preserves the earlier audit records as history and verifies all 38
+current source files plus clean VCS metadata. This final source also refuses the
+toolchain CLI's prune route for crate leaves, requires the crate catalog policy,
+and turns partial CLI crate-prune failures into typed I/O results with their
+successful-prefix report. The generic engine remains shared; it does not infer
+crate pins for arbitrary library callers. Focused crate and existing retention
+checks pass, including both CLI route refusals and untouched crate generations.
+The final evidence-only descendant changes no packaged bytes. CI on the exact PR
+review head remains the handoff gate, with the qualification runs linked in the PR.
