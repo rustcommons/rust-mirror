@@ -34,4 +34,32 @@ jobs:
           name: rust-mirror-package
           path: target/package/rust-mirror-*.crate
           if-no-files-found: error
+      - name: Install verified package with a fresh Cargo home
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+        run: |
+          python3 - <<'PYTHON'
+          import os,pathlib,tarfile,tomllib
+          version=tomllib.loads(pathlib.Path('Cargo.toml').read_text())['package']['version']
+          with tarfile.open(f'target/package/rust-mirror-{version}.crate') as archive:
+              archive.extractall(pathlib.Path(os.environ['RUNNER_TEMP'])/'candidate-source', filter='data')
+          PYTHON
+          candidate_version=$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')
+          CARGO_HOME="$RUNNER_TEMP/candidate-cargo" cargo install --path "$RUNNER_TEMP/candidate-source/rust-mirror-$candidate_version" --locked --root "$RUNNER_TEMP/candidate-install" -j 2
+          "$RUNNER_TEMP/candidate-install/bin/rust-mirror" --events jsonl --version > "$RUNNER_TEMP/candidate-version.jsonl"
+      - name: Installed publisher in a loopback-only namespace
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/candidate-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/candidate-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+      - name: Save installed package proof
+        if: matrix.os == 'ubuntu-latest' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-installed-publisher
+          path: |
+            ${{ runner.temp }}/candidate-version.jsonl
+            ${{ runner.temp }}/candidate-publisher/
+          if-no-files-found: error
       - run: python -m unittest discover -s tests -p "test_*.py"
