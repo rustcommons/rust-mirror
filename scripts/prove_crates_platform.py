@@ -36,10 +36,12 @@ def main():
     assert preview["status"] == "needs_approval" and not (output / "mirror").exists()
     assert not (output / ".download").exists()
     plan_id = preview["preview"]["plan_id"]
+    assert preview["plan_id"] == plan_id
     shown = invoke(binary, ["show", "--plan", output / "plan.json"], evidence, "show")
     assert shown == preview["preview"]
     completed = invoke(binary, ["sync", "--config", catalog, "--output", output, "--approve-plan", plan_id], evidence, "sync-approved")
     assert completed["status"] == "completed" and completed["report"]["plan_id"] == plan_id
+    assert completed["plan_id"] == plan_id and completed["mirror"] == completed["report"]["mirror"]
     script = Path(__file__).with_name("prove_crates_https.py")
     result = command([__import__("sys").executable, script, "--mirror", output / "mirror", "--evidence", evidence / "https-client", "--cargo", cargo, "--rustc", rustc])
     (evidence / "client.stdout").write_text(result.stdout)

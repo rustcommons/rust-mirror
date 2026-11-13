@@ -272,6 +272,30 @@ pub(crate) fn json_value(value: &toml::Value) -> String {
             {
                 fields.push("\"previous_inventory_sha256\":null".into());
             }
+            for (shape, nullable) in [
+                (
+                    v.contains_key("chains") && v.contains_key("truncated"),
+                    &["total_chains"][..],
+                ),
+                (
+                    v.contains_key("known_archive_bytes") && v.contains_key("unknown_archives"),
+                    &["expected_archive_bytes"][..],
+                ),
+                (
+                    v.contains_key("root")
+                        && v.contains_key("requirement")
+                        && v.contains_key("conservative"),
+                    &["parent", "target"][..],
+                ),
+            ] {
+                if shape {
+                    for key in nullable {
+                        if !v.contains_key(*key) {
+                            fields.push(format!("{}:null", quote(key)));
+                        }
+                    }
+                }
+            }
             if v.contains_key("certificates")
                 && v.contains_key("status")
                 && !v.contains_key("error_kind")

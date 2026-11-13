@@ -20,6 +20,8 @@ pub struct SyncOptions {
 pub enum SyncReport {
     /// No archive transfer has been authorized; display this exact saved preview.
     NeedsApproval {
+        /// Exact whole-preview approval identity.
+        plan_id: String,
         /// Location of the locally reloadable frozen JSON preview.
         plan_path: PathBuf,
         /// Complete preview, including identities, sizes, reasons and budget flags.
@@ -27,6 +29,12 @@ pub enum SyncReport {
     },
     /// Approved archive transfers and immutable assembly completed.
     Completed {
+        /// Exact approved plan identity.
+        plan_id: String,
+        /// Frozen preview used for this completed operation.
+        plan_path: PathBuf,
+        /// Verified completed generation; publication remains separate.
+        mirror: PathBuf,
         /// Verified local generation report; publication remains separate.
         report: FetchReport,
     },
@@ -90,7 +98,9 @@ pub fn sync(
         lock.try_lock()
             .map_err(|_| Error::new(ErrorKind::Locked, "crate workspace is locked"))?;
         preview.save_new(&plan_path)?;
+        events::stage("approval")?;
         return Ok(SyncReport::NeedsApproval {
+            plan_id: preview.plan_id.clone(),
             plan_path,
             preview: Box::new(preview),
         });
@@ -136,9 +146,16 @@ pub fn sync(
             },
             approval,
         )?;
-        Ok(SyncReport::Completed { report })
+        Ok(SyncReport::Completed {
+            plan_id: preview.plan_id.clone(),
+            plan_path,
+            mirror: report.mirror.clone(),
+            report,
+        })
     } else {
+        events::stage("approval")?;
         Ok(SyncReport::NeedsApproval {
+            plan_id: preview.plan_id.clone(),
             plan_path,
             preview: Box::new(preview),
         })

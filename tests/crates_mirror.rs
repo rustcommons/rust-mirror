@@ -316,8 +316,9 @@ fn sync_saves_one_preview_and_requires_its_exact_approval_without_refresh() {
         previous: None,
         estimate_sizes: false,
     };
-    let SyncReport::NeedsApproval { preview, plan_path } =
-        mirror::sync(&catalog, &source, &options, None).unwrap()
+    let SyncReport::NeedsApproval {
+        preview, plan_path, ..
+    } = mirror::sync(&catalog, &source, &options, None).unwrap()
     else {
         panic!("must require consent")
     };
@@ -335,6 +336,7 @@ fn sync_saves_one_preview_and_requires_its_exact_approval_without_refresh() {
     let report_value = toml::Value::try_from(&SyncReport::NeedsApproval {
         plan_path,
         preview: same,
+        plan_id: preview.plan_id.clone(),
     })
     .unwrap();
     assert_eq!(report_value["status"].as_str(), Some("needs_approval"));
@@ -358,7 +360,7 @@ fn sync_saves_one_preview_and_requires_its_exact_approval_without_refresh() {
     let approval = Approval {
         plan_id: preview.plan_id.clone(),
     };
-    let SyncReport::Completed { report } =
+    let SyncReport::Completed { report, .. } =
         mirror::sync(&catalog, &source, &options, Some(&approval)).unwrap()
     else {
         panic!("approved transfer must complete")
@@ -367,7 +369,7 @@ fn sync_saves_one_preview_and_requires_its_exact_approval_without_refresh() {
     assert_eq!(source.calls.load(Ordering::SeqCst), 1);
     assert!(mirror::sync(&catalog, &source, &options, Some(&approval)).is_err());
     options.resume = true;
-    let SyncReport::Completed { report } =
+    let SyncReport::Completed { report, .. } =
         mirror::sync(&catalog, &source, &options, Some(&approval)).unwrap()
     else {
         panic!("resume complete")
@@ -525,7 +527,18 @@ fn cli_saved_preview_uses_protocol_one_without_network_or_payloads() {
     assert_eq!(events.iter().filter(|e| e["type"] == "result").count(), 1);
     let report = &events.last().unwrap()["report"];
     assert_eq!(report["plan_id"], plan.plan_id);
-    assert!(report["versions"][0]["expected_bytes"].is_null());
+    assert_eq!(
+        report["versions"][0].get("expected_bytes"),
+        Some(&serde_json::Value::Null)
+    );
+    assert_eq!(
+        report["size_estimate"].get("expected_archive_bytes"),
+        Some(&serde_json::Value::Null)
+    );
+    assert_eq!(
+        report["versions"][0]["reasons"][0].get("parent"),
+        Some(&serde_json::Value::Null)
+    );
     assert!(report["previous_inventory_sha256"].is_null());
 }
 

@@ -57,7 +57,7 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
         .into_string()
         .map_err(|_| invalid("crate command must be UTF-8"))?;
     if command == "--help" || command == "-h" {
-        return super::emit_output("rust-mirror crates plan --config CATALOG --output NEW_PLAN.json [--previous MIRROR] [--estimate-sizes]\nrust-mirror crates sync --config FILE --output RUN [--approve-plan ID] [--resume]\nrust-mirror crates show --plan FILE\nrust-mirror crates explain --plan FILE --crate NAME [--version VERSION] [--limit N]\nrust-mirror crates fetch --plan FILE --output NEW_RUN --approve-plan ID [--resume]\nrust-mirror crates generations --directory DIRECTORY\nrust-mirror crates prune --config FILE --directory DIRECTORY --next-previous MIRROR --as-of YYYY-MM-DD [--dry-run | --apply]\nrust-mirror crates catalog --config FILE\nrust-mirror crates paste --input DEPENDENCIES.toml [--output NEW_CATALOG]\n".into());
+        return super::emit_output("rust-mirror crates plan --config CATALOG --output NEW_PLAN.json [--previous MIRROR] [--estimate-sizes]\nrust-mirror crates sync --config FILE --output RUN [--approve-plan ID] [--resume]\nrust-mirror crates show --plan FILE\nrust-mirror crates explain --plan FILE --crate NAME [--version VERSION] [--limit N]\nrust-mirror crates fetch --plan FILE --output NEW_RUN --approve-plan ID [--previous MIRROR] [--resume]\nrust-mirror crates generations --directory DIRECTORY\nrust-mirror crates prune --config FILE --directory DIRECTORY --next-previous MIRROR --as-of YYYY-MM-DD [--dry-run | --apply]\nrust-mirror crates catalog --config FILE\nrust-mirror crates paste --input DEPENDENCIES.toml [--output NEW_CATALOG]\n".into());
     }
     let mut values = BTreeMap::new();
     let mut resume = false;
@@ -233,8 +233,8 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
                 approval.as_ref(),
             )?;
             let human = match &report {
-                mirror::SyncReport::NeedsApproval { plan_path, preview } => format!("Preview saved to {}. Review with crates show, then approve with --approve-plan {}", plan_path.display(), preview.plan_id),
-                mirror::SyncReport::Completed { report } => format!("Verified crate mirror: {}", report.mirror.display()),
+                mirror::SyncReport::NeedsApproval { plan_path, preview, .. } => format!("Preview saved to {}. Review with crates show, then approve with --approve-plan {}", plan_path.display(), preview.plan_id),
+                mirror::SyncReport::Completed { report, .. } => format!("Verified crate mirror: {}", report.mirror.display()),
             };
             output(&report, human)
         }

@@ -222,17 +222,11 @@ pub(super) fn source(base: Option<&NetworkConfig>) -> Result<HttpsSource> {
 
 pub(super) fn command(args: &[std::ffi::OsString]) -> String {
     let mut args = args.iter();
+    let mut crate_namespace = false;
     while let Some(arg) = args.next() {
         match arg.to_str() {
-            Some("crates") => {
-                return match args.next().and_then(|v| v.to_str()) {
-                    Some(
-                        name @ ("plan" | "show" | "explain" | "fetch" | "sync" | "catalog"
-                        | "paste" | "generations" | "prune"),
-                    ) => format!("crates-{name}"),
-                    Some("--help" | "-h") | None => "crates-help".into(),
-                    _ => "invalid-command".into(),
-                };
+            Some("crates") if !crate_namespace => {
+                crate_namespace = true;
             }
             Some(
                 "--proxy"
@@ -252,6 +246,14 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
                 | "--estimate-sizes"
                 | "--cancel-stdin",
             ) => {}
+            Some(name) if crate_namespace => {
+                return match name {
+                    "plan" | "show" | "explain" | "fetch" | "sync" | "catalog" | "paste"
+                    | "generations" | "prune" => format!("crates-{name}"),
+                    "--help" | "-h" => "crates-help".into(),
+                    _ => "invalid-command".into(),
+                }
+            }
             Some(name)
                 if [
                     "--help",
@@ -280,5 +282,9 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
             _ => return "invalid-command".into(),
         }
     }
-    "--help".into()
+    if crate_namespace {
+        "crates-help".into()
+    } else {
+        "--help".into()
+    }
 }
