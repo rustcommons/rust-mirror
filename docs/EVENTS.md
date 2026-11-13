@@ -231,10 +231,10 @@ round-trip and error-context contracts. Unknown additive events/fields remain
 ignorable under protocol 1. No GUI consumer should infer completion from the next
 artifact's start or parse a TOML catalog in its own code.
 
-## 0.5.0 lock imports (development source, protocol 1)
+## 0.5.0 lock imports (protocol 1)
 
-[Lock import](LOCK-IMPORT.md) is implemented in development source after contract
-review; published 0.4.0 does not expose it. Command labels are
+[Lock import](LOCK-IMPORT.md) ships in 0.5.0 after contract review;
+published 0.4.0 does not expose it. Command labels are
 `crates-import-lock` and `crates-remove-lock`. Reuse `stage` and independent
 heartbeats with stages `lock-read`, `lock-parse`, `lock-diff`, `lock-write`; operation
 context is bounded source name/basename, never raw input or git/registry credentials.

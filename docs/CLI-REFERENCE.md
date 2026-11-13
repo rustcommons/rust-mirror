@@ -671,7 +671,7 @@ generation base URL before remote requests, checks every absence before writes,
 verifies GET hashes and sends the marker last. Partial uploads require investigation
 and a fresh prefix; no overwrite, activation or rollback is implied.
 
-## Lock source commands (development source for 0.5.0)
+## Lock source commands (0.5.0)
 
 | Command | Effects and refusal behavior |
 | --- | --- |

@@ -128,3 +128,11 @@ fixture-only `http.cainfo` to that separate public origin. The harness now provi
 Git with default public roots before configuring the private mirror CA, discarding
 all registry data from provisioning before the actual mirror fetch. Verification
 remains enabled for both steps. This harness correction changes no packaged source.
+
+## Postpublication resolution — 2026-11-13
+
+The preceding candidate observations remain historical. The coordinator normal-merged
+PR #37 and published 0.5.0 from the owner's Windows machine. The separate
+[publication record](2026-11-13-publication-0.5.0.md) verifies the official payload,
+docs.rs, actual registry installation and immutable tag/release; it does not replace
+the earlier candidate archive identities or broaden their qualification scope.

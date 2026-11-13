@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0 are published;
-see docs/evals/2026-11-13-publication-0.4.0.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0 are published;
+see docs/evals/2026-11-13-publication-0.5.0.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -268,9 +268,9 @@ Later versions and GUI Phase 2 still require separate authorization.
 
 ## 0.5.0 lock import authorization
 
-The owner approved implementing Cargo.lock import on 2026-11-13. Land the short
+The owner approved implementing Cargo.lock import on 2026-11-13. The short
 [contract](docs/LOCK-IMPORT.md) was reviewed from the GUI side by the coordinator
-and merged in PR #36 before implementation. Continue in a separate implementation PR. Copy named, digest/time-bearing exact pins and
+and merged in PR #36 before implementation PR #37. Preserve named, digest/time-bearing exact pins and
 resolved edges into the self-contained catalog; preserve manual rules and other
 sources. Support standard lock formats 1–4, typed bounded diagnostics, official
 registry identities only, index checksum matching and lock-scoped yanked permission.
@@ -291,6 +291,9 @@ the coordinator reviews, merges and publishes from the owner's machine. After th
 publication confirmation, complete registry/payload/docs.rs/fresh-install/tag/release/
 workflow verification and notify the GUI maintainer. Do not merge or publish from
 this checkout. This does not authorize GUI implementation or waive any gate.
+The coordinator published 0.5.0 from the owner's Windows machine after normal merge
+`2bf44ca46f52b2a8974d606eeac0ff6a729c26d1`. The [publication record](docs/evals/2026-11-13-publication-0.5.0.md)
+identifies registry payload, docs.rs, installed proofs and release verification.
 
 ## User-facing documentation
 

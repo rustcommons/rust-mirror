@@ -1,0 +1,441 @@
+{
+  "version": "0.5.0",
+  "release_merge": "2bf44ca46f52b2a8974d606eeac0ff6a729c26d1",
+  "registry_checksum": "2e91420909f7441f35399e3a50a664d7a347e1b45672d3866d6a350e54f6ac57",
+  "api_checksum_matches": true,
+  "sparse_checksum_matches": true,
+  "yanked": false,
+  "source_files": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 9153,
+      "sha256": "5583d14318d06f848154ce196b73068652753b268baaf69ac06d0d2118458697"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 30230,
+      "sha256": "aac9727fbbf8e9014aa37ced33edcc4f89929a63cdc4313dea6355335254aef2"
+    },
+    {
+      "path": "Cargo.toml.orig",
+      "bytes": 675,
+      "sha256": "f7116de09835e6028997f4aab85f3cf24b835882e4d12f3156e0aa1e5f12f20e"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3568,
+      "sha256": "577cf9acbd6b2f2c64d7df17616aa01c490e623dae339936bdacf8198758b0a9"
+    },
+    {
+      "path": "examples/crates_mvp.rs",
+      "bytes": 2253,
+      "sha256": "1a59641b23c3a64ec594558beb4d2c0cc9d5754fa7fc939ad3ce48579fe250ea"
+    },
+    {
+      "path": "examples/crates_phase0.rs",
+      "bytes": 2060,
+      "sha256": "20834e686340a1412047f32059eb08a8356c25ed2a69d402809f59a5350225ae"
+    },
+    {
+      "path": "examples/mirror.toml",
+      "bytes": 541,
+      "sha256": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e"
+    },
+    {
+      "path": "examples/multi-version.toml",
+      "bytes": 292,
+      "sha256": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d"
+    },
+    {
+      "path": "examples/retention.toml",
+      "bytes": 528,
+      "sha256": "7d0d6ac740ebccd768e4b237fd6a12ea9b30281fc14efe86893a2032b0d2e5dd"
+    },
+    {
+      "path": "examples/sync-demo.toml",
+      "bytes": 366,
+      "sha256": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc"
+    },
+    {
+      "path": "src/cli/crates.rs",
+      "bytes": 13835,
+      "sha256": "0ab8b32cc1f41c713c0b2b9ff5e0f27b93c91089b4226e56713b23bdcb788ed6"
+    },
+    {
+      "path": "src/cli/lock_import.rs",
+      "bytes": 4285,
+      "sha256": "5bdb90ddf17a87df8da87d1163eb5aed71db01e659e52c3fa6b530dce7f65098"
+    },
+    {
+      "path": "src/cli/network_options.rs",
+      "bytes": 10458,
+      "sha256": "00a61a04ef75e929d5dd9c4aec1fa14294baeba5263a439cd652a9f4b897955b"
+    },
+    {
+      "path": "src/cli.rs",
+      "bytes": 34548,
+      "sha256": "10d2505ab74d4e36e49c31a8efacfdf3bccf07daccc7626af31aa9bb53fa3c76"
+    },
+    {
+      "path": "src/crates/catalog.rs",
+      "bytes": 25322,
+      "sha256": "f826ef7088b174b207fb6ba4019c86874d6f0804728bf57480b9c2aa96cc821d"
+    },
+    {
+      "path": "src/crates/lockfile/parse.rs",
+      "bytes": 17979,
+      "sha256": "8c67e4fb8c2ecd23cba775bf47a75ca8c498020374f440a5f8ef2baf3486b749"
+    },
+    {
+      "path": "src/crates/lockfile.rs",
+      "bytes": 25840,
+      "sha256": "4698f78075a1e8cfd0406af16154ef3a75c71b0571a4a67a8ce599c67ec60bb9"
+    },
+    {
+      "path": "src/crates/mirror/fetch.rs",
+      "bytes": 34478,
+      "sha256": "fcb800237a5d51af7ebc764dec28dbda43bab932dfa7223fc61a5814350b6da8"
+    },
+    {
+      "path": "src/crates/mirror/locks.rs",
+      "bytes": 13637,
+      "sha256": "b1bdf2f31c009bc1a03cbd6a5244c1945542b902301eff305a48eaf8496858a5"
+    },
+    {
+      "path": "src/crates/mirror/retained.rs",
+      "bytes": 17432,
+      "sha256": "33c05c6463fb9ad5248bc31e51bb551b833a4d0b41f4b368ee9203ff635a12b7"
+    },
+    {
+      "path": "src/crates/mirror/sync.rs",
+      "bytes": 6221,
+      "sha256": "7ff0d0c8f0e138385f711cf319a1297c988947a51b0c1d443e3c837d9bb5eac4"
+    },
+    {
+      "path": "src/crates/mirror.rs",
+      "bytes": 48207,
+      "sha256": "3623f6a121086516ca0de5ccb5e667ab6a7be724fc7dc5cf321a805a97928946"
+    },
+    {
+      "path": "src/crates/mod.rs",
+      "bytes": 34997,
+      "sha256": "e4937a22e3fc109301a6e70362e805de48fef9d5629bc4a71984c465f534d2d0"
+    },
+    {
+      "path": "src/crates/retention.rs",
+      "bytes": 12997,
+      "sha256": "756856b48ca63d9381153ad880ccc2b17360a87893997fa958fbc737f4fc677b"
+    },
+    {
+      "path": "src/crates/source.rs",
+      "bytes": 23215,
+      "sha256": "2c6c0ba62638593dbda9bb3f70283f37fde6067b37179732f439c7ccdbbd13e8"
+    },
+    {
+      "path": "src/error.rs",
+      "bytes": 4427,
+      "sha256": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0"
+    },
+    {
+      "path": "src/events.rs",
+      "bytes": 24825,
+      "sha256": "339a65f891172a46aca29c1905c72efb5e25541eb55392ecb94328d9a004a407"
+    },
+    {
+      "path": "src/guide.md",
+      "bytes": 4954,
+      "sha256": "5d615f890cd143c92cb87bf33e1c43c68bf657376336d4b0659783b177736c74"
+    },
+    {
+      "path": "src/lib.rs",
+      "bytes": 22974,
+      "sha256": "ca9ed8d984431cdc650ca8df0e979763dcc176e57a7f1dc80ea1ef4254088485"
+    },
+    {
+      "path": "src/main.rs",
+      "bytes": 364,
+      "sha256": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f"
+    },
+    {
+      "path": "src/network.rs",
+      "bytes": 33985,
+      "sha256": "577d048ad404af81840adc7a6d72c3d932b69b8a495be1d1eb6c928b5acaf4ed"
+    },
+    {
+      "path": "src/publish.rs",
+      "bytes": 21754,
+      "sha256": "c3491eb0960568a1cd1904471c67786a9df40600f06154b98220f2ee9771e13e"
+    },
+    {
+      "path": "src/releases.rs",
+      "bytes": 9005,
+      "sha256": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78"
+    },
+    {
+      "path": "src/resume.rs",
+      "bytes": 19602,
+      "sha256": "0b475598ad56c9c94c3d2cba1f9a3189a680f3cd913120b7eed2988a8ee0002c"
+    },
+    {
+      "path": "src/selection/collection.rs",
+      "bytes": 23744,
+      "sha256": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc"
+    },
+    {
+      "path": "src/selection/retention/catalog.rs",
+      "bytes": 25643,
+      "sha256": "a7a4540f3d44ac934a68f4b39e89fca7fa1c7d82121a3993097168e514ee5bdd"
+    },
+    {
+      "path": "src/selection/retention.rs",
+      "bytes": 27057,
+      "sha256": "85d619a455b19faaaa433972e6de7c269ed8eb307bc8501c7b9d968591b6782b"
+    },
+    {
+      "path": "src/selection/rustup.rs",
+      "bytes": 14387,
+      "sha256": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11"
+    },
+    {
+      "path": "src/selection/sync.rs",
+      "bytes": 33937,
+      "sha256": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3"
+    },
+    {
+      "path": "src/selection.rs",
+      "bytes": 48714,
+      "sha256": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd"
+    },
+    {
+      "path": "src/signals.rs",
+      "bytes": 2239,
+      "sha256": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6"
+    }
+  ],
+  "vcs": {
+    "git": {
+      "sha1": "2bf44ca46f52b2a8974d606eeac0ff6a729c26d1"
+    },
+    "path_in_vcs": ""
+  },
+  "members": 44,
+  "candidate_member_differences": [
+    ".cargo_vcs_info.json"
+  ],
+  "candidate_archive_sha256": "98bcd14ea9b93426f63fc1103fec5df9744b21ee78ae4907acc472b9b0c48f4b",
+  "initial_docs_rs": [
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/fn.read_input.html",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/fn.validate_source_name.html",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/events/",
+      "error": "HTTP Error 404: "
+    }
+  ],
+  "verified_docs_rs": [
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/",
+      "rustdoc": true
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/",
+      "rustdoc": true
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/fn.read_input.html",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/fn.read_input.html",
+      "rustdoc": true
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/fn.validate_source_name.html",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/crates/lockfile/fn.validate_source_name.html",
+      "rustdoc": true
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/events/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.5.0/rust_mirror/events/",
+      "rustdoc": true
+    }
+  ],
+  "docs_rs_rustc": "1.102.0-nightly (8eb778d04 2026-11-12)",
+  "installed": {
+    "registry_install": true,
+    "fresh_cargo_home": true,
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "host": "host: aarch64-unknown-linux-gnu",
+    "version": {
+      "protocol": 1,
+      "tool_version": "0.5.0"
+    },
+    "binary_sha256": "b13d74515cc3404463ccd312b55600381c944536b28021517f94fe4c1b0618ee",
+    "plan_id": "b321411b36b71b47d493b0b929c2c8937017e7020880efec5e702ba43f28a21e",
+    "imported_sources": 4,
+    "versions": 326,
+    "transferred_bytes": 0,
+    "reused_bytes": 54373445,
+    "lock_retention_sources": [
+      "fd-v10.4.2",
+      "ripgrep-12.1.1",
+      "ripgrep-15.1.0",
+      "rust-analyzer-2020-06-01"
+    ],
+    "retention_deletions": 0,
+    "harness_observation": "All CLI operations succeeded; initial summary assertion used nonexistent deletion.delete. Corrected assertions inspect files/folders/total_bytes; no command rerun/product change."
+  },
+  "cargo_client": {
+    "platform": "Linux-7.0.0-1011-aws-aarch64-with-glibc2.36",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "plan_id": "b321411b36b71b47d493b0b929c2c8937017e7020880efec5e702ba43f28a21e",
+    "inventory_sha256": "e259c840c7b0b99deb8ea67397fb42182287a2fc2fb2e8007e787ba5aa7c1061",
+    "lock_sha256": "4f4b69ed3b9348632bf6d6405f931f1082f3beea7b1eca942cc5c391829ddbac",
+    "root": {
+      "name": "itoa",
+      "version": "0.4.5",
+      "cksum": "b8b7a7c0c47db5545ed3fef7468ee7bb5b74691498139e4b3f6a20685dc6dd8e"
+    },
+    "tls_verification": true,
+    "cases": [
+      {
+        "case": "untrusted-ca",
+        "expected_success": false,
+        "exit": 101
+      },
+      {
+        "case": "missing-archive-no-upstream-fallback",
+        "expected_success": false,
+        "exit": 101
+      },
+      {
+        "case": "corrupt-archive-checksum-refusal",
+        "expected_success": false,
+        "exit": 101
+      },
+      {
+        "case": "fresh-offline-refusal",
+        "expected_success": false,
+        "exit": 101
+      },
+      {
+        "case": "https-fetch-locked",
+        "expected_success": true,
+        "exit": 0
+      },
+      {
+        "case": "https-build-locked",
+        "expected_success": true,
+        "exit": 0
+      },
+      {
+        "case": "populated-offline-run",
+        "expected_success": true,
+        "exit": 0
+      }
+    ],
+    "scope": "One real itoa fetch/build/run; not all corpus crates built or foreign targets executed"
+  },
+  "registry_workflow": {
+    "run_id": 43511754048,
+    "identity": {
+      "version": "0.5.0",
+      "source": "2bf44ca46f52b2a8974d606eeac0ff6a729c26d1",
+      "archive_sha256": "2e91420909f7441f35399e3a50a664d7a347e1b45672d3866d6a350e54f6ac57",
+      "vcs": {
+        "git": {
+          "sha1": "2bf44ca46f52b2a8974d606eeac0ff6a729c26d1"
+        },
+        "path_in_vcs": ""
+      },
+      "binary_sha256": "6bcd0e30f812d71653c3d687f3177fe298d973c133e55f29d2d2ba99c42dd9f4",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.5.0",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.5.0"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "registry_install": true,
+      "fresh_cargo_home": true
+    },
+    "cleanup": {
+      "private_keys_destroyed": true,
+      "fixture_created": true
+    },
+    "publisher": {
+      "status": "passed",
+      "files": 9,
+      "transport": "HTTPS with private CA and scoped fixture credentials",
+      "fixture_only": true,
+      "untrusted_ca_refused": true,
+      "wrong_hostname_refused": true,
+      "typed_tls_auth_remote_exists": true,
+      "preflight_no_put": true,
+      "event_protocol": 1
+    },
+    "isolation": {
+      "kind": "network-namespace",
+      "routes": []
+    }
+  },
+  "release": {
+    "tag": "v0.5.0",
+    "annotated": true,
+    "commit": "2bf44ca46f52b2a8974d606eeac0ff6a729c26d1",
+    "latest": true,
+    "assets": 0,
+    "body_sha256": "af7e951e89e1c8ff3d82e3611172af45da18355aa4570cb42892cca3ecb9de9d",
+    "exact_committed_body": true
+  },
+  "main_ci": 43511379724,
+  "release_documentation_runs": [
+    43511752923,
+    43511754566
+  ]
+}
