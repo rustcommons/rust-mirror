@@ -230,3 +230,26 @@ See [GUI field shapes](CRATES.md#gui-field-shapes-and-local-editing) for row, pa
 round-trip and error-context contracts. Unknown additive events/fields remain
 ignorable under protocol 1. No GUI consumer should infer completion from the next
 artifact's start or parse a TOML catalog in its own code.
+
+## Planned 0.5.0 lock imports (protocol 1)
+
+[The lock import contract](LOCK-IMPORT.md) is approved implementation scope awaiting
+contract review, not a claim that 0.4.0 exposes these operations. Add command labels
+`crates-import-lock` and `crates-remove-lock`. Reuse `stage` and independent
+heartbeats with stages `lock-read`, `lock-parse`, `lock-diff`, `lock-write`; operation
+context is bounded source name/basename, never raw input or git/registry credentials.
+Controlled library calls check cancellation during entry processing. No new event
+envelope or protocol bump is needed.
+
+Final success carries the contract's `ImportReport`, including typed source/pin
+diffs, skipped entries, `accepted`, `written`, and a proposed typed catalog. Rejected
+imports emit final `invalid` (checksum conflicts: `integrity`) with the same report
+in `error.report`; no partial catalog write. Syntax/version/source/checksum/budget
+refusals have line/column diagnostics, bounded totals and truncation flags. Pure
+library preview reports can have `accepted: false`; callers must not write them.
+
+Plan version rows add `sources` and `locked_yanked`; explain uses the same structured
+source reasons. Frozen-plan schema 2 / crate-inventory schema 5 are distinct from
+protocol 1; old plan/inventory readers refuse the new schemas. Whole-plan approval,
+metadata-only preview loading, immutable replay/resume and existing error meanings
+remain unchanged. Lock sources need no original file after import.

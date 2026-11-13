@@ -238,7 +238,8 @@ clients, resume/kill/corruption/budget/yank/links/prerelease cases, measured arc
 byte overfetch and an actual disposable Nexus Raw crate publication/client proof.
 Never substitute HTTP fixtures for those named HTTPS/Nexus gates. Use only existing
 and already approved dependencies; ask with evidence before adding another. Cargo.lock
-import stays deferred. Coordinator review is required before merging PRs. Phase 1
+import was deferred in Phase 1; the separate 0.5.0 approval below applies.
+Coordinator review is required before merging PRs. Phase 1
 approval alone did not authorize versioning or publication; the separate 0.4.0
 authorization below applies. Production Nexus writes/deletes remain unauthorized.
 Preserve existing toolchain evidence and exact common instructions. Historical crate cohorts must retain their original index bytes
@@ -264,6 +265,27 @@ from this checkout or begin GUI Phase 2 on this authorization.
 The coordinator published 0.4.0 from the owner's Windows machine after normal
 merge on 2026-11-13; see [postpublication verification](docs/evals/2026-11-13-publication-0.4.0.md).
 Later versions and GUI Phase 2 still require separate authorization.
+
+## 0.5.0 lock import authorization
+
+The owner approved implementing Cargo.lock import on 2026-11-13. Land the short
+[contract](docs/LOCK-IMPORT.md) first for coordinator/GUI review before implementation,
+then a separate implementation PR. Copy named, digest/time-bearing exact pins and
+resolved edges into the self-contained catalog; preserve manual rules and other
+sources. Support standard lock formats 1–4, typed bounded diagnostics, official
+registry identities only, index checksum matching and lock-scoped yanked permission.
+Do not resolve extra closure or fetch git/path entries. Preserve source-aware
+preview/explain/retention and all existing security/qualification gates. Prove real
+project locks and Cargo clients on Linux/Windows, including old/current formats,
+yanks, skips and refusal cases. Existing dependencies only.
+
+On 2026-11-13 the owner separately authorized publishing 0.5.0 once implementation
+is complete and qualified under [the release policy](docs/RELEASING.md), including
+release versioning/notes and package audit. Report each green PR to the coordinator;
+the coordinator reviews, merges and publishes from the owner's machine. After their
+publication confirmation, complete registry/payload/docs.rs/fresh-install/tag/release/
+workflow verification and notify the GUI maintainer. Do not merge or publish from
+this checkout. This does not authorize GUI implementation or waive any gate.
 
 ## User-facing documentation
 

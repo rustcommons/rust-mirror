@@ -19,8 +19,8 @@ The catalog approves direct roots and authorizes their explained dependency clos
 it is not a license, vulnerability or build-compatibility certification. A union of
 individually resolved roots need not be buildable together. Existing project locks
 can require versions outside that union; report the missing coverage, never fall
-back silently to the Internet. User-supplied `Cargo.lock` import is deferred, not an
-MVP prerequisite. Internal resolver lockfiles are a different implementation detail.
+back silently to the Internet. User-supplied `Cargo.lock` import was excluded from the 0.4.0 MVP; its separately
+approved next iteration is specified in [LOCK-IMPORT.md](LOCK-IMPORT.md). Internal resolver lockfiles are a different implementation detail.
 
 ## 1. Catalog syntax and selection
 
@@ -114,7 +114,9 @@ and import identity; they merge with manual sources, never replace the catalog.
 Removing one source does not remove another source's protection or delete retained
 bytes. Conflicting checksums for the same identity fail. A lockfile supplies neither
 an organization's full approval list nor complete feature/host policy. No lockfile
-import command/parser is included in this proposal's MVP.
+import command/parser is included in this proposal's original MVP. The owner
+approved a separate 0.5.0 contract-first iteration on 2026-11-13; see
+[the lock import contract](LOCK-IMPORT.md).
 
 ## 2. Dependency closure and resolver
 
