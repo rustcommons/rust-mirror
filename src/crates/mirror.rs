@@ -89,7 +89,7 @@ pub struct VersionRow {
     pub cksum: String,
     /// Optional HEAD estimate, never an integrity proof.
     pub expected_bytes: Option<u64>,
-    /// Captured upstream yank state.
+    /// Latest captured upstream yank state; a retained original line can predate this observation.
     pub yanked: bool,
     /// All known inclusion reasons are lock-only rather than build activation.
     pub lock_only: bool,

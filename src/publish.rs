@@ -316,6 +316,7 @@ fn publish_client(root: &Path, client: &Client) -> Result<Report> {
         if ![200, 201, 204].contains(&response.status()) {
             return Err(status_error(response.status(), "upload failed").into());
         }
+        crate::events::complete(&f.path, "upload", Some(f.bytes), false)?;
         crate::events::artifact(&f.path, "verify", 0, Some(f.bytes))?;
         let response = client.request("GET", &f.path, None, 0)?;
         if response.status() != 200 {
@@ -414,7 +415,7 @@ fn absent(client: &Client, files: &[SnapshotFile]) -> Result<()> {
     for f in files {
         crate::events::artifact(&f.path, "head", 0, None)?;
         match client.request("HEAD", &f.path, None, 0)?.status() {
-            404 => (),
+            404 => crate::events::complete(&f.path, "head", None, false)?,
             200..=299 => {
                 return Err(crate::Error::new(
                     crate::ErrorKind::RemoteExists,

@@ -191,6 +191,8 @@ fn merge(
         row.retained_from_previous = prior.contains(&id);
         if row.retained_from_previous {
             row.expected_bytes = Some(observed[&id].bytes);
+            // UI state follows the current observation; served historical bytes stay immutable.
+            row.yanked = records(observed[&id].index_line.as_bytes())?[0].1.yanked;
             value.changes.retained.push(id.clone());
             if !active.contains(&id) {
                 value.changes.no_longer_selected_retained.push(id.clone());

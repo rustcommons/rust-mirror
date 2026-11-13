@@ -134,7 +134,8 @@ written or approved. A caller must explicitly choose to retain them.
 
 Each preview version row has `name`, `version`, `cksum`, nullable `expected_bytes`,
 `yanked`, `lock_only`, `root_aliases`, `primary_reason`, `retained_from_previous`
-and the full structured reasons. `changes` reports added, retained,
+and the full structured reasons. `yanked` reflects the latest captured upstream
+observation even when retained original index bytes reflect the historical state. `changes` reports added, retained,
 newly-yanked-retained and no-longer-selected-retained identities. `observed_at`
 is UTC Unix seconds identifying the observation; `FrozenPlan::load` performs bounded local validation
 without network and returns that same saved preview. `crates show --plan FILE`

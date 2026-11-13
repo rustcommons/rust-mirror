@@ -409,6 +409,7 @@ fn successive_generations_preserve_closures_bytes_and_separate_yank_observations
         let before = source.calls.load(Ordering::SeqCst);
         let plan = mirror::plan(&catalog, &source, previous.as_deref(), false).unwrap();
         assert_eq!(plan.versions.len(), generation);
+        assert_eq!(plan.versions[0].yanked, generation >= 2);
         assert_eq!(plan.changes.added.len(), 1);
         assert_eq!(plan.changes.retained.len(), generation - 1);
         assert_eq!(
