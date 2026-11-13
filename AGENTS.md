@@ -222,8 +222,22 @@ are approved. Direct `semver` is approved; earlier `serde_json` approval applies
 No PubGrub/other solver dependency is approved; tar/flate2 is not needed now.
 Require bounded native consistency checks, real-Cargo conformance, zero planning
 archive downloads and measured overfetch before claiming Phase 0 complete.
-Cargo.lock import stays future work. Broader implementation and publication are
-not authorized by this Phase 0 task; preserve existing toolchain evidence.
+The coordinator accepted Phase 0 exit and normal-merged PRs #30/#31. The owner
+approved Phase 1 (crate mirroring MVP) on 2026-11-13. Implement the catalog,
+approved frozen plans, bounded network fetch/sync/resume, sparse output/schema 4,
+retained versions, publication and crate-aware whole-generation protection described
+in [the crate contract](docs/CRATES.md). Maintain the protocol additions early and
+notify the GUI maintainer when reviewed changes land. Runtime resolution stays native.
+
+Qualification requires roughly the top 100 most-downloaded crates (document any
+exclusions), Phase 0 fixtures, isolated Linux AND Windows Cargo HTTPS fetch/build
+clients, resume/kill/corruption/budget/yank/links/prerelease cases, measured archive-
+byte overfetch and an actual disposable Nexus Raw crate publication/client proof.
+Never substitute HTTP fixtures for those named HTTPS/Nexus gates. Use only existing
+and already approved dependencies; ask with evidence before adding another. Cargo.lock
+import stays deferred. Coordinator review is required before merging PRs. No version
+bump, package publication, production Nexus writes/deletes or release is authorized.
+Preserve existing toolchain evidence and exact common instructions.
 
 ## User-facing documentation
 

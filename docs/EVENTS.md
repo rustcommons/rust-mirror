@@ -175,3 +175,58 @@ in this invocation, excluding reuse/copy/hash. Unknown whole-operation totals an
 rate/ETA remain null. Consumers must not treat an estimate as verified completion.
 Existing `artifact.expected_bytes` continues to describe that artifact operation.
 Unknown additive events/fields remain ignorable; no existing meaning changes.
+
+## Crate mirroring MVP: protocol 1 additions
+
+Owner-approved Phase 1 contract, 2026-11-13; **not shipped in 0.3.0**. Implementation
+status and library names are tracked in [the crate contract](CRATES.md). This is an
+additive protocol-1 extension: existing envelopes, units, event meanings and terminal
+rules remain unchanged. Phase 0 research report schema 0 is not a fetch plan.
+
+New command labels: `crates-plan`, `crates-explain`, `crates-fetch`, `crates-sync`.
+Stages include `catalog`, `resolve`, `closure-check`, `measure`, `approval`,
+`download`, `verify`, `assemble`, `preflight` and `publish`. Independent heartbeats
+continue while waiting for a retry, worker I/O or hashing, carrying the current
+stage/operation. Missed heartbeats remain the embedding GUI's watchdog concern.
+
+Use existing artifact actions (`head`, `download`, `resume`, `restart`, `reuse`,
+`verify`, `copy`, `upload`) with the generation-relative path, offset and optional
+`expected_bytes`. Concurrent artifacts can interleave; per-path cumulative counts
+must remain ordered within an operation. Do not interpret arrival order as a global
+byte counter. Hashing/copying and network transfer are distinct work. Retry attempts
+start another artifact operation with the correct persisted offset.
+
+`result.report` for plan has `schema`, `plan_id`, `roots`, `versions`, `witnesses`,
+`counts`, `size_estimate`, `budgets`, `previous_inventory_sha256` and `warnings`.
+Unknown archive sizes remain null/unknown counts; HEAD estimates do not prove hashes
+or authorize an over-budget stream. Reasons include parent/alias/requirement,
+requested features/defaults, target and `lock_only`; explain returns chains to roots.
+Fetch reports identify the completed mirror, plan/inventory hashes, transferred and
+reused bytes/files. Sync reports have `status: "needs_approval" | "completed"`,
+`plan_id`, the frozen plan path, and a mirror only after verified completion.
+`needs_approval` is successful preview preparation, not a completed mirror.
+
+Whole-preview consent is bound to `plan_id`: CLI `--approve-plan ID`, or library
+`Approval { plan_id }`. The GUI must show the saved preview before supplying that ID.
+A resumed operation uses the exact approved frozen plan without live re-resolution.
+Mismatched approval is `invalid`; changed persisted identity is `resume_mismatch`;
+locked output, checksum/path corruption and budget refusals use existing stable
+kinds. No secret, arbitrary URL or unredacted transport diagnostic belongs in reports.
+Publication/pruning keep their existing explicit authorization and typed error rules.
+
+Crate concurrency adds three optional nonterminal event types:
+
+| type | Additional fields | Meaning |
+| --- | --- | --- |
+| `artifact_complete` | `path`, `action`, `bytes`: integer or null, `verified`: boolean | Terminal success of the matching path/action operation; HEAD completion does not imply verified content. |
+| `crate_summary` | `files_completed`: integer, `files_total`: integer or null, `transferred_bytes`, `reused_bytes`: integers | Whole crate-fetch counters; finished files count only after complete hash verification/reuse. |
+| `retry` | `path`, `attempt`: integer, `wait_seconds`: integer, `kind`: rate_limited/unavailable/transport, `reason`: string | Bounded 429/503/transport retry wait; no raw headers or secret-bearing errors. Heartbeats continue. |
+
+`crates-show` performs local bounded saved-preview loading, with no network.
+Plan reports include `observed_at`, per-version typed rows, change classification,
+precomputed budget flags and warnings; needs-approval sync includes that exact
+preview. Explain reports include bounded `chains`, `total_chains`, `truncated`.
+See [GUI field shapes](CRATES.md#gui-field-shapes-and-local-editing) for row, paste,
+round-trip and error-context contracts. Unknown additive events/fields remain
+ignorable under protocol 1. No GUI consumer should infer completion from the next
+artifact's start or parse a TOML catalog in its own code.
