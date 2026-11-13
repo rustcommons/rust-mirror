@@ -181,7 +181,17 @@ all active incoming edges, including dependency declarations' defaults/features.
 Process named feature expansion, explicit `dep:alias` activation, implicit optional
 features unless suppressed by `dep:`, strong `alias/feature` forwarding, and weak
 `alias?/feature` forwarding only after that optional dependency becomes active.
-Revisit weak forwarding when another path activates the dependency. Aliases address
+Revisit weak forwarding when another path activates the dependency.
+Keep build-time activation distinct from lock coverage: a local Cargo 1.90 fixture
+and reqwest/default conformance reproduced [Cargo issue 10801](https://github.com/rust-lang/cargo/issues/10801).
+An enabled weak forwarding expression can put its otherwise inactive optional
+dependency and forwarded-feature closure in Cargo.lock. Include those records and
+archives as explicitly explained `lock_only` coverage; do not claim the optional
+dependency is enabled in a build. This is not all-optional mirroring. A fixture with
+that forwarding feature disabled must exclude the edge. The conformance suite must
+keep this version-specific behavior visible rather than silently rewriting the
+upstream record or dropping the declared-features policy.
+ Aliases address
 feature edges; the index `package` value supplies canonical package identity.
 
 Merge index `features` and schema-2 `features2` according to Cargo's index format;
