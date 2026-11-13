@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-No additional changes queued.
+- Add an experimental metadata-only native crate-resolution research API and test
+  driver: declared-feature propagation, bounded conservative closure/backtracking,
+  filtered-index replay and inclusion reasons. No Cargo binary/library is needed
+  at runtime. This is Phase 0, not a crate fetch/publish workflow or release promise.
+- Add a real-Cargo CI conformance oracle with popular-crate and synthetic sparse
+  fixtures, plus measured version overfetch. Cargo is used only in test tooling.
+- Record owner approval dated 2026-11-12 for direct `semver`; earlier `serde_json`
+  approval applies. No Cargo, third-party solver, tar or flate2 dependency is added.
 
 ## [0.3.0] - 2026-11-12
 

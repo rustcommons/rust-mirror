@@ -1,0 +1,39 @@
+name: Crate resolution Phase 0
+on:
+  pull_request:
+    paths:
+      - 'src/crates/**'
+      - 'tests/crates_phase0.rs'
+      - 'examples/crates_phase0.rs'
+      - 'scripts/*crates_phase0*'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/crates-phase0.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cargo-conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build native research driver and run focused fixtures
+        env:
+          CARGO_BUILD_JOBS: '2'
+        run: |
+          cargo test --locked --test crates_phase0
+          cargo build --locked --example crates_phase0
+      - name: Real Cargo oracle against filtered sparse registries
+        run: python scripts/check_crates_phase0.py --driver target/debug/examples/crates_phase0 --work "$RUNNER_TEMP/crates-phase0"
+      - name: Save exact metadata, plans, locks, logs and overfetch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crates-phase0-evidence
+          path: ${{ runner.temp }}/crates-phase0
+          if-no-files-found: warn

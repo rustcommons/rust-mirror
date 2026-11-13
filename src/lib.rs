@@ -1,6 +1,7 @@
 #![doc = include_str!("guide.md")]
 #![warn(missing_docs)]
 pub mod cli;
+pub mod crates;
 mod error;
 pub mod events;
 pub mod network;
