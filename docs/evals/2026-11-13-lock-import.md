@@ -121,3 +121,10 @@ client-only reuse does not claim that the installed binary downloaded that mirro
 The first client-only rerun stopped before Cargo because the helper expected the
 wrong prepared-project layout; the corrected helper passed without product changes.
 Fresh mirror creation by each platform's candidate binary remains a CI gate.
+
+The first PR Windows lock-client run (43482618572) passed the old ripgrep case
+but refused GitHub's chain while provisioning Chalk: Cargo/libgit2 applied the
+fixture-only `http.cainfo` to that separate public origin. The harness now provisions
+Git with default public roots before configuring the private mirror CA, discarding
+all registry data from provisioning before the actual mirror fetch. Verification
+remains enabled for both steps. This harness correction changes no packaged source.

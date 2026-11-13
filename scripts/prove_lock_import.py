@@ -190,10 +190,14 @@ def main():
 
                 mixed = "rust-analyzer" in entry["name"]
                 if mixed:
+                    # Cargo's cainfo also affects libgit2 on Windows. Provision the
+                    # external Git source using public roots, before configuring our
+                    # private mirror CA. Discard every registry byte from this step.
+                    (home / "config.toml").write_text('[http]\nssl-verify=true\n')
                     run("provision-git-independently", ["fetch", "--locked"])
                     assert (home / "git").exists()
-                    # Keep only explicitly provisioned Git checkouts, not registry payloads.
                     shutil.rmtree(home / "registry")
+                    (home / "config.toml").write_text(configuration)
                 run("mirror-fetch-locked", ["fetch", "--locked"])
                 run("offline-build-locked", ["build", "--locked", "--offline", *entry["build_args"]])
                 if mixed:
