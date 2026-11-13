@@ -262,6 +262,17 @@ pub(super) fn validate(value: &FrozenPlan, replay: bool) -> Result<()> {
         )
         .into());
     }
+    if replay {
+        // Supersets can change Cargo's preferred candidates across historical cohorts.
+        // Recheck the combined served index, not only each historical witness in isolation.
+        let profiles: Vec<_> = value
+            .roots
+            .iter()
+            .map(|root| root.profile.clone())
+            .collect();
+        let mut filtered = FilteredIndex::new(&value.versions)?;
+        super::super::plan(&mut filtered, &profiles, native_bounds(&value.catalog))?;
+    }
     Ok(())
 }
 pub(super) fn plan(

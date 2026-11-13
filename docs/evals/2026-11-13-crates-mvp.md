@@ -57,3 +57,26 @@ practical), killed-process recovery on Linux/Windows, actual disposable Nexus Ra
 publication/client consumption, final link/render/source checks, package audit and
 full repository checks. No actual Nexus result is claimed here. No production Nexus
 change, new dependency, version bump or publication is authorized.
+
+## Initial exact-head CI, 2d620d7
+
+The [MVP run](https://github.com/rustcommons/rust-mirror/actions/runs/43380261336)
+at `2d620d7eb6606cb05a89d5a835a60cb62512c43a` passed top-100 frozen-plan
+conformance/archive-byte measurement and Linux **and Windows** real Cargo HTTPS
+clients, hard process kill/resume, cooperative stdin cancel/resume, nonzero Range
+reuse, typed Retry-After notices and blocked-read heartbeats. Payloads in the
+kill/resume fixture are synthetic opaque bytes, not Cargo archives.
+
+Windows initially refused the fixture leaf with unknown revocation status. The
+fixture now serves a valid signed local CRL through its certificate distribution
+point; certificate and revocation checks remain enabled. This follows the
+[Windows chain revocation model](https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/configure-certificate-path-validation-revocation-policy).
+The first macOS attempt failed fixture certificate generation/verification using
+the system executable; qualification now selects the hosted image's preinstalled
+OpenSSL 3 when available. That first macOS attempt is not a client pass.
+
+The actual isolated Nexus Raw publication/client step in this run succeeded. Its
+artifact upload then failed because the evidence directory was root-owned. The
+workflow now returns ownership of only its own completed proof directory to the
+runner so sanitized evidence can be retained; a fully green run with those records
+is still required. It does not change server permissions or production data.

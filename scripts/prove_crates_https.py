@@ -94,6 +94,12 @@ def prove_client(evidence, mirror, base, ca_file, cargo, rustc, fault):
 @contextlib.contextmanager
 def certificates(dns_names=None):
     openssl = shutil.which("openssl")
+    if platform.system() == "Darwin":
+        # Hosted macOS keeps OpenSSL 3 keg-only; do not substitute system LibreSSL.
+        for candidate in (Path("/opt/homebrew/opt/openssl@3/bin/openssl"), Path("/usr/local/opt/openssl@3/bin/openssl")):
+            if candidate.is_file():
+                openssl = str(candidate)
+                break
     if openssl is None:
         raise RuntimeError("OpenSSL fixture prerequisite missing; runtime rust-mirror does not use it")
     with tempfile.TemporaryDirectory(prefix="rust-mirror-crates-tls-") as directory:

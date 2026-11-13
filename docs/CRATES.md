@@ -199,7 +199,10 @@ Historical selection cohorts are stored flat, with independent native proofs, ra
 than recursively embedding predecessor inventories. Current bounds are 128 cohorts,
 4,096 total root profiles and 64 MiB serialized frozen metadata; exceeding a bound
 refuses planning instead of silently dropping history. Retained index reordering or
-immutable field changes are refused. New yank observations preserve historical bytes.
+immutable field changes are refused. The combined served index is replayed across
+historical and current root profiles too; if mixing cohorts would require an
+unmirrored edge, planning refuses rather than offering an incomplete registry.
+New yank observations preserve historical bytes.
 
 Pruning is disabled without an explicit `[crate-retention]` table. Its optional
 `keep-newest` (0–32), `previous-generations` (0–31) and `pinned-generations` fields

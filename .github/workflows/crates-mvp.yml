@@ -127,6 +127,7 @@ jobs:
       - name: Actual isolated Nexus Raw publication and HTTPS Cargo client
         shell: bash
         run: |
+          trap 'if [ -d "$RUNNER_TEMP/crates-nexus-proof" ]; then sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/crates-nexus-proof"; fi' EXIT
           CRATES_PROOF_CARGO=$(rustup which cargo)
           CRATES_PROOF_RUSTC=$(rustup which rustc)
           sudo python3 scripts/run_nexus_proof.py --runtime docker --image docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09 --allow-raw-mime-types --snapshot "$RUNNER_TEMP/nexus-crates-run/mirror" --evidence "$RUNNER_TEMP/crates-nexus-proof" --publisher-cli "$PWD/target/debug/rust-mirror" --cargo "$CRATES_PROOF_CARGO" --rustc "$CRATES_PROOF_RUSTC"
