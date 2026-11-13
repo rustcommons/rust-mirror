@@ -5,11 +5,11 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0 are published;
-see docs/evals/2026-11-12-publication-0.3.0.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0 are published;
+see docs/evals/2026-11-13-publication-0.4.0.md.
 Describe only demonstrated functionality
-as implemented. Crate mirroring is included in the authorized 0.4.0 candidate;
-publication is not complete until its own postpublication record exists. Other work
+as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
+its postpublication record identifies registry, documentation and installed proofs. Other work
 remains governed by the roadmap.
 
 Preserve the earlier Windows-local uncommitted prototype. Assess it before import
@@ -25,7 +25,7 @@ across the rename. Do not publish placeholder crates merely to reserve names.
 - `CLAUDE.md`: compatibility pointer to this file.
 
 - `src/`: toolchain/crate selection, planning, downloading and thin CLI; Rust 1.90+.
-- `src/crates/`: catalog, frozen previews, controlled sparse-registry operations and crate-aware retention; introduced by the 0.4.0 candidate.
+- `src/crates/`: catalog, frozen previews, controlled sparse-registry operations and crate-aware retention; introduced in 0.4.0.
 - `scripts/publish_raw.py`: Python 3.11+ static-host HTTP PUT/GET helper.
 - `scripts/prove_offline.py`: Linux network-namespace proof, including negative controls.
 - `docs/NEXUS-RAW.md`: actual setup, publication behavior and limits.
@@ -261,6 +261,9 @@ machine. After the coordinator confirms publication, complete registry payload,
 docs.rs, fresh installation, annotated tag/GitHub Release and verification-workflow
 steps, then notify the GUI maintainer that 0.4.0 is live. Do not publish the package
 from this checkout or begin GUI Phase 2 on this authorization.
+The coordinator published 0.4.0 from the owner's Windows machine after normal
+merge on 2026-11-13; see [postpublication verification](docs/evals/2026-11-13-publication-0.4.0.md).
+Later versions and GUI Phase 2 still require separate authorization.
 
 ## User-facing documentation
 

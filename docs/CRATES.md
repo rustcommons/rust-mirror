@@ -1,9 +1,10 @@
 # Crate mirroring MVP contract
 
-Introduced in the experimental 0.4.0 candidate, authorized on 2026-11-13. The
+Introduced in experimental 0.4.0, published on 2026-11-13. The
 catalog, frozen plan, sync/fetch, publication and retention APIs have
 [bounded qualification](evals/2026-11-13-crates-mvp.md). See the
-[release notes](releases/v0.4.0.md) for upgrade impact and limits.
+[release notes](releases/v0.4.0.md) for upgrade impact and limits, and the
+[publication record](evals/2026-11-13-publication-0.4.0.md) for exact registry evidence.
 See [design](CRATES-DESIGN.md), [roadmap](ROADMAP.md)
 and [requirements](REQUIREMENTS.md). Runtime dependency resolution stays native.
 

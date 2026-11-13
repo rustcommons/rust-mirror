@@ -23,8 +23,9 @@ registry, tag/release, installed proof and docs.rs. Later versions still require
 separate owner authorization and all applicable gates.
 
 The owner authorized 0.4.0 publication on 2026-11-13: accepted crate MVP plus main.
-The coordinator merges the reviewed release PR and publishes from the owner's
-machine; postpublication verification follows that confirmation. Carry the
+The coordinator normal-merged the reviewed release PR and published from the owner's
+Windows machine; [postpublication verification](evals/2026-11-13-publication-0.4.0.md)
+records the exact registry payload, documentation and installed proofs. Carry the
 [Phase 1 evidence](evals/2026-11-13-crates-mvp.md) only where code is unchanged.
 Crate qualification additionally requires the dated top-100 corpus/byte comparison,
 isolated HTTPS Cargo clients, kill/cancel/resume and actual schema-4 Nexus proof.

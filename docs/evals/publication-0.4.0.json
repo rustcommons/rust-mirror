@@ -1,0 +1,427 @@
+{
+  "version": "0.4.0",
+  "release_merge": "3f815fe3c698115937ba1b1071391c15258af3cc",
+  "registry_checksum": "c3af7381321b8dd1d780e6d519ca0a7933285165ad413bca55ce8a3efca96451",
+  "api_checksum_matches": true,
+  "sparse_checksum_matches": true,
+  "yanked": false,
+  "vcs": {
+    "git": {
+      "sha1": "3f815fe3c698115937ba1b1071391c15258af3cc"
+    },
+    "path_in_vcs": ""
+  },
+  "source_files": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 8350,
+      "sha256": "57d40d5abedc42cd96c628c18be869a4ada446e59bf22fa14f5495041ace44d7"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 30230,
+      "sha256": "0556f2245c66651485ea6c4e5eb61a0cd12dad10cb87022c035130aeee82d05c"
+    },
+    {
+      "path": "Cargo.toml.orig",
+      "bytes": 675,
+      "sha256": "7235665a6182ba85e5b746e1690e9d6b32a137160f2d3b5cc71fe3bbf8aaad6b"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3260,
+      "sha256": "46096d52d98830bf477f2b6c8d6fb174b6d267210b29e136885ebe5d7ac64e7e"
+    },
+    {
+      "path": "examples/crates_mvp.rs",
+      "bytes": 2253,
+      "sha256": "1a59641b23c3a64ec594558beb4d2c0cc9d5754fa7fc939ad3ce48579fe250ea"
+    },
+    {
+      "path": "examples/crates_phase0.rs",
+      "bytes": 2060,
+      "sha256": "20834e686340a1412047f32059eb08a8356c25ed2a69d402809f59a5350225ae"
+    },
+    {
+      "path": "examples/mirror.toml",
+      "bytes": 541,
+      "sha256": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e"
+    },
+    {
+      "path": "examples/multi-version.toml",
+      "bytes": 292,
+      "sha256": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d"
+    },
+    {
+      "path": "examples/retention.toml",
+      "bytes": 528,
+      "sha256": "7d0d6ac740ebccd768e4b237fd6a12ea9b30281fc14efe86893a2032b0d2e5dd"
+    },
+    {
+      "path": "examples/sync-demo.toml",
+      "bytes": 366,
+      "sha256": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc"
+    },
+    {
+      "path": "src/cli/crates.rs",
+      "bytes": 13102,
+      "sha256": "0f8d5e974b30e25a0cebb7f35b9dc688a52e0c66e905cc27237500a5bdb86c8c"
+    },
+    {
+      "path": "src/cli/network_options.rs",
+      "bytes": 10379,
+      "sha256": "0b06778fd307aafb0f1201d3d2dd94bd46a545debd80d6cff6b3f3ae13b55ca4"
+    },
+    {
+      "path": "src/cli.rs",
+      "bytes": 34531,
+      "sha256": "a0d5b55d1bbcf4f9a935cc1b2385d3c81657257b40cee04f39dabbaeb6f1393c"
+    },
+    {
+      "path": "src/crates/catalog.rs",
+      "bytes": 24956,
+      "sha256": "68826891975d839d12e182e066d8171903831fa1f913cb416090deed04f251a1"
+    },
+    {
+      "path": "src/crates/mirror/fetch.rs",
+      "bytes": 34248,
+      "sha256": "9b588141f4a25f6e799207c4e5ba2403d84664e1e161b24a8ba1fbd5350f97f4"
+    },
+    {
+      "path": "src/crates/mirror/retained.rs",
+      "bytes": 16332,
+      "sha256": "7916653f246d94a05054f417216413a3b06d4b309a7ad2d71089e4c815de5bde"
+    },
+    {
+      "path": "src/crates/mirror/sync.rs",
+      "bytes": 6221,
+      "sha256": "7ff0d0c8f0e138385f711cf319a1297c988947a51b0c1d443e3c837d9bb5eac4"
+    },
+    {
+      "path": "src/crates/mirror.rs",
+      "bytes": 43597,
+      "sha256": "cf513038771ba0cbeb20d98845319545c312dff6fd94ae5855576977bf3a07b4"
+    },
+    {
+      "path": "src/crates/mod.rs",
+      "bytes": 34979,
+      "sha256": "671789087846ac80b43c4bb047a5f06b8f9d801fdb0b2860fbb3df8452dc6b9d"
+    },
+    {
+      "path": "src/crates/retention.rs",
+      "bytes": 9212,
+      "sha256": "9ce02b55da250bb7cf118e84247df51a24bba402a2cb19c44292552fc8b56fa1"
+    },
+    {
+      "path": "src/crates/source.rs",
+      "bytes": 23215,
+      "sha256": "2c6c0ba62638593dbda9bb3f70283f37fde6067b37179732f439c7ccdbbd13e8"
+    },
+    {
+      "path": "src/error.rs",
+      "bytes": 4427,
+      "sha256": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0"
+    },
+    {
+      "path": "src/events.rs",
+      "bytes": 24470,
+      "sha256": "6cf2d7007ac1e7d35fa4f8a2e775c40c2931cd04c94f69b13d56c9d85f7d9160"
+    },
+    {
+      "path": "src/guide.md",
+      "bytes": 4796,
+      "sha256": "53255bb1c9a0e5c2a2c2d3d7f4b0112ae0595db79d486d4918e009591b2ecc4a"
+    },
+    {
+      "path": "src/lib.rs",
+      "bytes": 22974,
+      "sha256": "ca9ed8d984431cdc650ca8df0e979763dcc176e57a7f1dc80ea1ef4254088485"
+    },
+    {
+      "path": "src/main.rs",
+      "bytes": 364,
+      "sha256": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f"
+    },
+    {
+      "path": "src/network.rs",
+      "bytes": 33985,
+      "sha256": "577d048ad404af81840adc7a6d72c3d932b69b8a495be1d1eb6c928b5acaf4ed"
+    },
+    {
+      "path": "src/publish.rs",
+      "bytes": 21729,
+      "sha256": "d97c43fb9f4d9797fcc2d32c4d78da2dd2d5646e9449df1a266618a94ddbb4fa"
+    },
+    {
+      "path": "src/releases.rs",
+      "bytes": 9005,
+      "sha256": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78"
+    },
+    {
+      "path": "src/resume.rs",
+      "bytes": 19602,
+      "sha256": "0b475598ad56c9c94c3d2cba1f9a3189a680f3cd913120b7eed2988a8ee0002c"
+    },
+    {
+      "path": "src/selection/collection.rs",
+      "bytes": 23744,
+      "sha256": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc"
+    },
+    {
+      "path": "src/selection/retention/catalog.rs",
+      "bytes": 25153,
+      "sha256": "59bc11377ce338859fd02bffb1b1067357bfeba2d842c718ec54b90f92e480d7"
+    },
+    {
+      "path": "src/selection/retention.rs",
+      "bytes": 27022,
+      "sha256": "d0951e778261e8b9afcda49676582564af02825454bc489c7f915210d7874af2"
+    },
+    {
+      "path": "src/selection/rustup.rs",
+      "bytes": 14387,
+      "sha256": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11"
+    },
+    {
+      "path": "src/selection/sync.rs",
+      "bytes": 33937,
+      "sha256": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3"
+    },
+    {
+      "path": "src/selection.rs",
+      "bytes": 48714,
+      "sha256": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd"
+    },
+    {
+      "path": "src/signals.rs",
+      "bytes": 2239,
+      "sha256": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6"
+    }
+  ],
+  "normalized_manifest_sha256": "8d17fa514ed7996b2e3921c3720e6c957c4cef275ec4fd9ace543069031305fe",
+  "linux_candidate_sha256": "6866353b403fd1de64d6561c1132aede5648046a35b5a32df9cf35e1c30c384b",
+  "windows_publication": {
+    "reported_by": "coordinator",
+    "cargo": "cargo 1.99.0 x86_64-pc-windows-msvc",
+    "command": "cargo publish --locked",
+    "clean_detached_merge": "3f815fe3c698115937ba1b1071391c15258af3cc"
+  },
+  "member_byte_differences_from_linux_candidate": [
+    ".cargo_vcs_info.json"
+  ],
+  "normalized_manifest_identical_to_linux_candidate": true,
+  "installed": {
+    "registry_install": true,
+    "fresh_cargo_home": true,
+    "fresh_install_root": true,
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "binary_sha256": "11e3b5ce24bec6e27218e24557f498b031aa1e819337dd0f27855d663dfd3f39",
+    "version_events": [
+      {
+        "command": "--version",
+        "elapsed_ms": 0,
+        "protocol": 1,
+        "seq": 0,
+        "tool_version": "0.4.0",
+        "type": "hello"
+      },
+      {
+        "elapsed_ms": 0,
+        "index": 1,
+        "name": "--version",
+        "seq": 1,
+        "total": null,
+        "type": "stage"
+      },
+      {
+        "elapsed_ms": 0,
+        "error": null,
+        "ok": true,
+        "report": {
+          "protocol": 1,
+          "tool_version": "0.4.0"
+        },
+        "seq": 2,
+        "type": "result"
+      }
+    ],
+    "crate_client": {
+      "platform": "Linux-7.0.0-1011-aws-aarch64-with-glibc2.36",
+      "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+      "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+      "plan_id": "7afcf49a2f56cc99123941eed8233120e11685da16d1cdc64a33f9af444e0f24",
+      "inventory_sha256": "af37124e094542f2114426b97da6f27d61569a825f24122eb47c4c7d3bc907ad",
+      "lock_sha256": "85f2048007518732a4a7900ac684f42f23246291473a0e4e2bad84925d0b6e05",
+      "root": {
+        "name": "itoa",
+        "version": "1.0.15",
+        "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
+      },
+      "tls_verification": true,
+      "cases": [
+        {
+          "case": "untrusted-ca",
+          "expected_success": false,
+          "exit": 101
+        },
+        {
+          "case": "missing-archive-no-upstream-fallback",
+          "expected_success": false,
+          "exit": 101
+        },
+        {
+          "case": "corrupt-archive-checksum-refusal",
+          "expected_success": false,
+          "exit": 101
+        },
+        {
+          "case": "fresh-offline-refusal",
+          "expected_success": false,
+          "exit": 101
+        },
+        {
+          "case": "https-fetch-locked",
+          "expected_success": true,
+          "exit": 0
+        },
+        {
+          "case": "https-build-locked",
+          "expected_success": true,
+          "exit": 0
+        },
+        {
+          "case": "populated-offline-run",
+          "expected_success": true,
+          "exit": 0
+        }
+      ],
+      "scope": "One real itoa fetch/build/run; not all corpus crates built or foreign targets executed"
+    }
+  },
+  "docs_rs_initial_observation": "Build in progress: rustdoc URLs returned HTTP 200 fallback redirects; not counted as successful rustdoc evidence.",
+  "docs_rs_final_pages": [
+    {
+      "url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/",
+      "title": "rust_mirror - Rust"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/crates/mirror/index.html",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/crates/mirror/index.html",
+      "title": "rust_mirror::crates::mirror - Rust"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/crates/catalog/index.html",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/crates/catalog/index.html",
+      "title": "rust_mirror::crates::catalog - Rust"
+    },
+    {
+      "url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/events/index.html",
+      "status": 200,
+      "final_url": "https://docs.rs/rust-mirror/0.4.0/rust_mirror/events/index.html",
+      "title": "rust_mirror::events - Rust"
+    },
+    {
+      "url": "https://docs.rs/crate/rust-mirror/0.4.0/builds",
+      "status": 200,
+      "final_url": "https://docs.rs/crate/rust-mirror/0.4.0/builds",
+      "title": "rust-mirror 0.4.0 - Docs.rs"
+    }
+  ],
+  "github_release": {
+    "id": 444175813,
+    "tag_name": "v0.4.0",
+    "name": "rust-mirror 0.4.0",
+    "html_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.4.0",
+    "published_at": "2026-11-13T11:59:42Z",
+    "body": "# rust-mirror 0.4.0\n\n## Changes\n\n- Mirror an organization-wide curated crate catalog with Cargo registry-dependency\n  syntax, aliases, declared features, latest-N rules and exact pins.\n- Resolve bounded native dependency closures without a Cargo binary at runtime.\n  Preview counts, optional HEAD size estimates, budgets and inclusion explanations;\n  approve the whole frozen plan before archive downloads.\n- Fetch with bounded concurrency, retry notices, cancellation, resumable state and\n  index-checksum verification. Emit an immutable static sparse registry with\n  byte-preserved index lines and generation-local archive URLs.\n- Retain older mirrored versions and protect crate generations during explicit\n  whole-generation pruning. Publish schema 4 using the existing no-overwrite,\n  preflight and marker-last rules.\n- Expose catalog editing/paste diagnostics, preview/discovery/client-config APIs\n  and additive protocol-1 completion, file-count and typed retry events.\n\n## Upgrade\n\nRust/Cargo 1.90+ remains required. Existing toolchain inventory schemas 1/2/3 and\ncommands remain supported. Crate inventory schema 4 requires this version; older\nreaders refuse it. Frozen crate plans use their own schema 1. Protocol 1 remains\nadditive; Rust consumers matching public event variants exhaustively or constructing\nexpanded report structs may need updates. Use crate-aware retention for crate\nleaves; toolchain pruning refuses them.\n\nDirect `semver` and `serde_json` dependencies were owner-approved during native\ncrate design; they are new relative to published 0.3.0. No Cargo library, external\nruntime Cargo, third-party solver or direct tar/flate2 dependency is introduced.\nA fresh generation needs its eventual immutable HTTPS base URL before planning.\nConfigure Cargo source replacement explicitly; publication does not activate routing.\n\n## Validation and limits\n\nThe [Phase 1 record](https://github.com/rustcommons/rust-mirror/blob/main/docs/evals/2026-11-13-crates-mvp.md)\nidentifies the qualified source and CI. The dated 100-root corpus had no exclusions:\n186 native versions matched the Cargo lockfile union, with 45,125,358 archive bytes\non each side and 0% measured byte overfetch. Planning downloaded no archives.\nThese measurements describe that corpus, not all future catalogs.\n\nIsolated HTTPS Cargo fetch/build/offline client checks ran on Linux, Windows and\nmacOS, building **itoa**, not all 100 crates or arbitrary foreign targets. Kill,\nstdin-cancel and range-resume checks used a separate synthetic payload. Actual\ndisposable Nexus Raw schema-4 publication and Cargo consumption were proved on\n**Linux only**, using a recorded legacy OSS test instance behind a verified TLS\nproxy. This is neither production Nexus qualification nor a recommended server version.\nUnchanged Phase 1 runtime evidence carries into this release candidate; release\npackage/install checks are recorded separately before merge.\n\nHistorical cohorts preserve their original index bytes and independent proofs.\nThe combined served index is replayed against historical/current profiles; if it\nneeds an unmirrored edge or exceeds resource bounds, planning **refuses** rather\nthan exposing an incomplete generation. This conservative refusal is an MVP limit.\nDev dependencies are excluded; enabled features, bounded profiles and all-platform\nnormal/build dependencies govern closure. No arbitrary Cargo completeness guarantee\nor runtime build-safety/license/security review is implied by checksum verification.\n\nCargo.lock import, private/alternate registries, scheduling, in-generation compaction,\nremote pruning and GUI work remain deferred. Upstream signatures are preserved,\nnot independently verified. Publication is owner-authorized; the coordinator merges\nand uploads the qualified candidate before postpublication verification.\n\n## Links\n\n- [Source tag](https://github.com/rustcommons/rust-mirror/tree/v0.4.0)\n- [Changelog](https://github.com/rustcommons/rust-mirror/blob/main/CHANGELOG.md)\n- [Crate guide and client setup](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)\n- [User guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md)\n- [Command reference](https://github.com/rustcommons/rust-mirror/blob/main/docs/CLI-REFERENCE.md)\n- [Protocol 1](https://github.com/rustcommons/rust-mirror/blob/main/docs/EVENTS.md)\n- [Release policy](https://github.com/rustcommons/rust-mirror/blob/main/docs/RELEASING.md)\n",
+    "assets": [],
+    "draft": false,
+    "prerelease": false
+  },
+  "tag": {
+    "name": "v0.4.0",
+    "type": "tag",
+    "commit": "3f815fe3c698115937ba1b1071391c15258af3cc"
+  },
+  "published_docs_check": {
+    "initial": "Unauthenticated GitHub API returned 403; not a release-content failure.",
+    "resolved": "Authenticated full --published check passed; release/tag event CI 43421453786 and 43421451469 green."
+  },
+  "registry_workflow": {
+    "initial_main_run": "43421453150",
+    "cleanup_verified_run": "43421710237",
+    "workflow_ref": "7efcde589333d94acfb0ec7edd16bf973adc0ed3",
+    "checked_out_tag": "v0.4.0",
+    "identity": {
+      "version": "0.4.0",
+      "source": "3f815fe3c698115937ba1b1071391c15258af3cc",
+      "archive_sha256": "c3af7381321b8dd1d780e6d519ca0a7933285165ad413bca55ce8a3efca96451",
+      "vcs": {
+        "git": {
+          "sha1": "3f815fe3c698115937ba1b1071391c15258af3cc"
+        },
+        "path_in_vcs": ""
+      },
+      "binary_sha256": "9597d3912fd8392be3528f0bc2133048f6d9c4f321da57dbe516875b86d90e6c",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.4.0",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.4.0"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "registry_install": true,
+      "fresh_cargo_home": true
+    },
+    "cleanup": {
+      "private_keys_destroyed": true,
+      "fixture_created": true
+    },
+    "publisher": {
+      "status": "passed",
+      "files": 9,
+      "transport": "HTTPS with private CA and scoped fixture credentials",
+      "fixture_only": true,
+      "untrusted_ca_refused": true,
+      "wrong_hostname_refused": true,
+      "typed_tls_auth_remote_exists": true,
+      "preflight_no_put": true,
+      "event_protocol": 1
+    },
+    "isolation": {
+      "kind": "network-namespace",
+      "routes": []
+    }
+  }
+}
