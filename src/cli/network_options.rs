@@ -129,20 +129,23 @@ pub(super) fn options(base: Option<&NetworkConfig>) -> Result<NetworkOptions> {
                 return Err("network config must be a bounded regular file".into());
             }
             let mut contents = String::new();
-            fs::File::open(path)?
+            fs::File::open(&path)?
                 .take(4 * 1024 * 1024 + 1)
                 .read_to_string(&mut contents)?;
             if contents.len() > 4 * 1024 * 1024 {
                 return Err("network config exceeded bound".into());
             }
-            #[derive(serde::Deserialize)]
-            struct NetworkSection {
-                network: Option<NetworkConfig>,
-            }
-            config = toml::from_str::<NetworkSection>(&contents)
-                .map_err(|_| "invalid network configuration")?
-                .network
-                .unwrap_or_default();
+            let document: toml::Value =
+                toml::from_str(&contents).map_err(|_| "invalid network configuration")?;
+            config = if document.get("crates").is_some() {
+                crate::crates::catalog::Catalog::parse(&contents)?
+                    .network
+                    .unwrap_or_default()
+            } else {
+                crate::selection::Config::read(&path)?
+                    .network
+                    .unwrap_or_default()
+            };
         }
         let text = |key: &str| -> Result<Option<String>> {
             o.flags

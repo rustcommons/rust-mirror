@@ -61,7 +61,7 @@ jobs:
             binary: target/debug/rust-mirror
           - os: windows-latest
             binary: target/debug/rust-mirror.exe
-          - os: macos-14
+          - os: macos-15
             binary: target/debug/rust-mirror
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
@@ -75,12 +75,17 @@ jobs:
         run: cargo build --locked --jobs 2
       - name: Saved-preview consent and real Cargo HTTPS fetch/build with negative controls
         run: python scripts/prove_crates_platform.py --binary ${{ matrix.binary }} --evidence "${{ runner.temp }}/crates-client"
+      - name: Actual CLI killed-process/cancelled resume through verified CONNECT fixture
+        run: python scripts/prove_crates_resume.py --binary ${{ matrix.binary }} --evidence "${{ runner.temp }}/crates-resume"
       - name: Save client evidence without private keys or downloaded archives
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: crates-https-client-${{ matrix.os }}
           path: |
+            ${{ runner.temp }}/crates-resume/*.json
+            ${{ runner.temp }}/crates-resume/*.jsonl
+            ${{ runner.temp }}/crates-resume/*.stderr
             ${{ runner.temp }}/crates-client/*.jsonl
             ${{ runner.temp }}/crates-client/*.stderr
             ${{ runner.temp }}/crates-client/client.stdout
@@ -88,4 +93,55 @@ jobs:
             ${{ runner.temp }}/crates-client/https-client/*.stdout
             ${{ runner.temp }}/crates-client/https-client/*.stderr
             ${{ runner.temp }}/crates-client/https-client/test-ca.pem
+          if-no-files-found: warn
+
+  disposable-nexus-crate-client:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cargo build --locked --jobs 2
+      - name: Prepare immutable crate leaf for the isolated proof endpoint
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/nexus-crates.toml" <<'CATALOG'
+          [crates]
+          itoa = "=1.0.15"
+          [crate-policy]
+          hosts = ["x86_64-unknown-linux-gnu"]
+          targets = ["x86_64-unknown-linux-gnu"]
+          [crate-output]
+          base-url = "https://127.0.0.1:18443/repository/rust-mirror-proof/snapshots/proof-001"
+          [crate-network]
+          contact = "https://github.com/rustcommons/rust-mirror/issues"
+          CATALOG
+          target/debug/rust-mirror --events jsonl crates sync --config "$RUNNER_TEMP/nexus-crates.toml" --output "$RUNNER_TEMP/nexus-crates-run" > "$RUNNER_TEMP/nexus-crates-preview.jsonl"
+          APPROVED_CRATES_PLAN=$(python -c 'import json,os; print(json.load(open(os.environ["RUNNER_TEMP"]+"/nexus-crates-run/plan.json"))["plan_id"])')
+          target/debug/rust-mirror --events jsonl crates sync --config "$RUNNER_TEMP/nexus-crates.toml" --output "$RUNNER_TEMP/nexus-crates-run" --approve-plan "$APPROVED_CRATES_PLAN" > "$RUNNER_TEMP/nexus-crates-fetch.jsonl"
+      - name: Pull the explicitly selected legacy test image
+        run: docker pull docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09
+      - name: Actual isolated Nexus Raw publication and HTTPS Cargo client
+        shell: bash
+        run: |
+          CRATES_PROOF_CARGO=$(rustup which cargo)
+          CRATES_PROOF_RUSTC=$(rustup which rustc)
+          sudo python3 scripts/run_nexus_proof.py --runtime docker --image docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09 --allow-raw-mime-types --snapshot "$RUNNER_TEMP/nexus-crates-run/mirror" --evidence "$RUNNER_TEMP/crates-nexus-proof" --publisher-cli "$PWD/target/debug/rust-mirror" --cargo "$CRATES_PROOF_CARGO" --rustc "$CRATES_PROOF_RUSTC"
+      - name: Retain scoped proof evidence without credentials, private keys or archives
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crates-disposable-nexus-proof
+          path: |
+            ${{ runner.temp }}/nexus-crates-*.jsonl
+            ${{ runner.temp }}/crates-nexus-proof/runner.json
+            ${{ runner.temp }}/crates-nexus-proof/driver.stdout
+            ${{ runner.temp }}/crates-nexus-proof/driver.stderr
+            ${{ runner.temp }}/crates-nexus-proof/proof/*.json
+            ${{ runner.temp }}/crates-nexus-proof/proof/cargo-client/*.json
+            ${{ runner.temp }}/crates-nexus-proof/proof/cargo-client/*.stdout
+            ${{ runner.temp }}/crates-nexus-proof/proof/cargo-client/*.stderr
           if-no-files-found: warn

@@ -160,8 +160,10 @@ artifact has no successful completion event; the final result remains authoritat
 
 Publish preflight refuses a destination different from the generation-local base
 URL with `invalid` and both validated credential-free URLs, before any write.
-`client_config` returns the exact project Cargo source-replacement TOML for a
-completed generation. Schema-4 generation discovery reports `kind: "crates"` and
+`client_config` returns the exact project Cargo source-replacement TOML from a
+frozen plan. `client_config_for_generation(root)` uses bounded metadata-only
+`Inventory::inspect` to show the same snippet without reading archives. This is
+not payload verification; publish and retention still use full `Inventory::load`. Schema-4 generation discovery reports `kind: "crates"` and
 crate/version counts. Planning cancellation is checked between index requests and
 inside native feature/search loops; blocked reads retain existing socket deadlines
 and the independent heartbeat. These fields are backend work; GUI pages remain a
@@ -242,7 +244,9 @@ readers, alternate/private registries and Cargo.lock import remain deferred.
 
 ## Qualification and evidence
 
-No Phase 1 transfer/client/Nexus gate is satisfied by adopting this contract.
+[Qualification in progress](evals/2026-11-13-crates-mvp.md) distinguishes bounded
+local observations from remaining exact-head gates. Adopting this contract alone
+satisfies no transfer/client/Nexus gate.
 Required evidence, tied to exact revisions, includes:
 
 - Approximately the top 100 most-downloaded crates, default features, with a dated

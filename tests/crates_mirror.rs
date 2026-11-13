@@ -288,6 +288,9 @@ fn completed_corruption_and_unknown_workspace_files_are_never_overwritten() {
         b"corrupt",
     )
     .unwrap();
+    let snippet = mirror::client_config_for_generation(&report.mirror).unwrap();
+    assert!(snippet.contains("sparse+https://mirror.example/generation-001/cargo/index/"));
+    assert!(mirror::Inventory::load(&report.mirror).is_err());
     options.resume = true;
     assert!(mirror::fetch(&plan, &source, &options, &approval).is_err());
     assert_eq!(
@@ -635,4 +638,93 @@ fn crate_directory_prune_keeps_paused_previous_and_refuses_stale_disk() {
     assert!(!mirrors[1].exists());
     assert!(mirrors[0].exists() && mirrors[2].exists());
     assert!(dir.path().join("run-2/.download/state.json").exists());
+}
+
+#[test]
+fn custom_transfer_sources_cannot_bypass_the_file_budget() {
+    use mirror::{Approval, FetchOptions};
+    use sha2::{Digest, Sha256};
+    let (mut catalog, mut source) = payload_fixture();
+    source.payload = vec![42; 4096];
+    let mut record: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    record["cksum"] = json!(hex::encode(Sha256::digest(&source.payload)));
+    source.metadata = serde_json::to_vec(&record).unwrap();
+    source.metadata.push(b'\n');
+    catalog.crate_policy.max_file_bytes = 2048;
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    assert!(plan.budgets.oversized_files.is_empty());
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("run");
+    let error = mirror::fetch(
+        &plan,
+        &source,
+        &FetchOptions {
+            output: output.clone(),
+            resume: false,
+            previous: None,
+        },
+        &Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+    )
+    .unwrap_err();
+    assert_eq!(
+        rust_mirror::error_kind(error.as_ref()),
+        rust_mirror::ErrorKind::Budget
+    );
+    assert!(!output.join("mirror").exists());
+    let partial = std::fs::read_dir(output.join(".download/files"))
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap()
+        .path();
+    assert_eq!(partial.metadata().unwrap().len(), 0);
+}
+
+#[test]
+fn missing_root_features_and_transitive_failures_have_structured_rule_context() {
+    let (mut catalog, mut source) = fixture();
+    catalog
+        .crates
+        .get_mut("alias")
+        .unwrap()
+        .features
+        .push("absent".into());
+    let error = mirror::plan(&catalog, &source, None, false).unwrap_err();
+    let report = error
+        .downcast_ref::<rust_mirror::Error>()
+        .unwrap()
+        .report
+        .as_ref()
+        .unwrap();
+    assert_eq!(report["alias"].as_str(), Some("alias"));
+    assert_eq!(report["feature"].as_str(), Some("absent"));
+    assert_eq!(report["kind"].as_str(), Some("missing_feature"));
+    catalog.crates.get_mut("alias").unwrap().features.clear();
+    catalog.crate_rules.clear();
+    let mut root: serde_json::Value = serde_json::from_slice(
+        source.files["x"]
+            .split_inclusive(|b| *b == b'\n')
+            .nth(1)
+            .unwrap(),
+    )
+    .unwrap();
+    root["deps"] = json!([{"name":"y","req":"1","features":["absent"]}]);
+    source.files.insert(
+        "x".into(),
+        [serde_json::to_vec(&root).unwrap(), vec![b'\n']].concat(),
+    );
+    source.files.insert("y".into(), [serde_json::to_vec(&json!({"name":"y","vers":"1.0.0","deps":[],"features":{},"cksum":"0".repeat(64),"yanked":false})).unwrap(), vec![b'\n']].concat());
+    let error = mirror::plan(&catalog, &source, None, false).unwrap_err();
+    let report = error
+        .downcast_ref::<rust_mirror::Error>()
+        .unwrap()
+        .report
+        .as_ref()
+        .unwrap();
+    assert_eq!(report["alias"].as_str(), Some("alias"));
+    assert_eq!(report["kind"].as_str(), Some("missing_feature"));
+    assert_eq!(report["package"].as_str(), Some("y"));
+    assert_eq!(report["requirement"].as_str(), Some("1"));
 }

@@ -92,17 +92,59 @@ def prove_client(evidence, mirror, base, ca_file, cargo, rustc, fault):
 
 
 @contextlib.contextmanager
-def certificates():
+def certificates(dns_names=None):
     openssl = shutil.which("openssl")
     if openssl is None:
         raise RuntimeError("OpenSSL fixture prerequisite missing; runtime rust-mirror does not use it")
     with tempfile.TemporaryDirectory(prefix="rust-mirror-crates-tls-") as directory:
         pki = Path(directory)
         command([openssl, "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-sha256", "-days", "1", "-subj", "/CN=rust-mirror-disposable-ca", "-addext", "basicConstraints=critical,CA:TRUE", "-addext", "keyUsage=critical,keyCertSign,cRLSign", "-keyout", pki / "ca.key", "-out", pki / "ca.pem"])
-        command([openssl, "req", "-newkey", "rsa:2048", "-nodes", "-subj", "/CN=localhost", "-keyout", pki / "server.key", "-out", pki / "server.csr"])
-        (pki / "server.ext").write_text("basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n")
-        command([openssl, "x509", "-req", "-in", pki / "server.csr", "-CA", pki / "ca.pem", "-CAkey", pki / "ca.key", "-CAcreateserial", "-out", pki / "server.pem", "-days", "1", "-sha256", "-extfile", pki / "server.ext"])
-        yield pki
+        (pki / "index.txt").write_text("")
+        (pki / "crlnumber").write_text("01\n")
+        configuration = "[ca]\ndefault_ca=fixture\n[fixture]\ndefault_md=sha256\ndefault_crl_days=1\n"
+        for key, name in (("database", "index.txt"), ("crlnumber", "crlnumber"), ("private_key", "ca.key"), ("certificate", "ca.pem")):
+            configuration += key + "=" + (pki / name).as_posix() + "\n"
+        (pki / "ca.cnf").write_text(configuration)
+        command([openssl, "ca", "-gencrl", "-config", pki / "ca.cnf", "-out", pki / "fixture-crl.pem"])
+        command([openssl, "crl", "-in", pki / "fixture-crl.pem", "-outform", "DER", "-out", pki / "fixture.crl"])
+        crl_requests = []
+        (pki / "crl-requests.json").write_text("[]\n")
+
+        class Crl(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def do_GET(self):
+                # Serve only the signed public CRL, never the private PKI directory.
+                if self.path != "/fixture.crl":
+                    self.send_error(404)
+                    return
+                crl_requests.append(self.path)
+                (pki / "crl-requests.json").write_text(json.dumps(crl_requests) + "\n")
+                data = (pki / "fixture.crl").read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/pkix-crl")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+        crl_server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Crl)
+        crl_server.daemon_threads = True
+        crl_thread = threading.Thread(target=crl_server.serve_forever, daemon=True)
+        crl_thread.start()
+        try:
+            command([openssl, "req", "-newkey", "rsa:2048", "-nodes", "-subj", "/CN=localhost", "-keyout", pki / "server.key", "-out", pki / "server.csr"])
+            names = dns_names or ["localhost"]
+            san = ",".join("DNS:" + name for name in names) + ",IP:127.0.0.1"
+            (pki / "server.ext").write_text("basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=" + san + "\ncrlDistributionPoints=URI:http://127.0.0.1:" + str(crl_server.server_port) + "/fixture.crl\n")
+            command([openssl, "x509", "-req", "-in", pki / "server.csr", "-CA", pki / "ca.pem", "-CAkey", pki / "ca.key", "-CAcreateserial", "-out", pki / "server.pem", "-days", "1", "-sha256", "-extfile", pki / "server.ext"])
+            command([openssl, "verify", "-CAfile", pki / "ca.pem", "-crl_check", "-CRLfile", pki / "fixture-crl.pem", pki / "server.pem"])
+            yield pki
+        finally:
+            crl_server.shutdown()
+            crl_server.server_close()
+            crl_thread.join(timeout=10)
+            (pki / "crl-requests.json").write_text(json.dumps(crl_requests) + "\n")
 
 
 def main():
@@ -175,6 +217,7 @@ def main():
             server.shutdown()
             server.server_close()
             thread.join(timeout=10)
+            shutil.copyfile(pki / "crl-requests.json", args.evidence / "revocation-requests.json")
             (args.evidence / "requests.json").write_text(json.dumps(requests, indent=2) + "\n")
 
 

@@ -1109,3 +1109,10 @@ pub fn client_config(plan: &FrozenPlan) -> Result<String> {
     let base = base_url(&plan.catalog)?;
     Ok(format!("[source.crates-io]\nreplace-with = \"org-mirror\"\n\n[source.org-mirror]\nregistry = \"sparse+{base}/cargo/index/\"\n"))
 }
+
+/// Read bounded generation metadata and return its Cargo source-replacement snippet.
+/// This performs no archive reads or network requests and does not verify payloads.
+/// Publication and pruning must still use the full inventory verification paths.
+pub fn client_config_for_generation(root: &Path) -> Result<String> {
+    client_config(&Inventory::inspect(root)?.plan)
+}
