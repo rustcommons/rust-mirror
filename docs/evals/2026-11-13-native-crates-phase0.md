@@ -73,6 +73,27 @@ archives are generated locally with Python's standard library; no Rust tar/flate
 dependency or upstream payload is needed. Archive requests are forbidden during
 planning/lock generation and enabled only for the separate fixture fetch step.
 
+## Exact source CI and preserved measurements
+
+[Cargo conformance run 43350022640](https://github.com/rustcommons/rust-mirror/actions/runs/43350022640)
+passed on `85affc8efb5602acf3d5e360b4962b2d0c59050e`: eight exact corpus profiles,
+ten independent Cargo fixture cases, no planning/lock-generation archives, and
+cheap fetch/build for every successful fixture. Two fixture cases intentionally
+refuse unsatisfiable compatible exact pins and a new yanked root; Cargo agrees.
+[Machine-readable measurements](native-crates-phase0.json) preserve source-file
+hashes, full-index observation hashes, exact roots, per-profile counts and fixture
+outcomes. The downloaded CI report's source hashes match the local implementation.
+The [full evidence artifact](https://github.com/rustcommons/rust-mirror/actions/runs/43350022640/artifacts/14002838115)
+contains original metadata, plans, locks and logs. The earlier local observations
+above are independently confirmed by that run.
+
+[Core CI 43350022404](https://github.com/rustcommons/rust-mirror/actions/runs/43350022404)
+passed both Linux and Windows checks, including formatting, Rust tests, clippy,
+warning-denied rustdoc, package verification and Python tests. The native corpus
+oracle itself is Linux/Cargo 1.90 evidence; a Windows Rust unit-test pass is not
+fresh Windows Cargo-registry client proof. The subsequent evidence-only commit
+changes documentation only; implementation/dependency/driver hashes are unchanged.
+
 ## Validation and remaining limits
 
 Nine focused Rust cases and local popular-crate/synthetic Cargo conformance passed.
