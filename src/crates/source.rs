@@ -168,6 +168,7 @@ impl RegistrySource {
                 return Err(budget("sparse metadata input exceeds bound"));
             }
             data.extend_from_slice(&buffer[..count]);
+            events::bytes(&format!("cargo/index/{path}"), data.len() as u64)?;
         }
         Ok(data)
     }
@@ -189,10 +190,8 @@ impl CrateSource for RegistrySource {
     fn index(&self, name: &str, limit: usize) -> Result<Vec<u8>> {
         let path = format!("cargo/index/{}", index_path(name)?);
         for attempt in 1..=self.policy.attempts {
-            events::artifact(&path, "download", 0, None)?;
             match self.metadata(name, limit) {
                 Ok(data) => {
-                    events::complete(&path, "download", Some(data.len() as u64), false)?;
                     return Ok(data);
                 }
                 Err(error) => {
@@ -208,7 +207,6 @@ impl CrateSource for RegistrySource {
         let path = archive_path(name, version)?;
         let upstream = path.strip_prefix("cargo/").unwrap();
         for attempt in 1..=self.policy.attempts {
-            events::artifact(&path, "head", 0, None)?;
             match self.call(self.archive_agent.head(&self.url(false, upstream))) {
                 Ok(response) => {
                     if response.status() != 200 {
@@ -240,7 +238,6 @@ impl CrateSource for RegistrySource {
                         }
                         length = Some(n);
                     }
-                    events::complete(&path, "head", length, false)?;
                     return Ok(length);
                 }
                 Err(error) => {
@@ -251,7 +248,6 @@ impl CrateSource for RegistrySource {
                         .and_then(toml::Value::as_integer)
                         .is_some_and(|s| s == 405 || s == 501)
                     {
-                        events::complete(&path, "head", None, false)?;
                         return Ok(None);
                     }
                     if !self.retry(error.as_ref(), attempt, &path)? {
@@ -343,12 +339,6 @@ impl CrateSource for RegistrySource {
         if length.is_some_and(|n| n > limit) || length.zip(expected).is_some_and(|(a, b)| a != b) {
             return Err(budget("crate response length exceeds budget or range"));
         }
-        events::artifact(
-            &path,
-            if offset > 0 { "resume" } else { "download" },
-            offset,
-            length.or(expected).and_then(|n| n.checked_add(offset)),
-        )?;
         let mut reader = network::NetworkReader(response.into_reader());
         let mut count = 0;
         let mut buffer = [0; 65536];
@@ -363,7 +353,6 @@ impl CrateSource for RegistrySource {
                 return Err(budget("crate stream exceeds bound"));
             }
             out.write_all(&buffer[..n])?;
-            events::bytes(&path, offset + count)?;
         }
         if expected.or(length).is_some_and(|n| n != count) {
             return Err(Error::new(
@@ -372,12 +361,6 @@ impl CrateSource for RegistrySource {
             )
             .into());
         }
-        events::complete(
-            &path,
-            if offset > 0 { "resume" } else { "download" },
-            Some(offset + count),
-            false,
-        )?;
         Ok(Transfer::Complete)
     }
     fn attempts(&self) -> usize {

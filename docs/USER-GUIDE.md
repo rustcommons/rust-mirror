@@ -660,3 +660,27 @@ programmatic worker memory or named secret inputs, never saved settings/argv.
 Plan can estimate sizes with HEAD; unknown lengths stay unknown and hashes still
 verify downloads. Use `releases --cache DIRECTORY --refresh`, then `--offline` for
 cached selectors, and check the reported cache age before choosing a release.
+
+## Curated crate registry (development source)
+
+The [crate MVP](CRATES.md) is under qualification; published 0.3.0 does not contain
+these commands. Start with an organization-approved catalog spanning projects,
+explicit hosts/targets, capacity budgets and the eventual immutable HTTPS base URL.
+Keep contact/proxy/CA settings explicit. Do not put credential values in the catalog.
+
+Run `rust-mirror crates sync --config crates.toml --output new-crate-run` to save
+a preview without archive downloads. Inspect it with
+`rust-mirror crates show --plan new-crate-run/plan.json` and use `crates explain`
+for inclusion chains. After approving the whole preview, repeat sync with
+`--approve-plan ID` using its exact ID. Resume initialized work with `--resume`;
+new upstream versions require a new preview. A successor's `--previous MIRROR`
+preserves verified older closures instead of silently pruning them.
+
+Publish the completed `new-crate-run/mirror` to the exact planned HTTPS URL, first
+using `publish --preflight`, then normal publication. Activate it separately. On
+Windows and Unix, use the same [Cargo source-replacement TOML](CRATES.md#cargo-client-setup)
+in a project's `.cargo/config.toml`, preserving any existing configuration.
+Run `cargo fetch --locked` and `cargo build --locked` while the internal mirror is
+reachable; populated caches can subsequently build with `--offline`. Client CA/proxy
+settings remain independent. Pruning requires an explicit crate-retention policy,
+a preview and `--apply`; remote deletion remains outside this workflow.

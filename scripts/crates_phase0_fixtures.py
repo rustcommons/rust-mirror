@@ -38,6 +38,8 @@ def cases():
         record("wrapper", "1.1.0", deps=[dep("sys-new")]),
         record("wrapper", deps=[dep("sys-old")]),
         record("sys-new", links="native"), record("sys-old", links="native")], {}, True
+    yield "cycle-gate", [record("root",deps=[dep("bridge")]),
+        record("root","0.9.0"),record("bridge",deps=[dep("root","*")])], {}, False
     yield "pin-forces-older", common + [
         record("left", deps=[dep("x", "1")]),
         record("right", deps=[dep("x", "=1.0.0")]),

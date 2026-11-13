@@ -65,7 +65,7 @@ fn read(path: &Path, limit: u64) -> Result<Vec<u8>> {
     }
     Ok(bytes)
 }
-fn files(root: &Path) -> Result<(u32, Vec<SnapshotFile>, String)> {
+fn files(root: &Path, destination: &str) -> Result<(u32, Vec<SnapshotFile>, String)> {
     let directory = std::fs::symlink_metadata(root)?;
     let inventory = std::fs::symlink_metadata(root.join("snapshot.toml"))?;
     if !directory.is_dir()
@@ -75,13 +75,32 @@ fn files(root: &Path) -> Result<(u32, Vec<SnapshotFile>, String)> {
     {
         return Err("publication needs a real mirror directory and inventory".into());
     }
-    let raw = read(&root.join("snapshot.toml"), 1024 * 1024)?;
+    let raw = read(&root.join("snapshot.toml"), 64 * 1024 * 1024)?;
     let doc: toml::Value = toml::from_str(std::str::from_utf8(&raw)?)?;
     let schema = doc
         .get("schema")
         .and_then(toml::Value::as_integer)
         .ok_or("missing snapshot schema")?;
-    let mut files = if schema == 1 {
+    if schema != 4 && raw.len() > 1024 * 1024 {
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "toolchain publication metadata exceeds byte budget",
+        )
+        .into());
+    }
+    let mut files = if schema == 4 {
+        let inventory = crate::crates::mirror::Inventory::load(root)?;
+        let configured = inventory
+            .plan
+            .catalog
+            .crate_output
+            .base_url
+            .trim_end_matches('/');
+        if configured != destination {
+            return Err(crate::Error::new(crate::ErrorKind::Invalid, format!("crate generation base URL {configured} differs from publication destination {destination}; create a new generation with the intended URL")).into());
+        }
+        inventory.files
+    } else if schema == 1 {
         let s: crate::Snapshot = toml::from_str(std::str::from_utf8(&raw)?)?;
         crate::version(&s.release)?;
         crate::version(&s.rustup_version)?;
@@ -268,7 +287,7 @@ impl Client {
 /// Send the inventory marker last, verify every remote byte, and never retry writes
 /// or activate a server/group. Requires an exclusive publisher and no-redeploy server.
 ///
-/// The root must be a completed schema-1/2/3 mirror, not private working state.
+/// The root must be a completed schema-1/2/3/4 mirror, not private working state.
 /// The returned [Report] counts the inventory marker too.
 ///
 /// # Errors
@@ -282,7 +301,7 @@ pub fn publish(root: &Path, options: &Options) -> Result<Report> {
     publish_client(root, &client)
 }
 fn publish_client(root: &Path, client: &Client) -> Result<Report> {
-    let (schema, files, inventory_sha256) = files(root)?;
+    let (schema, files, inventory_sha256) = files(root, &client.base)?;
     absent(client, &files)?;
     crate::events::stage("upload and verify publication")?;
     let mut total = 0u64;
@@ -323,6 +342,7 @@ fn publish_client(root: &Path, client: &Client) -> Result<Report> {
             )
             .into());
         }
+        crate::events::complete(&f.path, "verify", Some(n), true)?;
         total = total
             .checked_add(n)
             .ok_or("publication byte count overflow")?;
@@ -438,7 +458,7 @@ pub fn preflight(root: &Path, options: &Options) -> Result<Preflight> {
     preflight_client(root, &client)
 }
 fn preflight_client(root: &Path, client: &Client) -> Result<Preflight> {
-    let (schema, files, inventory_sha256) = files(root)?;
+    let (schema, files, inventory_sha256) = files(root, &client.base)?;
     absent(client, &files)?;
     Ok(Preflight {
         schema,

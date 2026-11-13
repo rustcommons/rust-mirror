@@ -36,7 +36,9 @@ prefix and does not activate Nexus routing. Start with a disposable local setup.
 | [Requirements](https://github.com/rustcommons/rust-mirror/blob/main/docs/REQUIREMENTS.md) | Bounded verification and remaining gaps |
 | [Changelog](https://github.com/rustcommons/rust-mirror/blob/main/CHANGELOG.md) | Release history |
 
-No Cargo registry mirroring, scheduler, in-generation compaction or Nexus pruning.
+The [crate MVP](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)
+is under qualification in development source; published 0.3.0 has no crate registry
+mirroring. Scheduling, in-generation compaction and Nexus pruning remain deferred.
 Upstream signatures are preserved, not independently verified. Native SDKs and
 production server policy remain administrator responsibilities. See the guides for
 trust/platform limits. Inspired by [Panamax](https://github.com/panamax-rs/panamax).

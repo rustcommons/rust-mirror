@@ -19,7 +19,7 @@ pub struct Dependency {
     #[serde(default)]
     pub features: Vec<String>,
     /// Request the package default feature.
-    #[serde(default = "yes")]
+    #[serde(default = "yes", alias = "default_features")]
     pub default_features: bool,
     /// Preserve pasted optionality; a curated root is selected regardless.
     #[serde(default)]
@@ -153,6 +153,9 @@ pub struct Catalog {
     pub crate_output: Output,
     /// Public contact and bounded worker/retry settings.
     pub crate_network: Transport,
+    /// Optional explicit whole-generation pruning policy; exact crate pins come from crate-rules.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub crate_retention: Option<super::retention::Policy>,
     /// Optional explicit corporate routing. Contains env variable names, never secret values.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<NetworkConfig>,
@@ -253,8 +256,8 @@ fn declaration(
                     "git" | "rev" | "branch" | "tag" => Some(DiagnosticKind::Git),
                     "path" => Some(DiagnosticKind::Path),
                     "workspace" => Some(DiagnosticKind::Workspace),
-                    "version" | "package" | "features" | "default-features" | "optional"
-                    | "registry" => None,
+                    "version" | "package" | "features" | "default-features"
+                    | "default_features" | "optional" | "registry" => None,
                     _ => Some(DiagnosticKind::UnknownField),
                 };
                 if let Some(kind) = kind {
@@ -397,6 +400,9 @@ impl Catalog {
     }
     /// Check typed/JSON inputs before use; this does not inspect environment, network or files.
     pub fn validate(&self) -> Result<()> {
+        if let Some(policy) = &self.crate_retention {
+            policy.validate()?;
+        }
         if self.crates.is_empty() || self.crates.len() > 4096 {
             return Err(budget("catalog needs 1..4096 aliases"));
         }

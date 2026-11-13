@@ -1,0 +1,91 @@
+name: Crate mirroring MVP qualification
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/crates*'
+      - 'tests/fixtures/crates*'
+      - 'examples/crates*'
+      - 'scripts/*crates*'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/crates-mvp.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  top100-conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build native drivers and check catalog, approval, transfer and retention fixtures
+        env:
+          CARGO_BUILD_JOBS: '2'
+        run: |
+          cargo test --locked --test crates_phase0 --test crates_catalog --test crates_mirror
+          cargo build --locked --example crates_phase0 --example crates_mvp
+      - name: Plan frozen top-100 catalog without archives
+        run: |
+          python scripts/prepare_crates_top100.py --output "$RUNNER_TEMP/top100.toml"
+          target/debug/examples/crates_mvp plan "$RUNNER_TEMP/top100.toml" "$RUNNER_TEMP/top100-plan.json" > "$RUNNER_TEMP/top100-preview.json"
+      - name: Real Cargo resolution against full and filtered indexes
+        run: python scripts/check_crates_phase0.py --driver target/debug/examples/crates_phase0 --work "$RUNNER_TEMP/crates-top100" --roots tests/fixtures/crates-top100-20261113.json --frozen-plan "$RUNNER_TEMP/top100-plan.json"
+      - name: Fetch approved corpus and measure actual archive-byte overfetch
+        shell: bash
+        run: |
+          APPROVED_CRATES_PLAN=$(python -c 'import json,os; print(json.load(open(os.environ["RUNNER_TEMP"]+"/top100-plan.json"))["plan_id"])')
+          target/debug/examples/crates_mvp fetch "$RUNNER_TEMP/top100-plan.json" "$RUNNER_TEMP/top100-run" "$APPROVED_CRATES_PLAN" > "$RUNNER_TEMP/top100-fetch.json"
+          python scripts/check_crates_archive_overfetch.py --mirror "$RUNNER_TEMP/top100-run/mirror" --conformance "$RUNNER_TEMP/crates-top100" --output "$RUNNER_TEMP/top100-archive-overfetch.json"
+      - name: Save plans, observed metadata, Cargo locks and conformance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crates-top100-conformance
+          path: |
+            ${{ runner.temp }}/crates-top100
+            ${{ runner.temp }}/top100*.json
+            ${{ runner.temp }}/top100.toml
+          if-no-files-found: warn
+
+  cargo-https-clients:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            binary: target/debug/rust-mirror
+          - os: windows-latest
+            binary: target/debug/rust-mirror.exe
+          - os: macos-14
+            binary: target/debug/rust-mirror
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build actual CLI
+        run: cargo build --locked --jobs 2
+      - name: Saved-preview consent and real Cargo HTTPS fetch/build with negative controls
+        run: python scripts/prove_crates_platform.py --binary ${{ matrix.binary }} --evidence "${{ runner.temp }}/crates-client"
+      - name: Save client evidence without private keys or downloaded archives
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crates-https-client-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/crates-client/*.jsonl
+            ${{ runner.temp }}/crates-client/*.stderr
+            ${{ runner.temp }}/crates-client/client.stdout
+            ${{ runner.temp }}/crates-client/https-client/*.json
+            ${{ runner.temp }}/crates-client/https-client/*.stdout
+            ${{ runner.temp }}/crates-client/https-client/*.stderr
+            ${{ runner.temp }}/crates-client/https-client/test-ca.pem
+          if-no-files-found: warn

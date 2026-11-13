@@ -383,3 +383,38 @@ fn cargo_requirement_forms_yanks_and_prereleases() {
         );
     }
 }
+
+#[test]
+fn cycle_gate_does_not_mistake_native_existence_for_cargo_success() {
+    let mut index = Index::default();
+    put(
+        &mut index,
+        "root",
+        vec![
+            record("root", "1.0.0", vec![dep("bridge", "1")], json!({})),
+            record("root", "0.9.0", vec![], json!({})),
+        ],
+    );
+    put(
+        &mut index,
+        "bridge",
+        vec![record("bridge", "1.0.0", vec![dep("root", "*")], json!({}))],
+    );
+    let error = crates::plan(&mut index, &[root("root")], Bounds::default()).unwrap_err();
+    assert_eq!(
+        error
+            .downcast_ref::<rust_mirror::Error>()
+            .unwrap()
+            .report
+            .as_ref()
+            .unwrap()["kind"]
+            .as_str(),
+        Some("cycle")
+    );
+    put(
+        &mut index,
+        "root",
+        vec![record("root", "1.0.0", vec![dep("bridge", "1")], json!({}))],
+    );
+    assert!(crates::plan(&mut index, &[root("root")], Bounds::default()).is_err());
+}

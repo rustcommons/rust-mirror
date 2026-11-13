@@ -1,5 +1,6 @@
 use super::*;
 use crate::network::{NetworkConfig, NetworkOptions, ProxyCredentials};
+use std::fs;
 #[derive(Default)]
 struct Overrides {
     flags: BTreeMap<String, std::ffi::OsString>,
@@ -63,7 +64,12 @@ pub(super) fn prepare(
         }
     }
     let command = clean.first().and_then(|v| v.to_str()).unwrap_or("");
-    if value.estimate && !["plan", "sync"].contains(&command) {
+    let network_command = if command == "crates" {
+        clean.get(1).and_then(|v| v.to_str()).unwrap_or("")
+    } else {
+        command
+    };
+    if value.estimate && !["plan", "sync"].contains(&network_command) {
         return Err("--estimate-sizes is only supported by plan and sync".into());
     }
     if value.flags.contains_key("--proxy") && value.flags.contains_key("--proxy-from-env") {
@@ -81,7 +87,7 @@ pub(super) fn prepare(
             "check-network",
             "releases",
         ]
-        .contains(&command)
+        .contains(&network_command)
     {
         return Err("network flags require a network-capable command".into());
     }
@@ -114,7 +120,27 @@ pub(super) fn options(base: Option<&NetworkConfig>) -> Result<NetworkOptions> {
         let o = o.borrow();
         let mut config = base.cloned().unwrap_or_default();
         if let Some(path) = o.flags.get("--network-config") {
-            config = crate::selection::Config::read(&PathBuf::from(path))?
+            let path = PathBuf::from(path);
+            let metadata = fs::symlink_metadata(&path)?;
+            if !metadata.is_file()
+                || metadata.file_type().is_symlink()
+                || metadata.len() > 4 * 1024 * 1024
+            {
+                return Err("network config must be a bounded regular file".into());
+            }
+            let mut contents = String::new();
+            fs::File::open(path)?
+                .take(4 * 1024 * 1024 + 1)
+                .read_to_string(&mut contents)?;
+            if contents.len() > 4 * 1024 * 1024 {
+                return Err("network config exceeded bound".into());
+            }
+            #[derive(serde::Deserialize)]
+            struct NetworkSection {
+                network: Option<NetworkConfig>,
+            }
+            config = toml::from_str::<NetworkSection>(&contents)
+                .map_err(|_| "invalid network configuration")?
                 .network
                 .unwrap_or_default();
         }
@@ -195,6 +221,16 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
     let mut args = args.iter();
     while let Some(arg) = args.next() {
         match arg.to_str() {
+            Some("crates") => {
+                return match args.next().and_then(|v| v.to_str()) {
+                    Some(
+                        name @ ("plan" | "show" | "explain" | "fetch" | "sync" | "catalog"
+                        | "paste" | "generations" | "prune"),
+                    ) => format!("crates-{name}"),
+                    Some("--help" | "-h") | None => "crates-help".into(),
+                    _ => "invalid-command".into(),
+                };
+            }
             Some(
                 "--proxy"
                 | "--no-proxy"

@@ -259,6 +259,19 @@ pub(crate) fn json_value(value: &toml::Value) -> String {
                     format!("{}:{}", quote(k), json)
                 })
                 .collect::<Vec<_>>();
+            if v.contains_key("cksum")
+                && v.contains_key("name")
+                && v.contains_key("version")
+                && !v.contains_key("expected_bytes")
+            {
+                fields.push("\"expected_bytes\":null".into());
+            }
+            if v.contains_key("plan_id")
+                && v.contains_key("observed_at")
+                && !v.contains_key("previous_inventory_sha256")
+            {
+                fields.push("\"previous_inventory_sha256\":null".into());
+            }
             if v.contains_key("certificates")
                 && v.contains_key("status")
                 && !v.contains_key("error_kind")
@@ -329,6 +342,7 @@ struct State {
     path: Option<String>,
     progress_seq: u64,
     index: u64,
+    active: Option<std::collections::BTreeMap<String, String>>,
 }
 struct Shared {
     observer: Arc<dyn Observer>,
@@ -358,6 +372,7 @@ impl Control {
                 path: None,
                 progress_seq: 0,
                 index: 0,
+                active: None,
             }),
             sequence: Mutex::new(0),
             start: Instant::now(),
@@ -472,6 +487,9 @@ impl Control {
             s.stage = name.into();
             s.operation = name.into();
             s.path = None;
+            if let Some(active) = &mut s.active {
+                active.clear();
+            }
             s.index += 1;
             s.index
         };
@@ -482,9 +500,56 @@ impl Control {
         })
     }
 }
+pub(crate) struct Concurrent(Option<Control>);
+impl Drop for Concurrent {
+    fn drop(&mut self) {
+        if let Some(control) = &self.0 {
+            let mut state = control.0.state.lock().unwrap_or_else(|p| p.into_inner());
+            state.active = None;
+            state.path = None;
+            state.operation = "idle".into();
+        }
+    }
+}
+pub(crate) fn concurrent() -> Concurrent {
+    let control = current();
+    if let Some(control) = &control {
+        control
+            .0
+            .state
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .active = Some(std::collections::BTreeMap::new());
+    }
+    Concurrent(control)
+}
+pub(crate) fn worker<T>(control: Option<Control>, work: impl FnOnce() -> Result<T>) -> Result<T> {
+    struct Restore(Option<Control>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            ACTIVE.with(|a| *a.borrow_mut() = self.0.take());
+        }
+    }
+    let _restore = Restore(ACTIVE.with(|a| a.replace(control)));
+    check()?;
+    work()
+}
 pub(crate) fn complete(path: &str, action: &str, bytes: Option<u64>, verified: bool) -> Result<()> {
     check()?;
     if let Some(control) = current() {
+        {
+            let mut state = control.0.state.lock().unwrap_or_else(|p| p.into_inner());
+            if let Some(active) = &mut state.active {
+                active.remove(path);
+                let next = active
+                    .first_key_value()
+                    .map(|(path, action)| (path.clone(), action.clone()));
+                state.path = next.as_ref().map(|(path, _)| path.clone());
+                state.operation = next
+                    .map(|(_, action)| action)
+                    .unwrap_or_else(|| "idle".into());
+            }
+        }
         control.emit(EventKind::ArtifactComplete {
             path: path.into(),
             action: action.into(),
@@ -535,6 +600,9 @@ pub(crate) fn artifact(path: &str, action: &str, offset: u64, total: Option<u64>
             let mut s = c.0.state.lock().unwrap_or_else(|p| p.into_inner());
             s.path = Some(path.into());
             s.operation = action.into();
+            if let Some(active) = &mut s.active {
+                active.insert(path.into(), action.into());
+            }
         }
         c.emit(EventKind::Artifact {
             path: path.into(),
@@ -562,6 +630,9 @@ pub(crate) fn hashing(path: &str, count: u64, total: Option<u64>) -> Result<()> 
             let mut s = c.0.state.lock().unwrap_or_else(|p| p.into_inner());
             s.path = Some(path.into());
             s.operation = "hash".into();
+            if let Some(active) = &mut s.active {
+                active.insert(path.into(), "hash".into());
+            }
         }
         c.emit(EventKind::Hashing {
             path: path.into(),

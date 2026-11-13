@@ -2,7 +2,8 @@
 
 Prepare selected Rust toolchains for offline Rustup clients, then publish a finished
 generation to a fresh Nexus Raw/static HTTPS prefix. Rust/Cargo 1.90+ is required.
-This library does not install client tools, activate routing or mirror Cargo crates.
+This library does not install client tools or activate routing. The development-source
+crate mirroring MVP is under qualification; see the [crate contract](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md).
 
 Use the [user guide](https://github.com/rustcommons/rust-mirror/blob/main/docs/USER-GUIDE.md)
 for the full setup/recovery workflow and the

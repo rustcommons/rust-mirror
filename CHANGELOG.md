@@ -5,7 +5,11 @@
 - Begin the owner-approved crate MVP with typed Cargo-compatible catalog parsing,
   canonical TOML/JSON editor round-trips and structured multi-error paste previews.
   Add bounded fixed-origin crate transport and additive completion/retry/counter
-  event shapes. Full crate plan/fetch/publication and qualification remain in progress.
+  event shapes. Add native frozen plan/show/explain, one-preview sync approval,
+  bounded concurrent checksum-verified fetch/resume, schema-4 sparse generations,
+  historical closure retention, destination-bound publication and explicit crate-aware
+  whole-generation pruning. These development-source workflows remain under MVP
+  qualification; no version bump or publication is included.
 
 - Add an experimental metadata-only native crate-resolution research API and test
   driver: declared-feature propagation, bounded conservative closure/backtracking,

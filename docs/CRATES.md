@@ -2,7 +2,9 @@
 
 Owner-approved implementation scope, 2026-11-13. **Contract first; not shipped in
 0.3.0.** Phase 0's exact-root research API is implemented; the workflows below are
-Phase 1 work until named implementation evidence is linked here. No version or
+Phase 1 development-source work until all named qualification gates pass. The
+catalog, frozen plan, sync/fetch, publication and retention APIs now exist on the
+implementation branch; this is not a shipped-version capability. No version or
 publication is authorized. See [design](CRATES-DESIGN.md), [roadmap](ROADMAP.md)
 and [requirements](REQUIREMENTS.md). Runtime dependency resolution stays native.
 
@@ -92,7 +94,8 @@ or pruning is part of sync.
 
 ## Commands and public API names
 
-The names below are the contract for Phase 1, not current executable examples:
+The names below are implemented on the development branch and remain subject to
+all Phase 1 qualification gates before merge/release:
 
 | CLI | Library/report |
 | --- | --- |
@@ -118,7 +121,7 @@ shapes are recorded with implementation and tests before claiming API availabili
 ## GUI field shapes and local editing
 
 `Catalog` has a public serde/JSON representation of all five crate tables plus
-optional network settings; the GUI need not parse TOML. `Catalog::to_toml` validates
+optional network and `crate-retention` settings; the GUI need not parse TOML. `Catalog::to_toml` validates
 and writes canonical TOML. Rewriting loses comments, original formatting and key
 ordering; warn before replacing a hand-edited catalog. File replacement is explicit,
 atomic within its directory, and refuses symlinks/unrelated paths.
@@ -135,7 +138,7 @@ Each preview version row has `name`, `version`, `cksum`, nullable `expected_byte
 `yanked`, `lock_only`, `root_aliases`, `primary_reason`, `retained_from_previous`
 and the full structured reasons. `changes` reports added, retained,
 newly-yanked-retained and no-longer-selected-retained identities. `observed_at`
-identifies the UTC observation; `FrozenPlan::load` performs bounded local validation
+is UTC Unix seconds identifying the observation; `FrozenPlan::load` performs bounded local validation
 without network and returns that same saved preview. `crates show --plan FILE`
 exposes the local load. Needs-approval sync results include the preview, not a
 newly resolved approximation. GUI callers must show that frozen object before consent.
@@ -184,7 +187,25 @@ Private `.download` files, locks and frozen state stay outside the served `mirro
 Use OS writer locks; rehash reusable/partial files, validate range offset/length,
 actual bytes and final SHA-256 against frozen `cksum`. A killed process leaves only
 private resumable work; never overwrite a completed generation. Whole final and
-transfer budgets apply across all workers and retained copies.
+transfer budgets apply across all workers and retained copies. Transfer bytes count
+accepted archive bytes across retries/resumes, not TCP/TLS headers or discarded
+socket buffers; reused copies count toward final size, not network transfer. Failed
+work before the first complete managed preview/receipt may require a new workspace.
+Private state is never published. Disk/controller power-loss durability is not proven.
+
+Historical selection cohorts are stored flat, with independent native proofs, rather
+than recursively embedding predecessor inventories. Current bounds are 128 cohorts,
+4,096 total root profiles and 64 MiB serialized frozen metadata; exceeding a bound
+refuses planning instead of silently dropping history. Retained index reordering or
+immutable field changes are refused. New yank observations preserve historical bytes.
+
+Pruning is disabled without an explicit `[crate-retention]` table. Its optional
+`keep-newest` (0–32), `previous-generations` (0–31) and `pinned-generations` fields
+protect whole leaves. Defaults are zero counts/empty pins; current and explicit
+next-previous remain protected. Exact `crate-rules` pins additionally protect the
+newest generation with that exact declared root feature/default profile and validated
+closure; a missing pinned profile refuses pruning. In-progress/locked/unknown runs
+are preserved/refused as in the shared [retention contract](RETENTION.md).
 
 A successor retains previous versions and their recorded closure even when latest-N
 selects newer ones. Conflicting immutable checksums/metadata fail; a new yank state
