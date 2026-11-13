@@ -1,7 +1,11 @@
-//! Experimental metadata-only crate closure research (Phase 0).
+//! Native crate dependency closure, curated catalogs and experimental immutable registry workflows.
 //!
-//! This is not a registry fetch/publish workflow. No Cargo executable is invoked.
-//! Plans are bounded research reports, pending Cargo conformance qualification.
+//! No Cargo executable is invoked at runtime. The schema-0 report remains a research
+//! format; approved frozen MVP operations live in [`mirror`] and are under qualification.
+pub mod catalog;
+pub mod mirror;
+pub mod retention;
+pub mod source;
 use crate::{events, network, Error, ErrorKind, NetworkOptions, Result};
 use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
@@ -64,21 +68,30 @@ impl IndexSource for SparseIndex {
         Ok(bytes)
     }
 }
-/// Validated lowercase Cargo sparse shard path. Case and underscore spelling are preserved canonically.
+/// Validate a portable registry name and return its lowercase Cargo sparse shard path.
 pub fn index_path(name: &str) -> Result<String> {
+    let lower = name.to_ascii_lowercase();
+    let reserved = [
+        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8",
+        "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+    ];
     if name.is_empty()
         || name.len() > 64
+        || !name.as_bytes()[0].is_ascii_alphabetic()
         || !name
             .bytes()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'-' || c == b'_')
+            .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
+        || reserved.contains(&lower.as_str())
     {
-        return Err(invalid("crate name must be canonical lowercase ASCII"));
+        return Err(invalid(
+            "crate name must be a valid portable crates.io identifier",
+        ));
     }
-    Ok(match name.len() {
-        1 => format!("1/{name}"),
-        2 => format!("2/{name}"),
-        3 => format!("3/{}/{name}", &name[..1]),
-        _ => format!("{}/{}/{name}", &name[..2], &name[2..4]),
+    Ok(match lower.len() {
+        1 => format!("1/{lower}"),
+        2 => format!("2/{lower}"),
+        3 => format!("3/{}/{lower}", &lower[..1]),
+        _ => format!("{}/{}/{lower}", &lower[..2], &lower[2..4]),
     })
 }
 /// One exact registry root and declared feature profile. Catalog range syntax is not implemented here.
@@ -248,8 +261,71 @@ struct Planner<'a> {
     work: usize,
     attempts: usize,
     frozen: bool,
+    last_report: Option<toml::Value>,
 }
 impl Planner<'_> {
+    fn context(&self, request: &Request, kind: &str, link: Option<&str>) -> Result<toml::Value> {
+        #[derive(Serialize)]
+        struct Context<'a> {
+            kind: &'a str,
+            package: &'a str,
+            dependency_alias: &'a str,
+            requirement: &'a str,
+            features: &'a BTreeSet<String>,
+            parent: Option<&'a str>,
+            link: Option<&'a str>,
+            available_versions: Vec<&'a str>,
+            context_is_sample: bool,
+        }
+        Ok(toml::Value::try_from(Context {
+            kind,
+            package: &request.name,
+            dependency_alias: &request.alias,
+            requirement: &request.req,
+            features: &request.features,
+            parent: request.parent.as_deref(),
+            link,
+            available_versions: self
+                .cache
+                .get(&request.name)
+                .into_iter()
+                .flatten()
+                .rev()
+                .take(10)
+                .map(|e| e.record.vers.as_str())
+                .collect(),
+            context_is_sample: true,
+        })?)
+    }
+    fn annotate(
+        &self,
+        error: Box<dyn std::error::Error + Send + Sync>,
+        root: &Root,
+        index: usize,
+    ) -> Box<dyn std::error::Error + Send + Sync> {
+        if crate::error_kind(error.as_ref()) != ErrorKind::Invalid {
+            return error;
+        }
+        let mut typed = if let Some(typed) = error.downcast_ref::<Error>() {
+            typed.clone()
+        } else {
+            Error::new(ErrorKind::Invalid, error.to_string())
+        };
+        let report = typed.report.get_or_insert_with(|| {
+            self.last_report
+                .clone()
+                .unwrap_or_else(|| toml::Value::Table(toml::map::Map::new()))
+        });
+        if let Some(table) = report.as_table_mut() {
+            table.insert("root_index".into(), toml::Value::Integer(index as i64));
+            table.insert("root_name".into(), toml::Value::String(root.name.clone()));
+            table.insert(
+                "root_version".into(),
+                toml::Value::String(root.version.clone()),
+            );
+        }
+        typed.into()
+    }
     fn tick(&mut self) -> Result<()> {
         events::check()?;
         self.work += 1;
@@ -298,7 +374,9 @@ impl Planner<'_> {
             }
             let version =
                 Version::parse(&record.vers).map_err(|_| invalid("invalid index version"))?;
-            if !seen.insert(record.vers.clone()) {
+            let mut unique_version = version.clone();
+            unique_version.build = semver::BuildMetadata::EMPTY;
+            if !seen.insert(unique_version.to_string()) {
                 return Err(invalid("duplicate index version"));
             }
             if record.v != 2 && !record.features2.is_empty() {
@@ -348,6 +426,20 @@ impl Planner<'_> {
             }
         }
         self.work = work;
+        if result.is_empty() {
+            let matching = entries
+                .iter()
+                .any(|e| !e.record.yanked && req.matches(&e.version));
+            self.last_report = Some(self.context(
+                request,
+                if matching {
+                    "missing_feature"
+                } else {
+                    "no_matching_version"
+                },
+                None,
+            )?);
+        }
         Ok(result)
     }
 
@@ -530,6 +622,7 @@ impl Planner<'_> {
         let request = self.request(root)?;
         let mut queue = VecDeque::from([(String::from("root"), request)]);
         let mut nodes: BTreeMap<Identity, Request> = BTreeMap::new();
+        let mut edges: BTreeMap<Identity, BTreeSet<Identity>> = BTreeMap::new();
         let mut classes = BTreeMap::new();
         let mut links = BTreeMap::new();
         while let Some((key, request)) = queue.pop_front() {
@@ -551,6 +644,7 @@ impl Planner<'_> {
                 .insert(slot, id.1.clone())
                 .is_some_and(|old| old != id.1)
             {
+                self.last_report = Some(self.context(&request, "unification", None)?);
                 return Ok(Evaluation::Conflict(format!(
                     "compatible versions of {} must unify",
                     id.0
@@ -561,8 +655,18 @@ impl Planner<'_> {
                     .insert(link.clone(), id.clone())
                     .is_some_and(|old| old != *id)
                 {
+                    self.last_report = Some(self.context(&request, "links", Some(link))?);
                     return Ok(Evaluation::Conflict(format!("links conflict: {link}")));
                 }
+            }
+            if let Some(parent) = &request.parent {
+                let (name, version) = parent
+                    .split_once('@')
+                    .ok_or_else(|| invalid("invalid native graph parent"))?;
+                edges
+                    .entry((name.into(), version.into()))
+                    .or_default()
+                    .insert(id.clone());
             }
             let merged = if let Some(old) = nodes.get_mut(id) {
                 let before = (old.features.clone(), old.defaults);
@@ -587,6 +691,61 @@ impl Planner<'_> {
             if nodes.len() > self.bounds.versions {
                 return Err(budget("witness version count exceeded"));
             }
+        }
+        let mut degree: BTreeMap<_, usize> = nodes.keys().cloned().map(|id| (id, 0)).collect();
+        for targets in edges.values() {
+            for id in targets {
+                *degree
+                    .get_mut(id)
+                    .ok_or_else(|| invalid("unknown native graph node"))? += 1;
+            }
+        }
+        let mut pending: VecDeque<_> = degree
+            .iter()
+            .filter(|(_, count)| **count == 0)
+            .map(|(id, _)| id.clone())
+            .collect();
+        let mut visited = 0;
+        while let Some(id) = pending.pop_front() {
+            self.tick()?;
+            visited += 1;
+            if let Some(targets) = edges.get(&id) {
+                for target in targets {
+                    let count = degree.get_mut(target).unwrap();
+                    *count -= 1;
+                    if *count == 0 {
+                        pending.push_back(target.clone());
+                    }
+                }
+            }
+        }
+        if visited != nodes.len() {
+            // Cargo can reject cycles after selecting an otherwise consistent graph,
+            // without retrying an older version. A different native witness is not enough.
+            let mut error = Error::new(
+                ErrorKind::Invalid,
+                "cyclic normal/build dependency graph is unsupported by Cargo",
+            );
+            let mut report = toml::map::Map::new();
+            report.insert("kind".into(), toml::Value::String("cycle".into()));
+            report.insert("root_name".into(), toml::Value::String(root.name.clone()));
+            report.insert(
+                "root_version".into(),
+                toml::Value::String(root.version.clone()),
+            );
+            report.insert(
+                "involved_versions".into(),
+                toml::Value::try_from(
+                    degree
+                        .iter()
+                        .filter(|(_, d)| **d > 0)
+                        .take(10)
+                        .map(|((n, v), _)| format!("{n}@{v}"))
+                        .collect::<Vec<_>>(),
+                )?,
+            );
+            error.report = Some(toml::Value::Table(report));
+            return Err(error.into());
         }
         Ok(Evaluation::Complete(nodes))
     }
@@ -683,8 +842,8 @@ impl Planner<'_> {
 /// Performs conservative closure, bounded backtracking and filtered-index witness replay.
 /// An error refuses the whole plan. This Phase 0 API does not yet freeze fetch state.
 pub fn plan(source: &mut dyn IndexSource, roots: &[Root], bounds: Bounds) -> Result<Plan> {
-    if roots.is_empty() || roots.len() > 128 {
-        return Err(invalid("expected 1..128 exact root profiles"));
+    if roots.is_empty() || roots.len() > 4096 {
+        return Err(invalid("expected 1..4096 exact root profiles"));
     }
     events::stage("resolve")?;
     let mut planner = Planner {
@@ -695,15 +854,26 @@ pub fn plan(source: &mut dyn IndexSource, roots: &[Root], bounds: Bounds) -> Res
         work: 0,
         attempts: 0,
         frozen: false,
+        last_report: None,
     };
     let mut planned: BTreeMap<Identity, PlannedVersion> = BTreeMap::new();
     let mut witnesses = Vec::new();
     for (root_index, root) in roots.iter().enumerate() {
-        let conservative = planner.conservative(root)?;
+        planner.last_report = None;
+        let conservative = planner
+            .conservative(root)
+            .map_err(|e| planner.annotate(e, root, root_index))?;
         let mut bindings = BTreeMap::new();
         let witness = planner
-            .solve(root, &mut bindings, 0)?
-            .map_err(|message| invalid(format!("{}@{}: {message}", root.name, root.version)))?;
+            .solve(root, &mut bindings, 0)
+            .map_err(|e| planner.annotate(e, root, root_index))?
+            .map_err(|message| {
+                planner.annotate(
+                    invalid(format!("{}@{}: {message}", root.name, root.version)),
+                    root,
+                    root_index,
+                )
+            })?;
         for (id, requests, extra) in conservative.into_iter().map(|(id, r)| (id, r, true)).chain(
             witness
                 .iter()

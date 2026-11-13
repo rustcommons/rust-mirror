@@ -146,6 +146,9 @@ fn directory(path: &Path) -> Result<()> {
     Ok(())
 }
 pub(crate) fn hash_file(path: &Path, limit: u64) -> Result<(u64, String)> {
+    hash_file_as(path, limit, &path.to_string_lossy())
+}
+pub(crate) fn hash_file_as(path: &Path, limit: u64, label: &str) -> Result<(u64, String)> {
     if regular(path)?.ok_or("missing download file")? > limit {
         return Err(crate::Error::new(
             crate::ErrorKind::Budget,
@@ -154,9 +157,8 @@ pub(crate) fn hash_file(path: &Path, limit: u64) -> Result<(u64, String)> {
         .into());
     }
     let mut f = File::open(path)?;
-    let label = path.to_string_lossy();
     let total = fs::metadata(path)?.len();
-    crate::events::hashing(&label, 0, Some(total))?;
+    crate::events::hashing(label, 0, Some(total))?;
     let mut count = 0;
     let mut hash = Sha256::new();
     let mut buf = [0; 64 * 1024];
@@ -175,7 +177,7 @@ pub(crate) fn hash_file(path: &Path, limit: u64) -> Result<(u64, String)> {
             .into());
         }
         hash.update(&buf[..n]);
-        crate::events::hashing(&label, count, Some(total))?;
+        crate::events::hashing(label, count, Some(total))?;
     }
     Ok((count, hex::encode(hash.finalize())))
 }

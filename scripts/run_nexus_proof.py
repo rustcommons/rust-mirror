@@ -29,6 +29,8 @@ def main():
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--next-snapshot", type=Path, help="New generation for native client update/self-update qualification")
     parser.add_argument("--publisher-cli",type=Path,help="Real Rust publish CLI for the actual Nexus proof")
+    parser.add_argument("--cargo", type=Path, help="Explicit read-only Cargo executable for crate client proof")
+    parser.add_argument("--rustc", type=Path, help="Explicit read-only compiler for crate client proof")
     args = parser.parse_args()
     if os.geteuid() != 0:
         parser.error("run as root for rootful runtime and namespace entry")
@@ -74,6 +76,8 @@ def main():
         else:
             raise TimeoutError("Nexus initialization timed out")
         command = ["nsenter", "--target", str(pid), "--net", "python3", str(Path(__file__).with_name("prove_nexus.py").resolve()), "--snapshot", str(args.snapshot.resolve()), "--evidence", str(args.evidence / "proof"), "--initial-password-file", str(initial)]
+        if args.cargo and args.rustc:
+            command.extend(["--cargo", str(args.cargo.resolve()), "--rustc", str(args.rustc.resolve())])
         if args.publisher_cli:
             command.extend(["--publisher-cli",str(args.publisher_cli.resolve())])
         if args.next_snapshot:

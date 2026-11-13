@@ -34,6 +34,23 @@ class NetworkProtocol(unittest.TestCase):
             self.assertEqual(events[-1]['error']['kind'], 'invalid')
             self.assertNotIn(b'never-echo-this', result.stdout + result.stderr)
 
+    def test_crate_command_label_skips_global_network_flags(self):
+        result, events = self.invoke(['crates', '--read-timeout', '0', 'plan'])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(events[0]['command'], 'crates-plan')
+
+    def test_crate_network_config_validates_its_whole_document(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'crates.toml'
+            path.write_text('[crates]\nx="1"\n[network]\nread-timeout-seconds=0\n')
+            result, events = self.invoke(['--network-config', str(path), 'check-network'])
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(events[-1]['error']['kind'], 'invalid')
+            path.write_text('[crates]\nx="1"\n[unrelated]\npassword="never-echo-this"\n')
+            result, events = self.invoke(['--network-config', str(path), 'check-network'])
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn(b'never-echo-this', result.stdout + result.stderr)
+
     def test_password_stdin_is_consumed_before_cancel_input(self):
         env = os.environ.copy()
         env['ROM_PROXY_USER'] = 'test-user'

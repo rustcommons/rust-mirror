@@ -7,7 +7,7 @@ use std::time::UNIX_EPOCH;
 /// Display metadata from a completed inventory marker; payload verification is separate.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct GenerationInfo {
-    /// Absolute schema-2/3 snapshot root.
+    /// Absolute schema-2/3/4 snapshot root.
     pub path: PathBuf,
     /// Inventory schema, not an event protocol version.
     pub schema: u32,
@@ -19,6 +19,18 @@ pub struct GenerationInfo {
     pub inventory_modified_ns: u64,
     /// Preserved toolchain choices. Discovery does not verify their payload closure.
     pub toolchains: Vec<ToolchainRecord>,
+    /// `toolchains` or `crates`; the latter has no toolchain selections.
+    #[serde(default = "toolchain_kind")]
+    pub kind: String,
+    /// Unique crate count for schema 4; absent for toolchains.
+    #[serde(default)]
+    pub crate_count: Option<usize>,
+    /// Mirrored crate-version count for schema 4; absent for toolchains.
+    #[serde(default)]
+    pub version_count: Option<usize>,
+}
+fn toolchain_kind() -> String {
+    "toolchains".into()
 }
 /// Conservative display state of a managed sync/fetch workspace.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -101,7 +113,7 @@ fn read_regular(path: &Path, limit: u64) -> Result<Vec<u8>> {
     crate::selection::read_file(path, limit)
 }
 fn busy(workspace: &Path, owned: &BTreeSet<PathBuf>) -> bool {
-    for name in [".sync.lock", ".fetch.lock"] {
+    for name in [".sync.lock", ".fetch.lock", ".crates.lock"] {
         let path = workspace.join(name);
         if owned.contains(&path) {
             continue;
@@ -120,11 +132,24 @@ fn busy(workspace: &Path, owned: &BTreeSet<PathBuf>) -> bool {
     }
     false
 }
+pub(super) fn read_inventory(root: &Path) -> Result<Vec<u8>> {
+    let raw = read_regular(&root.join("snapshot.toml"), 64 * 1024 * 1024)?;
+    let value: toml::Value = toml::from_str(std::str::from_utf8(&raw)?)?;
+    if value.get("schema").and_then(toml::Value::as_integer) != Some(4) && raw.len() > 1024 * 1024 {
+        return Err(crate::Error::new(
+            crate::ErrorKind::Budget,
+            "toolchain inventory display bound exceeded",
+        )
+        .into());
+    }
+    Ok(raw)
+}
 fn generation(path: &Path) -> Result<GenerationInfo> {
     let path = real_directory(path)?;
-    let raw = read_regular(&path.join("snapshot.toml"), 1024 * 1024)?;
+    let raw = read_inventory(&path)?;
     let text = std::str::from_utf8(&raw)?;
     let value: toml::Value = toml::from_str(text)?;
+    let mut crate_counts = None;
     let (schema, toolchains, files) = match value.get("schema").and_then(toml::Value::as_integer) {
         Some(2) => {
             let s: SelectionSnapshot = toml::from_str(text)?;
@@ -143,9 +168,18 @@ fn generation(path: &Path) -> Result<GenerationInfo> {
             let s: collection::CollectionSnapshot = toml::from_str(text)?;
             (3, s.toolchains, s.files)
         }
-        _ => return Err("discovery accepts only schema-2/3 inventories".into()),
+        Some(4) => {
+            let inventory = crate::crates::mirror::Inventory::inspect(&path)?;
+            crate_counts = Some((inventory.plan.counts.crates, inventory.plan.counts.versions));
+            (4, Vec::new(), inventory.files)
+        }
+        _ => return Err("discovery accepts only schema-2/3/4 inventories".into()),
     };
-    if toolchains.is_empty() || toolchains.len() > 256 || files.is_empty() || files.len() > 4096 {
+    if (schema != 4 && toolchains.is_empty())
+        || toolchains.len() > 256
+        || files.is_empty()
+        || files.len() > if schema == 4 { 40000 } else { 4096 }
+    {
         return Err("inventory display bounds exceeded".into());
     }
     let recorded_bytes = files.iter().try_fold(raw.len() as u64, |n, f| {
@@ -163,9 +197,37 @@ fn generation(path: &Path) -> Result<GenerationInfo> {
         recorded_bytes,
         inventory_modified_ns,
         toolchains,
+        kind: if schema == 4 { "crates" } else { "toolchains" }.into(),
+        crate_count: crate_counts.map(|(crates, _)| crates),
+        version_count: crate_counts.map(|(_, versions)| versions),
     })
 }
 fn run(workspace: &Path, owned: &BTreeSet<PathBuf>) -> Result<Option<RunInfo>> {
+    if present(&workspace.join(".crates.lock"))? {
+        let mut info = RunInfo {
+            path: workspace.to_path_buf(),
+            kind: "crates".into(),
+            state: RunState::InProgress,
+            mirror: None,
+            previous_inventory_sha256: None,
+        };
+        if busy(workspace, owned) {
+            info.state = RunState::Locked;
+            return Ok(Some(info));
+        }
+        let plan = crate::crates::mirror::FrozenPlan::load(&workspace.join("plan.json"))?;
+        crate::crates::mirror::inspect_run_metadata(workspace, &plan)?;
+        info.previous_inventory_sha256 = plan.previous_inventory_sha256;
+        if present(&workspace.join("mirror/snapshot.toml"))? {
+            let generation = generation(&workspace.join("mirror"))?;
+            if generation.schema != 4 {
+                return Err("crate run has a toolchain marker".into());
+            }
+            info.mirror = Some(generation.path);
+            info.state = RunState::Completed;
+        }
+        return Ok(Some(info));
+    }
     let sync = present(&workspace.join(".sync"))? || present(&workspace.join(".sync.lock"))?;
     let fetch = present(&workspace.join(".download"))? || present(&workspace.join(".fetch.lock"))?;
     if !sync && !fetch {
@@ -243,7 +305,13 @@ fn discover_owned(directory: &Path, owned: &BTreeSet<PathBuf>) -> Result<Catalog
     if private_path(&directory) {
         return Err("select a generation directory outside private working state".into());
     }
-    for marker in [".sync", ".download", ".sync.lock", ".fetch.lock"] {
+    for marker in [
+        ".sync",
+        ".download",
+        ".sync.lock",
+        ".fetch.lock",
+        ".crates.lock",
+    ] {
         if present(&directory.join(marker))? {
             return Err(
                 "select the parent directory containing runs, not a run workspace itself".into(),

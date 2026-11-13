@@ -1,8 +1,8 @@
 # Crate mirroring MVP contract
 
-Owner-approved implementation scope, 2026-11-13. **Contract first; not shipped in
-0.3.0.** Phase 0's exact-root research API is implemented; the workflows below are
-Phase 1 work until named implementation evidence is linked here. No version or
+Owner-approved implementation scope, 2026-11-13. **Development source only; not
+shipped in 0.3.0.** The catalog, frozen plan, sync/fetch, publication and retention
+APIs are implemented with [bounded qualification](evals/2026-11-13-crates-mvp.md). No version or
 publication is authorized. See [design](CRATES-DESIGN.md), [roadmap](ROADMAP.md)
 and [requirements](REQUIREMENTS.md). Runtime dependency resolution stays native.
 
@@ -65,6 +65,22 @@ contact. Use bounded per-request retries for transient transport/429/503, bounde
 Retry-After/backoff, cancellation-aware waits and a shared transfer-byte budget.
 Authentication/integrity/invalid-input failures are not retried as transient errors.
 
+### Other catalog defaults and limits
+
+| Table / field | Default and meaning |
+| --- | --- |
+| `crate-rules.ALIAS.latest` / `pins` | 1 / empty. Latest is 0–32, pins at most 128 exact versions; latest 0 requires at least one pin. |
+| `crate-policy.features` / `resolver` | `declared` / `2`; other values refuse. |
+| `crate-policy.hosts` / `targets` | Empty while editing; both must be explicit and nonempty before planning, at most 128 each. These describe coverage, not platform pruning. |
+| `crate-policy.max-versions` / `max-files` | 3,000 / 10,000; positive caps at 10,000 / 40,000. Counts include retained records and final served files. |
+| `crate-policy.max-metadata-bytes` | 268,435,456; positive and at most 1 GiB of observed sparse metadata. Individual upstream sparse files are bounded to 32 MiB. |
+| `crate-policy.max-file-bytes` | 536,870,912; positive and at most 512 MiB per served file, including the marker. |
+| `crate-policy.max-final-bytes` / `max-transfer-bytes` | 10,737,418,240 each; positive and at most signed 64-bit range. Final includes retained copies/index/marker; transfer counts accepted archive bytes across retries/resumes. |
+| `crate-output.base-url` | Empty while editing; planning requires a credential-free absolute HTTPS generation URL with valid host/port. It is immutable in the approved plan. |
+| `crate-network.contact` | Empty additional contact by default; the repository URL is always in the identifying User-Agent. A public operator contact may be added (ASCII, at most 512 bytes, no controls). Never use a credential. |
+| `crate-network.concurrency` / `attempts` / `max-wait-seconds` | 4 / 4 / 60; bounds 1–16 / 1–8 / 1–300. Attempts include the first. Retry-After above the wait cap refuses automatic retry instead of shortening the server's request. |
+| `crate-retention` | Omitted disables pruning. See the explicit whole-generation policy below. |
+
 ## Frozen preview and one approval
 
 `crates plan` reads index metadata, and optionally HEAD lengths; never archive GET.
@@ -92,7 +108,8 @@ or pruning is part of sync.
 
 ## Commands and public API names
 
-The names below are the contract for Phase 1, not current executable examples:
+These development-source commands and public library names are covered by the
+named qualification record; they are absent from published 0.3.0:
 
 | CLI | Library/report |
 | --- | --- |
@@ -118,7 +135,7 @@ shapes are recorded with implementation and tests before claiming API availabili
 ## GUI field shapes and local editing
 
 `Catalog` has a public serde/JSON representation of all five crate tables plus
-optional network settings; the GUI need not parse TOML. `Catalog::to_toml` validates
+optional network and `crate-retention` settings; the GUI need not parse TOML. `Catalog::to_toml` validates
 and writes canonical TOML. Rewriting loses comments, original formatting and key
 ordering; warn before replacing a hand-edited catalog. File replacement is explicit,
 atomic within its directory, and refuses symlinks/unrelated paths.
@@ -133,9 +150,10 @@ written or approved. A caller must explicitly choose to retain them.
 
 Each preview version row has `name`, `version`, `cksum`, nullable `expected_bytes`,
 `yanked`, `lock_only`, `root_aliases`, `primary_reason`, `retained_from_previous`
-and the full structured reasons. `changes` reports added, retained,
+and the full structured reasons. `yanked` reflects the latest captured upstream
+observation even when retained original index bytes reflect the historical state. `changes` reports added, retained,
 newly-yanked-retained and no-longer-selected-retained identities. `observed_at`
-identifies the UTC observation; `FrozenPlan::load` performs bounded local validation
+is UTC Unix seconds identifying the observation; `FrozenPlan::load` performs bounded local validation
 without network and returns that same saved preview. `crates show --plan FILE`
 exposes the local load. Needs-approval sync results include the preview, not a
 newly resolved approximation. GUI callers must show that frozen object before consent.
@@ -157,8 +175,10 @@ artifact has no successful completion event; the final result remains authoritat
 
 Publish preflight refuses a destination different from the generation-local base
 URL with `invalid` and both validated credential-free URLs, before any write.
-`client_config` returns the exact project Cargo source-replacement TOML for a
-completed generation. Schema-4 generation discovery reports `kind: "crates"` and
+`client_config` returns the exact project Cargo source-replacement TOML from a
+frozen plan. `client_config_for_generation(root)` uses bounded metadata-only
+`Inventory::inspect` to show the same snippet without reading archives. This is
+not payload verification; publish and retention still use full `Inventory::load`. Schema-4 generation discovery reports `kind: "crates"` and
 crate/version counts. Planning cancellation is checked between index requests and
 inside native feature/search loops; blocked reads retain existing socket deadlines
 and the independent heartbeat. These fields are backend work; GUI pages remain a
@@ -184,7 +204,32 @@ Private `.download` files, locks and frozen state stay outside the served `mirro
 Use OS writer locks; rehash reusable/partial files, validate range offset/length,
 actual bytes and final SHA-256 against frozen `cksum`. A killed process leaves only
 private resumable work; never overwrite a completed generation. Whole final and
-transfer budgets apply across all workers and retained copies.
+transfer budgets apply across all workers and retained copies. Transfer bytes count
+accepted archive bytes across retries/resumes, not TCP/TLS headers or discarded
+socket buffers; reused copies count toward final size, not network transfer. Failed
+work before the first complete managed preview/receipt may require a new workspace.
+Private state is never published. Disk/controller power-loss durability is not proven.
+
+Historical selection cohorts are stored flat, with independent native proofs, rather
+than recursively embedding predecessor inventories. Current bounds are 128 cohorts,
+4,096 total root profiles and 64 MiB serialized frozen metadata; exceeding a bound
+refuses planning instead of silently dropping history. Retained index reordering or
+immutable field changes are refused. The combined served index is replayed across
+historical and current root profiles too; if mixing cohorts would require an
+unmirrored edge, planning refuses rather than offering an incomplete registry.
+New yank observations preserve historical bytes.
+
+Pruning is disabled without an explicit `[crate-retention]` table. Its optional
+`keep-newest` (0–32), `previous-generations` (0–31) and `pinned-generations` fields
+protect whole leaves. Defaults are zero counts/empty pins; current and explicit
+next-previous remain protected. Exact `crate-rules` pins additionally protect the
+newest generation with that exact declared root feature/default profile and validated
+closure; a missing pinned profile refuses pruning. In-progress/locked/unknown runs
+are preserved/refused as in the shared [retention contract](RETENTION.md).
+Use separate candidate directories for crate and toolchain leaves: `crates prune`
+refuses a mixed-kind directory, and the toolchain `prune` CLI refuses crate leaves
+rather than applying a toolchain-only policy. The generic lower-level deletion
+engine does not infer catalog crate pins; library consumers use `crates::retention`.
 
 A successor retains previous versions and their recorded closure even when latest-N
 selects newer ones. Conflicting immutable checksums/metadata fail; a new yank state
@@ -221,7 +266,9 @@ readers, alternate/private registries and Cargo.lock import remain deferred.
 
 ## Qualification and evidence
 
-No Phase 1 transfer/client/Nexus gate is satisfied by adopting this contract.
+[Bounded qualification](evals/2026-11-13-crates-mvp.md) distinguishes bounded
+local observations from remaining exact-head gates. Adopting this contract alone
+satisfies no transfer/client/Nexus gate.
 Required evidence, tied to exact revisions, includes:
 
 - Approximately the top 100 most-downloaded crates, default features, with a dated

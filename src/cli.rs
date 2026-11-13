@@ -1,5 +1,6 @@
 //! Shared human/event CLI adapter. The standalone binary installs signal handling;
 //! library embeddings supply their own cancellation token and process policy.
+mod crates;
 mod network_options;
 use crate::events::{CancelToken, Control, EventKind, JsonLines, PROTOCOL_VERSION};
 use std::{
@@ -32,6 +33,7 @@ use std::{
 const HELP: &str = "rust-mirror [--events jsonl] [--cancel-stdin] COMMAND ...
 rust-mirror check-network [NETWORK_FLAGS]
 rust-mirror releases --cache DIRECTORY [--refresh | --offline] [NETWORK_FLAGS]
+rust-mirror crates --help
 rust-mirror init --config FILE
 rust-mirror list --toolchain TOOLCHAIN [--host HOST]
 rust-mirror import --toolchain-file FILE --name NAME --hosts HOST[,HOST] --rustup-version VERSION --output FILE
@@ -46,7 +48,7 @@ rust-mirror rustup --snapshot MIRROR --version VERSION --output NEW_DIRECTORY [-
 rust-mirror assemble --snapshot MIRROR [--snapshot MIRROR ...] [--previous MIRROR] --output NEW_DIRECTORY [--max-bytes BYTES]
 rust-mirror fetch-toolchain --release VERSION --host x86_64-unknown-linux-gnu --rustup-version VERSION --output NEW_DIRECTORY
 
-Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. No Cargo registry mirroring. Upstream network flags: --proxy URL | --proxy-from-env, --no-proxy LIST, --proxy-username-env NAME, --proxy-password-env NAME | --proxy-password-stdin, --extra-ca-file PEM, --connect-timeout SECONDS, --read-timeout SECONDS, --network-config FILE. Plan/sync accept --estimate-sizes.";
+Choose versions, hosts, components and targets in saved TOML selections. Plan reads metadata only; fetch replays a frozen plan. The legacy fetch-toolchain route remains minimal Linux only. Crate registry commands are experimental development-source functionality; see crates --help. Upstream network flags: --proxy URL | --proxy-from-env, --no-proxy LIST, --proxy-username-env NAME, --proxy-password-env NAME | --proxy-password-stdin, --extra-ca-file PEM, --connect-timeout SECONDS, --read-timeout SECONDS, --network-config FILE. Plan/sync accept --estimate-sizes.";
 fn legacy(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
     let mut args = args;
     let mut values = BTreeMap::new();
@@ -107,6 +109,9 @@ fn run_prepared(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()
         .unwrap_or_else(|| "--help".into())
         .into_string()
         .map_err(|_| "command must be UTF-8")?;
+    if command == "crates" {
+        return self::crates::run(args);
+    }
     if command == "--help" || command == "-h" {
         output!("{HELP}")?;
         return Ok(());
@@ -646,6 +651,14 @@ fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
         values.remove("--next-previous"),
     ) {
         (Some(directory), Some(previous)) if roots.is_empty() => {
+            let listing = crate::selection::retention::discover(&PathBuf::from(&directory))?;
+            if listing.generations.iter().any(|g| g.kind == "crates") {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Invalid,
+                    "crate generations require crates prune and an explicit crate catalog policy",
+                )
+                .into());
+            }
             crate::selection::retention::preview_directory(
                 policy,
                 &PathBuf::from(directory),
@@ -654,6 +667,16 @@ fn prune(mut args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
             )?
         }
         (None, None) if !roots.is_empty() => {
+            if roots
+                .iter()
+                .any(|root| crate::crates::mirror::Inventory::inspect(root).is_ok())
+            {
+                return Err(crate::Error::new(
+                    crate::ErrorKind::Invalid,
+                    "crate generations require crates prune and an explicit crate catalog policy",
+                )
+                .into());
+            }
             crate::selection::retention::preview(policy, &roots, &date)?
         }
         _ => {

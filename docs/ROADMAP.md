@@ -8,7 +8,9 @@ implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md
 ## Curated crate mirroring: proposed phases
 
 The coordinator accepted Phase 0 and normal-merged PRs #30/#31. The owner approved
-Phase 1 on 2026-11-13; [CRATES.md](CRATES.md) tracks its contract and qualification.
+Phase 1 on 2026-11-13; its development-source implementation and bounded gates are
+recorded in [MVP qualification](evals/2026-11-13-crates-mvp.md) and [CRATES.md](CRATES.md).
+Later phases, including GUI work, require separate owner authorization.
 Runtime external/downloaded Cargo and the Cargo library remain excluded. Existing
 and approved dependencies only; no version bump/publication is authorized.
 Estimates below
@@ -41,6 +43,7 @@ as recorded above.
 | Item | Boundary and condition for reconsideration |
 | --- | --- |
 | Cargo.lock import | Explicitly future work. Merge exact registry/name/version/checksum pins as another provenance-bearing source; keep manual rules and independent protection. Define yanked historical-pin handling and feature/target policy before implementation. |
+| Broader historical profile recomputation | The MVP preserves prior closures and replays their combined index. If a mix requires an additional unmirrored feature edge, it refuses; expanding/repairing that mix needs new native provenance and approval evidence. |
 | All optional dependencies and arbitrary project combinations | Approved MVP covers declared feature profiles and native all-platform closure, not every feature combination or one organization-wide solvable workspace. Add bounded scenario policies and Cargo client evidence before broader claims. |
 | Target-minimized archives | Keep conservative all-platform lock closure first. Prove Cargo metadata/lock behavior and completeness with a filtered index before omitting archives for inactive targets. |
 | New yanked pins | Existing verified retained versions can survive. A new yanked exact pin needs a safe resolver/import policy; do not unyank or rewrite upstream metadata. |

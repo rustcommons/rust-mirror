@@ -206,7 +206,36 @@ fn real_directory(path: &Path) -> Result<PathBuf> {
     Ok(canonical)
 }
 
-/// Validate all supplied schema-2/3 snapshots and compute a read-only preview.
+fn retention_input(root: &Path) -> Result<collection::Input> {
+    let raw = catalog::read_inventory(root)?;
+    let value: toml::Value = toml::from_str(std::str::from_utf8(&raw)?)?;
+    if value.get("schema").and_then(toml::Value::as_integer) != Some(4) {
+        return collection::read_input(root);
+    }
+    let inventory = crate::crates::mirror::Inventory::load(root)?;
+    let files = inventory
+        .files
+        .into_iter()
+        .map(|f| {
+            (
+                f.path.clone(),
+                collection::Entry {
+                    source: root.join(&f.path),
+                    sha256: f.sha256,
+                    bytes: f.bytes,
+                },
+            )
+        })
+        .collect();
+    Ok(collection::Input {
+        rustup: String::new(),
+        records: Vec::new(),
+        files,
+        identity: sha256(&raw),
+    })
+}
+
+/// Validate all supplied schema-2/3 toolchain or schema-4 crate snapshots and compute a read-only preview.
 ///
 /// `roots` contains 1–32 nonoverlapping completed mirror directories in explicitly
 /// declared newest-first order, current first. Protection is evaluated only across
@@ -259,7 +288,7 @@ fn preview_inner(
     catalog::check_roots(&roots, owned, allow_paused)?;
     let inputs = roots
         .iter()
-        .map(|r| collection::read_input(r))
+        .map(|r| retention_input(r))
         .collect::<Result<Vec<_>>>()?;
     let mut stable = BTreeSet::new();
     for record in inputs.iter().flat_map(|i| &i.records) {
@@ -403,7 +432,7 @@ fn preview_inner(
         }
         plan.generations.push(root.clone());
         // Invalidate completed marker first; interrupted generations must not be published.
-        let raw = super::read_file(&root.join("snapshot.toml"), 1024 * 1024)?;
+        let raw = catalog::read_inventory(root)?;
         plan.files.push(Deletion {
             path: root.join("snapshot.toml"),
             bytes: raw.len() as u64,
@@ -506,7 +535,7 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
     let mut owned = BTreeSet::new();
     for parent in parents {
         real_directory(parent)?;
-        for name in [".sync.lock", ".fetch.lock"] {
+        for name in [".sync.lock", ".fetch.lock", ".crates.lock"] {
             let p = parent.join(name);
             match fs::symlink_metadata(&p) {
                 Ok(_) => {
@@ -524,7 +553,7 @@ pub fn apply(plan: &PrunePlan, allow_delete: bool) -> Result<ApplyReport> {
     if let Some(binding) = &plan.binding {
         for workspace in &binding.runs {
             real_directory(workspace)?;
-            for name in [".sync.lock", ".fetch.lock"] {
+            for name in [".sync.lock", ".fetch.lock", ".crates.lock"] {
                 let p = workspace.join(name);
                 if owned.contains(&p) {
                     continue;

@@ -1,5 +1,6 @@
 use super::*;
 use crate::network::{NetworkConfig, NetworkOptions, ProxyCredentials};
+use std::fs;
 #[derive(Default)]
 struct Overrides {
     flags: BTreeMap<String, std::ffi::OsString>,
@@ -63,7 +64,12 @@ pub(super) fn prepare(
         }
     }
     let command = clean.first().and_then(|v| v.to_str()).unwrap_or("");
-    if value.estimate && !["plan", "sync"].contains(&command) {
+    let network_command = if command == "crates" {
+        clean.get(1).and_then(|v| v.to_str()).unwrap_or("")
+    } else {
+        command
+    };
+    if value.estimate && !["plan", "sync"].contains(&network_command) {
         return Err("--estimate-sizes is only supported by plan and sync".into());
     }
     if value.flags.contains_key("--proxy") && value.flags.contains_key("--proxy-from-env") {
@@ -81,7 +87,7 @@ pub(super) fn prepare(
             "check-network",
             "releases",
         ]
-        .contains(&command)
+        .contains(&network_command)
     {
         return Err("network flags require a network-capable command".into());
     }
@@ -114,9 +120,32 @@ pub(super) fn options(base: Option<&NetworkConfig>) -> Result<NetworkOptions> {
         let o = o.borrow();
         let mut config = base.cloned().unwrap_or_default();
         if let Some(path) = o.flags.get("--network-config") {
-            config = crate::selection::Config::read(&PathBuf::from(path))?
-                .network
-                .unwrap_or_default();
+            let path = PathBuf::from(path);
+            let metadata = fs::symlink_metadata(&path)?;
+            if !metadata.is_file()
+                || metadata.file_type().is_symlink()
+                || metadata.len() > 4 * 1024 * 1024
+            {
+                return Err("network config must be a bounded regular file".into());
+            }
+            let mut contents = String::new();
+            fs::File::open(&path)?
+                .take(4 * 1024 * 1024 + 1)
+                .read_to_string(&mut contents)?;
+            if contents.len() > 4 * 1024 * 1024 {
+                return Err("network config exceeded bound".into());
+            }
+            let document: toml::Value =
+                toml::from_str(&contents).map_err(|_| "invalid network configuration")?;
+            config = if document.get("crates").is_some() {
+                crate::crates::catalog::Catalog::parse(&contents)?
+                    .network
+                    .unwrap_or_default()
+            } else {
+                crate::selection::Config::read(&path)?
+                    .network
+                    .unwrap_or_default()
+            };
         }
         let text = |key: &str| -> Result<Option<String>> {
             o.flags
@@ -193,8 +222,12 @@ pub(super) fn source(base: Option<&NetworkConfig>) -> Result<HttpsSource> {
 
 pub(super) fn command(args: &[std::ffi::OsString]) -> String {
     let mut args = args.iter();
+    let mut crate_namespace = false;
     while let Some(arg) = args.next() {
         match arg.to_str() {
+            Some("crates") if !crate_namespace => {
+                crate_namespace = true;
+            }
             Some(
                 "--proxy"
                 | "--no-proxy"
@@ -213,6 +246,14 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
                 | "--estimate-sizes"
                 | "--cancel-stdin",
             ) => {}
+            Some(name) if crate_namespace => {
+                return match name {
+                    "plan" | "show" | "explain" | "fetch" | "sync" | "catalog" | "paste"
+                    | "generations" | "prune" => format!("crates-{name}"),
+                    "--help" | "-h" => "crates-help".into(),
+                    _ => "invalid-command".into(),
+                }
+            }
             Some(name)
                 if [
                     "--help",
@@ -241,5 +282,9 @@ pub(super) fn command(args: &[std::ffi::OsString]) -> String {
             _ => return "invalid-command".into(),
         }
     }
-    "--help".into()
+    if crate_namespace {
+        "crates-help".into()
+    } else {
+        "--help".into()
+    }
 }

@@ -40,6 +40,17 @@ pub struct Event {
     #[serde(flatten)]
     pub kind: EventKind,
 }
+/// Stable sanitized reason for a bounded crate transport retry.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RetryKind {
+    /// HTTP 429; upstream asked to reduce request rate.
+    RateLimited,
+    /// HTTP 503; service temporarily unavailable.
+    Unavailable,
+    /// Transient transport/read failure, excluding TLS/auth/integrity refusal.
+    Transport,
+}
 /// Protocol-1 events. Nullable byte totals mean unknown, never an estimate of zero.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -116,6 +127,41 @@ pub enum EventKind {
         eta_seconds: Option<f64>,
         /// Always true; byte/hash verification remains separate.
         estimated: bool,
+    },
+    /// Successful completion of one concurrent path/action operation.
+    ArtifactComplete {
+        /// Generation-relative artifact path.
+        path: String,
+        /// Operation that completed, for example download/verify/head/reuse.
+        action: String,
+        /// Observed byte count, absent for unknown HEAD estimates.
+        bytes: Option<u64>,
+        /// True only after whole-content hash verification.
+        verified: bool,
+    },
+    /// Whole crate-fetch counters; only verified/reused files count as completed.
+    CrateSummary {
+        /// Number of fully verified archives.
+        files_completed: u64,
+        /// Total planned archive count, absent before selection is complete.
+        files_total: Option<u64>,
+        /// Actual newly received bytes across attempts.
+        transferred_bytes: u64,
+        /// Reused verified bytes, excluding network transfers.
+        reused_bytes: u64,
+    },
+    /// Bounded transport delay; independent heartbeat continues throughout.
+    Retry {
+        /// Generation-relative path, not an authenticated URL.
+        path: String,
+        /// Next one-based request attempt.
+        attempt: u64,
+        /// Bounded delay before another request.
+        wait_seconds: u64,
+        /// Stable category for GUI wording.
+        kind: RetryKind,
+        /// Sanitized human context, never raw headers.
+        reason: String,
     },
     /// Last CLI event; a killed process or broken output may lack this event.
     Result {
@@ -213,6 +259,43 @@ pub(crate) fn json_value(value: &toml::Value) -> String {
                     format!("{}:{}", quote(k), json)
                 })
                 .collect::<Vec<_>>();
+            if v.contains_key("cksum")
+                && v.contains_key("name")
+                && v.contains_key("version")
+                && !v.contains_key("expected_bytes")
+            {
+                fields.push("\"expected_bytes\":null".into());
+            }
+            if v.contains_key("plan_id")
+                && v.contains_key("observed_at")
+                && !v.contains_key("previous_inventory_sha256")
+            {
+                fields.push("\"previous_inventory_sha256\":null".into());
+            }
+            for (shape, nullable) in [
+                (
+                    v.contains_key("chains") && v.contains_key("truncated"),
+                    &["total_chains"][..],
+                ),
+                (
+                    v.contains_key("known_archive_bytes") && v.contains_key("unknown_archives"),
+                    &["expected_archive_bytes"][..],
+                ),
+                (
+                    v.contains_key("root")
+                        && v.contains_key("requirement")
+                        && v.contains_key("conservative"),
+                    &["parent", "target"][..],
+                ),
+            ] {
+                if shape {
+                    for key in nullable {
+                        if !v.contains_key(*key) {
+                            fields.push(format!("{}:null", quote(key)));
+                        }
+                    }
+                }
+            }
             if v.contains_key("certificates")
                 && v.contains_key("status")
                 && !v.contains_key("error_kind")
@@ -234,6 +317,8 @@ impl<W: Write + Send> Observer for JsonLines<W> {
             EventKind::TransferSummary { .. } => {
                 &["expected_bytes", "bytes_per_second", "eta_seconds"]
             }
+            EventKind::ArtifactComplete { .. } => &["bytes"],
+            EventKind::CrateSummary { .. } => &["files_total"],
             EventKind::Stage { .. } => &["total"],
             EventKind::Artifact { .. } => &["expected_bytes"],
             EventKind::Hashing { .. } => &["total"],
@@ -281,6 +366,7 @@ struct State {
     path: Option<String>,
     progress_seq: u64,
     index: u64,
+    active: Option<std::collections::BTreeMap<String, String>>,
 }
 struct Shared {
     observer: Arc<dyn Observer>,
@@ -310,6 +396,7 @@ impl Control {
                 path: None,
                 progress_seq: 0,
                 index: 0,
+                active: None,
             }),
             sequence: Mutex::new(0),
             start: Instant::now(),
@@ -424,6 +511,9 @@ impl Control {
             s.stage = name.into();
             s.operation = name.into();
             s.path = None;
+            if let Some(active) = &mut s.active {
+                active.clear();
+            }
             s.index += 1;
             s.index
         };
@@ -433,6 +523,65 @@ impl Control {
             total: None,
         })
     }
+}
+pub(crate) struct Concurrent(Option<Control>);
+impl Drop for Concurrent {
+    fn drop(&mut self) {
+        if let Some(control) = &self.0 {
+            let mut state = control.0.state.lock().unwrap_or_else(|p| p.into_inner());
+            state.active = None;
+            state.path = None;
+            state.operation = "idle".into();
+        }
+    }
+}
+pub(crate) fn concurrent() -> Concurrent {
+    let control = current();
+    if let Some(control) = &control {
+        control
+            .0
+            .state
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .active = Some(std::collections::BTreeMap::new());
+    }
+    Concurrent(control)
+}
+pub(crate) fn worker<T>(control: Option<Control>, work: impl FnOnce() -> Result<T>) -> Result<T> {
+    struct Restore(Option<Control>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            ACTIVE.with(|a| *a.borrow_mut() = self.0.take());
+        }
+    }
+    let _restore = Restore(ACTIVE.with(|a| a.replace(control)));
+    check()?;
+    work()
+}
+pub(crate) fn complete(path: &str, action: &str, bytes: Option<u64>, verified: bool) -> Result<()> {
+    check()?;
+    if let Some(control) = current() {
+        {
+            let mut state = control.0.state.lock().unwrap_or_else(|p| p.into_inner());
+            if let Some(active) = &mut state.active {
+                active.remove(path);
+                let next = active
+                    .first_key_value()
+                    .map(|(path, action)| (path.clone(), action.clone()));
+                state.path = next.as_ref().map(|(path, _)| path.clone());
+                state.operation = next
+                    .map(|(_, action)| action)
+                    .unwrap_or_else(|| "idle".into());
+            }
+        }
+        control.emit(EventKind::ArtifactComplete {
+            path: path.into(),
+            action: action.into(),
+            bytes,
+            verified,
+        })?;
+    }
+    Ok(())
 }
 pub(crate) fn current() -> Option<Control> {
     ACTIVE.with(|a| a.borrow().clone())
@@ -475,6 +624,9 @@ pub(crate) fn artifact(path: &str, action: &str, offset: u64, total: Option<u64>
             let mut s = c.0.state.lock().unwrap_or_else(|p| p.into_inner());
             s.path = Some(path.into());
             s.operation = action.into();
+            if let Some(active) = &mut s.active {
+                active.insert(path.into(), action.into());
+            }
         }
         c.emit(EventKind::Artifact {
             path: path.into(),
@@ -502,6 +654,9 @@ pub(crate) fn hashing(path: &str, count: u64, total: Option<u64>) -> Result<()> 
             let mut s = c.0.state.lock().unwrap_or_else(|p| p.into_inner());
             s.path = Some(path.into());
             s.operation = "hash".into();
+            if let Some(active) = &mut s.active {
+                active.insert(path.into(), "hash".into());
+            }
         }
         c.emit(EventKind::Hashing {
             path: path.into(),

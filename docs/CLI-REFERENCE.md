@@ -15,7 +15,7 @@ rust-mirror COMMAND --option VALUE ...
 
 - `--help` / `-h` print top-level usage; no command also prints usage. `--version`
   / `-V` print this program's version. These are top-level forms; subcommand
-  `--help` is not implemented. Global help/version return immediately; trailing
+  `--help` is not implemented except for the namespace-level `crates --help`. Global help/version return immediately; trailing
   arguments are not validated by those forms.
 - Supply values as separate arguments (`--output DIR`), not `--output=DIR`.
   Quote paths/names with spaces. There are no positional path arguments or implicit
@@ -646,3 +646,27 @@ corrupt, linked, unrelated or competing-writer state is refused. Cache writes us
 locked atomic replacement; inspect/repair invalid state explicitly before retrying.
 No mirror, payload archive or remote server is written. Cancellation preserves any
 previous complete cache. See the [cache contract](NETWORK.md#release-discovery-and-cache).
+
+## Crate mirroring MVP (development source)
+
+These commands are implemented in development source and are absent from published 0.3.0.
+Use a dedicated [crate catalog](CRATES.md); native planning never invokes Cargo.
+All accept protocol-1 `--events jsonl`; network flags apply to plan/fetch/sync.
+
+| Command | Inputs, defaults and effects |
+| --- | --- |
+| `crates catalog --config FILE` | Locally parse/normalize a catalog; human output is canonical TOML, event result is typed fields. Does not write it. |
+| `crates paste --input FILE [--output NEW_FILE]` | Read a standalone dependencies block, report all accepted/rejected entries. Write only a new catalog and only with no refusals; never approve downloads. |
+| `crates plan --config FILE --output NEW_PLAN.json [--previous MIRROR] [--estimate-sizes]` | Fetch bounded official sparse metadata; optional archive HEAD estimates. Freeze original records, closure, base URL, budgets and predecessor identity. No archive GET, output overwrite or implicit approval. |
+| `crates show --plan FILE` | Bounded local reload/validation of the exact preview, with no network/environment access. |
+| `crates explain --plan FILE --crate NAME [--version VERSION] [--limit N]` | Local structured inclusion chains; default 64, maximum 256 returned chains. Reports truncation and nullable total when traversal is capped. |
+| `crates fetch --plan FILE --output NEW_RUN --approve-plan ID [--previous MIRROR] [--resume]` | Require whole-preview identity; stream into locked private state, verify upstream checksums, then expose immutable `mirror/`. Previous is mandatory exactly when frozen. Resume requires matching initialized state; a completed tree is revalidated, never overwritten. |
+| `crates sync --config FILE --output RUN [--previous MIRROR] [--approve-plan ID] [--resume] [--estimate-sizes]` | Without consent, save/return `needs_approval` plus the whole preview. With consent, reuse that exact saved plan; no index refresh. Payload work requires explicit resume after initialization. Changed config/previous refuses. |
+| `crates generations --directory DIRECTORY` | Metadata-only discovery with crate/version counts, run state and predecessor identities. Does not establish archive integrity. |
+| `crates prune --config FILE --directory DIRECTORY --next-previous MIRROR --as-of YYYY-MM-DD [--dry-run \| --apply]` | Read/hash bounded candidates and show exact whole-generation deletion paths/bytes. Dry-run is default; apply explicitly authorizes revalidated locked deletion. Crate policy and pins, current, next-previous and paused-run dependencies protect closures. No remote pruning. |
+
+Existing `publish --source MIRROR --base-url URL [--preflight]` accepts schema 4
+with the same independent publisher network/auth settings. It refuses a different
+generation base URL before remote requests, checks every absence before writes,
+verifies GET hashes and sends the marker last. Partial uploads require investigation
+and a fresh prefix; no overwrite, activation or rollback is implied.

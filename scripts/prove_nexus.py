@@ -23,6 +23,7 @@ import time
 import tomllib
 from urllib.request import urlopen
 import publish_raw
+from urllib.parse import urlsplit
 
 REPO = "rust-mirror-proof"
 SCOPE_REPO = "rust-mirror-scope-control"
@@ -41,7 +42,7 @@ def native_selection(document):
     if record is None: raise ValueError("Nexus native proof needs a GNU x86-64 selection")
     return record["release"], "x86_64-unknown-linux-gnu", record["pinned_toolchain"]
 
-def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False, next_snapshot=None, publisher_cli=None):
+def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=False, next_snapshot=None, publisher_cli=None, cargo=None, rustc=None):
     evidence.mkdir(parents=True, exist_ok=False, mode=0o700)
     result = {"status": "running", "cases": [], "commands": [], "scope": "Disposable actual Nexus Raw hosted, with a temporary TLS reverse proxy"}
     requests = []
@@ -60,7 +61,22 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                 raise RuntimeError("external network unexpectedly reachable")
         except OSError:
             result["external_connection_refused"] = True
-        document, files = publish_raw.local_files(snapshot)
+        candidate = tomllib.loads((snapshot / "snapshot.toml").read_text())
+        crate_mode = candidate.get("schema") == 4
+        crate_port = 0
+        if crate_mode:
+            if publisher_cli is None or cargo is None or rustc is None:
+                raise ValueError("crate proof needs native publisher and explicit Cargo/rustc paths")
+            document = candidate
+            files = [(f["path"], snapshot / f["path"], f["sha256"]) for f in document["files"]]
+            files.append(("snapshot.toml", snapshot / "snapshot.toml", publish_raw.digest(snapshot / "snapshot.toml")))
+            crate_base = document["plan"]["catalog"]["crate-output"]["base-url"].rstrip("/")
+            parsed = urlsplit(crate_base)
+            if parsed.scheme != "https" or parsed.hostname != "127.0.0.1" or not parsed.port or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path != f"/repository/{REPO}/snapshots/proof-001":
+                raise ValueError("crate generation must target only the owned namespace-local proof prefix")
+            crate_port = parsed.port
+        else:
+            document, files = publish_raw.local_files(snapshot)
         result["snapshot_schema"] = document["schema"]
         if next_snapshot is not None:
             next_document, _ = publish_raw.local_files(next_snapshot)
@@ -169,7 +185,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                     pass
 
                 def forward(self):
-                    if self.command == "GET" and fault["mode"] and self.path.endswith((".tar.gz", ".tar.xz", ".tar.zst")):
+                    if self.command == "GET" and fault["mode"] and self.path.endswith((".tar.gz", ".tar.xz", ".tar.zst", ".crate")):
                         if fault["mode"] == "missing": self.send_error(404); return
                         data = b"deliberately corrupt proxy control"
                         self.send_response(200); self.send_header("Content-Length", str(len(data))); self.end_headers(); self.wfile.write(data); return
@@ -208,7 +224,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                 do_HEAD = forward
                 do_PUT = forward
 
-            server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Proxy)
+            server = http.server.ThreadingHTTPServer(("127.0.0.1", crate_port), Proxy)
             server.daemon_threads = True
             server_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             server_context.minimum_version = ssl.TLSVersion.TLSv1_2
@@ -217,6 +233,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             worker = threading.Thread(target=server.serve_forever, daemon=True)
             worker.start()
             base = f"https://127.0.0.1:{server.server_port}/repository/{REPO}/snapshots/proof-001"
+            if crate_mode and base != crate_base: raise ValueError("crate proof listener does not match immutable dl URL")
 
             def request(method, path, body=None, auth=None, trust=context, hostname="127.0.0.1"):
                 connection = http.client.HTTPSConnection(hostname, server.server_port, context=trust, timeout=30)
@@ -261,11 +278,11 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             diagnostic.close()
             status, body = request("GET", diagnostic_path, auth=administrator)
             result["proxy_raw_diagnostic"] = {"status": status, "body": body.decode("utf-8", errors="replace")[:4096]}
-            signature_name = next(n for n, p, sha in files if n.endswith(".asc"))
+            signature_name = next(n for n, p, sha in files if n.endswith(".crate" if crate_mode else ".asc"))
             signature_bytes = (snapshot / signature_name).read_bytes()
-            status, mime_error = request("PUT", f"/repository/{REPO}/snapshots/type-check/signature.asc", signature_bytes, auth)
+            status, mime_error = request("PUT", f"/repository/{REPO}/snapshots/type-check/" + ("archive.crate" if crate_mode else "signature.asc"), signature_bytes, auth)
             if status == 400:
-                case("strict_mime_rejects_unchanged_upstream_armored_signature", status=status)
+                case("strict_mime_rejects_original_crate_archive" if crate_mode else "strict_mime_rejects_unchanged_upstream_armored_signature", status=status)
                 if not allow_raw_mime_types:
                     result["status"] = "held"
                     result["blocker"] = "Strict MIME validation refuses upstream .asc; no repository policy changed without explicit test opt-in."
@@ -275,19 +292,28 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                 if confirmed["storage"]["strictContentTypeValidation"] is not False or confirmed["storage"]["writePolicy"].lower() != "allow_once":
                     raise RuntimeError("explicit test-repository MIME policy was not retained")
                 case("explicit_disposable_raw_mime_policy", strictContentTypeValidation=False, writePolicy=confirmed["storage"]["writePolicy"])
-                status, _ = request("PUT", f"/repository/{REPO}/snapshots/type-check/signature.asc", signature_bytes, auth)
-                downloaded_status, downloaded_signature = request("GET", f"/repository/{REPO}/snapshots/type-check/signature.asc")
+                status, _ = request("PUT", f"/repository/{REPO}/snapshots/type-check/" + ("archive.crate" if crate_mode else "signature.asc"), signature_bytes, auth)
+                downloaded_status, downloaded_signature = request("GET", f"/repository/{REPO}/snapshots/type-check/" + ("archive.crate" if crate_mode else "signature.asc"))
                 if status not in (200, 201, 204) or downloaded_status != 200 or downloaded_signature != signature_bytes:
                     raise RuntimeError("explicit MIME policy did not preserve the original signature bytes")
                 case("explicit_raw_policy_preserves_signature_bytes", status=status)
 
             elif status in (200, 201, 204):
-                case("strict_mime_accepts_upstream_signature", status=status)
+                case("strict_mime_accepts_original_crate_archive" if crate_mode else "strict_mime_accepts_upstream_signature", status=status)
             else:
                 raise RuntimeError(f"unexpected signature MIME probe status: {status}")
             os.environ["NEXUS_USERNAME"] = publisher
             os.environ["NEXUS_PASSWORD"] = publisher_password
             try:
+                if crate_mode:
+                    before_preflight = sum(r["method"] == "PUT" for r in requests)
+                    checked = subprocess.run([str(publisher_cli), "publish", "--preflight", "--source", str(snapshot), "--base-url", base, "--ca-file", str(ca_file)], capture_output=True, timeout=180)
+                    if checked.returncode:
+                        raise RuntimeError("native schema-4 preflight failed")
+                    result["preflight"] = tomllib.loads(checked.stdout.decode())
+                    if result["preflight"]["schema"] != 4 or sum(r["method"] == "PUT" for r in requests) != before_preflight:
+                        raise RuntimeError("schema-4 preflight wrote content or returned the wrong schema")
+                    case("native_schema4_no_write_preflight", files=result["preflight"]["files"])
                 result["publication"] = publish_snapshot(snapshot, base, ca_file)
                 case("authenticated_snapshot_publication_and_get_hashes", files=result["publication"]["files"])
                 before = sum(r["method"] == "PUT" for r in requests)
@@ -304,7 +330,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             finally:
                 os.environ.pop("NEXUS_USERNAME", None)
                 os.environ.pop("NEXUS_PASSWORD", None)
-            first = next(n for n, p, sha in files if n.endswith(".sha256"))
+            first = next(n for n, p, sha in files if n.endswith(".crate" if crate_mode else ".sha256"))
             original = (snapshot / first).read_bytes()
             status, _ = request("PUT", f"/repository/{REPO}/snapshots/proof-001/{first}", b"replacement", auth)
             if status not in (400, 403, 409, 412):
@@ -321,6 +347,17 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             if status not in (401, 403):
                 raise RuntimeError("anonymous reader escaped repository scope")
             case("anonymous_cross_repository_read_refused", status=status)
+
+            if crate_mode:
+                from prove_crates_https import prove_client
+                client_evidence = evidence / "cargo-client"
+                client_evidence.mkdir()
+                result["cargo_client"] = prove_client(client_evidence, snapshot, base, ca_file, cargo, rustc, lambda mode: fault.update(mode=mode))
+                case("actual_nexus_cargo_https_fetch_build_locked_and_negative_controls")
+                result["status"] = "passed"
+                result["tls"] = "Verified temporary CA/IP SAN reverse proxy; actual namespace-local Nexus Raw backend"
+                result["limits"] = ["One Linux Cargo itoa client, not every corpus crate compiled", "Only the recorded disposable legacy Nexus image", "Anonymous scoped read, not authenticated Cargo clients", "No production configuration, activation or deletion"]
+                return
 
             # Read-only anonymous client with completely fresh homes and real TLS checks.
             client_request_start = len(requests)
@@ -439,9 +476,11 @@ def main():
     parser.add_argument("--nexus-port", type=int, default=8081)
     parser.add_argument("--next-snapshot", type=Path, help="New immutable generation for full existing-client/self-update proof")
     parser.add_argument("--publisher-cli",type=Path,help="Use the real Rust publish subcommand instead of Python reference publisher")
+    parser.add_argument("--cargo", type=Path)
+    parser.add_argument("--rustc", type=Path)
     args = parser.parse_args()
     prove(args.snapshot.resolve(), args.evidence.resolve(), args.initial_password_file, args.nexus_port, args.allow_raw_mime_types,
-          args.next_snapshot.resolve() if args.next_snapshot else None,args.publisher_cli.resolve() if args.publisher_cli else None)
+          args.next_snapshot.resolve() if args.next_snapshot else None,args.publisher_cli.resolve() if args.publisher_cli else None, args.cargo.resolve() if args.cargo else None, args.rustc.resolve() if args.rustc else None)
 
 
 if __name__ == "__main__":

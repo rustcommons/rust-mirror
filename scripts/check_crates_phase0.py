@@ -73,27 +73,44 @@ def main():
     parser.add_argument("--driver", required=True, help="Already-built native crates_phase0 example")
     parser.add_argument("--work", required=True, type=Path, help="New private output directory")
     parser.add_argument("--cache", type=Path, help="Explicit metadata cache, never a Cargo home")
+    parser.add_argument("--roots", type=Path, help="Explicit frozen exact-root JSON corpus; default is the original Phase 0 corpus")
+    parser.add_argument("--frozen-plan", type=Path, help="Validate an already generated MVP frozen plan against both Cargo indexes")
     args = parser.parse_args()
+    roots = json.loads(args.roots.read_text()) if args.roots else ROOTS
     args.work.mkdir(parents=True, exist_ok=False)
     args.work = args.work.resolve()
     cache = args.cache.resolve() if args.cache else args.work / "index"
     cache.mkdir(parents=True, exist_ok=True)
     roots_file = args.work / "roots.json"
-    roots_file.write_text(json.dumps(ROOTS, indent=2) + "\n")
+    roots_file.write_text(json.dumps(roots, indent=2) + "\n")
     plan_file = args.work / "plan.json"
-    print(run([str(Path(args.driver).resolve()), str(roots_file), str(cache), str(plan_file)]), flush=True)
-    plan = json.loads(plan_file.read_text())
+    if args.frozen_plan:
+        frozen = json.loads(args.frozen_plan.read_text())
+        assert frozen["schema"] == 1 and not frozen["previous_inventory_sha256"]
+        expected = {(r["name"], r["version"]) for r in roots}
+        profiles = [r["profile"] for r in frozen["roots"]]
+        assert len(profiles) == len(roots) and {(r["name"], r["version"]) for r in profiles} == expected
+        roots = profiles  # Native witness/reason indexes follow catalog alias ordering.
+        roots_file.write_text(json.dumps(roots, indent=2) + "\n")
+        plan = dict(frozen, metadata_bytes=sum(o["bytes"] for o in frozen["observations"]), archive_requests=0)
+        plan["versions"] = [dict(v, index_line=list(v["index_line"].encode())) for v in frozen["versions"]]
+        plan_file.write_text(json.dumps(plan, indent=2) + "\n")
+    else:
+        print(run([str(Path(args.driver).resolve()), str(roots_file), str(cache), str(plan_file)]), flush=True)
+        plan = json.loads(plan_file.read_text())
     assert plan["archive_requests"] == 0
     filtered = {}
     native = set()
     for version in plan["versions"]:
         native.add(version["name"] + "@" + version["version"])
-        name = version["name"]
+        name = version["name"].lower()
         path = ("1/" + name if len(name) == 1 else "2/" + name if len(name) == 2 else
                 "3/" + name[0] + "/" + name if len(name) == 3 else name[:2] + "/" + name[2:4] + "/" + name)
         filtered[path] = filtered.get(path, b"") + bytes(version["index_line"])
     # Preserve upstream line ordering, rather than sorting JSON records by version.
     for path in filtered:
+        if args.frozen_plan:
+            continue  # FrozenPlan already preserves source ordering and is validated by the native loader.
         data = (cache / path).read_bytes()
         filtered[path] = b"".join(line for line in data.splitlines(keepends=True)
             if json.loads(line)["name"] + "@" + json.loads(line)["vers"] in native)
@@ -161,7 +178,7 @@ def main():
     rows = []
     union = set()
     try:
-        for n, root in enumerate(ROOTS):
+        for n, root in enumerate(roots):
             chosen = {}
             for mode in ("full", "filtered"):
                 path = args.work / f"{n}-{mode}"
@@ -190,6 +207,20 @@ def main():
         server.server_close()
         worker.join(timeout=10)
     assert not archive_requests, archive_requests
+    shared_observations = []
+    native_only_observations = []
+    if args.frozen_plan:
+        for observation in frozen["observations"]:
+            name = observation["name"].lower()
+            shard = ("1/" + name if len(name) == 1 else "2/" + name if len(name) == 2 else
+                     "3/" + name[0] + "/" + name if len(name) == 3 else name[:2] + "/" + name[2:4] + "/" + name)
+            file = cache / shard
+            if not file.is_file():
+                native_only_observations.append(observation["name"])
+                continue
+            raw = file.read_bytes()
+            assert len(raw) == observation["bytes"] and hashlib.sha256(raw).hexdigest() == observation["sha256"], "upstream metadata changed between native planning and Cargo oracle; replan rather than compare different observations"
+            shared_observations.append(observation["name"])
     source = Path(__file__).resolve().parent.parent
     source_hashes = {str(path.relative_to(source)): hashlib.sha256(path.read_bytes()).hexdigest()
                      for path in [source / "src/crates/mod.rs", source / "Cargo.toml", source / "Cargo.lock",
@@ -201,7 +232,9 @@ def main():
                   cargo_only=sorted(union - native),
                   overfetch_percent=100 * len(native - union) / len(union),
                   payload_byte_overfetch=None, archive_requests=archive_requests,
-                  metadata_bytes=plan["metadata_bytes"], index_sha256=metadata_hashes)
+                  metadata_bytes=plan["metadata_bytes"], index_sha256=metadata_hashes,
+                  shared_index_observations_verified=shared_observations,
+                  native_only_index_observations=native_only_observations)
     (args.work / "conformance.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({k: v for k, v in report.items() if k not in ("roots", "index_sha256")}), flush=True)
     from crates_phase0_fixtures import check_fixtures
