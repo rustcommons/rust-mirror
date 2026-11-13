@@ -151,7 +151,8 @@ Concurrent operations emit `artifact_complete` for each successful artifact
 operation, identifying path/action, observed bytes and whether hash verification
 completed. `crate_summary` carries `files_completed`, nullable `files_total`,
 transferred/reused bytes. Retry waits emit `retry` notices with path, attempt,
-wait seconds and a sanitized reason; independent heartbeats continue. A failed
+wait seconds, typed `kind` (`rate_limited`, `unavailable`, `transport`) and a
+sanitized reason; independent heartbeats continue. A failed
 artifact has no successful completion event; the final result remains authoritative.
 
 Publish preflight refuses a destination different from the generation-local base

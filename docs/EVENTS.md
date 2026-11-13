@@ -220,7 +220,7 @@ Crate concurrency adds three optional nonterminal event types:
 | --- | --- | --- |
 | `artifact_complete` | `path`, `action`, `bytes`: integer or null, `verified`: boolean | Terminal success of the matching path/action operation; HEAD completion does not imply verified content. |
 | `crate_summary` | `files_completed`: integer, `files_total`: integer or null, `transferred_bytes`, `reused_bytes`: integers | Whole crate-fetch counters; finished files count only after complete hash verification/reuse. |
-| `retry` | `path`, `attempt`: integer, `wait_seconds`: integer, `reason`: string | Bounded 429/503/transport retry wait; no raw headers or secret-bearing errors. Heartbeats continue. |
+| `retry` | `path`, `attempt`: integer, `wait_seconds`: integer, `kind`: rate_limited/unavailable/transport, `reason`: string | Bounded 429/503/transport retry wait; no raw headers or secret-bearing errors. Heartbeats continue. |
 
 `crates-show` performs local bounded saved-preview loading, with no network.
 Plan reports include `observed_at`, per-version typed rows, change classification,
