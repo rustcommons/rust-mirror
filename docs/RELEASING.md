@@ -36,8 +36,9 @@ The owner authorized 0.5.0 publication once complete and qualified on 2026-11-13
 Require the [lock-import gates](LOCK-IMPORT.md#qualification-before-implementation-acceptance)
 in addition to existing gates, plus legacy schema/digest compatibility and repeated
 pruning. The coordinator reviews/merges and publishes from the owner's machine;
-[0.5.0 notes](releases/v0.5.0.md) identify new behavior and limits. Publication is
-not complete until its own registry/docs/installed verification record exists.
+[0.5.0 notes](releases/v0.5.0.md) identify new behavior and limits. The coordinator
+published after normal merge; [postpublication verification](evals/2026-11-13-publication-0.5.0.md)
+records registry payload, docs.rs, fresh installation, tag/release and workflow evidence.
 
 ## Before merge and publication
 

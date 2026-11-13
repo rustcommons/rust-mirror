@@ -1,12 +1,12 @@
-# Cargo.lock import (development source for 0.5.0)
+# Cargo.lock import (0.5.0)
 
 Owner-approved implementation scope, 2026-11-13; contract PR #36 was reviewed and
-merged before implementation. These APIs/commands are implemented in development
-source and are absent from published 0.4.0. The owner
-separately authorized 0.5.0 publication once ready on 2026-11-13; the coordinator
-reviews/merges and publishes after qualification. Existing [crate behavior](CRATES.md),
+merged before implementation PR #37. These APIs/commands ship in 0.5.0 and are
+absent from 0.4.0. The coordinator published the owner-authorized release after
+qualification; the [publication record](evals/2026-11-13-publication-0.5.0.md)
+identifies exact source, registry and installed evidence. Existing [crate behavior](CRATES.md),
 [protocol 1](EVENTS.md) and qualification gates continue to apply. No new dependency
-or runtime Cargo invocation is approved.
+or runtime Cargo invocation was introduced.
 
 ## Self-contained catalog sources
 

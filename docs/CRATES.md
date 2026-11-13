@@ -194,7 +194,7 @@ to this generation's own HTTPS base URL; `api` is omitted. Every served index li
 has a verified local archive. Preserve the selected upstream line bytes and original
 ordering, including yank state; never reserialize records or change upstream flags.
 
-Published 0.4.0 writes `snapshot.toml` schema 4; the 0.5.0 candidate writes schema 5
+Published 0.4.0 writes `snapshot.toml` schema 4; 0.5.0 writes schema 5
 with copied lock proofs, and reads both. Both have `kind = "crates"`, generation-local
 base URL, file hash/length inventory, exact crate identities/cksums/line hashes,
 root/profile/witness/reason records and previous-inventory identity. This is a crate
@@ -266,7 +266,7 @@ mirror. A fresh isolated Cargo home needs that internal network access first;
 Client Cargo CA/proxy settings are independent of the connected mirroring machine.
 No commands here alter the user's actual Cargo/Rustup home. Authenticated Cargo
 readers and alternate/private registries remain deferred. Cargo.lock import has
-a [development-source 0.5.0 implementation](LOCK-IMPORT.md); published 0.4.0 does not implement it.
+a [published 0.5.0 implementation](LOCK-IMPORT.md); 0.4.0 does not implement it.
 
 ## Qualification and evidence
 
@@ -290,10 +290,11 @@ Required evidence, tied to exact revisions, includes:
 Record staged results as they occur. Open PRs with green appropriate CI; coordinator
 review precedes merges. No new dependency, version bump or publication is implied.
 
-## Cargo.lock pin sources (development source for 0.5.0)
+## Cargo.lock pin sources (0.5.0)
 
-The owner approved [Cargo.lock import](LOCK-IMPORT.md) as the next 0.5.0 iteration
+The owner approved [Cargo.lock import](LOCK-IMPORT.md) for 0.5.0
 on 2026-11-13. This is separate from the shipped MVP: named self-contained pin
 sources union with manual rules, including exact checksums and lock-scoped yanks.
 See that guide for syntax/API/events/results, structured retention reasons and
-[qualification bounds](evals/2026-11-13-lock-import.md). No 0.5.0 publication is asserted.
+[qualification bounds](evals/2026-11-13-lock-import.md) and the
+[0.5.0 publication record](evals/2026-11-13-publication-0.5.0.md).

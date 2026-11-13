@@ -684,7 +684,7 @@ reachable; populated caches can subsequently build with `--offline`. Client CA/p
 settings remain independent. Pruning requires an explicit crate-retention policy,
 a preview and `--apply`; remote deletion remains outside this workflow.
 
-## Import project locks (development source for 0.5.0)
+## Import project locks (0.5.0)
 
 Keep an organization catalog; lock imports add exact pin sources alongside manual
 rules. Preview locally first, then explicitly save the proposed catalog:
@@ -705,4 +705,5 @@ preview approval afterward. Every locked registry package is included, including
 dev packages. Yanked lock pins are flagged; new manual yanked selections still refuse.
 Git/path/workspace entries are reported, never mirrored; provision those sources
 independently for client builds. See [formats, refusals and client evidence](LOCK-IMPORT.md).
-This feature is absent from published 0.4.0; 0.5.0 publication follows qualification.
+This feature ships in 0.5.0 and is absent from 0.4.0. See the
+[publication record](evals/2026-11-13-publication-0.5.0.md) for bounded installed evidence.
