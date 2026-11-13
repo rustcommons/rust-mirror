@@ -51,7 +51,14 @@ The local loopback-namespace publisher attempt was blocked by `unshare: Operatio
 not permitted`; no publication ran there and isolation was not weakened. Linux CI
 now installs the verified package into a fresh Cargo home/root and runs the existing
 publisher preflight/lifecycle fixture inside its loopback-only namespace, saving
-identity/proof artifacts. Actual Nexus evidence remains separately identified below.
+identity/proof artifacts. Actual Nexus evidence remains separately identified below. The first CI attempt
+at head `604309509a7687baa5b713fa92f0817ee44fc462` passed the installed publisher
+checks but failed while collecting artifacts: the existing Linux fixture leaves
+root-owned temporary keys. The follow-up adds an EXIT trap deleting exactly those
+two fixture keys, asserts their removal, and uploads only JSON/stdout/stderr proof
+files. It does not broaden permissions or include keys in artifacts. The failed
+run [43418858382](https://github.com/rustcommons/rust-mirror/actions/runs/43418858382)
+remains historical; require the corrected final-head CI before release.
 
 ## Carried evidence and limits
 

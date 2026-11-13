@@ -52,7 +52,20 @@ jobs:
       - name: Installed publisher in a loopback-only namespace
         if: matrix.os == 'ubuntu-latest'
         shell: bash
-        run: sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/candidate-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/candidate-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+        run: |
+          trap 'sudo rm -f -- "$RUNNER_TEMP/candidate-publisher/ca.key" "$RUNNER_TEMP/candidate-publisher/server.key"' EXIT
+          sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/candidate-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/candidate-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+      - name: Verify fixture key cleanup
+        if: matrix.os == 'ubuntu-latest' && always()
+        shell: bash
+        run: |
+          python3 - <<'PYTHON'
+          import json,os,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          proof=root/'candidate-publisher'
+          assert not (proof/'ca.key').exists() and not (proof/'server.key').exists()
+          (root/'candidate-cleanup.json').write_text(json.dumps({'private_keys_destroyed': True, 'fixture_created': proof.exists()})+'\n')
+          PYTHON
       - name: Save installed package proof
         if: matrix.os == 'ubuntu-latest' && always()
         uses: actions/upload-artifact@v4
@@ -60,6 +73,9 @@ jobs:
           name: candidate-installed-publisher
           path: |
             ${{ runner.temp }}/candidate-version.jsonl
-            ${{ runner.temp }}/candidate-publisher/
+            ${{ runner.temp }}/candidate-cleanup.json
+            ${{ runner.temp }}/candidate-publisher/*.json
+            ${{ runner.temp }}/candidate-publisher/*.stdout
+            ${{ runner.temp }}/candidate-publisher/*.stderr
           if-no-files-found: error
       - run: python -m unittest discover -s tests -p "test_*.py"
