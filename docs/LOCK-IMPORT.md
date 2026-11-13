@@ -1,7 +1,8 @@
-# Cargo.lock import contract (planned 0.5.0)
+# Cargo.lock import (development source for 0.5.0)
 
-Owner-approved implementation scope, 2026-11-13. This is the contract for review
-before implementation; 0.4.0 does not provide these APIs/commands. The owner
+Owner-approved implementation scope, 2026-11-13; contract PR #36 was reviewed and
+merged before implementation. These APIs/commands are implemented in development
+source and are absent from published 0.4.0. The owner
 separately authorized 0.5.0 publication once ready on 2026-11-13; the coordinator
 reviews/merges and publishes after qualification. Existing [crate behavior](CRATES.md),
 [protocol 1](EVENTS.md) and qualification gates continue to apply. No new dependency
@@ -94,6 +95,10 @@ in the catalog is an integrity refusal, never last-writer-wins.
   records keep their existing rule. Combined-index replay for manual/historical
   cohorts remains mandatory; an unmirrored edge still refuses.
 
+Catalog feature/resolver settings govern manual native profiles; an imported exact
+graph is not re-resolved under resolver 2. Clients keep their own manifest/resolver
+context. Lock-format version is separate from resolver, plan and inventory versions.
+
 A lock does not prove build success or capture project manifests/SDKs/git sources.
 The guarantee is availability of every imported registry archive with matching bytes,
 subject to the explicit consistency gate. `external_sources_required` is true when
@@ -111,10 +116,12 @@ requests; independent heartbeats remain active during blocking work.
 
 ## Library, CLI and result shapes
 
-Public planned module `crates::lockfile` uses existing `Control`, `ErrorKind` and serde:
+Public module `crates::lockfile` uses existing `Control`, `ErrorKind` and serde:
 
 | API / type | Contract |
 | --- | --- |
+| `read_input(source_name, path) -> Result<LockInput>` | Bounded regular UTF-8 file read, no symlinks; basename only in the returned input. The GUI uses the same checks as the CLI. |
+| `validate_source_name(name) -> Result<()>` | Shared portable name validation without filesystem/network effects. |
 | `LockInput { source_name, file_name, text }` | UTF-8 input already bounded; CLI reads only explicit regular files, refusing symlinks. No directory discovery. |
 | `parse_with_control(input, control) -> Result<ParseReport>` | Pure analysis with inferred version, exact pins/edges, skipped entries and diagnostics; no mutation/network. |
 | `preview_import(catalog, inputs, imported_at, control) -> Result<ImportReport>` | All inputs analyzed as one transaction; proposed cloned catalog only when accepted. Duplicate source names in a batch refuse. |
@@ -160,7 +167,11 @@ Version rows add `sources: [{ kind: manual|lock, name, digest: string|null }]` a
 transitive reasons identify their originating aliases; lock reasons identify source
 name/digest and exact pin. Explain returns these same objects with existing bounded
 chains/counts/truncation. Shared versions list all source reasons deterministically;
-provenance-only changes are reported separately from archive additions/removals.
+provenance-only changes are reported as `changes.source_changes`, separately from
+archive additions/removals. Direct lock explain chains have `source` and `identity`,
+with no invented native feature/root steps. Default-false `locked_yanked` may be
+omitted in serialized representations for legacy identity compatibility; consumers
+default missing values to false.
 
 New writers use FrozenPlan schema 2 and crate inventory schema 5, carrying copied
 lock-source proofs; 0.5 readers continue verifying old schema-1 plans/schema-4
@@ -174,6 +185,17 @@ pruning refuses with source context. Shared/manual protection is additive. Remov
 or replacement does not delete historical generations or retained archives; existing
 current/next-previous/paused-run locks, explicit preview/apply and stale-state checks
 remain. Retained lock cohorts keep independent exact proofs, not invented features.
+
+Crate `PrunePlan` schema 2 adds `keep_sources: [{ path, sources }]`. These paths
+match `deletion.kept`; source objects are `{ kind: lock|manual|pinned, name, digest }`,
+with the original SHA-256 for lock sources. Human policy reasons remain alongside
+in `deletion.kept[].reasons`. Apply reconstructs both structured and shared plans;
+tampered or stale reasons refuse. Older prune-preview schemas require a new preview.
+Completed crate receipts whose entire mirror directory is absent are discovered
+as `state: "pruned"`, not paused work. Their private plan/receipt files remain;
+partially missing mirrors and genuine in-progress/locked runs retain conservative
+refusal/protection. This fixes a published 0.4.0 second-prune failure without granting
+private-workspace deletion authority.
 
 ## Qualification before implementation acceptance
 
@@ -193,7 +215,8 @@ yank-scoped permission, source replacement/removal/manual preservation, determin
 diffs, bounds/line diagnostics, catalog round-trip, source deletion after import,
 frozen replay/resume/cancellation, schema-4 compatibility and lock-pin retention.
 Existing native/top-100, client, Nexus, resume, security and release gates remain.
-No source implementation, version bump or publication is delivered by this contract.
+See [iteration evidence](evals/2026-11-13-lock-import.md) for named results and limits.
+Versioning/publication follow the authorized coordinator release flow after qualification.
 
 ## Primary references
 

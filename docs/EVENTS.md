@@ -231,10 +231,10 @@ round-trip and error-context contracts. Unknown additive events/fields remain
 ignorable under protocol 1. No GUI consumer should infer completion from the next
 artifact's start or parse a TOML catalog in its own code.
 
-## Planned 0.5.0 lock imports (protocol 1)
+## 0.5.0 lock imports (development source, protocol 1)
 
-[The lock import contract](LOCK-IMPORT.md) is approved implementation scope awaiting
-contract review, not a claim that 0.4.0 exposes these operations. Add command labels
+[Lock import](LOCK-IMPORT.md) is implemented in development source after contract
+review; published 0.4.0 does not expose it. Command labels are
 `crates-import-lock` and `crates-remove-lock`. Reuse `stage` and independent
 heartbeats with stages `lock-read`, `lock-parse`, `lock-diff`, `lock-write`; operation
 context is bounded source name/basename, never raw input or git/registry credentials.
@@ -248,8 +248,13 @@ in `error.report`; no partial catalog write. Syntax/version/source/checksum/budg
 refusals have line/column diagnostics, bounded totals and truncation flags. Pure
 library preview reports can have `accepted: false`; callers must not write them.
 
-Plan version rows add `sources` and `locked_yanked`; explain uses the same structured
-source reasons. Frozen-plan schema 2 / crate-inventory schema 5 are distinct from
+Plan version rows add `sources` and default-false `locked_yanked`; an omitted flag
+means false in legacy-compatible serialization. Direct lock explain chains have
+`source` plus exact `identity`, rather than fabricated native feature steps.
+Crate prune previews add `keep_sources: [{ path, sources }]` with structured
+`{ kind: lock|manual|pinned, name, digest }` reasons alongside the shared policy prose.
+Discovery can report completed crate workspaces as `pruned` when their whole mirror
+is absent; this never treats an unfinished/partial mirror as a completed prune. Frozen-plan schema 2 / crate-inventory schema 5 are distinct from
 protocol 1; old plan/inventory readers refuse the new schemas. Whole-plan approval,
 metadata-only preview loading, immutable replay/resume and existing error meanings
 remain unchanged. Lock sources need no original file after import.

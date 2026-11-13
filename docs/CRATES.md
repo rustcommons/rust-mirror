@@ -186,7 +186,7 @@ inside native feature/search loops; blocked reads retain existing socket deadlin
 and the independent heartbeat. These fields are backend work; GUI pages remain a
 separately authorized phase.
 
-## Sparse output, schema 4 and retention
+## Sparse output, inventory schemas and retention
 
 A completed crate generation contains `cargo/index/config.json`, standard lowercase
 sharded index files and `cargo/crates/NAME/NAME-VERSION.crate`. Generated `dl` points
@@ -194,11 +194,12 @@ to this generation's own HTTPS base URL; `api` is omitted. Every served index li
 has a verified local archive. Preserve the selected upstream line bytes and original
 ordering, including yank state; never reserialize records or change upstream flags.
 
-The new root `snapshot.toml` has `schema = 4`, `kind = "crates"`, generation-local
+Published 0.4.0 writes `snapshot.toml` schema 4; the 0.5.0 candidate writes schema 5
+with copied lock proofs, and reads both. Both have `kind = "crates"`, generation-local
 base URL, file hash/length inventory, exact crate identities/cksums/line hashes,
 root/profile/witness/reason records and previous-inventory identity. This is a crate
 leaf, not an implicit new mixed toolchain format. Existing schema 1/2/3 readers must
-refuse it. New publication/retention readers validate schema-4 semantic closure,
+refuse it. Publication/retention readers validate supported crate semantic closure,
 paths, schema bounds, exact hashes and symlink absence before trusting its contents.
 Do not promote a schema-3-looking marker containing arbitrary crate files.
 
@@ -265,7 +266,7 @@ mirror. A fresh isolated Cargo home needs that internal network access first;
 Client Cargo CA/proxy settings are independent of the connected mirroring machine.
 No commands here alter the user's actual Cargo/Rustup home. Authenticated Cargo
 readers and alternate/private registries remain deferred. Cargo.lock import has
-separate approved [0.5.0 contract work](LOCK-IMPORT.md); 0.4.0 does not implement it.
+a [development-source 0.5.0 implementation](LOCK-IMPORT.md); published 0.4.0 does not implement it.
 
 ## Qualification and evidence
 
@@ -289,10 +290,10 @@ Required evidence, tied to exact revisions, includes:
 Record staged results as they occur. Open PRs with green appropriate CI; coordinator
 review precedes merges. No new dependency, version bump or publication is implied.
 
-## Planned Cargo.lock pin sources
+## Cargo.lock pin sources (development source for 0.5.0)
 
 The owner approved [Cargo.lock import](LOCK-IMPORT.md) as the next 0.5.0 iteration
 on 2026-11-13. This is separate from the shipped MVP: named self-contained pin
 sources union with manual rules, including exact checksums and lock-scoped yanks.
-Review that contract for planned syntax/API/events/results and qualification bounds.
-No implementation or publication is asserted by this link.
+See that guide for syntax/API/events/results, structured retention reasons and
+[qualification bounds](evals/2026-11-13-lock-import.md). No 0.5.0 publication is asserted.

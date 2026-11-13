@@ -32,6 +32,13 @@ isolated HTTPS Cargo clients, kill/cancel/resume and actual schema-4 Nexus proof
 Keep bounded client builds, Linux-only Nexus client evidence and historical-cohort
 refusal explicit. See [0.4.0 notes](releases/v0.4.0.md). This is not GUI Phase 2 approval.
 
+The owner authorized 0.5.0 publication once complete and qualified on 2026-11-13.
+Require the [lock-import gates](LOCK-IMPORT.md#qualification-before-implementation-acceptance)
+in addition to existing gates, plus legacy schema/digest compatibility and repeated
+pruning. The coordinator reviews/merges and publishes from the owner's machine;
+[0.5.0 notes](releases/v0.5.0.md) identify new behavior and limits. Publication is
+not complete until its own registry/docs/installed verification record exists.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
@@ -71,7 +78,7 @@ refusal explicit. See [0.4.0 notes](releases/v0.4.0.md). This is not GUI Phase 2
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.4.0.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.5.0.md) as the GitHub Release, latest and
   without attached standalone binaries unless separately authorized.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.

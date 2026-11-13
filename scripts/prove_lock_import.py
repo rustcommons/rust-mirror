@@ -34,7 +34,7 @@ def sources(root, corpus):
     projects = root / "projects"
     projects.mkdir()
     for entry in corpus:
-        request = urllib.request.Request(f'https://api.github.com/repos/{entry["repo"]}/tarball/{entry["commit"]}',
+        request = urllib.request.Request(f'https://codeload.github.com/{entry["repo"]}/tar.gz/{entry["commit"]}',
                                         headers={"User-Agent": "rust-mirror-lock-qualification (https://github.com/rustcommons/rust-mirror)"})
         with urllib.request.urlopen(request, timeout=60) as response:
             data = response.read(64 * 1024 * 1024 + 1)
@@ -169,7 +169,7 @@ def main():
             for entry in corpus:
                 case = root / entry["name"]
                 case.mkdir()
-                project = prepared / ("projects" if not args.reuse else "") / entry["name"]
+                project = prepared / "projects" / entry["name"]
                 if not project.exists():
                     project = prepared / entry["name"]
                 original_lock = (project / "Cargo.lock").read_bytes()

@@ -670,3 +670,23 @@ with the same independent publisher network/auth settings. It refuses a differen
 generation base URL before remote requests, checks every absence before writes,
 verifies GET hashes and sends the marker last. Partial uploads require investigation
 and a fresh prefix; no overwrite, activation or rollback is implied.
+
+## Lock source commands (development source for 0.5.0)
+
+| Command | Effects and refusal behavior |
+| --- | --- |
+| `crates import-lock --config FILE --lock NAME=PATH [--lock NAME=PATH ...] [--write]` | Local UTF-8 regular-file analysis only (16 MiB/file, 64 MiB/batch, 128 names); default preview returns proposed catalog, typed diagnostics and source/pin diffs. Explicit write atomically replaces the valid catalog after successful whole-transaction analysis; no partial source write. Copies provenance and all exact crates.io pins; manual rules remain. No network or archive requests. |
+| `crates remove-lock --config FILE --source NAME [--source NAME ...] [--write]` | Preview existing-source removals; explicit write saves only those changes. Unknown/duplicate names refuse. Does not prune stored archives/generations. |
+
+`NAME=PATH` splits at the first equals sign; quoted Windows drive paths are valid.
+Shared source-name and bounded-file-reader APIs are in `crates::lockfile`; callers
+pass the existing `Control` to parsing/import/removal previews. Rejected CLI imports
+emit typed final errors with the analysis in `error.report`; accepted writes set
+`written: true`. See [the complete result/format contract](LOCK-IMPORT.md), including
+legacy metadata checksums, skipped sources, checksum integrity and scoped yanks.
+
+New writers emit frozen-plan schema 2 / crate-inventory schema 5; old schema 1/4
+inputs remain readable. Old prune previews require regeneration. Keep protocol 1;
+structured `keep_sources` explains lock/manual/pinned protection. A validated
+completed run with no mirror is `pruned`, so a second prune does not mistake it for
+paused work. Private workspaces remain intact. No remote pruning is added.
