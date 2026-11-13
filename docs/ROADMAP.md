@@ -3,7 +3,7 @@
 Updated 2026-11-13 for owner decisions dated 2026-11-12. This is future work, not a release promise or a description of
 implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md),
 [network contract](NETWORK.md), [retention contract](RETENTION.md) and
-[requirements index](REQUIREMENTS.md). No new version is assigned here.
+[requirements index](REQUIREMENTS.md). The approved next iteration is planned 0.5.0 lock import; publication is not authorized.
 
 ## Curated crate mirroring: proposed phases
 
@@ -39,15 +39,23 @@ the qualified source, Cargo conformance CI and measured counts; this does not
 grant publication authority. Phase 1 implementation has separate owner approval
 as recorded above.
 
+## Approved next iteration: lock import
+
+On 2026-11-13 the owner approved the Cargo.lock input subset of Phase 3 for 0.5.0.
+[Contract](LOCK-IMPORT.md) review precedes implementation. Named copied pin sources,
+reimport/removal diffs, v1–v4 checksums, source-scoped yanks and served-index checks
+must be self-contained and preserve manual rules. Real-project Linux/Windows Cargo
+qualification and existing gates are required; no new dependencies or publication
+are authorized. Other Phase 3 registry modes and GUI work remain separate.
+
 ## Deferred crate work
 
 | Item | Boundary and condition for reconsideration |
 | --- | --- |
-| Cargo.lock import | Explicitly future work. Merge exact registry/name/version/checksum pins as another provenance-bearing source; keep manual rules and independent protection. Define yanked historical-pin handling and feature/target policy before implementation. |
 | Broader historical profile recomputation | The MVP preserves prior closures and replays their combined index. If a mix requires an additional unmirrored feature edge, it refuses; expanding/repairing that mix needs new native provenance and approval evidence. |
 | All optional dependencies and arbitrary project combinations | Approved MVP covers declared feature profiles and native all-platform closure, not every feature combination or one organization-wide solvable workspace. Add bounded scenario policies and Cargo client evidence before broader claims. |
 | Target-minimized archives | Keep conservative all-platform lock closure first. Prove Cargo metadata/lock behavior and completeness with a filtered index before omitting archives for inactive targets. |
-| New yanked pins | Existing verified retained versions can survive. A new yanked exact pin needs a safe resolver/import policy; do not unyank or rewrite upstream metadata. |
+| Manual new yanked pins | Continue refusing new manual selections. Planned lock-imported exact pins use the separate checksum/provenance gate; never unyank or rewrite upstream metadata. |
 | Alternate/private registries and authenticated Cargo readers | Require source identities, credential-provider policy, origin allowlists and client qualification; no silent mapping to crates.io or embedded secrets. |
 | Git/path/workspace inheritance import | Refuse clearly in the registry catalog. No traversal, Git checkout, source substitution or full-project manifest import is approved. |
 | Native Nexus Cargo publishing | Separate from Raw/static publication; verify exact source identity, population, auth, index/retention and disconnected behavior. Existing Raw evidence does not cover it. |

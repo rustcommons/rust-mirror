@@ -238,7 +238,8 @@ clients, resume/kill/corruption/budget/yank/links/prerelease cases, measured arc
 byte overfetch and an actual disposable Nexus Raw crate publication/client proof.
 Never substitute HTTP fixtures for those named HTTPS/Nexus gates. Use only existing
 and already approved dependencies; ask with evidence before adding another. Cargo.lock
-import stays deferred. Coordinator review is required before merging PRs. Phase 1
+import was deferred in Phase 1; the separate 0.5.0 approval below applies.
+Coordinator review is required before merging PRs. Phase 1
 approval alone did not authorize versioning or publication; the separate 0.4.0
 authorization below applies. Production Nexus writes/deletes remain unauthorized.
 Preserve existing toolchain evidence and exact common instructions. Historical crate cohorts must retain their original index bytes
@@ -264,6 +265,20 @@ from this checkout or begin GUI Phase 2 on this authorization.
 The coordinator published 0.4.0 from the owner's Windows machine after normal
 merge on 2026-11-13; see [postpublication verification](docs/evals/2026-11-13-publication-0.4.0.md).
 Later versions and GUI Phase 2 still require separate authorization.
+
+## 0.5.0 lock import authorization
+
+The owner approved implementing Cargo.lock import on 2026-11-13. Land the short
+[contract](docs/LOCK-IMPORT.md) first for coordinator/GUI review before implementation,
+then a separate implementation PR. Copy named, digest/time-bearing exact pins and
+resolved edges into the self-contained catalog; preserve manual rules and other
+sources. Support standard lock formats 1–4, typed bounded diagnostics, official
+registry identities only, index checksum matching and lock-scoped yanked permission.
+Do not resolve extra closure or fetch git/path entries. Preserve source-aware
+preview/explain/retention and all existing security/qualification gates. Prove real
+project locks and Cargo clients on Linux/Windows, including old/current formats,
+yanks, skips and refusal cases. Existing dependencies only. Publication needs a
+separate owner go-ahead; this approval does not authorize GUI work or a version bump.
 
 ## User-facing documentation
 

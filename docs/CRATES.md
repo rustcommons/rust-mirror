@@ -264,7 +264,8 @@ mirror. A fresh isolated Cargo home needs that internal network access first;
 `--offline` disables it too. Test `cargo build --locked --offline` after population.
 Client Cargo CA/proxy settings are independent of the connected mirroring machine.
 No commands here alter the user's actual Cargo/Rustup home. Authenticated Cargo
-readers, alternate/private registries and Cargo.lock import remain deferred.
+readers and alternate/private registries remain deferred. Cargo.lock import has
+separate approved [0.5.0 contract work](LOCK-IMPORT.md); 0.4.0 does not implement it.
 
 ## Qualification and evidence
 
@@ -287,3 +288,11 @@ Required evidence, tied to exact revisions, includes:
 
 Record staged results as they occur. Open PRs with green appropriate CI; coordinator
 review precedes merges. No new dependency, version bump or publication is implied.
+
+## Planned Cargo.lock pin sources
+
+The owner approved [Cargo.lock import](LOCK-IMPORT.md) as the next 0.5.0 iteration
+on 2026-11-13. This is separate from the shipped MVP: named self-contained pin
+sources union with manual rules, including exact checksums and lock-scoped yanks.
+Review that contract for planned syntax/API/events/results and qualification bounds.
+No implementation or publication is asserted by this link.
