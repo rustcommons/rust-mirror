@@ -49,7 +49,7 @@ def prove_client(evidence, mirror, base, ca_file, cargo, rustc, fault):
     """Exercise a trusted HTTPS endpoint; fault callback controls only the owned fixture."""
     inventory_bytes = (mirror / "snapshot.toml").read_bytes()
     inventory = tomllib.loads(inventory_bytes.decode())
-    assert inventory["schema"] == 4 and inventory["plan"]["catalog"]["crate-output"]["base-url"].rstrip("/") == base
+    assert inventory["schema"] in (4, 5) and inventory["plan"]["catalog"]["crate-output"]["base-url"].rstrip("/") == base
     row = next(v for v in inventory["plan"]["versions"] if v["name"] == "itoa")
     version, checksum = row["version"], row["cksum"]
     project = evidence / "client"

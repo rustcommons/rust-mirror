@@ -15,7 +15,7 @@ def main():
     args = parser.parse_args()
     marker = (args.mirror / "snapshot.toml").read_bytes()
     inventory = tomllib.loads(marker.decode())
-    assert inventory["schema"] == 4 and inventory["kind"] == "crates"
+    assert inventory["schema"] in (4, 5) and inventory["kind"] == "crates"
     files = {f["path"]: f for f in inventory["files"]}
     versions = {(v["name"], v["version"]) for v in inventory["plan"]["versions"]}
     union = set()

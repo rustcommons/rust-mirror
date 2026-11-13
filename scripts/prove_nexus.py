@@ -62,7 +62,7 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
         except OSError:
             result["external_connection_refused"] = True
         candidate = tomllib.loads((snapshot / "snapshot.toml").read_text())
-        crate_mode = candidate.get("schema") == 4
+        crate_mode = candidate.get("schema") in (4, 5)
         crate_port = 0
         if crate_mode:
             if publisher_cli is None or cargo is None or rustc is None:
@@ -309,11 +309,11 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
                     before_preflight = sum(r["method"] == "PUT" for r in requests)
                     checked = subprocess.run([str(publisher_cli), "publish", "--preflight", "--source", str(snapshot), "--base-url", base, "--ca-file", str(ca_file)], capture_output=True, timeout=180)
                     if checked.returncode:
-                        raise RuntimeError("native schema-4 preflight failed")
+                        raise RuntimeError("native crate preflight failed")
                     result["preflight"] = tomllib.loads(checked.stdout.decode())
-                    if result["preflight"]["schema"] != 4 or sum(r["method"] == "PUT" for r in requests) != before_preflight:
-                        raise RuntimeError("schema-4 preflight wrote content or returned the wrong schema")
-                    case("native_schema4_no_write_preflight", files=result["preflight"]["files"])
+                    if result["preflight"]["schema"] not in (4, 5) or sum(r["method"] == "PUT" for r in requests) != before_preflight:
+                        raise RuntimeError("crate preflight wrote content or returned the wrong schema")
+                    case(f"native_schema{candidate['schema']}_no_write_preflight", files=result["preflight"]["files"])
                 result["publication"] = publish_snapshot(snapshot, base, ca_file)
                 case("authenticated_snapshot_publication_and_get_hashes", files=result["publication"]["files"])
                 before = sum(r["method"] == "PUT" for r in requests)

@@ -523,7 +523,9 @@ impl Inventory {
         let raw = bounded_read(&root.join("snapshot.toml"), PLAN_LIMIT)?;
         let inventory: Self = toml::from_str(std::str::from_utf8(&raw)?)
             .map_err(|_| invalid("invalid crate inventory"))?;
-        if inventory.schema != 4 || inventory.kind != "crates" {
+        if !matches!((inventory.schema, inventory.plan.schema), (4, 1) | (5, 2))
+            || inventory.kind != "crates"
+        {
             return Err(invalid("unsupported crate inventory kind/schema"));
         }
         if payloads {
@@ -812,7 +814,7 @@ pub fn fetch(
     }
     files.sort_by(|a, b| a.path.cmp(&b.path));
     let inventory = Inventory {
-        schema: 4,
+        schema: if plan.schema == 1 { 4 } else { 5 },
         kind: "crates".into(),
         plan: plan.clone(),
         files,
@@ -903,7 +905,8 @@ fn validate_paths(root: &Path, plan: &FrozenPlan) -> Result<()> {
     resume::validate_tree(root, &allowed)
 }
 
-pub(crate) fn inspect_run_metadata(root: &Path, plan: &FrozenPlan) -> Result<()> {
+pub(crate) fn inspect_run_metadata(root: &Path, plan: &FrozenPlan) -> Result<bool> {
+    let mut completed = false;
     validate_paths(root, plan)?;
     if root.join(".download").try_exists()? {
         let state: State =
@@ -921,11 +924,12 @@ pub(crate) fn inspect_run_metadata(root: &Path, plan: &FrozenPlan) -> Result<()>
         {
             return Err(invalid("crate run receipt disagrees with its preview"));
         }
+        completed = state.phase == "completed";
     }
     if root.join("mirror/snapshot.toml").try_exists()?
         && Inventory::inspect(&root.join("mirror"))?.plan.plan_id != plan.plan_id
     {
         return Err(invalid("crate run mirror disagrees with its preview"));
     }
-    Ok(())
+    Ok(completed)
 }

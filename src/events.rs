@@ -586,6 +586,14 @@ pub(crate) fn complete(path: &str, action: &str, bytes: Option<u64>, verified: b
 pub(crate) fn current() -> Option<Control> {
     ACTIVE.with(|a| a.borrow().clone())
 }
+// Update bounded operation context without changing the stable stage/event envelope.
+pub(crate) fn operation(operation: &str, path: &str) {
+    if let Some(control) = current() {
+        let mut state = control.0.state.lock().unwrap_or_else(|p| p.into_inner());
+        state.operation = operation.into();
+        state.path = Some(path.into());
+    }
+}
 pub(crate) fn check() -> Result<()> {
     if let Some(c) = current() {
         c.check()?;

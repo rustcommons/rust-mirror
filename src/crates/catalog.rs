@@ -147,6 +147,9 @@ pub struct Catalog {
     pub crates: BTreeMap<String, Dependency>,
     /// Mirror-specific latest-N/pin policies, separate from Cargo dependency values.
     pub crate_rules: BTreeMap<String, Rule>,
+    /// Copied exact pin sources; empty is omitted to preserve legacy frozen identities.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub crate_locks: BTreeMap<String, super::lockfile::LockSource>,
     /// Feature/platform/resource policy.
     pub crate_policy: Policy,
     /// Final generation URL.
@@ -361,8 +364,8 @@ fn error_report(errors: Vec<Diagnostic>) -> Box<dyn std::error::Error + Send + S
 impl Catalog {
     /// Parse TOML, normalize Cargo shorthand and refuse unrelated/unsafe source forms.
     pub fn parse(text: &str) -> Result<Self> {
-        if text.len() > 4 * 1024 * 1024 {
-            return Err(budget("catalog input exceeds 4 MiB"));
+        if text.len() > super::lockfile::CATALOG_LIMIT {
+            return Err(budget("catalog input exceeds 64 MiB"));
         }
         let mut document: toml::Value = toml::from_str(text).map_err(|e: toml::de::Error| {
             invalid({
@@ -403,8 +406,9 @@ impl Catalog {
         if let Some(policy) = &self.crate_retention {
             policy.validate()?;
         }
-        if self.crates.is_empty() || self.crates.len() > 4096 {
-            return Err(budget("catalog needs 1..4096 aliases"));
+        super::lockfile::validate_sources(&self.crate_locks)?;
+        if self.crates.len() > 4096 {
+            return Err(budget("catalog allows at most 4096 aliases"));
         }
         for (alias, d) in &self.crates {
             declaration(alias, &toml::Value::try_from(d)?).map_err(error_report)?;
@@ -491,7 +495,7 @@ impl Catalog {
             accepted: vec![],
             rejected: vec![],
         };
-        if text.len() > 4 * 1024 * 1024 {
+        if text.len() > super::lockfile::CATALOG_LIMIT {
             report.rejected.push(diagnostic(
                 None,
                 None,
@@ -630,7 +634,10 @@ impl Catalog {
                     )
                     .into());
                 }
-                if !m.is_file() || m.file_type().is_symlink() || m.len() > 4 * 1024 * 1024 {
+                if !m.is_file()
+                    || m.file_type().is_symlink()
+                    || m.len() > super::lockfile::CATALOG_LIMIT as u64
+                {
                     return Err(invalid("existing catalog must be a bounded regular file"));
                 }
                 let bytes = fs::read(path)?;

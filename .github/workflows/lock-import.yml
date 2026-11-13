@@ -1,0 +1,64 @@
+name: Cargo.lock import qualification
+on:
+  pull_request:
+    paths:
+      - 'src/crates/**'
+      - 'src/cli/**'
+      - 'src/events.rs'
+      - 'src/publish.rs'
+      - 'src/selection/retention/**'
+      - 'src/selection/retention.rs'
+      - 'tests/crates_lock*'
+      - 'tests/fixtures/crates-lock*'
+      - 'scripts/prove_lock_import.py'
+      - 'scripts/prove_crates_https.py'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/lock-import.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  clients:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            binary: target/debug/rust-mirror
+          - os: windows-latest
+            binary: target/debug/rust-mirror.exe
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    env:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build actual CLI
+        run: cargo build --locked --jobs 2
+      - name: Copied real lock sources and HTTPS Cargo clients
+        run: python scripts/prove_lock_import.py --binary ${{ matrix.binary }} --evidence "${{ runner.temp }}/lock-import"
+      - name: Save bounded public proof logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lock-import-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/lock-import/summary.json
+            ${{ runner.temp }}/lock-import/requests.json
+            ${{ runner.temp }}/lock-import/revocation-requests.json
+            ${{ runner.temp }}/lock-import/*.stderr
+            ${{ runner.temp }}/lock-import/*.jsonl
+            ${{ runner.temp }}/lock-import/ripgrep-12.1.1/*.stdout
+            ${{ runner.temp }}/lock-import/ripgrep-12.1.1/*.stderr
+            ${{ runner.temp }}/lock-import/rust-analyzer-2020-06-01/*.stdout
+            ${{ runner.temp }}/lock-import/rust-analyzer-2020-06-01/*.stderr
+            ${{ runner.temp }}/lock-import/ripgrep-15.1.0/*.stdout
+            ${{ runner.temp }}/lock-import/ripgrep-15.1.0/*.stderr
+            ${{ runner.temp }}/lock-import/fd-v10.4.2/*.stdout
+            ${{ runner.temp }}/lock-import/fd-v10.4.2/*.stderr
+          if-no-files-found: error

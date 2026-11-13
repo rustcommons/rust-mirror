@@ -209,7 +209,10 @@ fn real_directory(path: &Path) -> Result<PathBuf> {
 fn retention_input(root: &Path) -> Result<collection::Input> {
     let raw = catalog::read_inventory(root)?;
     let value: toml::Value = toml::from_str(std::str::from_utf8(&raw)?)?;
-    if value.get("schema").and_then(toml::Value::as_integer) != Some(4) {
+    if !matches!(
+        value.get("schema").and_then(toml::Value::as_integer),
+        Some(4 | 5)
+    ) {
         return collection::read_input(root);
     }
     let inventory = crate::crates::mirror::Inventory::load(root)?;

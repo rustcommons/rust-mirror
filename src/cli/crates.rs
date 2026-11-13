@@ -14,10 +14,10 @@ use std::{
     io::Read,
     path::{Path, PathBuf},
 };
-fn invalid(message: &str) -> Box<dyn std::error::Error + Send + Sync> {
+pub(super) fn invalid(message: &str) -> Box<dyn std::error::Error + Send + Sync> {
     Error::new(ErrorKind::Invalid, message).into()
 }
-fn read(path: &Path, limit: u64) -> Result<String> {
+pub(super) fn read(path: &Path, limit: u64) -> Result<String> {
     let m = fs::symlink_metadata(path)?;
     if !m.is_file() || m.file_type().is_symlink() || m.len() > limit {
         return Err(invalid("input must be a bounded regular file"));
@@ -31,7 +31,7 @@ fn read(path: &Path, limit: u64) -> Result<String> {
     }
     Ok(text)
 }
-fn output<T: serde::Serialize>(report: &T, text: String) -> Result<()> {
+pub(super) fn output<T: serde::Serialize>(report: &T, text: String) -> Result<()> {
     let value = toml::Value::try_from(report)?;
     super::REPORT.with(|slot| *slot.borrow_mut() = Some(value));
     super::emit_output(text)
@@ -56,8 +56,11 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
         .unwrap_or_else(|| "--help".into())
         .into_string()
         .map_err(|_| invalid("crate command must be UTF-8"))?;
+    if matches!(command.as_str(), "import-lock" | "remove-lock") {
+        return super::lock_import::run(&command, args);
+    }
     if command == "--help" || command == "-h" {
-        return super::emit_output("rust-mirror crates plan --config CATALOG --output NEW_PLAN.json [--previous MIRROR] [--estimate-sizes]\nrust-mirror crates sync --config FILE --output RUN [--approve-plan ID] [--resume]\nrust-mirror crates show --plan FILE\nrust-mirror crates explain --plan FILE --crate NAME [--version VERSION] [--limit N]\nrust-mirror crates fetch --plan FILE --output NEW_RUN --approve-plan ID [--previous MIRROR] [--resume]\nrust-mirror crates generations --directory DIRECTORY\nrust-mirror crates prune --config FILE --directory DIRECTORY --next-previous MIRROR --as-of YYYY-MM-DD [--dry-run | --apply]\nrust-mirror crates catalog --config FILE\nrust-mirror crates paste --input DEPENDENCIES.toml [--output NEW_CATALOG]\n".into());
+        return super::emit_output("rust-mirror crates plan --config CATALOG --output NEW_PLAN.json [--previous MIRROR] [--estimate-sizes]\nrust-mirror crates sync --config FILE --output RUN [--approve-plan ID] [--resume]\nrust-mirror crates show --plan FILE\nrust-mirror crates explain --plan FILE --crate NAME [--version VERSION] [--limit N]\nrust-mirror crates fetch --plan FILE --output NEW_RUN --approve-plan ID [--previous MIRROR] [--resume]\nrust-mirror crates generations --directory DIRECTORY\nrust-mirror crates prune --config FILE --directory DIRECTORY --next-previous MIRROR --as-of YYYY-MM-DD [--dry-run | --apply]\nrust-mirror crates catalog --config FILE\nrust-mirror crates paste --input DEPENDENCIES.toml [--output NEW_CATALOG]\nrust-mirror crates import-lock --config FILE --lock NAME=PATH [--lock NAME=PATH ...] [--write]\nrust-mirror crates remove-lock --config FILE --source NAME [--source NAME ...] [--write]\n".into());
     }
     let mut values = BTreeMap::new();
     let mut resume = false;
@@ -140,7 +143,10 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             let anchor = path(&mut values, "--next-previous")?;
             let as_of = text(&mut values, "--as-of")?;
             ensure_empty(&values)?;
-            let catalog = Catalog::parse(&read(&config, 4 * 1024 * 1024)?)?;
+            let catalog = Catalog::parse(&read(
+                &config,
+                crate::crates::lockfile::CATALOG_LIMIT as u64,
+            )?)?;
             let preview =
                 crate::crates::retention::preview_directory(&catalog, &directory, &anchor, &as_of)?;
             if delete {
@@ -164,7 +170,10 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             }
             let input = path(&mut values, "--config")?;
             ensure_empty(&values)?;
-            let catalog = Catalog::parse(&read(&input, 4 * 1024 * 1024)?)?;
+            let catalog = Catalog::parse(&read(
+                &input,
+                crate::crates::lockfile::CATALOG_LIMIT as u64,
+            )?)?;
             output(&catalog, catalog.to_toml()?)
         }
         "paste" => {
@@ -174,7 +183,10 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             let input = path(&mut values, "--input")?;
             let destination = values.remove("--output").map(PathBuf::from);
             ensure_empty(&values)?;
-            let report = Catalog::from_dependencies(&read(&input, 4 * 1024 * 1024)?);
+            let report = Catalog::from_dependencies(&read(
+                &input,
+                crate::crates::lockfile::CATALOG_LIMIT as u64,
+            )?);
             if let Some(destination) = destination {
                 if report.rejected.is_empty() {
                     report
@@ -195,7 +207,10 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             let destination = path(&mut values, "--output")?;
             let previous = values.remove("--previous").map(PathBuf::from);
             ensure_empty(&values)?;
-            let catalog = Catalog::parse(&read(&config, 4 * 1024 * 1024)?)?;
+            let catalog = Catalog::parse(&read(
+                &config,
+                crate::crates::lockfile::CATALOG_LIMIT as u64,
+            )?)?;
             let source = RegistrySource::new(
                 &super::network_options::options(catalog.network.as_ref())?,
                 catalog.crate_network.clone(),
@@ -222,7 +237,10 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
                 })
                 .transpose()?;
             ensure_empty(&values)?;
-            let catalog = Catalog::parse(&read(&config, 4 * 1024 * 1024)?)?;
+            let catalog = Catalog::parse(&read(
+                &config,
+                crate::crates::lockfile::CATALOG_LIMIT as u64,
+            )?)?;
             let source = RegistrySource::new(
                 &super::network_options::options(catalog.network.as_ref())?,
                 catalog.crate_network.clone(),

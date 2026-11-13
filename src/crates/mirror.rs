@@ -1,5 +1,8 @@
 //! Frozen catalog previews and immutable crate-generation operations.
 mod fetch;
+mod locks;
+pub(crate) use locks::covers as covers_lock_source;
+pub use locks::{SourceReason, SourceReasonKind};
 mod retained;
 mod sync;
 use super::{
@@ -105,6 +108,15 @@ pub struct VersionRow {
     pub index_line: String,
     /// Original line position within its upstream index file.
     pub source_ordinal: usize,
+    /// Structured manual/lock provenance; omitted in legacy schema-1 representations.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sources: Vec<SourceReason>,
+    /// Latest yank state is permitted by a copied exact lock pin, not a new manual selection.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub locked_yanked: bool,
+}
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 impl VersionRow {
     fn identity(&self) -> Identity {
@@ -126,6 +138,9 @@ pub struct Changes {
     pub newly_yanked_retained: Vec<Identity>,
     /// Versions no longer selected by current rules but preserved for old clients.
     pub no_longer_selected_retained: Vec<Identity>,
+    /// Named copied sources whose pins or provenance changed, separately from archive changes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub source_changes: Vec<String>,
 }
 /// Exact metadata observation used during native resolution; not an independent signature.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -504,16 +519,26 @@ impl FrozenPlan {
                 "frozen coverage requires explicit hosts and targets",
             ));
         }
-        if self.schema != 1
+        if ![1, 2].contains(&self.schema)
             || self.catalog.network.is_some()
             || self.observed_at == 0
-            || self.roots.is_empty()
+            || (self.roots.is_empty()
+                && self.catalog.crate_locks.values().all(|s| s.pins.is_empty()))
             || self.roots.len() > 4096
             || self.versions.len() > self.catalog.crate_policy.max_versions
             || self.observations.len() > 10000
             || self.warnings.len() > 128
         {
             return Err(invalid("unsupported or oversized frozen plan"));
+        }
+        if self.schema == 1
+            && (!self.catalog.crate_locks.is_empty()
+                || self
+                    .versions
+                    .iter()
+                    .any(|r| !r.sources.is_empty() || r.locked_yanked))
+        {
+            return Err(invalid("lock metadata requires frozen schema 2"));
         }
         base_url(&self.catalog)?;
         crate::valid_hash(&self.plan_id)?;
@@ -585,7 +610,8 @@ impl FrozenPlan {
                     "retained record requires a previous inventory identity",
                 ));
             }
-            if !row.retained_from_previous && row.yanked {
+            if !row.retained_from_previous && row.yanked && !(self.schema == 2 && row.locked_yanked)
+            {
                 return Err(invalid("new yanked versions cannot be selected"));
             }
             if row.reasons.iter().any(|r| r.root >= self.roots.len()) {
@@ -634,6 +660,7 @@ impl FrozenPlan {
                 "retained-generation planning integration is not yet available",
             ));
         }
+        locks::validate(&self.catalog, &self.versions)?;
         if !replay {
             return Ok(());
         }
@@ -643,8 +670,19 @@ impl FrozenPlan {
             return Err(invalid("frozen root set differs from catalog selection"));
         }
         let profiles: Vec<_> = self.roots.iter().map(|r| r.profile.clone()).collect();
-        let rebuilt = super::plan(&mut index, &profiles, native_bounds(&self.catalog))?;
-        if rebuilt.versions.len() != self.versions.len()
+        let rebuilt = locks::native(&mut index, &profiles, native_bounds(&self.catalog))?;
+        let explained: BTreeSet<_> = rebuilt
+            .versions
+            .iter()
+            .map(|v| (v.name.clone(), v.version.clone()))
+            .chain(
+                self.catalog
+                    .crate_locks
+                    .values()
+                    .flat_map(|s| s.pins.iter().map(|p| (p.name.clone(), p.version.clone()))),
+            )
+            .collect();
+        if explained != names
             || serde_json::to_value(&rebuilt.witnesses)? != serde_json::to_value(&self.witnesses)?
         {
             return Err(invalid(
@@ -655,8 +693,19 @@ impl FrozenPlan {
             let native = rebuilt
                 .versions
                 .iter()
-                .find(|v| v.name == row.name && v.version == row.version)
-                .ok_or_else(|| invalid("frozen version is not explained by the catalog"))?;
+                .find(|v| v.name == row.name && v.version == row.version);
+            let reasons = native.map(|v| v.reasons.clone()).unwrap_or_default();
+            let mut sources = locks::manual_sources(&reasons, &self.roots);
+            sources.extend(locks::lock_sources(&self.catalog, row));
+            sources.sort();
+            sources.dedup();
+            if self.schema == 2
+                && (row.sources != sources
+                    || row.locked_yanked
+                        != (row.yanked && sources.iter().any(|s| s.kind == SourceReasonKind::Lock)))
+            {
+                return Err(invalid("frozen source provenance differs from its catalog"));
+            }
             let aliases: Vec<_> = self
                 .roots
                 .iter()
@@ -665,8 +714,8 @@ impl FrozenPlan {
                 .collect::<BTreeSet<_>>()
                 .into_iter()
                 .collect();
-            if native.index_line != row.index_line.as_bytes()
-                || native.reasons != row.reasons
+            if native.is_some_and(|v| v.index_line != row.index_line.as_bytes())
+                || reasons != row.reasons
                 || row.primary_reason != row.reasons.first().cloned()
                 || row.lock_only != row.reasons.iter().all(|r| r.lock_only)
                 || row.root_aliases != aliases
@@ -681,6 +730,7 @@ impl FrozenPlan {
             || !self.changes.retained.is_empty()
             || !self.changes.newly_yanked_retained.is_empty()
             || !self.changes.no_longer_selected_retained.is_empty()
+            || self.changes.source_changes != locks::source_changes(None, &self.catalog)
         {
             return Err(invalid("frozen changes do not match generation contents"));
         }
@@ -830,7 +880,7 @@ pub fn plan(
     };
     let roots = selected_roots(catalog, &mut cache)?;
     let profiles: Vec<_> = roots.iter().map(|r| r.profile.clone()).collect();
-    let native = super::plan(&mut cache, &profiles, native_bounds(catalog)).map_err(|error| {
+    let native = locks::native(&mut cache, &profiles, native_bounds(catalog)).map_err(|error| {
         if let Some(typed) = error.downcast_ref::<Error>() {
             let mut typed = typed.clone();
             if let Some(table) = typed.report.as_mut().and_then(toml::Value::as_table_mut) {
@@ -881,12 +931,15 @@ pub fn plan(
             lock_only: v.reasons.iter().all(|r| r.lock_only),
             root_aliases,
             primary_reason: v.reasons.first().cloned(),
+            sources: locks::manual_sources(&v.reasons, &roots),
+            locked_yanked: false,
             reasons: v.reasons,
             retained_from_previous: false,
             index_line: String::from_utf8(v.index_line)?,
             source_ordinal,
         });
     }
+    locks::add(catalog, &mut cache, &mut versions, estimate_sizes)?;
     let observations = cache
         .files
         .iter()
@@ -899,7 +952,7 @@ pub fn plan(
     let mut semantic = catalog.clone();
     semantic.network = None;
     let mut value = FrozenPlan {
-        schema: 1,
+        schema: 2,
         plan_id: String::new(),
         catalog: semantic,
         observed_at: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
@@ -920,6 +973,7 @@ pub fn plan(
         ],
     };
     value.changes.added = value.versions.iter().map(VersionRow::identity).collect();
+    value.changes.source_changes = locks::source_changes(None, &value.catalog);
     let (counts, sizes, budgets) = summaries(&value)?;
     value.counts = counts;
     value.size_estimate = sizes;
@@ -956,6 +1010,12 @@ pub struct ExplainChain {
     pub root_alias: String,
     /// Root-first dependency steps.
     pub steps: Vec<ExplainStep>,
+    /// Typed origin; lock chains refer directly to their copied exact pin without a fabricated native root.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceReason>,
+    /// Exact direct lock pin; manual paths already identify their target in the steps.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub identity: Option<Identity>,
 }
 /// Bounded local explanation. A null total means the traversal budget prevented an exact count.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -1002,6 +1062,21 @@ pub fn explain(
         .iter()
         .filter(|r| r.name == name && version.is_none_or(|v| v == r.version))
     {
+        for source in target
+            .sources
+            .iter()
+            .filter(|s| s.kind == SourceReasonKind::Lock)
+        {
+            total += 1;
+            if chains.len() < limit {
+                chains.push(ExplainChain {
+                    root_alias: source.name.clone(),
+                    steps: vec![],
+                    source: Some(source.clone()),
+                    identity: Some(target.identity()),
+                });
+            }
+        }
         let mut target_seen = BTreeSet::new();
         for target_reason in &target.reasons {
             let mut key = target_reason.clone();
@@ -1043,6 +1118,12 @@ pub fn explain(
                     chains.push(ExplainChain {
                         root_alias: alias.clone(),
                         steps: path.clone(),
+                        source: Some(SourceReason {
+                            kind: SourceReasonKind::Manual,
+                            name: alias.clone(),
+                            digest: None,
+                        }),
+                        identity: None,
                     });
                 }
             }
@@ -1102,6 +1183,12 @@ pub fn explain(
                         chains.push(ExplainChain {
                             root_alias: alias.clone(),
                             steps,
+                            source: Some(SourceReason {
+                                kind: SourceReasonKind::Manual,
+                                name: alias.clone(),
+                                digest: None,
+                            }),
+                            identity: None,
                         });
                     }
                     path.pop();

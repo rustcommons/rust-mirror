@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "plan_id": "905f2c167ff32f7f58d1c4cbf9da15272d78c06dbbabb9e5aefc91b8efe63f85",
+  "catalog": {
+    "crates": {
+      "x": {
+        "version": "=1.0.0",
+        "features": [],
+        "default-features": true,
+        "optional": false
+      }
+    },
+    "crate-rules": {},
+    "crate-policy": {
+      "features": "declared",
+      "resolver": "2",
+      "hosts": [
+        "x86_64-unknown-linux-gnu",
+        "x86_64-pc-windows-msvc"
+      ],
+      "targets": [
+        "x86_64-unknown-linux-gnu",
+        "x86_64-pc-windows-msvc"
+      ],
+      "max-versions": 3000,
+      "max-files": 10000,
+      "max-metadata-bytes": 268435456,
+      "max-file-bytes": 536870912,
+      "max-final-bytes": 10737418240,
+      "max-transfer-bytes": 10737418240
+    },
+    "crate-output": {
+      "base-url": "https://mirror.example/fixture"
+    },
+    "crate-network": {
+      "contact": "https://github.com/rustcommons/rust-mirror/issues",
+      "concurrency": 4,
+      "attempts": 4,
+      "max-wait-seconds": 60
+    }
+  },
+  "observed_at": 1794569897,
+  "roots": [
+    {
+      "alias": "x",
+      "requirement": "=1.0.0",
+      "profile": {
+        "name": "x",
+        "version": "1.0.0",
+        "features": [],
+        "default_features": true
+      }
+    }
+  ],
+  "versions": [
+    {
+      "name": "x",
+      "version": "1.0.0",
+      "cksum": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83",
+      "expected_bytes": null,
+      "yanked": false,
+      "lock_only": false,
+      "root_aliases": [
+        "x"
+      ],
+      "primary_reason": {
+        "root": 0,
+        "parent": null,
+        "alias": "x",
+        "requirement": "=1.0.0",
+        "target": null,
+        "conservative": false,
+        "lock_only": false,
+        "features": [],
+        "default_features": true
+      },
+      "reasons": [
+        {
+          "root": 0,
+          "parent": null,
+          "alias": "x",
+          "requirement": "=1.0.0",
+          "target": null,
+          "conservative": false,
+          "lock_only": false,
+          "features": [],
+          "default_features": true
+        },
+        {
+          "root": 0,
+          "parent": null,
+          "alias": "x",
+          "requirement": "=1.0.0",
+          "target": null,
+          "conservative": true,
+          "lock_only": false,
+          "features": [],
+          "default_features": true
+        }
+      ],
+      "retained_from_previous": false,
+      "index_line": "{\"name\": \"x\", \"vers\": \"1.0.0\", \"deps\": [], \"features\": {}, \"cksum\": \"fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83\", \"yanked\": false}\n",
+      "source_ordinal": 0
+    }
+  ],
+  "witnesses": [
+    {
+      "root": {
+        "name": "x",
+        "version": "1.0.0",
+        "features": [],
+        "default_features": true
+      },
+      "versions": [
+        "x@1.0.0"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "name": "x",
+      "sha256": "4e8657df77bc78b831414294ea2da96fb3ee032ec04e2272075c8146ac668f5e",
+      "bytes": 153
+    }
+  ],
+  "counts": {
+    "crates": 1,
+    "versions": 1,
+    "files": 4,
+    "roots": 1
+  },
+  "size_estimate": {
+    "estimated": true,
+    "known_archive_bytes": 0,
+    "unknown_archives": 1,
+    "expected_archive_bytes": null,
+    "generated_index_bytes": 237
+  },
+  "budgets": {
+    "exceeds_final_budget": false,
+    "exceeds_transfer_budget": false,
+    "oversized_files": []
+  },
+  "changes": {
+    "added": [
+      {
+        "name": "x",
+        "version": "1.0.0"
+      }
+    ],
+    "retained": [],
+    "newly_yanked_retained": [],
+    "no_longer_selected_retained": []
+  },
+  "previous_inventory_sha256": null,
+  "warnings": [
+    "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+    "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+  ],
+  "cohorts": [],
+  "retention_observations": []
+}
