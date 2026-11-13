@@ -7,10 +7,11 @@ implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md
 
 ## Curated crate mirroring: proposed phases
 
-The owner authorized revised [design review](CRATES-DESIGN.md) and **native Phase 0**.
-External/downloaded Cargo and the Cargo library are rejected at runtime. Direct
-`semver` and previously approved `serde_json` may be used; other new dependencies
-need approval. Broader implementation and a release still need their own approval. Estimates below
+The coordinator accepted Phase 0 and normal-merged PRs #30/#31. The owner approved
+Phase 1 on 2026-11-13; [CRATES.md](CRATES.md) tracks its contract and qualification.
+Runtime external/downloaded Cargo and the Cargo library remain excluded. Existing
+and approved dependencies only; no version bump/publication is authorized.
+Estimates below
 are rough engineering effort for one maintainer, excluding review/approval delays,
 infrastructure access and unexpected upstream changes. They are not delivery dates.
 
@@ -32,7 +33,8 @@ runtime Cargo fallback or an unchecked greedy success claim.
 Phase 0 work and its bounded local results are tracked in the
 [native resolution record](evals/2026-11-13-native-crates-phase0.md). That record names
 the qualified source, Cargo conformance CI and measured counts; this does not
-authorize the MVP or a release.
+grant publication authority. Phase 1 implementation has separate owner approval
+as recorded above.
 
 ## Deferred crate work
 
