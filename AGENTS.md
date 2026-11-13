@@ -212,6 +212,19 @@ remove their temporary directories. Test proxy auth/exclusions, additive roots,
 chain diagnostics, socket deadlines, cancellation/heartbeats, HEAD estimates and
 cache corruption/locking. Network config never changes frozen payload identity.
 
+## Crate mirroring design boundary
+
+The owner approved revised [crate design](docs/CRATES-DESIGN.md) review and native
+Phase 0 on 2026-11-12; maintain the [roadmap](docs/ROADMAP.md). Resolution must be
+built into rust-mirror: no runtime external/downloaded Cargo and no Cargo library.
+Cargo is a CI oracle only. Declared features and one whole-preview approval per plan
+are approved. Direct `semver` is approved; earlier `serde_json` approval applies.
+No PubGrub/other solver dependency is approved; tar/flate2 is not needed now.
+Require bounded native consistency checks, real-Cargo conformance, zero planning
+archive downloads and measured overfetch before claiming Phase 0 complete.
+Cargo.lock import stays future work. Broader implementation and publication are
+not authorized by this Phase 0 task; preserve existing toolchain evidence.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
