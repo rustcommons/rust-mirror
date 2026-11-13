@@ -8,8 +8,8 @@
   event shapes. Add native frozen plan/show/explain, one-preview sync approval,
   bounded concurrent checksum-verified fetch/resume, schema-4 sparse generations,
   historical closure retention, destination-bound publication and explicit crate-aware
-  whole-generation pruning. These development-source workflows remain under MVP
-  qualification; no version bump or publication is included.
+  whole-generation pruning, with bounded top-100/Cargo, platform HTTPS/resume and
+  actual disposable Nexus qualification. No version bump or publication is included.
 
 - Add an experimental metadata-only native crate-resolution research API and test
   driver: declared-feature propagation, bounded conservative closure/backtracking,

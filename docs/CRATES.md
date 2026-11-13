@@ -1,10 +1,8 @@
 # Crate mirroring MVP contract
 
-Owner-approved implementation scope, 2026-11-13. **Contract first; not shipped in
-0.3.0.** Phase 0's exact-root research API is implemented; the workflows below are
-Phase 1 development-source work until all named qualification gates pass. The
-catalog, frozen plan, sync/fetch, publication and retention APIs now exist on the
-implementation branch; this is not a shipped-version capability. No version or
+Owner-approved implementation scope, 2026-11-13. **Development source only; not
+shipped in 0.3.0.** The catalog, frozen plan, sync/fetch, publication and retention
+APIs are implemented with [bounded qualification](evals/2026-11-13-crates-mvp.md). No version or
 publication is authorized. See [design](CRATES-DESIGN.md), [roadmap](ROADMAP.md)
 and [requirements](REQUIREMENTS.md). Runtime dependency resolution stays native.
 
@@ -94,8 +92,8 @@ or pruning is part of sync.
 
 ## Commands and public API names
 
-The names below are implemented on the development branch and remain subject to
-all Phase 1 qualification gates before merge/release:
+These development-source commands and public library names are covered by the
+named qualification record; they are absent from published 0.3.0:
 
 | CLI | Library/report |
 | --- | --- |
@@ -247,7 +245,7 @@ readers, alternate/private registries and Cargo.lock import remain deferred.
 
 ## Qualification and evidence
 
-[Qualification in progress](evals/2026-11-13-crates-mvp.md) distinguishes bounded
+[Bounded qualification](evals/2026-11-13-crates-mvp.md) distinguishes bounded
 local observations from remaining exact-head gates. Adopting this contract alone
 satisfies no transfer/client/Nexus gate.
 Required evidence, tied to exact revisions, includes:

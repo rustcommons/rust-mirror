@@ -577,11 +577,18 @@ fn semver_build_metadata_has_a_portable_archive_path_without_weakening_toolchain
 fn crate_directory_prune_keeps_paused_previous_and_refuses_stale_disk() {
     use mirror::{Approval, FetchOptions, SyncOptions, SyncReport};
     use rust_mirror::crates::retention;
-    let (mut catalog, source) = payload_fixture();
+    let (mut catalog, mut source) = payload_fixture();
     catalog.crate_retention = Some(retention::Policy::default());
     let dir = tempfile::tempdir().unwrap();
     let mut mirrors = Vec::new();
+    let original: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    source.metadata.clear();
     for index in 1..=3 {
+        let mut record = original.clone();
+        record["vers"] = json!(format!("{index}.0.0"));
+        source.metadata.extend(serde_json::to_vec(&record).unwrap());
+        source.metadata.push(b'\n');
+        catalog.crates.get_mut("x").unwrap().version = format!("={index}.0.0");
         catalog.crate_output.base_url = format!("https://mirror.example/generation-{index}");
         let plan = mirror::plan(&catalog, &source, None, false).unwrap();
         let report = mirror::fetch(
@@ -606,6 +613,32 @@ fn crate_directory_prune_keeps_paused_previous_and_refuses_stale_disk() {
             .unwrap();
         mirrors.push(report.mirror);
     }
+    let unpinned =
+        retention::preview_directory(&catalog, dir.path(), &mirrors[2], "2026-11-13").unwrap();
+    assert_eq!(unpinned.deletion.generations.len(), 2);
+    catalog.crate_rules.insert(
+        "x".into(),
+        rust_mirror::crates::catalog::Rule {
+            latest: 1,
+            pins: vec!["1.0.0".into()],
+        },
+    );
+    let pinned =
+        retention::preview_directory(&catalog, dir.path(), &mirrors[2], "2026-11-13").unwrap();
+    assert_eq!(
+        pinned.deletion.generations,
+        [mirrors[1].canonicalize().unwrap()]
+    );
+    assert_eq!(pinned.pinned_crates[0].identity.version, "1.0.0");
+    catalog
+        .crates
+        .get_mut("x")
+        .unwrap()
+        .features
+        .push("missing-profile".into());
+    assert!(retention::preview_directory(&catalog, dir.path(), &mirrors[2], "2026-11-13").is_err());
+    catalog.crates.get_mut("x").unwrap().features.clear();
+    catalog.crate_rules.clear();
     let paused = mirror::sync(
         &catalog,
         &source,
@@ -635,7 +668,7 @@ fn crate_directory_prune_keeps_paused_previous_and_refuses_stale_disk() {
         [mirrors[1].canonicalize().unwrap()]
     );
     assert!(retention::apply(&plan, false).is_err());
-    let changed = mirrors[1].join("cargo/crates/x/x-1.0.0.crate");
+    let changed = mirrors[1].join("cargo/crates/x/x-2.0.0.crate");
     std::fs::OpenOptions::new()
         .write(true)
         .open(&changed)
@@ -740,4 +773,108 @@ fn missing_root_features_and_transitive_failures_have_structured_rule_context() 
     assert_eq!(report["kind"].as_str(), Some("missing_feature"));
     assert_eq!(report["package"].as_str(), Some("y"));
     assert_eq!(report["requirement"].as_str(), Some("1"));
+}
+
+#[test]
+fn historical_cohorts_cannot_form_an_incomplete_combined_cargo_index() {
+    use mirror::{Approval, FetchOptions};
+    use sha2::{Digest, Sha256};
+    struct Registry(BTreeMap<String, Vec<u8>>);
+    impl CrateSource for Registry {
+        fn index(&self, name: &str, _: usize) -> Result<Vec<u8>> {
+            Ok(self.0.get(name).ok_or("missing fixture index")?.clone())
+        }
+        fn archive(
+            &self,
+            _: &str,
+            _: &str,
+            out: &mut dyn Write,
+            offset: u64,
+            _: u64,
+        ) -> Result<Transfer> {
+            out.write_all(&b"payload"[offset as usize..])?;
+            Ok(Transfer::Complete)
+        }
+    }
+    let checksum = hex::encode(Sha256::digest(b"payload"));
+    let record = |name: &str,
+                  version: &str,
+                  deps: serde_json::Value,
+                  features: serde_json::Value| {
+        [serde_json::to_vec(&json!({"name":name,"vers":version,"deps":deps,"features":{},"features2":features,"v":2,"cksum":checksum,"yanked":false})).unwrap(), vec![b'\n']].concat()
+    };
+    let mut source = Registry(BTreeMap::from([
+        (
+            "a".into(),
+            record(
+                "a",
+                "1.0.0",
+                json!([{"name":"b","req":"1","features":["extra"]}]),
+                json!({}),
+            ),
+        ),
+        (
+            "b".into(),
+            record("b", "1.0.0", json!([]), json!({"extra":[]})),
+        ),
+    ]));
+    let catalog = Catalog::parse("[crates]\na='=1.0.0'\n[crate-policy]\nhosts=['x86_64-unknown-linux-gnu']\ntargets=['x86_64-unknown-linux-gnu']\n[crate-output]\nbase-url='https://mirror.example/first'\n").unwrap();
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let old = mirror::fetch(
+        &plan,
+        &source,
+        &FetchOptions {
+            output: dir.path().join("first"),
+            resume: false,
+            previous: None,
+        },
+        &Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+    )
+    .unwrap();
+    source.0.get_mut("b").unwrap().extend(record(
+        "b",
+        "1.1.0",
+        json!([{"name":"z","req":"1","optional":true}]),
+        json!({"extra":["dep:z"]}),
+    ));
+    source
+        .0
+        .insert("z".into(), record("z", "1.0.0", json!([]), json!({})));
+    let mut new = catalog;
+    let dependency = new.crates.remove("a").unwrap();
+    new.crates.insert(
+        "b".into(),
+        rust_mirror::crates::catalog::Dependency {
+            version: "=1.1.0".into(),
+            ..dependency
+        },
+    );
+    new.crate_output.base_url = "https://mirror.example/second".into();
+    // Each cohort alone works. Together a -> newest b/extra would need unmirrored z.
+    let current = mirror::plan(&new, &source, None, false).unwrap();
+    assert_eq!(current.versions.len(), 1);
+    let error = mirror::plan(&new, &source, Some(&old.mirror), false).unwrap_err();
+    assert_eq!(
+        rust_mirror::error_kind(error.as_ref()),
+        rust_mirror::ErrorKind::Invalid
+    );
+    mirror::Inventory::load(&old.mirror).unwrap();
+}
+
+#[test]
+fn malformed_generation_hosts_ports_are_refused_before_any_archive_call() {
+    let (mut catalog, source) = fixture();
+    for base in [
+        "https://[invalid]/x",
+        "https://mirror.example:70000/x",
+        "https://mirror.example:bad/x",
+        "https://mirror.example:0/x",
+    ] {
+        catalog.crate_output.base_url = base.into();
+        assert!(mirror::plan(&catalog, &source, None, false).is_err());
+    }
+    assert_eq!(source.archives.load(Ordering::SeqCst), 0);
 }

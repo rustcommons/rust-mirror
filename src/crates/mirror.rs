@@ -281,6 +281,17 @@ fn base_url(catalog: &Catalog) -> Result<String> {
             "crate output URL must be credential-free with a safe absolute path",
         ));
     }
+    // Parse using the already approved HTTP stack without making a request or
+    // consulting environment proxies. Character filtering alone cannot validate ports/IPv6.
+    let parsed = ureq::AgentBuilder::new()
+        .try_proxy_from_env(false)
+        .build()
+        .get(value)
+        .request_url()
+        .map_err(|_| invalid("crate output URL has an invalid host or port"))?;
+    if parsed.port() == Some(0) {
+        return Err(invalid("crate output URL needs a nonzero port"));
+    }
     Ok(value.into())
 }
 fn records(bytes: &[u8]) -> Result<Vec<(usize, Record, Vec<u8>)>> {

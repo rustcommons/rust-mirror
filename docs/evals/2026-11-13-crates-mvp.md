@@ -1,4 +1,4 @@
-# Crate mirroring MVP qualification in progress
+# Crate mirroring MVP qualification
 
 Phase 1 implementation checkpoint: `f7c7453` on `feat/crates-mvp`. This is
 unreleased development source, not a qualification of published 0.3.0 or a release
@@ -52,7 +52,7 @@ pruning/paused predecessor protection. Existing 31 retention tests also pass.
 Clippy over all targets and denied-warning rustdoc passed before the checkpoint.
 These checks do not substitute for process termination, platform clients or Nexus.
 
-Still required: exact-head CI including Windows HTTPS Cargo clients (macOS when
+At that initial checkpoint, still required: exact-head CI including Windows HTTPS Cargo clients (macOS when
 practical), killed-process recovery on Linux/Windows, actual disposable Nexus Raw
 publication/client consumption, final link/render/source checks, package audit and
 full repository checks. No actual Nexus result is claimed here. No production Nexus
@@ -79,4 +79,61 @@ The actual isolated Nexus Raw publication/client step in this run succeeded. Its
 artifact upload then failed because the evidence directory was root-owned. The
 workflow now returns ownership of only its own completed proof directory to the
 runner so sanitized evidence can be retained; a fully green run with those records
-is still required. It does not change server permissions or production data.
+was required and is recorded below. It does not change server permissions or production data.
+
+## Qualified runtime source and complete MVP gates
+
+Runtime implementation `cf3ee3b00017a3d59ec672147add577f3212c136` passed the
+[MVP qualification matrix](https://github.com/rustcommons/rust-mirror/actions/runs/43382062984),
+[Linux/Windows core checks](https://github.com/rustcommons/rust-mirror/actions/runs/43382062979)
+and [native/Cargo fixtures](https://github.com/rustcommons/rust-mirror/actions/runs/43382063100).
+The [trimmed machine-readable record](crates-mvp-qualification.json) preserves
+exact metrics, schema-4 publication summary, proof cases and resource cleanup.
+Final documentation/test-only descendants retain this runtime evidence; their
+exact review ref and CI are reported in the PR.
+
+- All 100 dated roots pass full/filtered Cargo conformance; native and Cargo union
+  contain 186 versions and **45,125,358 archive bytes** each: **0% archive-byte
+  overfetch**. Archive hashes/lengths are rechecked independently by the measurement
+  script. Plan ID `a0e3a7544fa8389d271312650cdc02d9b3534e39ed3f4923e5191f4eeef34256`;
+  inventory `2c7f228cf9bee1bdef7c31543577913064b4ca52f8c861815bbbf297e2ad9561`.
+- Linux, Windows and macOS clients pass saved-preview consent, real HTTPS Cargo
+  fetch/build with an unchanged lock and populated offline run. Untrusted CA,
+  missing/corrupt archives and fresh offline use refuse. Only itoa is built in these
+  client cases; the 100-root resolution/byte corpus is a separate scope.
+- On all three systems, the actual CLI survives hard process termination and
+  cooperative stdin cancellation by preserving private initialized state; explicit
+  resume uses a nonzero Range and verifies the final SHA-256. Retry-After has a typed
+  notice and heartbeats continue while reads are blocked. Fixture bytes are synthetic.
+- Actual disposable Nexus Raw schema-4 publication verifies four files and 15,025
+  GET bytes with the inventory marker last. Repeated publication writes nothing,
+  server redeployment refuses overwrite, scoped auth/TLS controls pass, and a fresh
+  isolated **Linux** Cargo client fetches/builds via that actual backend. Inventory:
+  `c42420c463bd0c9847d81ac811bb1731ae368a84dc5490b132bb2f2fb48e69ac`.
+  The namespace has only loopback, external connection refuses, and the owned
+  container and volume were removed. This is the named legacy test image with
+  temporary TLS termination, not production/Community Edition/native-Nexus-TLS proof.
+- Local full checks at that runtime source pass 166 Rust tests (none ignored), 26
+  Python tests, formatting, Clippy over all targets and denied-warning rustdoc.
+  Follow-up tests strengthen pinned-feature/paused-generation protection and reject
+  a historical/current index combination requiring an unmirrored feature edge.
+  The conservative combined-index gate may refuse such mixes; it does not silently
+  drop history or claim unrestricted Cargo resolver equivalence.
+
+## Package and documentation audit
+
+The clean local development package at `cf3ee3b` was verified by Cargo 1.90 on
+AArch64 Linux. SHA-256:
+`9983d6648c19551f69db47ace8b1b7b7e4e91824c3aef5b265093f57b68bcf3c`.
+All 38 source/package files (including Cargo.toml.orig, lock, README and changelog)
+match that Git revision byte-for-byte; normalized Cargo.toml and VCS metadata are
+Cargo-generated. This is **not** the immutable published 0.3.0 archive and must not
+be uploaded as 0.3.0. Later packaged-documentation edits require their own refreshed
+clean package audit before handoff. Historical release records remain unchanged.
+
+Maintained commands/options, source claims, requirement links, Markdown links and
+rendering are checked together. `ROM-REQ-049`/`050` retain their identifiers. No new
+Rust dependency, version bump, package publication, tag, GitHub Release, production
+server write/delete or automatic activation is part of this work. Private registry
+identities/authenticated Cargo readers, lockfile import, in-generation compaction,
+workspace cleanup and remote pruning retain their documented deferred boundaries.

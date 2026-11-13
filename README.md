@@ -37,7 +37,7 @@ prefix and does not activate Nexus routing. Start with a disposable local setup.
 | [Changelog](https://github.com/rustcommons/rust-mirror/blob/main/CHANGELOG.md) | Release history |
 
 The [crate MVP](https://github.com/rustcommons/rust-mirror/blob/main/docs/CRATES.md)
-is under qualification in development source; published 0.3.0 has no crate registry
+is implemented only in development source; published 0.3.0 has no crate registry
 mirroring. Scheduling, in-generation compaction and Nexus pruning remain deferred.
 Upstream signatures are preserved, not independently verified. Native SDKs and
 production server policy remain administrator responsibilities. See the guides for

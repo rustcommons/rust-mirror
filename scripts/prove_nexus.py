@@ -305,6 +305,15 @@ def prove(snapshot, evidence, password_file, nexus_port, allow_raw_mime_types=Fa
             os.environ["NEXUS_USERNAME"] = publisher
             os.environ["NEXUS_PASSWORD"] = publisher_password
             try:
+                if crate_mode:
+                    before_preflight = sum(r["method"] == "PUT" for r in requests)
+                    checked = subprocess.run([str(publisher_cli), "publish", "--preflight", "--source", str(snapshot), "--base-url", base, "--ca-file", str(ca_file)], capture_output=True, timeout=180)
+                    if checked.returncode:
+                        raise RuntimeError("native schema-4 preflight failed")
+                    result["preflight"] = tomllib.loads(checked.stdout.decode())
+                    if result["preflight"]["schema"] != 4 or sum(r["method"] == "PUT" for r in requests) != before_preflight:
+                        raise RuntimeError("schema-4 preflight wrote content or returned the wrong schema")
+                    case("native_schema4_no_write_preflight", files=result["preflight"]["files"])
                 result["publication"] = publish_snapshot(snapshot, base, ca_file)
                 case("authenticated_snapshot_publication_and_get_hashes", files=result["publication"]["files"])
                 before = sum(r["method"] == "PUT" for r in requests)

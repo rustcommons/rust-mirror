@@ -649,7 +649,7 @@ previous complete cache. See the [cache contract](NETWORK.md#release-discovery-a
 
 ## Crate mirroring MVP (development source)
 
-These commands are under qualification and are absent from published 0.3.0.
+These commands are implemented in development source and are absent from published 0.3.0.
 Use a dedicated [crate catalog](CRATES.md); native planning never invokes Cargo.
 All accept protocol-1 `--events jsonl`; network flags apply to plan/fetch/sync.
 

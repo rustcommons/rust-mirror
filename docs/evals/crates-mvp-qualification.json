@@ -1,0 +1,136 @@
+{
+  "qualified_runtime_source": "cf3ee3b00017a3d59ec672147add577f3212c136",
+  "mvp_ci": "https://github.com/rustcommons/rust-mirror/actions/runs/43382062984",
+  "core_ci": "https://github.com/rustcommons/rust-mirror/actions/runs/43382062979",
+  "phase0_ci": "https://github.com/rustcommons/rust-mirror/actions/runs/43382063100",
+  "corpus": {
+    "plan_id": "a0e3a7544fa8389d271312650cdc02d9b3534e39ed3f4923e5191f4eeef34256",
+    "inventory_sha256": "2c7f228cf9bee1bdef7c31543577913064b4ca52f8c861815bbbf297e2ad9561",
+    "cargo_roots": 100,
+    "native_versions": 186,
+    "cargo_union_versions": 186,
+    "native_archive_bytes": 45125358,
+    "cargo_union_archive_bytes": 45125358,
+    "extra_archive_bytes": 0,
+    "archive_byte_overfetch_percent": 0.0,
+    "scope": "Verified archive payload lengths; metadata, caches and filesystem blocks excluded"
+  },
+  "nexus": {
+    "status": "passed",
+    "scope": "Disposable actual Nexus Raw hosted, with a temporary TLS reverse proxy",
+    "snapshot_schema": 4,
+    "inventory_sha256": "c42420c463bd0c9847d81ac811bb1731ae368a84dc5490b132bb2f2fb48e69ac",
+    "publication": {
+      "files": 4,
+      "remote_bytes_verified": 15025,
+      "inventory_sha256": "c42420c463bd0c9847d81ac811bb1731ae368a84dc5490b132bb2f2fb48e69ac",
+      "schema": 4
+    },
+    "cases": [
+      {
+        "case": "actual_nexus_rest_ready",
+        "passed": true,
+        "server": "Nexus/3.76.1-01 (OSS)"
+      },
+      {
+        "case": "raw_hosted_no_redeploy",
+        "passed": true,
+        "policy": "ALLOW_ONCE"
+      },
+      {
+        "case": "scoped_publisher_and_read_only_anonymous_roles",
+        "passed": true
+      },
+      {
+        "case": "anonymous_upload_refused",
+        "passed": true,
+        "status": 401
+      },
+      {
+        "case": "wrong_password_refused",
+        "passed": true,
+        "status": 401
+      },
+      {
+        "case": "publisher_cross_repository_write_refused",
+        "passed": true,
+        "status": 403
+      },
+      {
+        "case": "untrusted_ca_refused",
+        "passed": true
+      },
+      {
+        "case": "wrong_hostname_refused",
+        "passed": true
+      },
+      {
+        "case": "strict_mime_accepts_original_crate_archive",
+        "passed": true,
+        "status": 201
+      },
+      {
+        "case": "authenticated_snapshot_publication_and_get_hashes",
+        "passed": true,
+        "files": 4
+      },
+      {
+        "case": "repeat_publication_refuses_before_put",
+        "passed": true
+      },
+      {
+        "case": "nexus_server_redeploy_refused_and_original_retained",
+        "passed": true,
+        "status": 400
+      },
+      {
+        "case": "missing_artifact_returns_404",
+        "passed": true,
+        "status": 404
+      },
+      {
+        "case": "anonymous_cross_repository_read_refused",
+        "passed": true,
+        "status": 401
+      },
+      {
+        "case": "actual_nexus_cargo_https_fetch_build_locked_and_negative_controls",
+        "passed": true
+      }
+    ],
+    "tls": "Verified temporary CA/IP SAN reverse proxy; actual namespace-local Nexus Raw backend",
+    "limits": [
+      "One Linux Cargo itoa client, not every corpus crate compiled",
+      "Only the recorded disposable legacy Nexus image",
+      "Anonymous scoped read, not authenticated Cargo clients",
+      "No production configuration, activation or deletion"
+    ]
+  },
+  "nexus_cleanup": {
+    "status": "passed",
+    "proof_exit": 0,
+    "container_removed": true,
+    "volume_removed": true,
+    "image": "docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09",
+    "image_id": "sha256:3a93fe55b65da099fcd1cb4a685ad882efe45d521affc342c700f395d9d27645",
+    "image_digests": [
+      "sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09"
+    ]
+  },
+  "local_checks": {
+    "rust_tests": 166,
+    "python_tests": 26,
+    "ignored_rust_tests": 0,
+    "fmt": true,
+    "clippy_all_targets_deny_warnings": true,
+    "rustdoc_deny_warnings": true,
+    "package_verified": true
+  },
+  "limits": [
+    "Exact dated 100-root corpus with default features; no universal Cargo equivalence claim",
+    "Per-platform real Cargo build is itoa, not all 100 crates or foreign targets",
+    "Nexus client proof is Linux with temporary verified TLS proxy and namespace-local legacy Nexus Raw",
+    "Killed/cancelled transfer fixture uses synthetic opaque bytes",
+    "No production Nexus changes, package publication, version bump, tag or release"
+  ]
+}
