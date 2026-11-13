@@ -1,10 +1,11 @@
 # Curated crate mirroring design
 
-**Owner review draft, 2026-11-12. Design only.** rust-mirror 0.3.0 mirrors
+**Owner review draft, revised 2026-11-13 for decisions dated 2026-11-12.** rust-mirror 0.3.0 mirrors
 Rust toolchains, not Cargo registries. None of the commands, configuration extensions
-or library items proposed here exists yet. Approval of this document would select a
-design; it would not authorize dependencies, implementation, publication, or writes
-to a real Nexus. See [requirements](REQUIREMENTS.md) and [roadmap](ROADMAP.md).
+or library items proposed here exists yet. The owner authorized native Phase 0 and direct `semver`; `serde_json` was approved
+earlier. Broader implementation, publication and real Nexus writes remain outside
+this authorization. No external or downloaded Cargo is allowed at runtime, and
+Cargo must not be embedded as a library. Cargo is a CI conformance oracle only. See [requirements](REQUIREMENTS.md) and [roadmap](ROADMAP.md).
 
 ## Purpose and boundaries
 
@@ -117,57 +118,87 @@ import command/parser is included in this proposal's MVP.
 
 ## 2. Dependency closure and resolver
 
-### Decision: Cargo resolves; planning controls its inputs and I/O
+### Decision: native closure plus bounded consistency search
 
-Use an installed, explicitly selected Cargo executable as the initial resolution
-engine, not a new Cargo library dependency or a handwritten greedy resolver. Record
-its exact version and executable identity, resolver edition, policy and index-input
-hashes in the frozen plan. The library owns the subprocess; the GUI adds no resolver
-logic. This is a proposed new planning prerequisite requiring owner acceptance.
-Fetch/replay of an already frozen plan must not require Cargo or invoke resolution.
+Resolution is built into rust-mirror. No external Cargo executable, managed Cargo
+installation, Cargo library, or third-party solver is part of the runtime. Use the
+approved `semver` crate for Cargo-style requirements and `serde_json` for index JSON.
+The goal is a supply set with a coherent solution for each selected root/profile,
+not byte-for-byte agreement with Cargo's preferred lockfile. Cargo remains a
+qualification oracle in CI only, never a planning subprocess.
 
-Resolve each selected exact root/profile in its own synthetic project with the
-root as a registry dependency. Union the resulting resolved versions and dependency
-edges. Do not combine all catalog entries into one Cargo workspace. Each witness
-records a coherent solution; cross-root combinations remain the consuming project's
-responsibility. Cargo can backtrack and unify versions; independently taking the
-newest match for every edge is insufficient. See [Cargo resolution](https://doc.rust-lang.org/cargo/reference/resolver.html).
+Start with conservative edge closure: for each encountered normal/build requirement
+on every platform, choose its newest eligible non-yanked version with the requested
+features, then repeat for that version's activated edges. Deduplicate payloads but
+retain all reasons. This is a useful starting set, **not a completeness proof**.
 
-Run only `cargo generate-lockfile` in a private temporary project and isolated
-`CARGO_HOME`, outside user configuration discovery. No build, test, install,
-`cargo metadata` download, build script or proc-macro execution belongs in planning.
-Remove inherited Cargo overrides, proxies, credentials and source configuration;
-provide only the intended resolver configuration. Do not execute a Cargo binary
-named by an untrusted catalog. Resolve its location through explicit application
-configuration and display its identity.
+For stable versions with interval requirements and no additional constraints, if
+all requirements have a nonempty intersection, the least of their individual maxima
+lies in that intersection and is its maximum. This argument does not extend to all
+Cargo candidate sets. Two explicit counterexamples must be regression fixtures:
 
-Cargo's only registry endpoint is a loopback sparse **metadata broker** owned by
-the backend. It retrieves only requested crates.io index files through
-`NetworkOptions`, saves their original bytes, and serves a bounded, frozen view.
-Its generated `dl` endpoint refuses every archive request. Empty/synthetic source
-files exist only for the local wrapper; no real crate archive is unpacked. It never forwards arbitrary
-URLs. This avoids relying on Cargo's private cache format and keeps proxy secrets
-inside the existing backend network boundary. Keep the broker loopback-only and
-scope its lifetime to the planning session; it is not a mirror server feature.
+- Feature availability: `x` 1.3 has feature `a`, 1.2 has `b`, and 1.1 has both.
+  Two paths requiring `x = "1"` with `a` and `b` select 1.3 and 1.2 independently.
+  Cargo must unify compatible 1.x uses; 1.1 is the missing joint candidate.
+- Prerelease eligibility: index versions are 1.1.0, 1.2.0-alpha, 1.3.0-alpha.
+  Requirements `>=1.0.0, <1.2.0-zzz` and `>=1.0.0, <1.3.0-zzz` independently
+  select the two different prereleases. Each requirement excludes the other's
+  prerelease; their common stable candidate 1.1.0 is absent from that starting set.
+  Test each requirement separately with `VersionReq::matches`, never concatenate
+  comparators: doing so can incorrectly union prerelease eligibility.
 
-The inspected Cargo implementation resolves and writes a lockfile separately from
-package downloading; this supports the approach, but does not qualify it for this
-repository. [Cargo generate-lockfile source](https://github.com/rust-lang/cargo/blob/0a2d4c697121839929f080e539d3ccac11e4375d/src/ops/cargo_update.rs)
-and [resolve/download separation](https://github.com/rust-lang/cargo/blob/0a2d4c697121839929f080e539d3ccac11e4375d/src/ops/resolve.rs)
-are the inspected references. The first implementation gate must prove **zero
-archive requests** with the chosen Cargo release. An unexpected payload request
-fails planning; do not weaken the rule to make the subprocess succeed. The ordinary
-Cargo command is documented in [generate-lockfile](https://doc.rust-lang.org/cargo/commands/cargo-generate-lockfile.html).
+Use a bounded, deterministic native backtracking consistency search for each exact
+root/profile, with candidates ordered newest first. It must track requirements and
+feature unions per package/compatibility class, Cargo-compatible version unification,
+and one version per native `links` name. Choices activate that version's own feature
+and dependency graph; retract conditional constraints when backtracking rather than
+leaving constraints from discarded versions. Never silently replace an exact root.
+Search may add an older candidate and its closure from already captured index
+metadata when the initial edge set is insufficient. Every addition has a reason,
+counts against the preview/bounds and requires the same whole-plan approval.
+
+Replay the resulting witness using only the proposed filtered index, without live
+network or archives. On contradiction, unsupported semantics or exhausted search
+budget, refuse the plan with structured constraints; never label independent edge
+satisfaction as a successful consistency check. No PubGrub/other solver crate is
+approved. If fixtures or corpus evidence show a reliable native search cannot be
+maintained within this scope, report the failing case and request a solver decision
+rather than adding a dependency or weakening the gate.
+
+This is an existence goal for the declared profiles, not a formal proof of every
+Cargo release's resolver behavior. A native witness is necessary; CI conformance
+against real Cargo is an additional blocking release gate. Unsupported constructs
+fail explicitly until the native model and conformance agree. The inspected
+[Cargo resolver behavior](https://doc.rust-lang.org/cargo/reference/resolver.html)
+and [Cargo resolution source](https://github.com/rust-lang/cargo/blob/0a2d4c697121839929f080e539d3ccac11e4375d/src/ops/resolve.rs)
+are references, not embedded dependencies.
+
+### Native feature propagation
+
+Compute feature closure separately for each candidate version. Start with declared
+features and `default` only when enabled and defined. Merge feature requests from
+all active incoming edges, including dependency declarations' defaults/features.
+Process named feature expansion, explicit `dep:alias` activation, implicit optional
+features unless suppressed by `dep:`, strong `alias/feature` forwarding, and weak
+`alias?/feature` forwarding only after that optional dependency becomes active.
+Revisit weak forwarding when another path activates the dependency. Aliases address
+feature edges; the index `package` value supplies canonical package identity.
+
+Merge index `features` and schema-2 `features2` according to Cargo's index format;
+refuse unknown required schemas. All-platform normal/build edges stay in lock-style
+coverage; dev edges do not propagate. Feature growth may invalidate the currently
+selected version and require backtracking to one that offers the union. Never
+reuse another version's feature definitions or activate all optional dependencies.
 
 ### Features, platforms and dependency kinds
 
 | Dimension | Proposed MVP decision and consequence |
 | --- | --- |
-| Features | Honor each root's declared defaults and enabled features. Follow Cargo's feature propagation, including optional dependencies, `dep:` and weak forwarding. Do not activate all optional dependencies of all transitive crates. Missing requested features fail that root. |
-| Optional dependencies | Include the optional edges activated in the resolution witness, plus everything Cargo needs for its lock resolution. A later project enabling an uncurated feature may need additional crates. The preview must state this coverage boundary. |
-| Targets | Record selected host/compiler and compilation target pairs, but retain Cargo's complete all-platform lock closure in the MVP. Do not strip an index dependency or omit a locked archive merely because it is inactive on the mirror machine. This conservative overfetch avoids metadata-only index entries for unavailable payloads. |
+| Features | Honor each root's declared defaults and enabled features. Model Cargo's feature propagation, including optional dependencies, `dep:` and weak forwarding. Do not activate all optional dependencies of all transitive crates. Missing requested features fail that root. |
+| Optional dependencies | Include the optional edges activated in the resolution witness, plus the native all-platform consistency witness. A later project enabling an uncurated feature may need additional crates. The preview must state this coverage boundary. |
+| Targets | Record selected host/compiler and compilation target pairs, but retain the native complete all-platform normal/build closure in the MVP. Do not strip an index dependency or omit a locked archive merely because it is inactive on the mirror machine. This conservative overfetch avoids metadata-only index entries for unavailable payloads. |
 | Build dependencies | Include their closure and host-side proc-macro/build requirements. A host is not interchangeable with a target; cross-compilation does not remove host dependencies. |
-| Development dependencies | Exclude a registry root's own tests/examples/dev dependencies: it is a dependency of the synthetic project, not a workspace member. Consumer-project dev tools must be explicit catalog roots. |
+| Development dependencies | Exclude a registry root's own tests/examples/dev dependencies: model it as a registry dependency, not a workspace member. Consumer-project dev tools must be explicit catalog roots. |
 | Compiler compatibility | Freeze the Cargo/resolver and declared Rust-version context; expose upstream `rust_version` where present. Reject a selected version explicitly exceeding a configured hard compiler ceiling; unknown values remain warnings. Resolution alone proves neither compilation nor native SDK availability. |
 
 Cargo distinguishes lockfile resolution from build-time features; resolver 2 also
@@ -182,24 +213,25 @@ is also deferred until actual Cargo client probes establish safety.
 
 ### Explosion control and the completeness gate
 
-For each root version, use Cargo's newest-compatible **coherent solution**, allowing
-its necessary backtracking and multiple incompatible dependency versions. Union the
-witnesses; do not download every version matching every transitive requirement.
-Keep all versions already retained in the previous generation and their recorded
-closures. A new root/profile requires a new witness; unchanged retained data does
-not acquire a claim of fresh resolution merely by being copied.
+For each root/profile, combine conservative newest-per-edge coverage with a
+native coherent witness, permitting older candidates when unification, exact pins,
+feature availability or `links` requires them. Incompatible version classes may
+coexist; compatible uses must unify as Cargo requires. A `links` conflict may force
+backtracking in an upstream package choice; checking only dependency requirements
+at the leaf is insufficient. An unsatisfiable root is a diagnostic, not permission
+to ignore `links`, widen a requirement or silently drop a feature.
 
-Before approving a plan, replay every new witness against the **filtered proposed
-index**, which contains only planned and retained versions. If this cannot recreate
-a coherent solution, block the plan with the root/constraint explanation. Do not
-emit a plausible but incomplete manifest or automatically expand to all upstream
-versions. A union may cause Cargo to choose a different version; the replay gate
-must verify that any chosen version and closure is available, not promise identical
-selection for arbitrary projects. Client `--locked` cases need explicit pin coverage.
+Keep every previously retained version and its recorded closure. A new root/profile
+requires a new witness; copying an old witness does not establish fresh resolution.
+Replay each new root against only the filtered proposed index. Do not mirror all
+matching upstream versions as a fallback, and do not promise arbitrary combinations
+of independently curated roots. Explain all conservatively included alternatives,
+including versions not used by the witness. Existing client locks require explicit
+pin coverage. Root-to-edge explanations come from the native graph, not Cargo text.
 
 Bound root versions, crates, resolved versions, edges, witness count, metadata
 bytes, per-file bytes, total final bytes, transferred bytes, planning time and
-subprocess output. Report the first exceeded bound and its inclusion chain.
+diagnostic output. Report the first exceeded bound and its inclusion chain.
 Counts and paths are exact in the preview. Archive lengths come from opt-in HEAD
 requests: distinguish known total, unknown count, retained bytes and additional
 transfer estimate. A complete byte total is impossible when lengths are unknown;
@@ -211,7 +243,7 @@ transfer, not the logical final-generation budget. Never prune to fit a budget.
 
 Exclude yanked versions from new floating selections. The MVP refuses a new yanked
 pin even if its archive is reachable: Cargo does not normally select it for a new
-lock. Supporting a fresh historical yanked pin requires separate resolution design.
+lock; the native planner must use the same refusal. Supporting a fresh historical yanked pin requires separate resolution design.
 An already verified, retained yanked version and its frozen closure can remain for
 existing locks; show its state prominently, without changing upstream flags.
 
@@ -403,8 +435,8 @@ rehashing. No shared writable cache or hardlink mutation is implied.
 Reuse the [resume contract](RESUMING.md): explicit resume, exclusive OS writer lock,
 private `.download` state, exact config/previous/plan identity, bounded validated
 ranges, whole-file hashes, new immutable completed output and no live metadata
-refresh on resume. Cancellation checkpoints cover broker I/O, resolver subprocess,
-copy/hash/download loops; stop and reap only the subprocess we started. Kill/resume
+refresh on resume. Cancellation checkpoints cover broker I/O, native closure/search,
+copy/hash/download loops; search state and diagnostics must be bounded. Kill/resume
 must preserve initialized frozen state. The library returns typed errors and a
 structured report rather than relying on stderr.
 
@@ -440,8 +472,8 @@ Accept owned/borrowed typed configuration and explicit `NetworkOptions`, existin
 public `Error`/`ErrorKind`. Inspection/explanation is local and cheap. Freeze serializable
 plans with a schema and digest; never make a GUI keep opaque in-memory state just
 to resume. Publish/prune integrations must preserve their existing controlled APIs.
-The external Cargo prerequisite belongs to planning options; do not read arbitrary
-program names, homes or environments from a saved plan when replaying it.
+No public runtime API accepts a Cargo executable or invokes a solver subprocess.
+Cargo executable selection exists only in the CI qualification harness.
 
 [Protocol 1](EVENTS.md) framing stays unchanged: hello first, independent heartbeat
 with current stage/operation during Cargo/network/hash waits, artifact/bytes/hashing
@@ -453,7 +485,7 @@ add schema-tagged `roots`, `versions`, `reasons`, `coverage`, `size_estimate` an
 `warnings`. Reuse `invalid`, `budget`, `integrity`, `network`, `tls`, `auth`,
 `locked`, `resume_mismatch`, `cancelled` and `remote_exists`; include structured
 constraint context without asking clients to parse Cargo prose. Bound and redact
-subprocess output. Land the actual additive protocol/API specification before GUI
+diagnostic output. Land the actual additive protocol/API specification before GUI
 implementation; this draft does not silently amend EVENTS.md or promise API stability.
 
 GUI pages needed: organization catalog editor with paste/validation/diff; per-alias
@@ -468,17 +500,16 @@ validation must surface unsupported git/path/registry fields before starting a r
 
 | Decision needing approval | Recommendation and reason |
 | --- | --- |
-| Coverage versus size | MVP declared features plus all-platform Cargo lock closure; other feature profiles need catalog entries. Confirm whether all-optional coverage is required for the first release instead. |
-| Cargo prerequisite/client baseline | Accept an explicitly installed/pinned Cargo for planning, initially qualify Cargo 1.90/resolver 2. Decide additional client versions/resolver 3/MSRV contexts before promising coverage. Fetching an existing plan stays library-only. |
+| Coverage versus size | Approved: declared features only, with all-platform normal/build closure; other feature profiles need catalog entries. |
+| Resolution/client baseline | Approved: built-in resolution, no runtime Cargo or Cargo library. Cargo 1.90/resolver 2 is an initial CI oracle; additional client/resolver/MSRV baselines need qualification. |
 | Capacity and pacing | Choose actual organization caps, unknown-length policy, latest-N default, transfer concurrency and contact string. No numeric storage capacity is approved by this design. |
 | Registry access | MVP crates.io only and read-only anonymous internal HTTPS clients. Private/alternate registries, authenticated readers and native Nexus integration are separate decisions. |
-| Approval/licensing | Decide whether dependency closure is automatically admitted or each newly discovered crate needs approval. Recommend explicit preview approval of the entire closure. Obtain organization redistribution/license review; retaining upstream archives does not grant additional rights. |
-| Dependencies | Approve needed packages only after a scoped implementation proposal: likely direct `semver` for Cargo requirements; possibly a Cargo manifest-schema parser and JSON parser. Existing `toml`/serde/hash/network crates can be reused. Do not implement semver, manifest compatibility or index JSON with ad hoc string parsing to avoid approval. |
+| Approval/licensing | Approved: one explicit approval of the whole preview per plan, including the explained transitive closure. No per-crate approval step. Obtain organization redistribution/license review; retaining upstream archives does not grant additional rights. |
+| Dependencies | Approved: direct `semver`; earlier `serde_json` approval applies. Reuse existing TOML/serde/hash/network crates. No Cargo library, PubGrub/other solver, tar or flate2 is needed/approved for Phase 0; any further dependency requires a separate decision. |
 
-No implementation dependency is approved or added here. In particular Cargo-as-a-
-process avoids importing Cargo's large unstable Rust API, but it does not remove the
-need to approve parsing dependencies. A source-format-compatible parser may require
-an explicit minimum Cargo/schema policy. Retain existing secret, no-redirect and
+Owner decisions dated 2026-11-12 supersede the original external-Cargo draft.
+Native Phase 0 is authorized; no crate publication or broader implementation is
+implied. Retain existing secret, no-redirect and
 no-real-Nexus-write boundaries.
 
 Before an implementation can claim success, qualification must cover: Cargo syntax
@@ -490,13 +521,33 @@ index-schema and path/case refusal; checksum corruption; killed-process resume a
 locks; new upstream versions versus frozen replay; exact retained index-line bytes;
 partial publication/GET failure and no fallback; local HTTPS sparse client fetches
 on Windows and Unix from isolated homes. Use representative projects with preexisting
-locks and explicit negative controls for missing versions. None of these checks was
-run for this design-only change. Existing toolchain/Nexus evidence does not qualify
+locks and explicit negative controls for missing versions. Phase 0 must record actual results separately from this design; the initial
+design-only revision ran none of these runtime checks. Existing toolchain/Nexus evidence does not qualify
 crate resolution, Cargo clients or the new inventory format.
 
 The phased estimate and deferred work are in [ROADMAP.md](ROADMAP.md). The largest
-technical uncertainty is qualification of isolated metadata-only Cargo resolution
-and filtered-index replay, not file downloading.
+technical uncertainty is native feature/unification/backtracking correctness and
+filtered-index conformance, not file downloading.
+
+## Phase 0 exit evidence
+
+Use a metadata-only native planner for tokio/full, serde, clap/derive, reqwest/default,
+rand 0.8 and 0.9, openssl-sys/native-links cases and a proc-macro-heavy stack.
+Freeze exact roots and index observations, record zero archive requests during
+planning and the complete inclusion graph. In CI, serve the filtered sparse output
+to real Cargo in isolated homes: generate-lockfile for every profile, plus fetch/build
+for cheap synthetic fixtures. Cargo is a test oracle only. Fixtures must cover the
+two counterexamples above, exact pins, yanks, aliases, missing/version-varying
+features, defaults, dep:/weak forwarding, features2, build/dev/target edges, links
+conflicts, backtracking and bounded refusal. Any conformance failure blocks release.
+
+Compare native mirrored version identities against the union of full-index Cargo
+lockfiles for the same exact profiles and metadata observation. Report native count,
+Cargo union count, intersection, native-only count/percentage and missing identities;
+missing identities need not be wrong if another coherent choice exists, but must be
+explained. Also report per-root ratios and metadata bytes. Payload-byte overfetch
+is unknown without HEAD/content sizes and must not be invented from version counts.
+No Phase 0 completion claim is valid without actual green CI and measured numbers.
 
 ## Reference comparison
 

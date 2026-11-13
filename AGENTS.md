@@ -214,12 +214,16 @@ cache corruption/locking. Network config never changes frozen payload identity.
 
 ## Crate mirroring design boundary
 
-The owner requested a design-only crate-mirroring review on 2026-11-12. Maintain
-[the draft design](docs/CRATES-DESIGN.md) and [roadmap](docs/ROADMAP.md), distinguishing
-confirmed catalog/output constraints from proposed implementation choices. No crate
-mirroring implementation, dependency addition or publication is authorized by this
-design task. Cargo.lock import remains future work; existing toolchain behavior,
-common instructions and published evidence remain unchanged.
+The owner approved revised [crate design](docs/CRATES-DESIGN.md) review and native
+Phase 0 on 2026-11-12; maintain the [roadmap](docs/ROADMAP.md). Resolution must be
+built into rust-mirror: no runtime external/downloaded Cargo and no Cargo library.
+Cargo is a CI oracle only. Declared features and one whole-preview approval per plan
+are approved. Direct `semver` is approved; earlier `serde_json` approval applies.
+No PubGrub/other solver dependency is approved; tar/flate2 is not needed now.
+Require bounded native consistency checks, real-Cargo conformance, zero planning
+archive downloads and measured overfetch before claiming Phase 0 complete.
+Cargo.lock import stays future work. Broader implementation and publication are
+not authorized by this Phase 0 task; preserve existing toolchain evidence.
 
 ## User-facing documentation
 
