@@ -91,7 +91,10 @@ fn preview_is_read_only_exact_and_apply_requires_explicit_authority() {
     assert_eq!(plan.generations, roots[1..]);
     assert_eq!(plan.files[0].path, roots[1].join("snapshot.toml"));
     assert_eq!(plan.files[0].bytes, old.len() as u64);
-    assert_eq!(plan.total_bytes, plan.files.iter().map(|f| f.bytes).sum());
+    assert_eq!(
+        plan.total_bytes,
+        plan.files.iter().map(|f| f.bytes).sum::<u64>()
+    );
     assert!(!roots[0]
         .parent()
         .unwrap()

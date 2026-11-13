@@ -29,6 +29,10 @@ a proof: intersecting requirements can lose a needed candidate through prereleas
 eligibility or per-version features. Add bounded native witness search/repair, not a
 runtime Cargo fallback or an unchecked greedy success claim.
 
+Phase 0 work and its bounded local results are tracked in the
+[native resolution record](evals/2026-11-13-native-crates-phase0.md). The exit gate
+still requires the exact-head CI results; this does not authorize the MVP or a release.
+
 ## Deferred crate work
 
 | Item | Boundary and condition for reconsideration |
