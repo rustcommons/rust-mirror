@@ -224,6 +224,7 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
     status, _ = request("PUT", "/repository/"+repo+"/anonymous-write", "x", auth=None, text=True)
     assert status in (401,403)
     case("nexus_server_overwrite_and_anonymous_write_refused_original_retained")
+    client_start = len(requests)
     client_home = root / "client-cargo-home"
     client_home.mkdir()
     (client_home/"config.toml").write_text('[source.crates-io]\nreplace-with="owned-nexus"\n[source.owned-nexus]\nregistry='+json.dumps('sparse+'+base+'/cargo/index/')+'\n')
@@ -236,7 +237,8 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
         (evidence/(name+'.stdout')).write_text(p.stdout)
         (evidence/(name+'.stderr')).write_text(p.stderr)
         assert (project/"Cargo.lock").read_bytes()==lock
-    served_crates = [r["path"] for r in requests if r["method"]=="GET" and r["status"]==200 and r["path"].endswith('.crate')]
+    served_crates = [r["path"] for r in requests[client_start:] if r["method"]=="GET" and r["status"]==200 and r["path"].endswith('.crate')]
+    assert len(served_crates) == 67, "client must fetch every locked registry package"
     assert any('/assert_cmd/' in path for path in served_crates), "dev package not fetched from actual Nexus"
     case("real_windows_cargo_https_fetch_build_and_fresh_target_offline_build", project="sharkdp/hexyl", commit=PROJECT, lock_sha256=LOCK_SHA, dev_dependencies=sorted(manifest['dev-dependencies']), archive_gets=len(served_crates), unchanged_lock=True)
     result["crate_inventory"] = {"schema":5,"sha256":hashlib.sha256((mirror/'snapshot.toml').read_bytes()).hexdigest(),"versions":len(shown['versions']),"archive_bytes":sum(f['bytes'] for f in inventory['files'] if f['path'].endswith('.crate'))}

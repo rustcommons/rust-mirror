@@ -89,6 +89,9 @@ and “Not applicable”. Future ideas are not approved requirements.
 | ROM-REQ-051 | Import standard Cargo.lock formats 1–4 as copied named pin/graph sources unioned with manual rules; typed bounded skips/refusals and diffs; checksum/index integrity, lock-scoped yanks, source-aware preview/explain/retention and real Linux/Windows Cargo qualification. Source: owner next-iteration approval, 2026-11-13. | [Lock import](LOCK-IMPORT.md); [library](../src/crates/lockfile.rs); [protocol additions](EVENTS.md#050-lock-imports-protocol-1); [authorization](../AGENTS.md#050-lock-import-authorization). | [Named iteration evidence](evals/2026-11-13-lock-import.md), [pinned corpus](../tests/fixtures/crates-lock-corpus.json), parser/plan/retention tests and the Linux/Windows real-Cargo workflow. Structured keep reasons and prune-twice correction are included. | Implemented—partial verification; exact named corpus/tool/platform scope only, not arbitrary project/feature/SDK success. Contract PR #36 preceded implementation. The owner-authorized 0.5.0 is published; [postpublication verification](evals/2026-11-13-publication-0.5.0.md) identifies registry payload, docs.rs and installed proofs. No new dependencies. |
 
 
+| ROM-REQ-052 | Qualify native Windows Nexus OSS 3.76.1 with its checksum-verified bundled JRE, real curated crate roots and a real dev-bearing lock, hard-kill/resume, no-write preflight/repeat, overwrite refusal, isolated Windows Cargo HTTPS fetch/build/offline build and owned teardown; cover one Rustup install if practical. Source: owner Windows Nexus task, 2026-11-13. | [Windows runner](../scripts/run_nexus_windows.py); [crate/client proof](../scripts/prove_nexus_windows_crates.py); [workflow](../.github/workflows/nexus-windows.yml); [reproduction](NEXUS-INTEGRATION.md#native-windows-qualification). | [Dated Windows evidence](evals/2026-11-14-windows-nexus.md), complete native run 43561690025, exact source/image/checksum and retained cleanup results. Earlier probe, assertion and native-trust failures are preserved. | Verified (bounded named evidence); real Windows Cargo 1.90/hexyl and one Rustup 1.28.2 minimal install against native Nexus OSS 3.76.1. Not arbitrary crate/server/SSO or air-gap qualification. Linux harness remains unchanged; no runtime fix or release. |
+
+
 
 ## Documentation map
 
@@ -131,6 +134,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 | [0.1.0 publication](evals/2026-11-11-publication.md) | Official archive, actual registry install, docs.rs and live release verification. |
 | [Final Rustup qualification](evals/2026-11-11-rustup-lifecycle.md#final-prepublication-qualification) | Exact native/Nexus/package results and preserved setup failures. |
 | [CHANGELOG.md](../CHANGELOG.md) | Unreleased implementation changes; no fabricated release history. |
+| [Native Windows Nexus](evals/2026-11-14-windows-nexus.md) | Exact native win64/JRE, real Windows Cargo, resume/publication and optional Rustup evidence with cleanup limits. |
 | [Nexus integration proof](NEXUS-INTEGRATION.md) | Explicit disposable test profile, flags, security controls and CE gate. |
 | [Actual Nexus results](evals/2026-11-09-nexus-integration.md) | Dated actual server evidence and preserved failed/held paths. |
 | [LICENSE](../LICENSE) | Existing license, unchanged. |

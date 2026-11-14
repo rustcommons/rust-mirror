@@ -287,6 +287,10 @@ Required evidence, tied to exact revisions, includes:
 - Actual disposable Nexus Raw new-prefix publication with GET verification and a
   Cargo client consuming it. Respect existing scoped image/EULA/no-production rules.
 
+[Native Windows Nexus qualification](evals/2026-11-14-windows-nexus.md) adds a
+checksum-pinned win64/JRE server, real hexyl Cargo client and bounded Rustup proof;
+the original Linux evidence retains its historical scope.
+
 Record staged results as they occur. Open PRs with green appropriate CI; coordinator
 review precedes merges. No new dependency, version bump or publication is implied.
 

@@ -125,3 +125,54 @@ reference helper. [Current results](evals/2026-11-11-rustup-lifecycle.md) identi
 which exact paths passed; no Community Edition or production-instance pass follows.
 See [Rustup lifecycle and explicit activation](RUSTUP.md) and the
 [generation guide](MULTI-VERSION.md).
+
+## Native Windows qualification
+
+The [Windows job](../.github/workflows/nexus-windows.yml) runs Nexus OSS 3.76.1-01
+natively, using the official win64 ZIP and its bundled JRE, rather than Docker.
+The legacy-version/support caveat above still applies. The
+[dated Windows record](evals/2026-11-14-windows-nexus.md) identifies exact source,
+Actions runs, successful/refused cases and limits; historical Linux-only records
+remain historical.
+
+The [runner](../scripts/run_nexus_windows.py) checks both Sonatype's published SHA-256
+sidecar and pinned digest before extracting into a new marked directory. It starts
+`nexus.exe /run` without installing a service or accepting any agreement. A verified
+HTTPS terminator fronts its loopback-only HTTP listener; this tests proxy TLS, not
+Jetty-native TLS. The job keeps a random admin password, rotates it, creates scoped
+publisher/anonymous-reader roles and uniquely named no-redeploy Raw repositories.
+Passwords, Nexus logs/data and PKI private keys are never uploaded.
+
+On a disposable Windows machine with Python 3.12, Git's OpenSSL and the built CLI:
+
+```powershell
+python scripts/run_nexus_windows.py --binary target/debug/rust-mirror.exe `
+  --root C:\Temp\rust-mirror-owned-nexus-new `
+  --evidence C:\Temp\windows-nexus-evidence-new
+```
+
+Both directories must be new. Allow space for the roughly 272 MiB download, extracted Nexus,
+crate/toolchain mirrors, isolated Cargo builds and the fresh minimal Rustup install.
+The Actions job also selects `--with-toolchain`, restricted to disposable GitHub-hosted
+Windows runners. After Cargo's CA-file-only checks, this optional stage imports only
+the temporary public CA into LocalMachine ROOT for Windows Rustup, then removes
+its exact thumbprint and verifies removal. The owned marker permits interruption
+cleanup to retry that removal. It adds a separately named test Raw repository with
+explicit MIME relaxation for unchanged upstream toolchain signatures; the crate
+repository retains strict MIME validation. The production publisher never changes
+server policy. A startup/EULA/content gate refuses instead of accepting terms.
+
+The crate case uses real serde/serde_json/anyhow roots and pinned hexyl 0.16.0 with
+its real dev-dependencies. Its source archive is separate from mirrored registry
+packages. A bounded CONNECT tunnel rate-limits encrypted real upstream traffic for
+an actual Windows process kill; upstream TLS remains end to end and verified.
+Resume reuses the frozen plan and verifies all completed bytes. The Windows Cargo
+client replaces crates.io with the Nexus sparse registry in a fresh CARGO_HOME,
+trusts the test CA through CARGO_HTTP_CAINFO, fetches/builds locked, then builds
+offline into a second fresh target directory. No user Rustup/Cargo homes are used.
+
+Normal exit and the workflow's always-run cleanup delete only the marked owned
+instance/data. A recorded PID must still name that instance's executable before
+its process tree can be stopped. Process/machine interruption can prevent cleanup;
+the workflow retries owned cleanup and a hosted VM is ultimately discarded. No
+Internet/air-gap isolation or arbitrary enterprise Nexus/SSO configuration is claimed.
