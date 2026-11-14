@@ -1,0 +1,35 @@
+name: Native Windows Nexus qualification
+on:
+  pull_request:
+    paths:
+      - 'scripts/run_nexus_windows.py'
+      - '.github/workflows/nexus-windows.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-nexus:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify official bundled-JRE native OSS startup and content gate
+        run: python scripts/run_nexus_windows.py --probe-only --root "${{ runner.temp }}/rust-mirror-owned-nexus" --evidence "${{ runner.temp }}/windows-nexus-evidence"
+      - name: Teardown only owned instance after interruption
+        if: always()
+        run: python scripts/run_nexus_windows.py --cleanup --root "${{ runner.temp }}/rust-mirror-owned-nexus"
+      - name: Save allowlisted proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-windows-nexus
+          path: |
+            ${{ runner.temp }}/windows-nexus-evidence/summary.json
+            ${{ runner.temp }}/windows-nexus-evidence/cleanup.json
+            ${{ runner.temp }}/windows-nexus-evidence/requests.json
+          if-no-files-found: warn
