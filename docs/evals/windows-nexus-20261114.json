@@ -1,0 +1,124 @@
+{
+  "owner_scope_date": "2026-11-13",
+  "execution_date": "2026-11-14",
+  "baseline": "4dba3c8d1ffbf53543142f9ace14afcac702521a",
+  "qualified_branch_source": "536dbd9502d260d50e90b861469801d480781306",
+  "qualified_run": 43561690025,
+  "runner_image": "windows-2025-vs2026",
+  "runner_image_version": "20261103.298.1",
+  "summary": {
+    "status": "passed",
+    "cases": [
+      {
+        "case": "native_oss_start_and_repository_without_eula_acceptance",
+        "passed": true
+      },
+      {
+        "case": "random_admin_rotation_scoped_publisher_and_anonymous_read_only",
+        "passed": true
+      },
+      {
+        "case": "real_catalog_and_dev_dependency_lock_import_archive_free_preview",
+        "passed": true,
+        "plan_id": "1ea10d260a057f7fc540e75d26bd841535d18bd038e7fa53a51f7b0cade00647",
+        "versions": 79
+      },
+      {
+        "case": "actual_windows_hard_kill_mid_archive_and_frozen_resume",
+        "passed": true,
+        "partial_bytes": [
+          19140,
+          31542,
+          65536,
+          27408
+        ],
+        "files": 150
+      },
+      {
+        "case": "native_publish_preflight_no_put_publish_and_repeat_no_put",
+        "passed": true
+      },
+      {
+        "case": "nexus_server_overwrite_and_anonymous_write_refused_original_retained",
+        "passed": true
+      },
+      {
+        "case": "real_windows_cargo_https_fetch_build_and_fresh_target_offline_build",
+        "passed": true,
+        "project": "sharkdp/hexyl",
+        "commit": "abc20a380c8c2d9d76c1976222725d3211cef809",
+        "lock_sha256": "3343803df2472c7602d40214bfc42dff094a28ff0a25a7f02cb72ffffea18b9e",
+        "dev_dependencies": [
+          "assert_cmd",
+          "predicates",
+          "pretty_assertions"
+        ],
+        "archive_gets": 147,
+        "unchanged_lock": true
+      }
+    ],
+    "source": "3394952163cca56042e93461621d17ae7e026b01",
+    "instance": {
+      "bundle_url": "https://download.sonatype.com/nexus/3/nexus-3.76.1-01-win64.zip",
+      "checksum_url": "https://download.sonatype.com/nexus/3/nexus-3.76.1-01-win64.zip.sha256",
+      "sha256": "8522ed370b2689667d4e6bee9414d27c10f263a7e0167af957beca1c6cdb8991",
+      "server": "Nexus/3.76.1-01 (OSS)",
+      "bundled_java": "openjdk version \"17.0.10\" 2024-01-16 LTS\nOpenJDK Runtime Environment Zulu17.48+15-CA (build 17.0.10+7-LTS)\nOpenJDK 64-Bit Server VM Zulu17.48+15-CA (build 17.0.10+7-LTS, mixed mode)",
+      "native_windows": true
+    },
+    "crate_inventory": {
+      "schema": 5,
+      "sha256": "a7f3ec85a97e90ce1b31652e893245c497e4d0bb1895fe2ab936c49dacb92ae1",
+      "versions": 79,
+      "archive_bytes": 18108824
+    },
+    "client": {
+      "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+      "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)\nbinary: rustc\ncommit-hash: 1159e78c4747b02ef996e55082b704c09b970588\ncommit-date: 2025-09-14\nhost: x86_64-pc-windows-msvc\nrelease: 1.90.0\nLLVM version: 20.1.8\n",
+      "source_replacement": true,
+      "ca_only": true,
+      "tls_verification": true,
+      "air_gap_simulation": false
+    },
+    "toolchain": {
+      "covered": true,
+      "rust": "1.90.0",
+      "rustup": "1.28.2",
+      "profile": "minimal",
+      "host": "x86_64-pc-windows-msvc",
+      "same_native_nexus": true,
+      "separate_owned_raw_repository": true,
+      "mime_opt_in": true,
+      "scope": "One fresh minimal Rustup install and rustc version, not the full lifecycle matrix",
+      "native_trust_removed": true
+    }
+  },
+  "cleanup": {
+    "instance_removed": true,
+    "private_keys_destroyed": true
+  },
+  "native_trust_setup": {
+    "store": "LocalMachine ROOT",
+    "sha1": "15B36A0F5073E0737D14ECEBFF7538D7A8A1ADC3",
+    "added": true
+  },
+  "native_trust_cleanup": {
+    "sha1": "15B36A0F5073E0737D14ECEBFF7538D7A8A1ADC3",
+    "removed": true
+  },
+  "client_only_archive_gets_from_retained_trace": 67,
+  "initial_counter_scope": "The first successful summary archive_gets=147 includes publisher verification and overwrite readback. Client-only boundary from retained requests yields 67. The final harness binds the counter/dev assertion to client requests only.",
+  "earlier_runs": {
+    "native_probe": 43560169060,
+    "incorrect_local_root_assertion": 43560561814,
+    "crate_pass_rustup_unknown_issuer": 43560844191
+  },
+  "limits": [
+    "Legacy OSS and bundled JRE compatibility fixture, not a production recommendation",
+    "TLS terminator with loopback HTTP backend, not Jetty TLS",
+    "One hexyl project build plus dev dependency fetching, not all manual roots/features compiled",
+    "One fresh minimal Rustup install, not full lifecycle",
+    "No air-gap or enterprise SSO/server configuration guarantee",
+    "No runtime source, dependency or version change"
+  ]
+}

@@ -250,6 +250,30 @@ payload verification. Keep full verification mandatory before publication/prunin
 See [MVP qualification](docs/evals/2026-11-13-crates-mvp.md) for exact source/run
 identities; do not generalize bounded Cargo-client evidence to every crate/target.
 
+## Native Windows Nexus qualification
+
+On 2026-11-13 the owner approved native Windows qualification against the official
+legacy OSS 3.76.1 win64 bundle and bundled JRE. Use the dedicated
+[Windows runner](scripts/run_nexus_windows.py) and [repeatable job](.github/workflows/nexus-windows.yml);
+keep the Linux container proof unchanged. Verify the pinned published bundle checksum,
+use only fresh marked test state and uniquely named repositories, bind the server/TLS
+terminator to loopback and retain TLS verification. Never accept or bypass an EULA;
+stop and report if this bundle cannot run without acceptance. No external Nexus target,
+production configuration, new dependency, version bump or publication is authorized.
+
+Require real curated roots plus a pinned real project lock with dev-dependencies,
+archive-free preview/approval, Windows hard kill during a real archive and exact resume,
+preflight with no writes, publication, zero-write repeat and server overwrite refusal.
+Use fresh isolated Windows Cargo homes, test-CA-only trust and real HTTPS fetch/build
+plus offline build. The optional Rustup stage may add its exact public test CA to
+LocalMachine ROOT only on a disposable GitHub-hosted runner, after Cargo's CA-file
+proof; require normal/interruption removal evidence. Record its separate bounded
+coverage if exercised. Remove only
+owned processes/data/keys, refuse reused PIDs and unmarked paths, and upload allowlisted
+public evidence only. Keep credentials out of commands/logs/artifacts. A discovered
+runtime defect needs coordinator notification and a separate patch-release decision.
+See [Windows Nexus evidence](docs/evals/2026-11-14-windows-nexus.md).
+
 ## 0.4.0 release authorization
 
 On 2026-11-13 the owner authorized publishing 0.4.0: crate mirroring MVP plus the
