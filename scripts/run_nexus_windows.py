@@ -140,12 +140,13 @@ def nexus(root, evidence):
                 conn.close()
                 if response.status == 200 and (data / "admin.password").is_file():
                     assert "3.76.1" in server, server
-                    yield port, (data / "admin.password").read_text().strip(), {"bundle_url": BUNDLE, "checksum_url": BUNDLE + ".sha256", "sha256": CHECKSUM, "server": server, "bundled_java": (version.stdout + version.stderr).strip(), "native_windows": True}
-                    return
+                    break
             except (OSError, http.client.HTTPException):
                 pass
             threading.Event().wait(1)
-        raise RuntimeError("official win64 Nexus readiness timed out; stop for owner review")
+        else:
+            raise RuntimeError("official win64 Nexus readiness timed out; stop for owner review")
+        yield port, (data / "admin.password").read_text().strip(), {"bundle_url": BUNDLE, "checksum_url": BUNDLE + ".sha256", "sha256": CHECKSUM, "server": server, "bundled_java": (version.stdout + version.stderr).strip(), "native_windows": True}
     finally:
         outcome = cleanup(root)
         if process:
@@ -216,6 +217,7 @@ def main():
     parser.add_argument("--cleanup", action="store_true")
     parser.add_argument("--binary", type=Path)
     parser.add_argument("--probe-only", action="store_true")
+    parser.add_argument("--with-toolchain", action="store_true")
     args = parser.parse_args()
     if platform.system() != "Windows":
         parser.error("native Windows only; no external Nexus endpoint accepted")
@@ -260,7 +262,8 @@ def main():
                 assert status == 404, ("content gate", status)
                 result["cases"].append({"case": "native_oss_start_and_repository_without_eula_acceptance", "passed": True})
                 if not args.probe_only:
-                    raise RuntimeError("client qualification not implemented yet")
+                    from prove_nexus_windows_crates import prove
+                    prove(root, evidence, args.binary.resolve(), request, repo, tls_port, pki / "ca.pem", requests, result, args.with_toolchain)
                 result["status"] = "passed"
     finally:
         (evidence / "summary.json").write_text(json.dumps(result, indent=2) + "\n")

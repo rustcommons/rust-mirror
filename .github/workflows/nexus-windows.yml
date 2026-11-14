@@ -3,6 +3,13 @@ on:
   pull_request:
     paths:
       - 'scripts/run_nexus_windows.py'
+      - 'scripts/prove_nexus_windows_crates.py'
+      - 'scripts/prove_nexus.py'
+      - 'scripts/prove_crates_https.py'
+      - 'scripts/prove_lock_import.py'
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - '.github/workflows/nexus-windows.yml'
   workflow_dispatch:
 permissions:
@@ -15,11 +22,14 @@ jobs:
       CARGO_BUILD_JOBS: '2'
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify official bundled-JRE native OSS startup and content gate
-        run: python scripts/run_nexus_windows.py --probe-only --root "${{ runner.temp }}/rust-mirror-owned-nexus" --evidence "${{ runner.temp }}/windows-nexus-evidence"
+      - name: Build actual CLI
+        run: cargo build --locked --jobs 2
+      - name: Native OSS crate and Windows Cargo qualification plus one Rustup install
+        run: python scripts/run_nexus_windows.py --binary target/debug/rust-mirror.exe --with-toolchain --root "${{ runner.temp }}/rust-mirror-owned-nexus" --evidence "${{ runner.temp }}/windows-nexus-evidence"
       - name: Teardown only owned instance after interruption
         if: always()
         run: python scripts/run_nexus_windows.py --cleanup --root "${{ runner.temp }}/rust-mirror-owned-nexus"
@@ -32,4 +42,7 @@ jobs:
             ${{ runner.temp }}/windows-nexus-evidence/summary.json
             ${{ runner.temp }}/windows-nexus-evidence/cleanup.json
             ${{ runner.temp }}/windows-nexus-evidence/requests.json
+            ${{ runner.temp }}/windows-nexus-evidence/*.jsonl
+            ${{ runner.temp }}/windows-nexus-evidence/*.stdout
+            ${{ runner.temp }}/windows-nexus-evidence/*.stderr
           if-no-files-found: warn
