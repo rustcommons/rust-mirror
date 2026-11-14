@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import re
 import secrets
 import shutil
 import socket
@@ -242,12 +243,51 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
     result["client"] = {"cargo":command([cargo,'--version']).stdout.strip(),"rustc":command([rustc,'-vV']).stdout,"source_replacement":True,"ca_only":True,"tls_verification":True,"air_gap_simulation":False}
     result["toolchain"] = {"covered":False,"reason":"Separate optional proof not selected"}
     if with_toolchain:
-        toolchain(root,evidence,binary,origin+'/repository/'+tool_repo+'/toolchain-generation',ca_file,publish_env,result)
+        result['toolchain']={'covered':False,'attempted':True}
+        with native_trust(root,evidence,ca_file):
+            toolchain(root,evidence,binary,origin+'/repository/'+tool_repo+'/toolchain-generation',ca_file,publish_env,result)
+        result['toolchain']['native_trust_removed']=True
     # Evidence contains only public URLs and sanitized protocol/command output.
     for p in evidence.iterdir():
         if p.is_file():
             b=p.read_bytes()
             assert all(secret.encode() not in b for secret in [password,reader_password,replacement]), "secret in retained evidence"
+
+
+def remove_native_trust(thumb):
+    """Remove only the exact owned public CA; reject any shell syntax in its identity."""
+    if not re.fullmatch(r"[0-9A-F]{40}", thumb):
+        raise ValueError("invalid owned certificate thumbprint")
+    path = "Cert:\\LocalMachine\\Root\\".replace("\\\\","\\") + thumb
+    script = "$ErrorActionPreference='Stop'; $p='"+path+"'; if(Test-Path $p){Remove-Item -LiteralPath $p}; if(Test-Path $p){throw 'owned CA removal failed'}"
+    command(["powershell", "-NoProfile", "-Command", script], timeout=60)
+
+
+@contextlib.contextmanager
+def native_trust(root, evidence, ca):
+    # Same disposable-runner trust route as the existing Windows lifecycle proof.
+    # Cargo's CAINFO-only proof has already completed before this optional step.
+    if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted":
+        raise RuntimeError("native trust setup is restricted to disposable GitHub-hosted runners")
+    der = ssl.PEM_cert_to_DER_cert(ca.read_text())
+    thumb = hashlib.sha1(der).hexdigest().upper()
+    certificate = root / "owned-test-ca.cer"
+    certificate.write_bytes(der)
+    marker = root / "ownership.json"
+    state = json.loads(marker.read_text())
+    state["trust_thumbprint"] = thumb
+    marker.write_text(json.dumps(state))
+    try:
+        p = command(["certutil.exe", "-f", "-addstore", "Root", certificate], timeout=60)
+        (evidence/"native-trust-setup.stdout").write_text(p.stdout)
+        (evidence/"native-trust-setup.stderr").write_text(p.stderr)
+        (evidence/"native-trust-setup.json").write_text(json.dumps({"store":"LocalMachine ROOT","sha1":thumb,"added":True})+'\n')
+        yield
+    finally:
+        remove_native_trust(thumb)
+        state.pop("trust_thumbprint")
+        marker.write_text(json.dumps(state))
+        (evidence/"native-trust-cleanup.json").write_text(json.dumps({"sha1":thumb,"removed":True})+'\n')
 
 
 def toolchain(root,evidence,binary,base,ca,env,result):

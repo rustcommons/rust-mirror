@@ -42,6 +42,7 @@ jobs:
             ${{ runner.temp }}/windows-nexus-evidence/summary.json
             ${{ runner.temp }}/windows-nexus-evidence/cleanup.json
             ${{ runner.temp }}/windows-nexus-evidence/requests.json
+            ${{ runner.temp }}/windows-nexus-evidence/native-trust-*.json
             ${{ runner.temp }}/windows-nexus-evidence/*.jsonl
             ${{ runner.temp }}/windows-nexus-evidence/*.stdout
             ${{ runner.temp }}/windows-nexus-evidence/*.stderr

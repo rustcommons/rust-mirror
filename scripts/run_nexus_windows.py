@@ -69,6 +69,12 @@ def cleanup(root):
     state = json.loads(marker.read_text())
     if state.get("kind") != "rust-mirror-native-nexus" or Path(state["root"]).resolve() != root.resolve():
         raise ValueError("cleanup ownership mismatch")
+    if state.get("trust_thumbprint"):
+        from prove_nexus_windows_crates import remove_native_trust
+        certificate = root / "owned-test-ca.cer"
+        if hashlib.sha1(certificate.read_bytes()).hexdigest().upper() != state["trust_thumbprint"]:
+            raise ValueError("owned CA cleanup identity mismatch")
+        remove_native_trust(state["trust_thumbprint"])
     pid = state.get("pid")
     if pid:
         query = "$p=Get-CimInstance Win32_Process -Filter 'ProcessId = " + str(int(pid)) + "'; if($p){$p.ExecutablePath}"
@@ -220,6 +226,8 @@ def main():
     if platform.system() != "Windows":
         parser.error("native Windows only; no external Nexus endpoint accepted")
     root = args.root.resolve()
+    if not args.cleanup and (args.evidence is None or (not args.probe_only and args.binary is None)):
+        parser.error("qualification requires --evidence and --binary (except --probe-only)")
     if args.cleanup:
         print(json.dumps(cleanup(root)))
         return

@@ -10,6 +10,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_nexus_windows as runner
+import prove_nexus_windows_crates as client
 
 
 class NativeNexusOwnership(unittest.TestCase):
@@ -30,6 +31,13 @@ class NativeNexusOwnership(unittest.TestCase):
                 output.writestr(member, "target")
             with self.assertRaises(ValueError):
                 runner.extract_bundle(archive, root / "extracted")
+
+    def test_certificate_cleanup_rejects_untrusted_shell_text_before_running(self):
+        with patch.object(client, "command") as command:
+            for value in ("", "A"*39, "a"*40, "ABC; Remove-Item C:"):
+                with self.assertRaises(ValueError):
+                    client.remove_native_trust(value)
+            command.assert_not_called()
 
     def test_cleanup_preserves_unmarked_directory(self):
         with tempfile.TemporaryDirectory() as directory:
