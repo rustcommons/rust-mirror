@@ -44,6 +44,15 @@ and hexyl locked fetch/build plus a second fresh-target offline build. Its local
 root skip, private-key/data cleanup, failed optional step and exact run identity
 remain historical; they do not constitute a passing complete job.
 
+The [d3022a5 core run 43562612307](https://github.com/rustcommons/rust-mirror/actions/runs/43562612307)
+caught a Windows-only negative test in the new ZIP harness: Windows Path does not
+classify a slash-rooted `/outside` as absolute. Bundle preflight now uses ZIP/POSIX
+path semantics consistently on both platforms. The pinned official bundle had
+already passed, and the complete native proof
+[43562612316](https://github.com/rustcommons/rust-mirror/actions/runs/43562612316)
+passed again, including the corrected 67-request client-only counter. This fix is
+confined to the test harness; no published Rust code changes.
+
 ## Qualified native Windows run
 
 [Run 43561690025](https://github.com/rustcommons/rust-mirror/actions/runs/43561690025)

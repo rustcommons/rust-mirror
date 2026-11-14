@@ -7,7 +7,7 @@ import http.client
 import http.server
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import platform
 import secrets
 import shutil
@@ -42,7 +42,7 @@ def extract_bundle(archive, root):
     with zipfile.ZipFile(archive) as source:
         total = 0
         for member in source.infolist():
-            path = Path(member.filename)
+            path = PurePosixPath(member.filename)
             if path.is_absolute() or ".." in path.parts or ":" in member.filename or "\\" in member.filename:
                 raise ValueError("unsafe bundle path")
             if stat.S_ISLNK(member.external_attr >> 16):
