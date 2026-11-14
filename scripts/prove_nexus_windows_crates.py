@@ -143,6 +143,9 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
         status, body = request(method, "/service/rest/v1/" + path, data, text=text)
         assert 200 <= status < 300, (method, path, status)
         return json.loads(body) if body.strip() else None
+    config = api("GET", "repositories/raw/hosted/"+repo)
+    assert config["storage"]["writePolicy"].lower()=="allow_once"
+    assert config["storage"]["strictContentTypeValidation"] is True
     suffix = repo.removeprefix("rust-mirror-win-")
     repositories = [repo]
     if with_toolchain:
@@ -217,7 +220,7 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
     case("native_publish_preflight_no_put_publish_and_repeat_no_put")
     artifact = next(f for f in inventory["files"] if f["path"].endswith('.crate'))
     path = "/repository/"+repo+"/crate-generation/"+artifact["path"]
-    status, _ = request("PUT", path, "refused overwrite", auth=auth, text=True)
+    status, _ = request("PUT", path, (mirror/artifact["path"]).read_bytes(), auth=auth)
     assert status==400, status
     status, b = request("GET", path, auth=None)
     assert status==200 and hashlib.sha256(b).hexdigest()==artifact["sha256"]

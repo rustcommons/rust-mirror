@@ -249,9 +249,9 @@ def main():
                 admin = credentials("admin", password)
                 def request(method, path, data=None, auth=admin, text=False):
                     conn = http.client.HTTPSConnection("127.0.0.1", tls_port, context=trust, timeout=120)
-                    body = data.encode() if text else json.dumps(data).encode() if data is not None else None
+                    body = data if isinstance(data, bytes) else data.encode() if text else json.dumps(data).encode() if data is not None else None
                     try:
-                        headers = {"Content-Type": "text/plain" if text else "application/json"}
+                        headers = {"Content-Type": "application/octet-stream" if isinstance(data, bytes) else "text/plain" if text else "application/json"}
                         if auth:
                             headers["Authorization"] = auth
                         conn.request(method, path, body=body, headers=headers)

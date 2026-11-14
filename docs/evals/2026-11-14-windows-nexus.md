@@ -85,7 +85,9 @@ The dedicated job passed these gates:
 - Native publish preflight made no content writes. Publication used no-redeploy Raw;
   repeated publication returned typed remote_exists with no content writes. An
   intentional direct overwrite was refused and the original GET hash survived;
-  anonymous writes were refused too.
+  anonymous writes were refused too. The final harness reads back ALLOW_ONCE/strict
+  MIME policy and uses the original valid archive bytes for its direct redeploy
+  control, excluding malformed-payload MIME refusal as an alternative explanation.
 - Fresh isolated Windows CARGO_HOME with source replacement and test-CA-only
   CARGO_HTTP_CAINFO: cargo fetch --locked, cargo build --locked and cargo build
   --locked --offline passed with the unchanged original lock. The offline build
