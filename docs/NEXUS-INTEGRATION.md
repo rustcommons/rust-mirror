@@ -101,9 +101,12 @@ refused on HTTP. Omit it to use system trust. Use the existing environment-based
 Basic credentials only on HTTPS. Credentials are never placed in URLs or recorded
 in proof summaries.
 
-Rustup is a different client: the tested Rustup 1.28.2 route receives `SSL_CERT_FILE`
-and `CURL_CA_BUNDLE` pointing to the temporary public CA certificate. Publisher
-credentials are not passed to it. The proof grants anonymous read-only access to
+Rustup is a different client: the original Linux Rustup 1.28.2 route receives
+`SSL_CERT_FILE` and `CURL_CA_BUNDLE` pointing to the temporary public CA certificate.
+The Windows 1.28.2 reqwest proof needed Windows certificate-store trust instead;
+those variables did not suffice. See [Windows client trust](NEXUS-RAW.md#windows-client-trust)
+for company-CA deployment and Cargo's separate CA-file setting. Publisher credentials
+are not passed to Rustup. The proof grants anonymous read-only access to
 one dedicated repository via a separately created reader identity. It rejects
 anonymous writes, wrong passwords and cross-repository access. This does not prove
 password-protected Rustup downloads, enterprise SSO or arbitrary authentication modes.

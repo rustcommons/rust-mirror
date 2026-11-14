@@ -92,6 +92,31 @@ SHA-256 is checked against upstream metadata fetched over HTTPS. OpenPGP signatu
 are retained but not independently verified. The inventory detects byte changes;
 it is not a signed transfer authorization or an independent trust root.
 
+## Windows client trust
+
+Rustup, Cargo and the rust-mirror publisher configure TLS trust separately. In the
+[qualified Windows Rustup 1.28.2 reqwest backend](evals/2026-11-14-windows-nexus.md),
+`SSL_CERT_FILE` and `CURL_CA_BUNDLE` did not add trust for the private CA; Rustup
+needed that CA in the Windows certificate store. Have IT deploy the approved
+company CA, including any TLS-inspection CA, through the organization's Windows
+trust policy. The proof used **Trusted Root Certification Authorities (Local
+Computer)**, also named `LocalMachine\Root`. Rerun the Rustup command after trust
+deployment.
+The publisher's `--ca-file` and upstream `--extra-ca-file` do not configure that store.
+
+Cargo has a separate CA-file option. The Windows Cargo 1.90 proof trusted the test
+CA through `CARGO_HTTP_CAINFO`, before the Rustup native-store setup. For a
+company-provided PEM bundle, set it in the client PowerShell session:
+
+```powershell
+$env:CARGO_HTTP_CAINFO = 'C:\certificates\company-ca.pem'
+cargo fetch --locked
+```
+
+Keep TLS verification enabled. Use your organization's approved CA, not the proof's
+temporary test certificate. These observations cover the named client versions and
+backends; they do not establish identical trust behavior for every Rustup backend.
+
 ## Upload to a hosted Raw repository
 
 Provision the repository through your normal administration workflow. Choose a

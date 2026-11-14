@@ -418,8 +418,13 @@ Rustup="$CARGO_HOME/bin/rustup"
 
 Use a dedicated Bash script/shell: `set -e` stops this sequence on errors. `curl`
 and Rustup have separate TLS backends; a CA option for one is not portable trust
-configuration for the other. In particular, `SSL_CERT_FILE` alone is not a portable
-replacement for approved Windows/macOS OS trust.
+configuration for the other. On the tested Windows Rustup 1.28.2 reqwest backend,
+`SSL_CERT_FILE` and `CURL_CA_BUNDLE` did not establish company-CA trust: the approved
+CA must be deployed to the Windows certificate store through your organization's
+policy. Cargo supports `CARGO_HTTP_CAINFO` for a PEM bundle. See
+[Windows client trust](NEXUS-RAW.md#windows-client-trust) for the tested store,
+PowerShell example and evidence. `SSL_CERT_FILE` is not a portable replacement for
+approved Windows/macOS OS trust.
 
 The original Unix installer is mirrored at `/rustup/rustup-init.sh`; it obtains
 current installers using `RUSTUP_UPDATE_ROOT`. The pinned binary route above makes
