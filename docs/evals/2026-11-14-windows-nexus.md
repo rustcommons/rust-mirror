@@ -47,7 +47,9 @@ remain historical; they do not constitute a passing complete job.
 The [d3022a5 core run 43562612307](https://github.com/rustcommons/rust-mirror/actions/runs/43562612307)
 caught a Windows-only negative test in the new ZIP harness: Windows Path does not
 classify a slash-rooted `/outside` as absolute. Bundle preflight now uses ZIP/POSIX
-path semantics consistently on both platforms. The pinned official bundle had
+path semantics consistently on both platforms. Preflight checks original ZIP names
+before Python normalizes Windows backslashes, and negative fixtures store raw names
+rather than allowing the ZIP writer to rewrite them. The pinned official bundle had
 already passed, and the complete native proof
 [43562612316](https://github.com/rustcommons/rust-mirror/actions/runs/43562612316)
 passed again, including the corrected 67-request client-only counter. This fix is

@@ -42,8 +42,11 @@ def extract_bundle(archive, root):
     with zipfile.ZipFile(archive) as source:
         total = 0
         for member in source.infolist():
-            path = PurePosixPath(member.filename)
-            if path.is_absolute() or ".." in path.parts or ":" in member.filename or "\\" in member.filename:
+            # ZipInfo normalizes backslashes on Windows; inspect the original
+            # archive name before host-specific rewriting can hide it.
+            name = member.orig_filename
+            path = PurePosixPath(name)
+            if path.is_absolute() or ".." in path.parts or ":" in name or "\\" in name or "\0" in name:
                 raise ValueError("unsafe bundle path")
             if stat.S_ISLNK(member.external_attr >> 16):
                 raise ValueError("bundle symlink refused")

@@ -20,7 +20,9 @@ class NativeNexusOwnership(unittest.TestCase):
             for name in ("../outside", "/outside", "C:/outside", "dir\\outside"):
                 archive = root / "input.zip"
                 with zipfile.ZipFile(archive, "w") as output:
-                    output.writestr(name, b"untrusted")
+                    member = zipfile.ZipInfo("placeholder")
+                    member.filename = member.orig_filename = name
+                    output.writestr(member, b"untrusted")
                 with self.assertRaises(ValueError):
                     runner.extract_bundle(archive, root / "extracted")
                 self.assertFalse((root / "extracted").exists())
