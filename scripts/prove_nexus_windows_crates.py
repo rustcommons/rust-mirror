@@ -175,7 +175,8 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
     catalog = root / "crates.toml"
     catalog.write_text('[crates]\nserde={version="1",features=["derive"]}\nserde_json="1"\nanyhow="1"\n[crate-policy]\nhosts=["x86_64-pc-windows-msvc"]\ntargets=["x86_64-pc-windows-msvc"]\n[crate-output]\nbase-url='+json.dumps(base)+'\n[crate-network]\ncontact="https://github.com/rustcommons/rust-mirror/issues"\n')
     imported = invoke(binary, ["crates", "import-lock", "--config", catalog, "--lock", "hexyl="+str(project/"Cargo.lock"), "--write"], evidence, "import-lock")[-1]["report"]
-    assert imported["accepted"] and imported["written"] and not imported["external_sources_required"]
+    assert imported["accepted"] and imported["written"] and imported["external_sources_required"]
+    assert imported["sources"][0]["skipped"] == [{"column":1,"kind":"local","line":218,"name":"hexyl","version":"0.16.0"}]
     run = root / "crate-run"
     preview_events = invoke(binary, ["crates", "sync", "--config", catalog, "--output", run], evidence, "sync-preview")
     preview = preview_events[-1]["report"]
@@ -203,7 +204,7 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
         assert len(b)==file["bytes"] and hashlib.sha256(b).hexdigest()==file["sha256"]
     case("actual_windows_hard_kill_mid_archive_and_frozen_resume", partial_bytes=partial_bytes, files=len(inventory["files"]))
     publish = ["publish", "--source", mirror, "--base-url", base, "--ca-file", ca_file]
-    puts = lambda: sum(r["method"]=="PUT" and r["path"].startswith('/repository/') for r in requests)
+    puts = lambda: sum(r["method"] in ("PUT","POST","DELETE","PATCH") and r["path"].startswith('/repository/') for r in requests)
     before = puts()
     invoke(binary, [*publish, "--preflight"], evidence, "publish-preflight", env=publish_env)
     assert puts()==before

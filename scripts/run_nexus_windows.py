@@ -25,8 +25,6 @@ from prove_crates_https import certificates, cargo_paths, command, environment
 
 BUNDLE = "https://download.sonatype.com/nexus/3/nexus-3.76.1-01-win64.zip"
 CHECKSUM = "8522ed370b2689667d4e6bee9414d27c10f263a7e0167af957beca1c6cdb8991"
-PROJECT = "abc20a380c8c2d9d76c1976222725d3211cef809"
-LOCK_SHA = "3343803df2472c7602d40214bfc42dff094a28ff0a25a7f02cb72ffffea18b9e"
 
 
 def download(url, path, maximum):
@@ -265,6 +263,10 @@ def main():
                     from prove_nexus_windows_crates import prove
                     prove(root, evidence, args.binary.resolve(), request, repo, tls_port, pki / "ca.pem", requests, result, args.with_toolchain)
                 result["status"] = "passed"
+    except Exception as error:
+        result["status"] = "failed"
+        result["failure_kind"] = type(error).__name__
+        raise
     finally:
         (evidence / "summary.json").write_text(json.dumps(result, indent=2) + "\n")
         (evidence / "requests.json").write_text(json.dumps(requests, indent=2) + "\n")
