@@ -58,7 +58,10 @@ runtime source and dependency identities are unchanged from 0.5.1; carry the nam
 version/package/doc checks and exact-candidate five-platform binary qualification,
 including all eight GNU userland gates. The coordinator merges and publishes from
 the owner's machine; tag/release/assets and registry/download verification follow
-publication confirmation. See [0.5.2 notes](releases/v0.5.2.md).
+publication confirmation. See [0.5.2 notes](releases/v0.5.2.md). The coordinator
+published after normal merge; [postpublication verification](evals/2026-11-15-publication-0.5.2.md)
+records registry/docs.rs, all six public assets/attestations, native Windows/GNU/musl
+downloads and registry installation.
 
 ## Before merge and publication
 

@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1 are published;
-see docs/evals/2026-11-15-publication-0.5.1.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2 are published;
+see docs/evals/2026-11-15-publication-0.5.2.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -396,6 +396,12 @@ publication confirmation create the annotated exact-merge tag and committed GitH
 Release notes, let the tag workflow attach the five archives plus one SHA256SUMS,
 verify all six live assets/attestations and execute downloaded Windows/GNU/musl
 archives. Open the bounded publication record PR. Never change v0.5.1 assets.
+
+The coordinator published 0.5.2 after normal merge. Its annotated tag, exact notes,
+five archives/one SHA256SUMS, six attestations and actual Windows/GNU/musl downloads
+are verified in [the publication record](docs/evals/2026-11-15-publication-0.5.2.md).
+Preserve the earlier candidate and v0.5.1 evidence; later versions still need their
+own authorization.
 
 ## User-facing documentation
 
