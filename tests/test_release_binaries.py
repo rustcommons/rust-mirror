@@ -102,6 +102,12 @@ class ReleaseBinariesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'not x86-64'):
             release.windows_imports(bytes(data))
 
+    def test_static_crt_audit_refuses_empty_and_external_runtime_imports(self):
+        release.validate_windows_imports(['KERNEL32.dll', 'bcrypt.dll'])
+        for names in ([], ['VCRUNTIME140.dll'], ['msvcp140.dll'], ['ucrtbase.dll'], ['API-MS-WIN-CRT-stdio-l1-1-0.dll']):
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                release.validate_windows_imports(names)
+
     def test_archive_boundary_and_link_refusals(self):
         for suffix in ('.zip', '.tar.gz'):
             with self.subTest(suffix=suffix):

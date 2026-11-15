@@ -91,7 +91,11 @@ jobs:
       - name: Locked native build from frozen tag
         shell: bash
         working-directory: source
-        run: cargo build --release --locked --target "$RELEASE_TARGET"
+        run: |
+          if [[ "$RELEASE_TARGET" == x86_64-pc-windows-msvc ]]; then
+            export RUSTFLAGS='-C target-feature=+crt-static'
+          fi
+          cargo build --release --locked --target "$RELEASE_TARGET"
       - name: Smoke both original and archived binary; record ABI and exact source
         shell: bash
         run: python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact"

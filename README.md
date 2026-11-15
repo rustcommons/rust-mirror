@@ -8,7 +8,8 @@ Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 1. **Download a prebuilt binary** for Windows, Linux or macOS from
    [GitHub Releases](https://github.com/rustcommons/rust-mirror/releases/latest).
    [Verify checksums/provenance and follow the unsigned-download instructions](https://github.com/rustcommons/rust-mirror/blob/main/docs/INSTALL.md).
-   No Rust installation is needed.
+   No Rust installation is needed. On Windows, nothing else to install: the C
+   runtime is built in, so no Visual C++ Redistributable is needed.
 2. **Install with Cargo**, using Rust/Cargo 1.90 or newer:
 
 ```sh

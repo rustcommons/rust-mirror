@@ -163,6 +163,24 @@ def windows_imports(data):
     raise ValueError('PE import count exceeds bound')
 
 
+def validate_windows_imports(names):
+    require(bool(names), 'Windows DLL import audit parsed no imports')
+    forbidden = [name for name in names if re.match(r'^(vcruntime|msvcp|ucrtbase|api-ms-win-crt-)', name, re.I)]
+    require(not forbidden, 'Windows release still requires external C runtime DLLs: ' + ', '.join(forbidden))
+
+
+def dumpbin_imports(binary):
+    """Use the runner's installed MSVC inspection tool; no SDK installation or settings change."""
+    vswhere = Path(os.environ['ProgramFiles(x86)']) / 'Microsoft Visual Studio/Installer/vswhere.exe'
+    install = run(str(vswhere), '-latest', '-products', '*', '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath')
+    candidates = sorted((Path(install) / 'VC/Tools/MSVC').glob('*/bin/Hostx64/x64/dumpbin.exe'))
+    require(bool(candidates), 'MSVC dumpbin unavailable on Windows release runner')
+    output = run(str(candidates[-1]), '/dependents', str(binary))
+    names = re.findall(r'^\s+([A-Za-z0-9_.-]+\.dll)\s*$', output, re.I | re.M)
+    validate_windows_imports(names)
+    return names, output
+
+
 def package(args):
     root = args.source.resolve()
     require(run('git', 'rev-parse', 'HEAD', cwd=root) == args.commit, 'source checkout differs from frozen commit')
@@ -176,6 +194,11 @@ def package(args):
     binary = root / 'target' / args.target / 'release' / exe
     human = smoke(binary, r['version'])
     dlls = windows_imports(binary.read_bytes()) if 'windows' in args.target else None
+    dumpbin = None
+    if dlls is not None:
+        validate_windows_imports(dlls)
+        inspected, dumpbin = dumpbin_imports(binary)
+        require({n.lower() for n in dlls} == {n.lower() for n in inspected}, 'PE and dumpbin import audits disagree')
     glibc = None
     if args.target == 'x86_64-unknown-linux-gnu':
         symbols = run('readelf', '--version-info', str(binary))
@@ -204,7 +227,7 @@ License: Apache-2.0; see LICENSE.
         readme += 'Dynamic dependencies: ' + ', '.join(line.split()[0] for line in glibc['ldd'].splitlines()) + '\n'
     if dlls:
         readme += 'Windows imported DLLs: ' + ', '.join(dlls) + '\n'
-        readme += 'If VCRUNTIME140.dll is missing, install the official Microsoft Visual C++ v14 x64 Redistributable.\nhttps://learn.microsoft.com/cpp/windows/latest-supported-vc-redist\n'
+        readme += 'Nothing else to install: the C runtime is built in, so no Visual C++ Redistributable is needed.\n'
     files = {exe: binary.read_bytes(), 'LICENSE': r['license'], 'README.txt': readme.encode()}
     require(sum(map(len, files.values())) <= MAX_ARCHIVE, 'binary archive payload too large')
     args.output.mkdir(parents=True, exist_ok=False)
@@ -229,7 +252,7 @@ License: Apache-2.0; see LICENSE.
     with tempfile.TemporaryDirectory(prefix='rust-mirror-binary-smoke-') as directory:
         extracted = Path(directory) / exe; extracted.write_bytes(contents[exe]); extracted.chmod(0o755)
         smoke(extracted, r['version'])
-    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'glibc': glibc, 'windows_imports': dlls}
+    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'glibc': glibc, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
     (args.output / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 
