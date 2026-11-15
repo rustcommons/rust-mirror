@@ -211,6 +211,22 @@ def legacy_or_current_targets(version, asset_names):
     return TARGETS
 
 
+def validate_gnu_report(report, commit, binary_hash):
+    require(report['method'] == 'cargo-libc' and report['target_glibc'] == '2.17', 'wrong GNU publication method/target')
+    require(report['cargo_libc_version'] == 'cargo-libc 0.7.0' and report['cargo_libc_commit'] == 'e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25', 'GNU producer revision differs from qualification')
+    require(report['source_commit'] == commit and report['binary_sha256'] == binary_hash, 'GNU report differs from the built source/binary')
+    maximum = report['linkage']['maximum_required_glibc']
+    require(maximum is not None and tuple(map(int, maximum.split('.'))) <= (2, 17), 'GNU artifact exceeds qualified glibc target')
+    require({'libc.so.6', 'libgcc_s.so.1'} <= set(report['linkage']['needed']), 'GNU artifact must use the dynamic runtime profile')
+    gates = report['runtime_gates']
+    required = {
+        'almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b',
+        'centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4',
+    }
+    require(required <= {row['image'] for row in gates}, 'GNU artifact missing required CentOS7/Alma8 gates')
+    require(all(row['result'] == 'passed' and row['version_ok'] and row['plan_ok'] and row['sync_ok'] for row in gates), 'GNU runtime launch/plan/sync gate failed')
+
+
 def package(args):
     root = args.source.resolve()
     require(run('git', 'rev-parse', 'HEAD', cwd=root) == args.commit, 'source checkout differs from frozen commit')
@@ -232,10 +248,9 @@ def package(args):
         require({n.lower() for n in dlls} == {n.lower() for n in inspected}, 'PE and dumpbin import audits disagree')
     glibc = None
     if args.target == 'x86_64-unknown-linux-gnu':
-        require(args.glibc_report is not None, 'GNU archive requires qualified Alma8 build report')
+        require(args.glibc_report is not None, 'GNU archive requires qualified cargo-libc build report')
         glibc = json.loads(args.glibc_report.read_text())
-        require(glibc['method'] == 'almalinux8' and glibc['toolchain']['glibc'] == 'glibc 2.28' and glibc['runtime']['result'] == 'passed', 'GNU baseline not qualified')
-        require(glibc['source_commit'] == args.commit and glibc['binary_sha256'] == digest(binary.read_bytes()), 'GNU report differs from the built source/binary')
+        validate_gnu_report(glibc, args.commit, digest(binary.read_bytes()))
     linux_static = static_linux(binary, r['version']) if args.target == 'x86_64-unknown-linux-musl' else None
     prefix = f'rust-mirror-{r["version"]}-{args.target}'
     readme = f'''rust-mirror {r['version']} ({args.target})
@@ -259,7 +274,9 @@ License: Apache-2.0; see LICENSE.
         readme += 'TLS uses rustls and bundled public roots; add corporate CAs explicitly with --extra-ca-file.\n'
         readme += 'Kernel, CPU and network policy still apply; named smoke tests are not every enterprise configuration.\n'
     if glibc:
-        readme += 'Dynamic GNU/Linux variant: built and DNS/TLS/sync-tested on AlmaLinux8 (glibc2.28).\n'
+        readme += 'Dynamic GNU/Linux variant: cargo-libc0.7.0 targets glibc2.17.\n'
+        readme += 'Launch + real HTTPS plan/sync gates: CentOS7, AlmaLinux8, Leap42.3, Ubuntu16/18/20, Debian8/9.\n'
+        readme += 'Container userlands only; old native kernels were not tested. Use musl for glibc below2.17.\n'
         readme += 'Maximum required GLIBC symbol: ' + str(glibc['linkage']['maximum_required_glibc']) + '\n'
         readme += 'Runtime libraries: ' + ', '.join(glibc['linkage']['needed']) + '\n'
         readme += 'Prefer the static musl archive when avoiding glibc/libgcc runtime dependencies.\n'

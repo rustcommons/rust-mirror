@@ -2,8 +2,10 @@
 
 ## [Unreleased]
 
-- Prepare an AlmaLinux8 GNU archive alongside static musl for the next release;
-  keep v0.5.1 assets immutable and measure older cargo-libc targets in CI only.
+- Prepare a GNU archive targeting glibc 2.17 with pinned cargo-libc 0.7.0 alongside
+  static musl for the next release, with blocking launch/HTTPS plan-sync checks in
+  eight measured container userlands. Old kernels are untested; v0.5.1 assets stay
+  immutable.
 
 - Add automatic unsigned Windows (static CRT), Linux (static musl) and macOS CLI archives on GitHub Releases,
   with checksums, provenance attestations and install guidance. Existing published

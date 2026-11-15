@@ -17,6 +17,7 @@ on:
       - '.github/workflows/release-binaries.yml'
       - 'scripts/release_binaries.py'
       - 'scripts/glibc_measure.py'
+      - 'scripts/release_gnu.py'
       - 'tests/test_release_binaries.py'
 permissions:
   contents: read
@@ -58,7 +59,7 @@ jobs:
         include:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-gnu
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-musl
@@ -91,6 +92,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/checkout@v7
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        with:
+          repository: rustcommons/cargo-libc
+          ref: e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25
+          path: cargo-libc
+          persist-credentials: false
+      - name: Install qualified GNU producer tools (release job only)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        shell: bash
+        run: |
+          test "$(git -C cargo-libc rev-parse HEAD)" = e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y clang-18 gcc g++ binutils
+          cargo install --path cargo-libc --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
       - name: Install musl C compiler for existing C dependencies
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
@@ -101,7 +117,7 @@ jobs:
         working-directory: source
         run: |
           if [[ "$RELEASE_TARGET" == x86_64-unknown-linux-gnu ]]; then
-            python ../automation/scripts/glibc_measure.py baseline --source . --output "$RUNNER_TEMP/gnu-baseline" --version "${RELEASE_TAG#v}"
+            python ../automation/scripts/release_gnu.py --source . --tool "$RUNNER_TEMP/cargo-libc-tools/bin" --output "$RUNNER_TEMP/gnu-qualified" --version "${RELEASE_TAG#v}"
             exit 0
           elif [[ "$RELEASE_TARGET" == x86_64-pc-windows-msvc ]]; then
             export RUSTFLAGS='-C target-feature=+crt-static'
@@ -115,9 +131,19 @@ jobs:
         run: |
           extra=()
           if [[ "$RELEASE_TARGET" == x86_64-unknown-linux-gnu ]]; then
-            extra=(--glibc-report "$RUNNER_TEMP/gnu-baseline/baseline-report.json")
+            extra=(--glibc-report "$RUNNER_TEMP/gnu-qualified/gnu-report.json")
           fi
           python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact" "${extra[@]}"
+      - name: Save exact GNU producer and blocking runtime-gate evidence
+        if: matrix.target == 'x86_64-unknown-linux-gnu' && always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gnu-release-qualification
+          path: |
+            ${{ runner.temp }}/gnu-qualified/gnu-report.json
+            ${{ runner.temp }}/gnu-qualified/**/*.log
+          if-no-files-found: warn
+          retention-days: 30
       - name: Musl real DNS/TLS plan, approved sync and isolated Cargo client
         if: matrix.target == 'x86_64-unknown-linux-musl'
         shell: bash

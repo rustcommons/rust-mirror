@@ -361,13 +361,21 @@ live hashes, attestations and actual native Windows/Linux downloads. Use the
 [read-only verification workflow](.github/workflows/verify-release-binaries.yml)
 after later asset uploads. Additional historical backfills need separate approval;
 future authorized release tags use the automatic workflow. The owner approved a
-fifth GNU/glibc archive starting with the NEXT release on 2026-11-15: build in
-digest-pinned AlmaLinux8, qualify real DNS/TLS plan/sync, and keep static musl.
+fifth GNU/glibc archive starting with the NEXT release on 2026-11-15.
+After measured CI-only experiments, the owner selected cargo-libc 0.7.0 at
+e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25, targeting glibc 2.17, on the same date.
+Build with Rust 1.90/Clang 18 using the qualified method; require launch and real
+HTTPS plan/approved-sync passes in pinned CentOS 7 and AlmaLinux 8 userlands before
+publication. Keep the other six proven userlands as blocking gates too. Keep static
+musl unchanged. Record compiler/linkage/image/source identities and bounded results.
+Containers prove userlands only: old native kernels are untested, and glibc below
+2.17 should use musl. Keep measurements and their initial Alma8 baseline/proposal
+historical; this later approval selects the production method.
 v0.5.1 stays at four archives with its original single SHA256SUMS; no GNU backfill
-or secondary manifest is permitted. cargo-libc older-glibc experiments are CI-only,
-with every build/userland outcome in docs/evals; report tool bugs/limits to its
-maintainer. A proven older build requires coordinator approval before replacing
-the ordinary Alma8 GNU publication baseline. Do not create throwaway
+or secondary manifest is permitted. Future releases have one SHA256SUMS covering
+all five archives. Report cargo-libc bugs/limits to its maintainer. This decision
+approves the distribution method, not a new version or crates.io publication.
+Do not create throwaway
 public releases. Preserve dated notes-only publication
 records as historical observations and record new binary distribution separately.
 

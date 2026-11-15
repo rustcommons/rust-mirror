@@ -104,3 +104,45 @@ SHA-256s rather than repeat this unchanged expensive matrix. Core/packaging CI a
 the five-archive dry run remain independent gates. No experimental artifact is
 automatically attached to a release. Later approval/resolution must be appended
 without rewriting this initial result or v0.5.1's existing publication evidence.
+
+## Subsequent owner selection — 2026-11-15
+
+After reviewing the matrix above, the owner selected the pinned cargo-libc 0.7.0
+2.17 method for the next GNU download. The initial proposal/baseline and JSON
+publication_choice field above describe the measurement-time state and are retained
+as history. The release workflow now uses [the selected producer](../../scripts/release_gnu.py)
+and refuses packaging if CentOS7/Alma8 launch and real HTTPS plan/approved sync fail;
+the other six passing userlands are also blocking gates. Reports bind the source
+and binary hashes to actual compiler/image/linkage and runtime outcomes. This
+changes no v0.5.1 asset, tag or manifest and authorizes no new crate publication.
+Old native kernels remain untested; glibc below 2.17 should use static musl.
+
+### Selected producer qualification
+
+The GNU job of [dry run 43730265355](https://github.com/rustcommons/rust-mirror/actions/runs/43730265355)
+passed with automation a00f169efdc1520332678a547ed068656a6b4451 and exact tagged
+application 112ef7a7a71d40349c601f299f965199b5b279ba. The
+[production-method report](glibc-release-217-20261115.json) records source and
+script hashes, compiler versions, pinned runtime image identities and all eight
+passing launch/HTTPS plan/approved-sync results. This is qualification of the
+selected workflow using the existing source tag, **not a GNU asset publication**.
+
+Rust1.90.0, Clang18.1.3 and GCC13.3.0 produced maximum required GLIBC symbol 2.17.
+Dynamic runtime libraries are libc.so.6, libm.so.6, libpthread.so.0, libgcc_s.so.1 and
+libdl.so.2. Binary SHA-256 is
+97e795745e2a71e740c3a90404420d0a82706d1175a523b3acb1e2b9aa83c626;
+dry-run archive SHA-256 is
+103e9c811d62724e954f4acb3910159dd6ba28961b44f5ac797b92a51bfc0666.
+Packaging checked the report's source/binary identities, required runtime passes,
+actual archive bytes and both original/unpacked --version. Regression tests refuse
+missing/failed mandatory gates, changed binary hash or producer/target mismatch.
+Future tagged sources must repeat the gates; these bytes are not promised for a
+future version. Unchanged measurement script/workflow hashes carry the historical
+40-combination matrix without reclassifying its failed or unrun combinations.
+
+The complete dry run passed all five native platform build jobs and the final
+archive/manifest verification. SHA256SUMS contains exactly five sorted archive
+entries; all five downloaded bytes were independently checked against it. The JSON
+report preserves the manifest hash/lines. The publication job was skipped, and the
+live v0.5.1 release still has its original four archives and original SHA256SUMS.
+No second manifest, release, new tag or package publication was created.

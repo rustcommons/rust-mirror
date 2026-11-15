@@ -128,7 +128,7 @@ and workflow_dispatch with a tag and dry_run (default true). Each build checks o
 the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
 --locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
 From the next release, five build targets are x86_64-pc-windows-msvc on windows-latest,
-x86_64-unknown-linux-gnu built inside pinned AlmaLinux8,
+x86_64-unknown-linux-gnu built with pinned cargo-libc 0.7.0 targeting glibc 2.17,
 x86_64-unknown-linux-musl on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
 x86_64-apple-darwin on macos-15-intel. The CLI Linux static variant remains musl. The new dynamic GNU variant starts next release;
 v0.5.1 remains immutable with four archives and one SHA256SUMS. Install musl-tools only on the Linux build runner for existing C sources;
@@ -198,14 +198,32 @@ browser quarantine UI.
 
 ## Glibc baseline and CI-only compatibility measurements
 
-Owner decision, 2026-11-15: the GNU archive is built in
-almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b.
-The host orchestrates a disposable container with GCC8/glibc2.28 and Python3.9;
-Rust1.90 comes from the pinned CI toolchain mounted read-only. Only its source
-workspace is marked safe.directory. Package with host Python3.12/tomllib. Record
-the actual compiler/image/linkage and run --version plus real HTTPS preview/approved
-sync inside the bare Alma8 userland before any release packaging.
+Owner decision, 2026-11-15, following the measured Alma8 baseline: publish the
+cargo-libc 0.7.0 **glibc 2.17** build starting with the next release. Pin the tool
+source to e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25. The Ubuntu24.04 release job
+installs that source with --locked, uses Rust1.90 and Clang18/GCC13, and runs:
 
+```sh
+cargo libc build --target x86_64-unknown-linux-gnu.2.17 \
+  --cc /usr/bin/clang-18 --artifact target/x86_64-unknown-linux-gnu/release/rust-mirror \
+  -- --release --locked
+```
+
+[The GNU producer](../scripts/release_gnu.py) scopes the managed target directory
+and tool PATH to this build. It records exact source/tool/compiler/image identities,
+binary SHA-256, dynamic NEEDED libraries and maximum required GLIBC symbol; fail
+above 2.17. Before packaging, launch and real official HTTPS crate preview/approved
+sync must pass in pinned CentOS7 AND AlmaLinux8 userlands. The six other proven
+userlands (Leap42.3, Ubuntu16.04/18.04/20.04, Debian8/9) also block on failure.
+Packaging independently binds those required gate results to the binary/source hash.
+Upload bounded logs and gnu-report.json even on failure; failed gates prevent the
+build/verify chain reaching the sole privileged publication job.
+
+The Alma8 image remains pinned to
+almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b
+for runtime checks and historical baseline experiments, not the selected producer.
+Keep static musl unchanged. No old native kernel is qualified by these container
+userland checks; glibc below 2.17 should use musl.
 [CI-only measurements](../.github/workflows/glibc-experiments.yml) use pinned
 rustcommons/cargo-libc, request glibc2.28/2.17 and probe the first lower boundary.
 For each build, test old public userland images with version and real plan/sync TLS;
@@ -220,7 +238,9 @@ Material experiment changes require a new dispatch. Commit the results/limits to
 docs/evals with machine-readable JSON. Report first-party tool bugs/limits to its
 maintainer with pinned command/log repros. Do not promote an experiment automatically:
 only a proven build may be proposed to the coordinator as the published GNU artifact.
-The ordinary Alma8 baseline remains selected unless separately approved otherwise.
+The initial ordinary Alma8 baseline and proposal remain historical evidence. The
+owner has now selected the proven 2.17 method above; lower/new candidates remain
+CI-only until measured and separately approved.
 
 The five-archive layout starts with the NEXT authorized release, one SHA256SUMS for
 all five. Do not backfill GNU into v0.5.1, replace its manifest/assets, add a second
