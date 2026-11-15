@@ -557,7 +557,7 @@ dependencies = [
  "tempfile",
  "toml",
  "ureq",
- "webpki-roots 0.26.11",
+ "webpki-roots 1.0.10",
  "x509-parser",
 ]
 
