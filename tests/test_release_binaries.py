@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 SPEC = importlib.util.spec_from_file_location('release_binaries', Path(__file__).resolve().parents[1] / 'scripts/release_binaries.py')
 release = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release)
@@ -22,7 +23,7 @@ class ReleaseBinariesTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix='rust-mirror-release-test-')
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.record = dict(tag='v1.2.3', version='1.2.3', commit='a' * 40, notes='Reviewed notes\n', license=b'license')
+        self.record = dict(tag='v1.2.3', version='1.2.3', commit='a' * 40, notes='Reviewed notes\n', license=b'license', lock_sha256=release.digest(b'lock'))
         self.live = dict(tag_name='v1.2.3', draft=False, html_url='https://github.com/rustcommons/rust-mirror/releases/tag/v1.2.3', body='Reviewed notes\n', assets=[], id=42)
 
     def test_candidate_record_freezes_exact_commit_without_creating_a_tag(self):
@@ -31,6 +32,7 @@ class ReleaseBinariesTests(unittest.TestCase):
         git('init', '-q'); git('config', 'user.name', 'Release fixture'); git('config', 'user.email', 'fixture@example.invalid')
         (self.root / 'Cargo.toml').write_text('[package]\nname="rust-mirror"\nversion="1.2.3"\nrust-version="1.90"\n')
         (self.root / 'LICENSE').write_bytes(b'license')
+        (self.root / 'Cargo.lock').write_bytes(b'lock')
         (self.root / 'docs/releases').mkdir(parents=True)
         (self.root / 'docs/releases/v1.2.3.md').write_text('Reviewed notes\n')
         git('add', '.'); git('commit', '-qm', 'Candidate source')
@@ -64,6 +66,20 @@ class ReleaseBinariesTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 release.validate_dynamic_linux(*changed)
 
+    def write_sbom(self, path, commit=None):
+        document = {'bomFormat': 'CycloneDX', 'specVersion': '1.5',
+                    'metadata': {'component': {'name': 'rust-mirror', 'version': '1.2.3'},
+                                 'properties': [{'name': 'rust-mirror:source:commit', 'value': commit or self.record['commit']},
+                                                {'name': 'rust-mirror:source:lock-sha256', 'value': self.record['lock_sha256']}]},
+                    'components': [{'name': 'fixture', 'version': '1.0.0'}]}
+        path.write_text(json.dumps(document))
+
+    def test_sbom_profile_does_not_change_published_legacy_releases(self):
+        self.assertTrue(release.has_legacy_assets('0.5.1'))
+        self.assertTrue(release.has_legacy_assets('0.5.2'))
+        self.assertFalse(release.has_legacy_assets('0.5.3'))
+        self.assertEqual(release.sbom_name('0.5.3'), 'rust-mirror-0.5.3.cdx.json')
+
     def test_source_record_uses_tag_not_changed_worktree(self):
         def git(*args):
             subprocess.run(['git', *args], cwd=self.root, check=True, capture_output=True)
@@ -72,6 +88,7 @@ class ReleaseBinariesTests(unittest.TestCase):
         git('config', 'user.email', 'fixture@example.invalid')
         (self.root / 'Cargo.toml').write_text('[package]\nname="rust-mirror"\nversion="1.2.3"\nrust-version="1.90"\n')
         (self.root / 'LICENSE').write_bytes(b'license')
+        (self.root / 'Cargo.lock').write_bytes(b'lock')
         (self.root / 'docs/releases').mkdir(parents=True)
         (self.root / 'docs/releases/v1.2.3.md').write_text('Reviewed notes\n')
         git('add', '.')
@@ -196,7 +213,7 @@ class ReleaseBinariesTests(unittest.TestCase):
                 release.main()
 
     def test_upload_validates_manifest_before_post_and_never_deletes(self):
-        names = sorted(release.asset_name('1.2.3', target) for target in release.TARGETS)
+        names = sorted([release.asset_name('1.2.3', target) for target in release.TARGETS] + [release.sbom_name('1.2.3')])
         for name in names:
             (self.root / name).write_bytes(b'archive')
         manifest = ''.join(f'{release.digest(b"archive")}  {name}\n' for name in names)
@@ -216,7 +233,7 @@ class ReleaseBinariesTests(unittest.TestCase):
             self.assertEqual(methods, ['GET'])
             methods.clear(); (self.root / 'SHA256SUMS').write_text(manifest)
             release.main()
-        self.assertEqual(methods, ['GET'] + ['POST'] * (len(release.TARGETS) + 1))
+        self.assertEqual(methods, ['GET'] + ['POST'] * (len(release.TARGETS) + 2))
 
     def test_collector_binds_all_targets_to_tag_license_and_original_bytes(self):
         artifacts = self.root / 'artifacts'; artifacts.mkdir()
@@ -238,12 +255,22 @@ class ReleaseBinariesTests(unittest.TestCase):
             report = dict(target=target, commit=self.record['commit'], tag='v1.2.3', archive=name, archive_smoke=True, sha256=release.digest(path.read_bytes()), binary_sha256=release.digest(b'binary'))
             (folder / 'build-report.json').write_text(json.dumps(report))
         output = self.root / 'output'
-        sums = release.collect(self.root, self.record, artifacts, output)
-        self.assertEqual(len(sums.splitlines()), len(release.TARGETS))
+        sbom = self.root / 'source.cdx.json'
+        self.write_sbom(sbom)
+        sums = release.collect(self.root, self.record, artifacts, output, sbom)
+        self.assertEqual(len(sums.splitlines()), len(release.TARGETS) + 1)
         self.assertEqual(sums.splitlines(), sorted(sums.splitlines(), key=lambda line: line.split('  ')[1]))
+        self.write_sbom(sbom, commit='b'*40)
+        with self.assertRaisesRegex(ValueError, 'SBOM source/lock'):
+            release.collect(self.root, self.record, artifacts, self.root / 'wrong-source', sbom)
+        self.write_sbom(sbom)
+        document=json.loads(sbom.read_text());document['metadata']['properties'][1]['value']='0'*64;sbom.write_text(json.dumps(document))
+        with self.assertRaisesRegex(ValueError, 'SBOM source/lock'):
+            release.collect(self.root, self.record, artifacts, self.root / 'wrong-lock', sbom)
+        self.write_sbom(sbom)
         (artifacts / ('binary-' + release.TARGETS[0]) / 'build-report.json').write_text('{}')
         with self.assertRaises((KeyError, ValueError)):
-            release.collect(self.root, self.record, artifacts, self.root / 'bad-output')
+            release.collect(self.root, self.record, artifacts, self.root / 'bad-output', sbom)
 
 
 if __name__ == '__main__': unittest.main()

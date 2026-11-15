@@ -110,6 +110,31 @@ downloads and registry installation.
 - Never move a release tag, overwrite a published crate or rewrite failed history.
   A discovered published-doc defect requires a new version if its package must change.
 
+## Security automation for future releases
+
+The owner approved [the security baseline](SECURITY-BASELINE.md) on 2026-11-15.
+All main changes require PRs, actions use full commit pins, security gates apply,
+and protected version tags cannot be updated/deleted. This approval does not
+authorize another software release or change a published version. Existing manual
+publication remains available; the optional [Trusted Publishing workflow](../.github/workflows/trusted-publishing.yml)
+requires exact main-reachable tagged source and the owner's crates-io environment
+approval. Register the publisher values in the security guide before using it.
+
+Starting with the next separately authorized release, add the Cargo CycloneDX JSON
+SBOM to the five-archive profile and the single SHA256SUMS: seven public files,
+six manifest entries. Sign provenance inside [the reusable build workflow](../.github/workflows/build-binaries.yml)
+and bind the SBOM to each archive with attest-sbom. Keep native generation read-only
+in its shared core, signing isolated and uploading contents-write-only. Use the
+new reusable signer identity when verifying that new profile; retain historical
+signers/profiles for v0.5.1/v0.5.2 without replacing anything.
+
+Run the two-clean-build measurement and retain its actual binary/archive hashes,
+metadata diagnosis and unresolved causes. A green measurement job is not a claim
+of bit identity. Follow [GitHub's SLSA reusable-workflow design](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/increase-security-rating),
+but add no SLSA3 badge until a future approved release actually verifies the new
+provenance. SBOMs cover the frozen all-target Cargo dependency graph, not OS runtimes,
+SDKs or CI tools. Scorecard activates on main after merge; do not fabricate its score.
+
 ## Update triggers and limitations
 
 Rerun affected permanent gates when Rustup endpoint/schema/client behavior changes,
@@ -136,7 +161,7 @@ attestations and public Windows/Linux download execution. Other historical-versi
 backfills require separate approval.
 
 [Release binaries](../.github/workflows/release-binaries.yml) runs on v* tag pushes
-and workflow_dispatch with a tag and dry_run (default true). Each build checks out
+and workflow_dispatch with a tag and dry_run (default true). Each production build checks out
 the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
 --locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
 From 0.5.2, five build targets are x86_64-pc-windows-msvc on windows-latest,
@@ -153,7 +178,7 @@ No glibc runtime floor remains for musl; GNU has its measured dynamic runtime re
 differences remain bounded in the install guide; do not claim every enterprise
 kernel or name-service configuration was executed.
 Windows release builds alone set RUSTFLAGS to
--C target-feature=+crt-static; do not change repository-wide configuration, normal
+-C target-feature=+crt-static -C link-arg=/Brepro; do not change repository-wide configuration, normal
 CI or development builds. Audit native DLL imports with vswhere + dumpbin
 /dependents and the bounded PE parser: fail if no imports are parsed or if any
 match ^(vcruntime|msvcp|ucrtbase|api-ms-win-crt-) case-insensitively. Record actual
@@ -168,7 +193,9 @@ expected archives, verify source/target/license/digests and produce sorted
 SHA256SUMS with lowercase SHA-256, two spaces and file name. Preserve build reports
 as workflow artifacts; record exact run IDs and measured ABI in dated evidence.
 
-Prepare/build/verify jobs are read-only. Only the publish job has contents: write,
+The original v0.5.2 workflow used the following permission/profile arrangement;
+the newer future-release security baseline above supersedes it. Prepare/build/verify
+jobs were read-only. Only the original publish job had contents: write,
 id-token: write and attestations: write. It uses actions/attest-build-provenance to
 attest all five archives and SHA256SUMS with Sigstore, then gh attestation verify
 with the repository/workflow identity before uploading. Dispatch provenance names
@@ -193,15 +220,16 @@ for resolve/package/collect; preflight/upload never accept candidate options.
 Prepare refuses candidate=true with dry_run=false, and the privileged publish job
 independently requires candidate=false. Candidate runs skip only the unavailable
 live release/tag/body check; they still smoke all five binaries, require all eight
-GNU gates, collect/verify one five-entry manifest and inspect committed notes.
+GNU gates, collect/verify one six-entry manifest (five archives plus SBOM) and inspect committed notes.
 They cannot attest or upload release assets.
 
 Ordinary dispatch dry runs (candidate=false) still build from an existing immutable
 tag and check its live release/tag/body, allowing existing assets because they
-cannot change them. Live dispatch must use reviewed main with dry_run=false and
-candidate=false. Tag-triggered publication always uses the immutable tag. Never
+cannot change them. Live dispatch uses the exact immutable tag workflow ref with dry_run=false and
+candidate=false; current main is allowed only when the tag and invocation SHA
+coincide. Alternate source refs cannot execute in main-scoped jobs. Tag-triggered publication always uses the immutable tag. Never
 create a public throwaway release to qualify a candidate.
-After uploading, download all six live assets, verify SHA256SUMS and attestations,
+For the future SBOM profile, download all seven live assets after uploading, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.
 
 See [install verification and unsigned prompts](INSTALL.md). GitHub provenance is
