@@ -25,7 +25,7 @@ import zipfile
 
 REPO = 'rustcommons/rust-mirror'
 TOOLCHAIN = '1.90.0'
-TARGETS = ('x86_64-pc-windows-msvc', 'x86_64-unknown-linux-musl',
+TARGETS = ('x86_64-pc-windows-msvc', 'x86_64-unknown-linux-gnu', 'x86_64-unknown-linux-musl',
            'aarch64-apple-darwin', 'x86_64-apple-darwin')
 TAG = re.compile(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?')
 MAX_ARCHIVE = 128 * 1024 * 1024
@@ -204,6 +204,13 @@ def static_linux(binary, version):
     return {'file': description, 'ldd': output, 'ldd_exit': ldd.returncode, 'program_headers': headers, 'dynamic_section': dynamic, 'no_interpreter_or_needed': True, 'empty_root_version': actual}
 
 
+def legacy_or_current_targets(version, asset_names):
+    """v0.5.1's four archives are immutable; later releases have both Linux variants."""
+    if version == '0.5.1':
+        return tuple(t for t in TARGETS if t != 'x86_64-unknown-linux-gnu')
+    return TARGETS
+
+
 def package(args):
     root = args.source.resolve()
     require(run('git', 'rev-parse', 'HEAD', cwd=root) == args.commit, 'source checkout differs from frozen commit')
@@ -223,6 +230,12 @@ def package(args):
         validate_windows_imports(dlls)
         inspected, dumpbin = dumpbin_imports(binary)
         require({n.lower() for n in dlls} == {n.lower() for n in inspected}, 'PE and dumpbin import audits disagree')
+    glibc = None
+    if args.target == 'x86_64-unknown-linux-gnu':
+        require(args.glibc_report is not None, 'GNU archive requires qualified Alma8 build report')
+        glibc = json.loads(args.glibc_report.read_text())
+        require(glibc['method'] == 'almalinux8' and glibc['toolchain']['glibc'] == 'glibc 2.28' and glibc['runtime']['result'] == 'passed', 'GNU baseline not qualified')
+        require(glibc['source_commit'] == args.commit and glibc['binary_sha256'] == digest(binary.read_bytes()), 'GNU report differs from the built source/binary')
     linux_static = static_linux(binary, r['version']) if args.target == 'x86_64-unknown-linux-musl' else None
     prefix = f'rust-mirror-{r["version"]}-{args.target}'
     readme = f'''rust-mirror {r['version']} ({args.target})
@@ -245,6 +258,11 @@ License: Apache-2.0; see LICENSE.
         readme += 'DNS uses /etc/hosts and /etc/resolv.conf; glibc NSS plugins are not loaded.\n'
         readme += 'TLS uses rustls and bundled public roots; add corporate CAs explicitly with --extra-ca-file.\n'
         readme += 'Kernel, CPU and network policy still apply; named smoke tests are not every enterprise configuration.\n'
+    if glibc:
+        readme += 'Dynamic GNU/Linux variant: built and DNS/TLS/sync-tested on AlmaLinux8 (glibc2.28).\n'
+        readme += 'Maximum required GLIBC symbol: ' + str(glibc['linkage']['maximum_required_glibc']) + '\n'
+        readme += 'Runtime libraries: ' + ', '.join(glibc['linkage']['needed']) + '\n'
+        readme += 'Prefer the static musl archive when avoiding glibc/libgcc runtime dependencies.\n'
     if dlls:
         readme += 'Windows imported DLLs: ' + ', '.join(dlls) + '\n'
         readme += 'Nothing else to install: the C runtime is built in, so no Visual C++ Redistributable is needed.\n'
@@ -272,7 +290,7 @@ License: Apache-2.0; see LICENSE.
     with tempfile.TemporaryDirectory(prefix='rust-mirror-binary-smoke-') as directory:
         extracted = Path(directory) / exe; extracted.write_bytes(contents[exe]); extracted.chmod(0o755)
         smoke(extracted, r['version'])
-    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'linux_static': linux_static, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
+    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'linux_static': linux_static, 'glibc_baseline': glibc, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
     (args.output / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 
@@ -298,7 +316,7 @@ def collect(root, r, artifacts, output):
 def main():
     p = argparse.ArgumentParser(description=__doc__); sub = p.add_subparsers(dest='command', required=True)
     resolve = sub.add_parser('resolve'); resolve.add_argument('--root', type=Path, required=True); resolve.add_argument('--tag', required=True); resolve.add_argument('--output', type=Path, required=True)
-    build = sub.add_parser('package'); build.add_argument('--source', type=Path, required=True); build.add_argument('--tag', required=True); build.add_argument('--commit', required=True); build.add_argument('--target', choices=TARGETS, required=True); build.add_argument('--output', type=Path, required=True)
+    build = sub.add_parser('package'); build.add_argument('--source', type=Path, required=True); build.add_argument('--tag', required=True); build.add_argument('--commit', required=True); build.add_argument('--target', choices=TARGETS, required=True); build.add_argument('--output', type=Path, required=True); build.add_argument('--glibc-report', type=Path)
     for command in ('collect', 'preflight', 'upload'):
         parser = sub.add_parser(command); parser.add_argument('--root', type=Path, required=True); parser.add_argument('--tag', required=True); parser.add_argument('--commit', required=True)
         if command == 'collect': parser.add_argument('--artifacts', type=Path, required=True)

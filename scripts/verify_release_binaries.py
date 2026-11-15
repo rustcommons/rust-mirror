@@ -24,17 +24,18 @@ def main():
     expected = release.record(root, args.tag)
     live = json.loads(command(['gh', 'api', f'repos/{release.REPO}/releases/tags/{args.tag}']))
     release.validate_release(live, expected, release.remote_commit(root, args.tag))
-    names = sorted(release.asset_name(expected['version'], target) for target in release.TARGETS)
+    targets = release.legacy_or_current_targets(expected['version'], [a['name'] for a in live['assets']])
+    names = sorted(release.asset_name(expected['version'], target) for target in targets)
     assets = {a['name']: a for a in live['assets']}
-    release.require(len(live['assets']) == 5 and set(assets) == set(names + ['SHA256SUMS']), 'expected exactly four archives and SHA256SUMS')
+    release.require(len(live['assets']) == len(names) + 1 and set(assets) == set(names + ['SHA256SUMS']), 'expected exact release archive profile and SHA256SUMS')
     release.require(all(a['state'] == 'uploaded' and a['size'] <= release.MAX_ARCHIVE for a in assets.values()), 'asset incomplete or oversized')
     output = args.output.resolve(); output.mkdir(parents=True, exist_ok=False)
     downloads = output / 'downloads'
     command(['gh', 'release', 'download', args.tag, '--repo', release.REPO, '--dir', downloads])
     lines = (downloads / 'SHA256SUMS').read_text().splitlines()
-    release.require(len(lines) == 4 and all(re.fullmatch(r'[0-9a-f]{64}  [A-Za-z0-9_.-]+', line) for line in lines), 'invalid checksum manifest')
+    release.require(len(lines) == len(names) and all(re.fullmatch(r'[0-9a-f]{64}  [A-Za-z0-9_.-]+', line) for line in lines), 'invalid checksum manifest')
     checksums = dict(line.split('  ')[::-1] for line in lines)
-    release.require(len(checksums) == 4 and list(checksums) == names, 'checksum names/order/duplicates mismatch')
+    release.require(len(checksums) == len(names) and list(checksums) == names, 'checksum names/order/duplicates mismatch')
     attestations = {}
     for name in sorted(assets):
         path = downloads / name; actual = release.digest(path.read_bytes())

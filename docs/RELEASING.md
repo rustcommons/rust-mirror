@@ -127,17 +127,17 @@ backfills require separate approval.
 and workflow_dispatch with a tag and dry_run (default true). Each build checks out
 the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
 --locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
-Build targets are x86_64-pc-windows-msvc on windows-latest,
+From the next release, five build targets are x86_64-pc-windows-msvc on windows-latest,
+x86_64-unknown-linux-gnu built inside pinned AlmaLinux8,
 x86_64-unknown-linux-musl on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
-x86_64-apple-darwin on macos-15-intel. The CLI Linux archive is fully static musl,
-replacing the original GNU/glibc proposal after the owner's enterprise-compatibility
-decision. Install musl-tools only on the Linux build runner for existing C sources;
+x86_64-apple-darwin on macos-15-intel. The CLI Linux static variant remains musl. The new dynamic GNU variant starts next release;
+v0.5.1 remains immutable with four archives and one SHA256SUMS. Install musl-tools only on the Linux build runner for existing C sources;
 set CC_x86_64_unknown_linux_musl=musl-gcc and release-only static-CRT RUSTFLAGS.
 Fail if file/ldd do not identify static linkage, or ELF headers include INTERP or
 NEEDED libraries. Smoke the binary in an empty chroot, then run real DNS/TLS crate
 preview/approval/sync and the existing private-CA proxy kill/cancel/resume fixture.
 Record linkage, resolver-file availability, exact run IDs and network results.
-No glibc runtime floor remains. Kernel/CPU/network policy and musl resolver/NSS
+No glibc runtime floor remains for musl; GNU has its measured dynamic runtime requirements. Kernel/CPU/network policy and musl resolver/NSS
 differences remain bounded in the install guide; do not claim every enterprise
 kernel or name-service configuration was executed.
 Windows release builds alone set RUSTFLAGS to
@@ -151,14 +151,14 @@ Each rust-mirror-VERSION-TARGET.zip (Windows) or .tar.gz (Unix) contains one
 same-named folder with the executable, original tagged LICENSE and README.txt.
 The README records version, exact source commit, usage, verification, unsigned OS
 prompts and Linux ABI evidence. Smoke-test --version and protocol-1 --version
-before packing and after extraction on each native runner. Collect only the four
+before packing and after extraction on each native runner. Collect only the five
 expected archives, verify source/target/license/digests and produce sorted
 SHA256SUMS with lowercase SHA-256, two spaces and file name. Preserve build reports
 as workflow artifacts; record exact run IDs and measured ABI in dated evidence.
 
 Prepare/build/verify jobs are read-only. Only the publish job has contents: write,
 id-token: write and attestations: write. It uses actions/attest-build-provenance to
-attest all four archives and SHA256SUMS with Sigstore, then gh attestation verify
+attest all five archives and SHA256SUMS with Sigstore, then gh attestation verify
 with the repository/workflow identity before uploading. Dispatch provenance names
 the main workflow revision; the attested archive README binds the separate tagged
 source commit. Do not claim the workflow revision is the backfilled source revision.
@@ -179,7 +179,7 @@ smoke-test, collect and check release/tag/body but never attest/upload; they all
 existing assets because they cannot change them. Live dispatch must run the reviewed
 workflow on main with dry_run=false. After a successful reviewed dry run and coordinator merge, dispatch the
 authorized version with dry_run=false. Do not create a public throwaway release.
-After uploading, download all five live assets, verify SHA256SUMS and attestations,
+After uploading, download all six live assets, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.
 
 See [install verification and unsigned prompts](INSTALL.md). GitHub provenance is
@@ -188,10 +188,41 @@ signing is configured. Keep historical no-assets records dated and intact. New
 assets do not change immutable crates.io payloads or the release's source tag.
 
 [Verify published binary downloads](../.github/workflows/verify-release-binaries.yml)
-is read-only: dispatch with the tag to download all five assets, check exact notes/
+is read-only: dispatch with the tag to download the exact versioned asset profile, check exact notes/
 source/license, SHA256SUMS and every GitHub attestation, then run the actual downloaded
 Windows ZIP/Linux musl binary on native hosted runners. No Rust rebuild/install,
 release mutation, write token or OIDC permission is used. API credentials are removed
 from the product executable's environment. Save its reports with the release record;
 its native-execution scope is Windows/Linux, not post-download macOS execution or
 browser quarantine UI.
+
+## Glibc baseline and CI-only compatibility measurements
+
+Owner decision, 2026-11-15: the GNU archive is built in
+almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b.
+The host orchestrates a disposable container with GCC8/glibc2.28 and Python3.9;
+Rust1.90 comes from the pinned CI toolchain mounted read-only. Only its source
+workspace is marked safe.directory. Package with host Python3.12/tomllib. Record
+the actual compiler/image/linkage and run --version plus real HTTPS preview/approved
+sync inside the bare Alma8 userland before any release packaging.
+
+[CI-only measurements](../.github/workflows/glibc-experiments.yml) use pinned
+rustcommons/cargo-libc, request glibc2.28/2.17 and probe the first lower boundary.
+For each build, test old public userland images with version and real plan/sync TLS;
+record every combination, including build, pull, loader, DNS/TLS and application
+failures. openSUSE Leap42.3 is a community SLE12-era proxy, not native commercial
+SLES qualification. No EULA/subscription is accepted or bypassed. Containers share
+the CI host kernel and do not prove execution on the original old kernels.
+
+Measurements run on PR opening and explicit dispatch; source/workflow SHA-256s bind
+results so documentation-only commits can carry unchanged experiment evidence.
+Material experiment changes require a new dispatch. Commit the results/limits to
+docs/evals with machine-readable JSON. Report first-party tool bugs/limits to its
+maintainer with pinned command/log repros. Do not promote an experiment automatically:
+only a proven build may be proposed to the coordinator as the published GNU artifact.
+The ordinary Alma8 baseline remains selected unless separately approved otherwise.
+
+The five-archive layout starts with the NEXT authorized release, one SHA256SUMS for
+all five. Do not backfill GNU into v0.5.1, replace its manifest/assets, add a second
+manifest or move its tag. No new crate dependency, version bump or crate publication
+is authorized by this pipeline/measurement task.

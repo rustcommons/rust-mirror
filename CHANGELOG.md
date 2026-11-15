@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Prepare an AlmaLinux8 GNU archive alongside static musl for the next release;
+  keep v0.5.1 assets immutable and measure older cargo-libc targets in CI only.
+
 - Add automatic unsigned Windows (static CRT), Linux (static musl) and macOS CLI archives on GitHub Releases,
   with checksums, provenance attestations and install guidance. Existing published
   crates and historical release-note bodies are unchanged.

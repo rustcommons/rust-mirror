@@ -9,9 +9,21 @@ No Rust/Cargo installation is needed to run the CLI.
 | Computer | Archive target | Format |
 | --- | --- | --- |
 | Windows, Intel/AMD 64-bit | x86_64-pc-windows-msvc | .zip |
+| Linux preferring dynamic glibc (next release) | x86_64-unknown-linux-gnu | .tar.gz |
 | Any x86_64 Linux, fully static musl | x86_64-unknown-linux-musl | .tar.gz |
 | macOS, Apple Silicon | aarch64-apple-darwin | .tar.gz |
 | macOS, Intel | x86_64-apple-darwin | .tar.gz |
+
+v0.5.1 keeps its four existing archives and original SHA256SUMS. The GNU archive
+starts with the next release; it is not added to v0.5.1. Later releases have five
+archives covered by one SHA256SUMS.
+
+Choose **musl** to avoid dynamic libc/runtime dependencies across x86_64 Linux
+userlands. Choose **GNU/glibc** when your environment prefers the standard dynamic
+glibc ABI. That variant is built inside digest-pinned AlmaLinux 8; its README records
+actual GLIBC symbol requirements and runtime libraries. Older-glibc cargo-libc
+experiments are CI-only measurements, not additional published downloads. See
+[the measurement policy](RELEASING.md#glibc-baseline-and-ci-only-compatibility-measurements).
 
 Names use `rust-mirror-VERSION-TARGET`, without a `v` in VERSION. Each archive
 contains one directory of that name with the executable, LICENSE and README.txt.
@@ -45,7 +57,7 @@ not establish every older OS version or native SDK combination.
 ### Verify before running
 
 Download the archive and SHA256SUMS from the same release. SHA256SUMS has one sorted
-line per archive: lowercase SHA-256, two spaces, file name. Verify the checksum and
+line per archive (four for v0.5.1, five starting with the next release): lowercase SHA-256, two spaces, file name. Verify the checksum and
 [GitHub provenance](https://cli.github.com/manual/gh_attestation_verify), using a
 recent GitHub CLI with artifact attestation support. These examples pin 0.5.1;
 substitute another published version and your target as appropriate.

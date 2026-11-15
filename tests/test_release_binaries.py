@@ -115,6 +115,12 @@ class ReleaseBinariesTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 release.validate_static_linux(*changed)
 
+    def test_v051_immutable_legacy_profile_and_future_five_archive_profile(self):
+        self.assertEqual(len(release.legacy_or_current_targets('0.5.1', [])), 4)
+        self.assertEqual(len(release.legacy_or_current_targets('0.5.1', [release.asset_name('0.5.1', 'x86_64-unknown-linux-gnu')])), 4)
+        self.assertEqual(len(release.legacy_or_current_targets('0.5.2', [])), 5)
+        self.assertIn('x86_64-unknown-linux-gnu', release.TARGETS)
+
     def test_archive_boundary_and_link_refusals(self):
         for suffix in ('.zip', '.tar.gz'):
             with self.subTest(suffix=suffix):
@@ -154,7 +160,7 @@ class ReleaseBinariesTests(unittest.TestCase):
             self.assertEqual(methods, ['GET'])
             methods.clear(); (self.root / 'SHA256SUMS').write_text(manifest)
             release.main()
-        self.assertEqual(methods, ['GET'] + ['POST'] * 5)
+        self.assertEqual(methods, ['GET'] + ['POST'] * (len(release.TARGETS) + 1))
 
     def test_collector_binds_all_targets_to_tag_license_and_original_bytes(self):
         artifacts = self.root / 'artifacts'; artifacts.mkdir()
@@ -177,7 +183,7 @@ class ReleaseBinariesTests(unittest.TestCase):
             (folder / 'build-report.json').write_text(json.dumps(report))
         output = self.root / 'output'
         sums = release.collect(self.root, self.record, artifacts, output)
-        self.assertEqual(len(sums.splitlines()), 4)
+        self.assertEqual(len(sums.splitlines()), len(release.TARGETS))
         self.assertEqual(sums.splitlines(), sorted(sums.splitlines(), key=lambda line: line.split('  ')[1]))
         (artifacts / ('binary-' + release.TARGETS[0]) / 'build-report.json').write_text('{}')
         with self.assertRaises((KeyError, ValueError)):

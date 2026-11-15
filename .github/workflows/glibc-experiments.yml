@@ -1,0 +1,60 @@
+name: CI-only glibc compatibility measurements
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/glibc-experiments.yml'
+      - 'scripts/glibc_measure.py'
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_LIBC_COMMIT: e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: automation
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          ref: v0.5.1
+          fetch-depth: 0
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: rustcommons/cargo-libc
+          ref: e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25
+          path: cargo-libc
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CI compiler/provider tools (no product dependencies)
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y clang-18 gcc g++ binutils
+      - name: Install exact first-party cargo-libc revision and sibling helpers
+        run: cargo install --path cargo-libc --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
+      - name: Build and qualify ordinary Alma8 baseline
+        run: python automation/scripts/glibc_measure.py baseline --source source --output "$RUNNER_TEMP/baseline"
+      - name: Measure 2.28, 2.17 and first unsupported lower boundary across old userlands
+        run: python automation/scripts/glibc_measure.py experiments --source source --baseline source/target/x86_64-unknown-linux-gnu/release/rust-mirror --tool "$RUNNER_TEMP/cargo-libc-tools/bin" --tool-commit "$CARGO_LIBC_COMMIT" --output "$RUNNER_TEMP/measurements"
+      - name: Save results and logs, never release assets
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-only-glibc-measurements
+          path: |
+            ${{ runner.temp }}/baseline/*.json
+            ${{ runner.temp }}/baseline/*.log
+            ${{ runner.temp }}/measurements/results.json
+            ${{ runner.temp }}/measurements/**/*.log
+          if-no-files-found: warn
+          retention-days: 30
