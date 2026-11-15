@@ -1,0 +1,285 @@
+{
+  "method": "cargo-libc",
+  "target_glibc": "2.17",
+  "cargo_libc_commit": "e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25",
+  "cargo_libc_version": "cargo-libc 0.7.0",
+  "source_commit": "112ef7a7a71d40349c601f299f965199b5b279ba",
+  "binary_sha256": "97e795745e2a71e740c3a90404420d0a82706d1175a523b3acb1e2b9aa83c626",
+  "command": [
+    "cargo",
+    "libc",
+    "build",
+    "--target",
+    "x86_64-unknown-linux-gnu.2.17",
+    "--cc",
+    "/usr/bin/clang-18",
+    "--artifact",
+    "/home/runner/work/rust-mirror/rust-mirror/source/target/x86_64-unknown-linux-gnu/release/rust-mirror",
+    "--",
+    "--release",
+    "--locked"
+  ],
+  "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+  "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+  "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "linkage": {
+    "required_glibc_versions": [
+      "2.2.5",
+      "2.3",
+      "2.3.4",
+      "2.4",
+      "2.10",
+      "2.12",
+      "2.14",
+      "2.16",
+      "2.17"
+    ],
+    "maximum_required_glibc": "2.17",
+    "needed": [
+      "libc.so.6",
+      "libm.so.6",
+      "libpthread.so.0",
+      "libgcc_s.so.1",
+      "libdl.so.2"
+    ],
+    "dynamic_section": "\nDynamic section at offset 0x83cb08 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]\n 0x000000000000000c (INIT)               0x403000\n 0x000000000000000d (FINI)               0xa72588\n 0x0000000000000019 (INIT_ARRAY)         0xc15e78\n 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc15e88\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x400340\n 0x0000000000000005 (STRTAB)             0x400e18\n 0x0000000000000006 (SYMTAB)             0x400368\n 0x000000000000000a (STRSZ)              1480 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc3dd38\n 0x0000000000000002 (PLTRELSZ)           144 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x401ff0\n 0x0000000000000007 (RELA)               0x4015e8\n 0x0000000000000008 (RELASZ)             2568 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW\n 0x000000006ffffffe (VERNEED)            0x4014c8\n 0x000000006fffffff (VERNEEDNUM)         4\n 0x000000006ffffff0 (VERSYM)             0x4013e0\n 0x0000000000000000 (NULL)               0x0\n"
+  },
+  "host_kernel": "7.0.0-1014-aws",
+  "runtime_gates": [
+    {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "image_record": {
+        "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+        "repo_digests": [
+          "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.28",
+      "result": "passed",
+      "plan_id": "d32f185da18135dc83f9e9e679846b69da31d59be5dbe088e3ec9bf0f497c452",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4",
+      "image_record": {
+        "image": "centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9",
+        "repo_digests": [
+          "centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.17",
+      "result": "passed",
+      "plan_id": "9e7ec73ca63204c62d8bdef3eb8a31949e684b014d6c3562e906ec9031957bb7",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "opensuse/leap:42.3@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2",
+      "image_record": {
+        "image": "opensuse/leap:42.3@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:8e098189cc8dcb9cf52438dded1403b802a5822acb22e44db027705a146fef7a",
+        "repo_digests": [
+          "opensuse/leap@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.22",
+      "result": "passed",
+      "plan_id": "c0d13b881d5cc60aa63e75e7fc127bf1abde606dbb2449f8e309d52e02ed6865",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214",
+      "image_record": {
+        "image": "ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b7bab04fd9aa0c771e5720bf0cc7cbf993fd6946645983d9096126e5af45d713",
+        "repo_digests": [
+          "ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.31",
+      "result": "passed",
+      "plan_id": "f98e02f722d47f6ac13c4eec130d0eecf3cc8ebc4eadf51562e9ff01e4aadf67",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98",
+      "image_record": {
+        "image": "ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:f9a80a55f492e823bf5d51f1bd5f87ea3eed1cb31788686aa99a2fb61a27af6a",
+        "repo_digests": [
+          "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.27",
+      "result": "passed",
+      "plan_id": "4c8e66bd0095f54b98750955b5486de112284f54b5f9b3016d73e16d75103cf9",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "ubuntu:16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6",
+      "image_record": {
+        "image": "ubuntu:16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b6f50765242581c887ff1acc2511fa2d885c52d8fb3ac8c4bba131fd86567f2e",
+        "repo_digests": [
+          "ubuntu@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.23",
+      "result": "passed",
+      "plan_id": "c9a37d58b9e49698838e9ab9c4adf6f340dac6e2d4ee2c9f2548bcdaa516a10f",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "debian:9@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be",
+      "image_record": {
+        "image": "debian:9@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:662c05203bab4c59568d24689fa5c3955439360a35c483178598d226b9a5ad10",
+        "repo_digests": [
+          "debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.24",
+      "result": "passed",
+      "plan_id": "4ca452b5adef586ab35069a2b2765fa980ad5da4337d1dbb72c5778368094686",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    {
+      "image": "debian:8@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0",
+      "image_record": {
+        "image": "debian:8@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:3aaeab7a47777b5ca21fc6de40a6f9e7ee7ebb7302e7a025795eb9e73200c404",
+        "repo_digests": [
+          "debian@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.19",
+      "result": "passed",
+      "plan_id": "8e2c208a0ef3b33dc0bac04014b3bb90a8d4abda4b7e92bcd1897862cc7939ed",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    }
+  ],
+  "scope": "Container userland version and real HTTPS plan/sync; old native kernels not tested",
+  "qualification_run": "https://github.com/rustcommons/rust-mirror/actions/runs/43730265355",
+  "automation_commit": "a00f169efdc1520332678a547ed068656a6b4451",
+  "automation_sha256": {
+    "scripts/release_gnu.py": "1626f3b01573ef6a58f1419bc4146a76f3f7e430ac37259e07cca1c6694ff9f5",
+    "scripts/release_binaries.py": "39ef457d1348e12a78eec004e98226bef222aa95138f751020dab3b336a4ecc8",
+    "scripts/glibc_measure.py": "43db34b46661f0b95c6e92144af5556e4f037ce8307a3636611ba86dcad90c0d",
+    ".github/workflows/release-binaries.yml": "97cb5de8f2f9cfcb610b6d4697e9f7a88591525b63aaada0b99ec312997a832b"
+  },
+  "archive": {
+    "name": "rust-mirror-0.5.1-x86_64-unknown-linux-gnu.tar.gz",
+    "sha256": "103e9c811d62724e954f4acb3910159dd6ba28961b44f5ac797b92a51bfc0666",
+    "dry_run_only": true,
+    "public_release_unchanged": true
+  },
+  "five_archive_verification": {
+    "run_conclusion": "success",
+    "publish": "skipped",
+    "manifest_sha256": "1601ecc0ed6640708b707236aed6ec3dbf08fec6d1442c50a4c44b29824aff7d",
+    "manifest_lines": [
+      "a07b4359ad1ed16e32ab49f50b6be7c3ebd1ca95fe8cf4cbb7aed1223ef6827b  rust-mirror-0.5.1-aarch64-apple-darwin.tar.gz",
+      "c95f884266694e9e1ba143bc1f2be5913081404dceb8229205322a5a1742ed10  rust-mirror-0.5.1-x86_64-apple-darwin.tar.gz",
+      "5ac9d36ca5a0db59686c074c309922d8b52acda77eb1f73b35f00b292e967c93  rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip",
+      "103e9c811d62724e954f4acb3910159dd6ba28961b44f5ac797b92a51bfc0666  rust-mirror-0.5.1-x86_64-unknown-linux-gnu.tar.gz",
+      "d79e96a285edd6c62c6c54b83ba08478669f8a9ec831a637f2124f1e274cdb19  rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz"
+    ]
+  }
+}
