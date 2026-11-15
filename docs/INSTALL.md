@@ -16,7 +16,7 @@ No Rust/Cargo installation is needed to run the CLI.
 
 v0.5.1 keeps its four existing archives and original SHA256SUMS. The GNU archive
 starts with 0.5.2; it is not added to v0.5.1. Releases from 0.5.2 have five
-archives covered by one SHA256SUMS.
+archives covered by one SHA256SUMS; from 0.5.3 the SBOM is covered too.
 
 Choose **musl** to avoid dynamic libc/runtime dependencies across x86_64 Linux
 userlands. Choose **GNU/glibc** when your environment prefers the standard dynamic
@@ -62,62 +62,90 @@ not establish every older OS version or native SDK combination.
 
 ### Verify before running
 
-Download the archive and SHA256SUMS from the same release. SHA256SUMS has one sorted
-line per archive (four for v0.5.1, five from 0.5.2): lowercase SHA-256, two spaces, file name. Verify the checksum and
-[GitHub provenance](https://cli.github.com/manual/gh_attestation_verify), using a
-recent GitHub CLI with artifact attestation support. These examples pin 0.5.2;
-substitute another published version and your target as appropriate.
+From 0.5.3, download the archive, rust-mirror-VERSION.cdx.json and SHA256SUMS from
+one release. The manifest has six sorted entries: five archives plus the SBOM.
+v0.5.1 retains four entries and v0.5.2 five; those historical releases retain their
+original release-binaries.yml signer and have no SBOM retrofit.
+
+These examples pin 0.5.3 and use a recent [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify).
+Obtain the commit from the protected annotated tag through the GitHub API and
+confirm it against the merged release PR before running a download. Do not take
+an expected source commit from an unverified archive. The reusable signer and
+source must both identify that exact commit; self-hosted runners are refused.
 
 Windows PowerShell:
 
 ```powershell
-$archive = 'rust-mirror-0.5.2-x86_64-pc-windows-msvc.zip'
-gh release download v0.5.2 --repo rustcommons/rust-mirror --pattern $archive --pattern SHA256SUMS
+$tag = 'v0.5.3'
+$archive = 'rust-mirror-0.5.3-x86_64-pc-windows-msvc.zip'
+$sbom = 'rust-mirror-0.5.3.cdx.json'
+$tagObject = gh api "repos/rustcommons/rust-mirror/git/ref/tags/$tag" --jq '.object.sha'
+if ($LASTEXITCODE -ne 0) { throw 'Tag lookup failed' }
+$commit = gh api "repos/rustcommons/rust-mirror/git/tags/$tagObject" --jq '.object.sha'
+if ($LASTEXITCODE -ne 0 -or $commit -cnotmatch '^[0-9a-f]{40}$') { throw 'Annotated tag lookup failed' }
+# Confirm $commit against the merged release PR before continuing.
+$policy = @('--repo', 'rustcommons/rust-mirror', '--signer-workflow',
+  'rustcommons/rust-mirror/.github/workflows/build-binaries.yml',
+  '--source-digest', $commit, '--signer-digest', $commit, '--deny-self-hosted-runners')
+gh release download $tag --repo rustcommons/rust-mirror --pattern $archive --pattern $sbom --pattern SHA256SUMS
 if ($LASTEXITCODE -ne 0) { throw 'Release download failed' }
-$lines = @(Get-Content .\SHA256SUMS | Where-Object { $_ -cmatch "^[0-9a-f]{64}  $([regex]::Escape($archive))$" })
-if ($lines.Count -ne 1) { throw 'Missing or duplicate checksum entry' }
-$expected = $lines[0].Substring(0, 64)
-$actual = (Get-FileHash -LiteralPath ".\$archive" -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($actual -cne $expected) { throw 'Checksum mismatch' }
-gh attestation verify $archive --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
-if ($LASTEXITCODE -ne 0) { throw 'Archive provenance verification failed' }
-gh attestation verify SHA256SUMS --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
-if ($LASTEXITCODE -ne 0) { throw 'Checksum provenance verification failed' }
+foreach ($file in @($archive, $sbom)) {
+  $lines = @(Get-Content .\SHA256SUMS | Where-Object { $_ -cmatch "^[0-9a-f]{64}  $([regex]::Escape($file))$" })
+  if ($lines.Count -ne 1) { throw 'Missing or duplicate checksum entry' }
+  $actual = (Get-FileHash -LiteralPath ".\$file" -Algorithm SHA256).Hash.ToLowerInvariant()
+  if ($actual -cne $lines[0].Substring(0, 64)) { throw 'Checksum mismatch' }
+}
+foreach ($file in @($archive, $sbom, 'SHA256SUMS')) {
+  gh attestation verify $file @policy --predicate-type https://slsa.dev/provenance/v1
+  if ($LASTEXITCODE -ne 0) { throw 'Provenance verification failed' }
+}
+gh attestation verify $archive @policy --predicate-type https://cyclonedx.org/bom
+if ($LASTEXITCODE -ne 0) { throw 'Archive SBOM attestation verification failed' }
 Expand-Archive -LiteralPath ".\$archive" -DestinationPath .\rust-mirror-download
-.\rust-mirror-download\rust-mirror-0.5.2-x86_64-pc-windows-msvc\rust-mirror.exe --version
+.\rust-mirror-download\rust-mirror-0.5.3-x86_64-pc-windows-msvc\rust-mirror.exe --version
 ```
 
 Unix shell (Linux example; choose an Apple target on macOS):
 
 ```sh
 set -eu
-archive=rust-mirror-0.5.2-x86_64-unknown-linux-musl.tar.gz
-gh release download v0.5.2 --repo rustcommons/rust-mirror --pattern "$archive" --pattern SHA256SUMS
-grep -F "  $archive" SHA256SUMS > "$archive.sha256"
-shasum -a 256 -c "$archive.sha256"
-# Linux alternative: sha256sum --check "$archive.sha256"
-gh attestation verify "$archive" --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
-gh attestation verify SHA256SUMS --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
+tag=v0.5.3
+archive=rust-mirror-0.5.3-x86_64-unknown-linux-musl.tar.gz
+sbom=rust-mirror-0.5.3.cdx.json
+tag_object=$(gh api "repos/rustcommons/rust-mirror/git/ref/tags/$tag" --jq '.object.sha')
+commit=$(gh api "repos/rustcommons/rust-mirror/git/tags/$tag_object" --jq '.object.sha')
+printf '%s\n' "$commit" | grep -E '^[0-9a-f]{40}$'
+# Confirm $commit against the merged release PR before continuing.
+gh release download "$tag" --repo rustcommons/rust-mirror --pattern "$archive" --pattern "$sbom" --pattern SHA256SUMS
+awk -v a="$archive" -v s="$sbom" '$2==a {x++; print} $2==s {y++; print} END {if (x!=1 || y!=1) exit 1}' SHA256SUMS > selected-payloads.sha256
+shasum -a 256 -c selected-payloads.sha256
+# Linux alternative: sha256sum --check selected-payloads.sha256
+verify() {
+  gh attestation verify "$1" --repo rustcommons/rust-mirror \
+    --signer-workflow rustcommons/rust-mirror/.github/workflows/build-binaries.yml \
+    --source-digest "$commit" --signer-digest "$commit" --deny-self-hosted-runners \
+    --predicate-type "$2"
+}
+verify "$archive" https://slsa.dev/provenance/v1
+verify "$sbom" https://slsa.dev/provenance/v1
+verify SHA256SUMS https://slsa.dev/provenance/v1
+verify "$archive" https://cyclonedx.org/bom
 tar -xzf "$archive"
-./rust-mirror-0.5.2-x86_64-unknown-linux-musl/rust-mirror --version
+./rust-mirror-0.5.3-x86_64-unknown-linux-musl/rust-mirror --version
 ```
 
-Attestations bind the downloaded file digest to this repository's release workflow.
-For dispatch backfills, GitHub's provenance identifies the workflow revision on main;
-the archive's attested README.txt binds the separately checked-out immutable source
-tag and commit. For tag-triggered builds the workflow and source revisions coincide.
-Checksums alone do not authenticate a download. Provenance does not imply OS code
-signing, independent code review or identical rebuilds.
+The read-only [public-download workflow](../.github/workflows/verify-release-binaries.yml),
+dispatched with tag v0.5.3 after publication, additionally compares the exact signed
+SBOM predicate with the downloaded document and the selected archive digest. It
+checks every asset's provenance and source/lock binding before native execution.
+The manual commands above verify the typed signed attestations; they do not perform
+that full JSON-document comparison.
 
-The commands above pin the historical v0.5.2 profile and original signer. Future
-SBOM-bearing releases add rust-mirror-VERSION.cdx.json to SHA256SUMS and require
-signer workflow rustcommons/rust-mirror/.github/workflows/build-binaries.yml instead.
-For that future profile, also pass --source-digest COMMIT --signer-digest COMMIT
---deny-self-hosted-runners, where COMMIT is the independently inspected immutable
-release-tag commit. Verify the SBOM's checksum/provenance too. Archive SBOM bindings can additionally
-be checked with gh attestation verify --predicate-type https://cyclonedx.org/bom.
-See [release security automation](SECURITY-BASELINE.md#sbom-and-release-assets) for
-scope and reproducibility limits. Existing releases are not retrofitted.
+Checksums alone do not authenticate a download. Provenance does not imply OS code
+signing, independent review or universal identical rebuilds. Historical dispatch
+backfills identify their original workflow revision separately from product source;
+do not apply the new same-commit signer policy to those old profiles. See
+[release security automation](SECURITY-BASELINE.md#sbom-and-release-assets) for scope.
 
 ### Unsigned Windows and macOS downloads
 
@@ -137,8 +165,8 @@ Privacy & Security > Open Anyway** for that item, if offered. Alternatively remo
 only that verified executable's download quarantine flag, then retry:
 
 ```sh
-xattr -d com.apple.quarantine ./rust-mirror-0.5.2-aarch64-apple-darwin/rust-mirror
-./rust-mirror-0.5.2-aarch64-apple-darwin/rust-mirror --version
+xattr -d com.apple.quarantine ./rust-mirror-0.5.3-aarch64-apple-darwin/rust-mirror
+./rust-mirror-0.5.3-aarch64-apple-darwin/rust-mirror --version
 ```
 
 Use your actual extracted path. A missing quarantine attribute needs no removal.
@@ -154,7 +182,7 @@ With Rust/Cargo 1.90 or newer:
 ```sh
 cargo install rust-mirror --locked
 # Pin a particular crate release when needed:
-cargo install rust-mirror --version 0.5.2 --locked
+cargo install rust-mirror --version 0.5.3 --locked
 ```
 
 Cargo installs the executable into its configured binary directory (normally

@@ -23,7 +23,8 @@ Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 | macOS, Apple Silicon | aarch64-apple-darwin |
 | macOS, Intel | x86_64-apple-darwin |
 
-0.5.2 adds the GNU download; v0.5.1 keeps its four original archives.
+[0.5.3 refreshes security-sensitive dependencies](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.5.3.md#security)
+and adds a Cargo SBOM to the downloads. 0.5.2 adds the GNU download; v0.5.1 keeps its four original archives.
 GNU targets glibc 2.17; its container userland checks cover CentOS 7,
 AlmaLinux 8, openSUSE Leap 42.3, Ubuntu 16.04/18.04/20.04 and Debian 8/9.
 Old kernels are untested; for glibc below 2.17 use static musl. Choose GNU when your

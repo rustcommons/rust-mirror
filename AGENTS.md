@@ -440,6 +440,27 @@ are verified in [the publication record](docs/evals/2026-11-15-publication-0.5.2
 Preserve the earlier candidate and v0.5.1 evidence; later versions still need their
 own authorization.
 
+## 0.5.3 security release authorization
+
+On 2026-11-15 the owner authorized 0.5.3: the merged PR #51 RustSec lock fixes plus
+existing main, with no additional application implementation changes. Follow
+[0.5.3 notes](docs/releases/v0.5.3.md) and the release policy. Qualify the clean
+package and exact-head five-target dry run with six hashed payloads (five archives
+plus SBOM), one SHA256SUMS and all eight GNU gates. List every upstream advisory
+and keep configuration-specific exposure, unknown exploitability and logging facts
+honest; do not describe TLS/official-origin checks as eliminating trust-chain bugs.
+
+The coordinator merges the green release PR. Then create the annotated v0.5.3 tag
+at that exact normal merge; trusted-publishing.yml waits for owner approval in
+crates-io, obtains only its short-lived OIDC token and publishes. Do not use a
+long-lived token or the owner-machine route for this release. Create exact committed
+GitHub Release notes after registry confirmation so binary automation can attach
+its seven-file profile. Verify registry/payload, docs.rs, fresh install, all
+checksums/provenance/SBOM bindings and public Windows/GNU/musl execution; record in
+a PR. Draft the repository advisory only; the coordinator publishes it after release.
+Do not tag/publish before merge, move protected tags, change existing assets or
+claim SLSA3 until the new live provenance is verified.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to

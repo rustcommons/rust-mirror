@@ -2,15 +2,22 @@
 
 ## [Unreleased]
 
-- Add weekly grouped dependency/action updates, pinned action commits, RustSec/
-  license/source checks, workflow security lint and OpenSSF Scorecard reporting.
-- Prepare owner-reviewed crates.io Trusted Publishing while retaining the manual
-  release path. Future binary releases add a source-bound Cargo CycloneDX SBOM,
-  reusable build/sign isolation and independent reproducibility measurements.
-- Update locked rustls, rustls-webpki, webpki-roots and rustix to address RustSec
-  advisories, with required existing libc/linux-raw-sys updates. No new crate
-  dependency names are added. These fixes are unreleased; published 0.5.2
-  archives remain immutable.
+## [0.5.3] - 2026-11-15
+
+- Refresh locked rustls to 0.23.46, rustls-webpki to 0.103.17, webpki-roots to
+  1.0.10 and rustix to 1.1.6 for eleven RustSec advisories. Required existing
+  libc/linux-raw-sys entries also update; no new crate names or application logic.
+  Upgrade <=0.5.2 locked installs/prebuilt downloads; see [security details](docs/releases/v0.5.3.md#security)
+  for all GHSA/RustSec IDs, configuration exclusions and exposure bounds.
+- Ship a source-bound Cargo CycloneDX SBOM alongside the five archives, with one
+  SHA256SUMS covering all six payloads. Reusable build/sign isolation, provenance
+  and archive/SBOM bindings replace the historical release signer for this profile.
+  Scope /Brepro to Windows release builds alongside static CRT; retain actual
+  two-clean-build measurements rather than assume universal reproducibility.
+- Add weekly grouped dependency/action updates, pinned actions, RustSec/license/
+  source gates, workflow security lint, Scorecard and owner-reviewed Trusted
+  Publishing through trusted-publishing.yml. Keep the manual release path.
+- Package/tool version is 0.5.3; protocol, schemas and mirroring APIs are unchanged.
 
 ## [0.5.2] - 2026-11-15
 
