@@ -5,7 +5,22 @@ Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 
 ## Install
 
-Rust/Cargo 1.90 or newer:
+**Download a prebuilt binary** from
+[GitHub Releases](https://github.com/rustcommons/rust-mirror/releases/latest).
+[Verify checksums/provenance and follow the unsigned-download instructions](https://github.com/rustcommons/rust-mirror/blob/main/docs/INSTALL.md).
+
+| Computer | Archive target |
+| --- | --- |
+| Windows, Intel/AMD 64-bit | x86_64-pc-windows-msvc |
+| Any x86_64 Linux (fully static musl) | x86_64-unknown-linux-musl |
+| macOS, Apple Silicon | aarch64-apple-darwin |
+| macOS, Intel | x86_64-apple-darwin |
+
+No Rust installation is needed. On Windows, nothing else to install: the C runtime
+is built in, so no Visual C++ Redistributable is needed. Linux needs no glibc or
+shared-library runtime; normal kernel, CPU and DNS/network requirements still apply.
+
+**Install with Cargo**, using Rust/Cargo 1.90 or newer:
 
 ```sh
 cargo install rust-mirror --locked

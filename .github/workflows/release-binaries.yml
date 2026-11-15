@@ -1,0 +1,244 @@
+name: Release binaries
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable v-prefixed source tag
+        required: true
+        type: string
+      dry_run:
+        description: Build, smoke-test and validate without attesting or uploading
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - '.github/workflows/release-binaries.yml'
+      - 'scripts/release_binaries.py'
+      - 'tests/test_release_binaries.py'
+permissions:
+  contents: read
+concurrency:
+  group: release-binaries-${{ github.event_name }}-${{ inputs.tag || github.ref }}
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
+      commit: ${{ steps.source.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refuse live dispatch outside reviewed main
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run && github.ref != 'refs/heads/main'
+        run: |
+          echo 'Live binary dispatch must use the reviewed workflow on main' >&2
+          exit 1
+      - name: Resolve and freeze the exact tag (PR bootstrap is read-only v0.5.1)
+        id: source
+        env:
+          RELEASE_TAG: ${{ inputs.tag || (github.event_name == 'push' && github.ref_name) || 'v0.5.1' }}
+        run: python scripts/release_binaries.py resolve --root . --tag "$RELEASE_TAG" --output "$GITHUB_OUTPUT"
+      - name: Release helper refusal tests
+        run: python -m unittest discover -s tests -p test_release_binaries.py
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-musl
+          - os: macos-15
+            target: aarch64-apple-darwin
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
+      RELEASE_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          path: automation
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.commit }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.90.0
+        with:
+          targets: ${{ matrix.target }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install musl C compiler for existing C dependencies
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y musl-tools
+      - name: Locked native build from frozen tag
+        shell: bash
+        working-directory: source
+        run: |
+          if [[ "$RELEASE_TARGET" == x86_64-pc-windows-msvc ]]; then
+            export RUSTFLAGS='-C target-feature=+crt-static'
+          elif [[ "$RELEASE_TARGET" == x86_64-unknown-linux-musl ]]; then
+            export RUSTFLAGS='-C target-feature=+crt-static'
+            export CC_x86_64_unknown_linux_musl=musl-gcc
+          fi
+          cargo build --release --locked --target "$RELEASE_TARGET"
+      - name: Smoke both original and archived binary; record ABI and exact source
+        shell: bash
+        run: python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact"
+      - name: Musl real DNS/TLS plan, approved sync and isolated Cargo client
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        shell: bash
+        run: python automation/scripts/prove_crates_platform.py --binary source/target/x86_64-unknown-linux-musl/release/rust-mirror --evidence "$RUNNER_TEMP/musl-network"
+      - name: Musl private-CA proxy, killed transfer and cancellation/resume
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        shell: bash
+        run: python automation/scripts/prove_crates_resume.py --binary source/target/x86_64-unknown-linux-musl/release/rust-mirror --evidence "$RUNNER_TEMP/musl-resume"
+      - name: Record musl DNS/TLS scope and resolver files
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        shell: bash
+        run: |
+          python - <<'PYTHON'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          def result(name):
+              rows = [json.loads(line) for line in (root / 'musl-network' / name).read_text().splitlines()]
+              assert rows[-1]['type'] == 'result' and rows[-1]['ok']
+              return rows[-1]['report']
+          preview = result('sync-preview.jsonl')
+          completed = result('sync-approved.jsonl')
+          assert preview['status'] == 'needs_approval' and completed['status'] == 'completed'
+          assert preview['plan_id'] == completed['plan_id']
+          private_ca = json.loads((root / 'musl-resume/resume-proof.json').read_text())
+          summary = {'source': os.environ['RELEASE_COMMIT'], 'target': os.environ['RELEASE_TARGET'],
+            'direct_official_dns_tls_sync': True, 'hosts': ['index.crates.io', 'static.crates.io'],
+            'plan_id': completed['plan_id'], 'tls': 'rustls; verification enabled; bundled public roots',
+            'resolver_files_present': {p: Path(p).is_file() for p in ['/etc/hosts', '/etc/resolv.conf']},
+            'glibc_nss_plugins': False, 'private_ca_proxy_kill_cancel_resume': private_ca,
+            'scope': 'Successful named official HTTPS operations, not DNS packet inspection or all NSS/proxy policies'}
+          (root / 'binary-artifact/network-smoke.json').write_text(json.dumps(summary, indent=2) + '\n')
+          PYTHON
+      - name: Save bounded musl network evidence without private keys or Cargo homes
+        if: matrix.target == 'x86_64-unknown-linux-musl' && always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: musl-network-evidence
+          path: |
+            ${{ runner.temp }}/musl-network/*.jsonl
+            ${{ runner.temp }}/musl-network/*.stderr
+            ${{ runner.temp }}/musl-network/https-client/client-proof.json
+            ${{ runner.temp }}/musl-resume/resume-proof.json
+            ${{ runner.temp }}/musl-resume/*.jsonl
+            ${{ runner.temp }}/musl-resume/*.stderr
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        with:
+          name: binary-${{ matrix.target }}
+          path: ${{ runner.temp }}/binary-artifact
+          if-no-files-found: error
+          retention-days: 14
+  verify:
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: binary-*
+          path: binary-artifacts
+      - name: Validate all four archives and generate SHA256SUMS
+        run: python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets
+      - name: Check existing release body and live tag without writing
+        run: python scripts/release_binaries.py preflight --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --wait-seconds 600 --allow-existing
+      - name: Verify sorted checksum manifest
+        working-directory: release-assets
+        run: sha256sum --check SHA256SUMS
+      - uses: actions/upload-artifact@v7
+        with:
+          name: verified-release-assets
+          path: release-assets
+          if-no-files-found: error
+          retention-days: 14
+  publish:
+    needs: [prepare, verify]
+    if: >-
+      github.repository == 'rustcommons/rust-mirror' &&
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && !inputs.dry_run && github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    concurrency:
+      group: binary-asset-publish-${{ needs.prepare.outputs.tag }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-release-assets
+          path: release-assets
+      - name: Refuse mismatched release or any existing assets before attesting
+        run: python scripts/release_binaries.py preflight --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT"
+      - name: Attest each archive and SHA256SUMS with Sigstore
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release-assets/*
+      - name: Verify attestations before any release upload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          for asset in sorted(Path('release-assets').iterdir()):
+              subprocess.run(['gh', 'attestation', 'verify', str(asset), '--repo', 'rustcommons/rust-mirror', '--signer-workflow', 'rustcommons/rust-mirror/.github/workflows/release-binaries.yml'], check=True)
+          PY
+      - name: Recheck release and append assets without replacement
+        run: python scripts/release_binaries.py upload --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --output release-assets

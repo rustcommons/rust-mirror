@@ -1,7 +1,9 @@
 # rust-mirror user guide
 
-Start here to understand and operate published rust-mirror 0.1.1. Install with
-`cargo install rust-mirror --version 0.1.1 --locked`.
+Start here to understand and operate rust-mirror. First
+[download a prebuilt binary](INSTALL.md#download-a-prebuilt-binary), or
+[install with Cargo](INSTALL.md#install-with-cargo). The install guide explains
+checksum/provenance verification and unsigned Windows/macOS prompts.
 
 This guide explains the normal workflow. The [command reference](CLI-REFERENCE.md)
 lists every command/option, defaults, outputs and failure behavior. The
