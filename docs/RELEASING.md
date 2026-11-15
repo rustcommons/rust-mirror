@@ -91,7 +91,8 @@ registry payload, docs.rs, fresh installation, tag/release and workflow.
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
   committed [versioned notes](releases/v0.5.1.md) as the GitHub Release, latest and
-  without attached standalone binaries unless separately authorized.
+  with binary archives/checksums attached only through the release workflow under
+  the owner's 2026-11-15 authorization. Do not change historical note bodies.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.
 - Never move a release tag, overwrite a published crate or rewrite failed history.
@@ -111,3 +112,61 @@ model. No evidence certifies arbitrary offline Cargo dependencies, OS SDKs, anci
 pre-v2 Rustup releases, hostile filesystems, production configuration or globally
 atomic in-flight group switching. Use the [current gates](RELEASE-0.1.0-PLAN.md) and
 [dated evidence](evals/2026-11-11-rustup-lifecycle.md), not a blanket coverage claim.
+
+## Prebuilt GitHub Release binaries
+
+The owner authorized binary attachments on 2026-11-15, superseding the earlier
+notes-only policy for future distribution. This does not authorize a new crates.io
+publication, a version bump, OS signing or rewriting previous release outcomes.
+Backfill only current v0.5.1 after coordinator review/merge of this workflow.
+
+[Release binaries](../.github/workflows/release-binaries.yml) runs on v* tag pushes
+and workflow_dispatch with a tag and dry_run (default true). Each build checks out
+the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
+--locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
+Build targets are x86_64-pc-windows-msvc on windows-latest,
+x86_64-unknown-linux-gnu on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
+x86_64-apple-darwin on macos-15-intel. Ubuntu 22.04 is the oldest practical hosted
+Ubuntu runner; record its glibc 2.35, actual maximum required GLIBC symbol and
+linked libraries. Fail if the baseline rises or required symbols exceed 2.35.
+This bounds runner compatibility, not all distributions or older OS versions.
+
+Each rust-mirror-VERSION-TARGET.zip (Windows) or .tar.gz (Unix) contains one
+same-named folder with the executable, original tagged LICENSE and README.txt.
+The README records version, exact source commit, usage, verification, unsigned OS
+prompts and Linux ABI evidence. Smoke-test --version and protocol-1 --version
+before packing and after extraction on each native runner. Collect only the four
+expected archives, verify source/target/license/digests and produce sorted
+SHA256SUMS with lowercase SHA-256, two spaces and file name. Preserve build reports
+as workflow artifacts; record exact run IDs and measured ABI in dated evidence.
+
+Prepare/build/verify jobs are read-only. Only the publish job has contents: write,
+id-token: write and attestations: write. It uses actions/attest-build-provenance to
+attest all four archives and SHA256SUMS with Sigstore, then gh attestation verify
+with the repository/workflow identity before uploading. Dispatch provenance names
+the main workflow revision; the attested archive README binds the separate tagged
+source commit. Do not claim the workflow revision is the backfilled source revision.
+Tag-triggered builds use the same source/workflow revision.
+
+The workflow never creates a GitHub Release: postpublication still creates exact
+committed notes. It waits up to ten minutes for that existing release, then refuses
+mismatched tag/commit/body or drafts. The publish job rechecks immediately before
+writes and refuses **any existing assets**, including an earlier partial upload.
+GitHub duplicate-name refusal is retained; no clobber, PATCH, DELETE or automatic
+repair is permitted. Concurrent publish jobs for the same tag are serialized.
+An interrupted upload may leave a successful prefix: preserve it and ask the owner
+for a recovery decision; never delete/rebuild existing published files.
+
+A PR-triggered read-only v0.5.1 build is the bootstrap test when GitHub cannot
+register workflow_dispatch until the file exists on main. Dispatch dry runs build,
+smoke-test, collect and check release/tag/body but never attest/upload; they allow
+existing assets because they cannot change them. Live dispatch must run the reviewed
+workflow on main with dry_run=false. After merge, run a dispatch dry run first,
+then dispatch v0.5.1 with dry_run=false. Do not create a public throwaway release.
+After uploading, download all five live assets, verify SHA256SUMS and attestations,
+inspect archive layout/README/source, recheck release body/tag and record evidence.
+
+See [install verification and unsigned prompts](INSTALL.md). GitHub provenance is
+separate from Windows Authenticode/Apple Developer ID or notarization; no paid OS
+signing is configured. Keep historical no-assets records dated and intact. New
+assets do not change immutable crates.io payloads or the release's source tag.

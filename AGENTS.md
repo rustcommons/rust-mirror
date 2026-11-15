@@ -339,6 +339,24 @@ The coordinator published 0.5.1 from the owner's Windows machine after normal me
 payload, docs.rs, fresh installed proofs, tag/release and verification workflow.
 Later publication still requires separate authorization.
 
+## Prebuilt release binaries authorization
+
+The owner authorized unsigned GitHub Release binary attachments on 2026-11-15,
+replacing the earlier notes-only distribution boundary. Use the reviewed
+[release workflow](.github/workflows/release-binaries.yml) and
+[release policy](docs/RELEASING.md#prebuilt-github-release-binaries): exact immutable
+tagged source, locked Rust 1.90 builds, native Windows/Linux/macOS smoke tests,
+LICENSE/README.txt, SHA256SUMS and GitHub/Sigstore attestations. Only the publish
+job may hold contents/id-token/attestations write permissions. Never replace/delete
+existing release assets or change notes/tags to pass an upload check. Keep OS
+signing/notarization absent and user prompts explicit. No new crate dependency or
+crate publication is authorized by this distribution change.
+
+Prepare and qualify the workflow in a PR for coordinator review/merge. After merge,
+backfill v0.5.1 only via dispatch; verify live archives, hashes and attestations.
+Do not create throwaway public releases. Preserve dated notes-only publication
+records as historical observations and record new binary distribution separately.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to

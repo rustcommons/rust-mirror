@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Add automatic unsigned Windows, Linux and macOS CLI archives on GitHub Releases,
+  with checksums, provenance attestations and install guidance. Existing published
+  crates and historical release-note bodies are unchanged.
+
 ## [0.5.1] - 2026-11-15
 
 - Allow usable crate previews when an upstream index contains historical,
