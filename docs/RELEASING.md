@@ -118,7 +118,10 @@ atomic in-flight group switching. Use the [current gates](RELEASE-0.1.0-PLAN.md)
 The owner authorized binary attachments on 2026-11-15, superseding the earlier
 notes-only policy for future distribution. This does not authorize a new crates.io
 publication, a version bump, OS signing or rewriting previous release outcomes.
-Backfill only current v0.5.1 after coordinator review/merge of this workflow.
+The authorized current-version v0.5.1 backfill is complete after coordinator merge;
+[dated live evidence](evals/2026-11-15-binary-backfill-0.5.1.md) records the archives,
+attestations and public Windows/Linux download execution. Other historical-version
+backfills require separate approval.
 
 [Release binaries](../.github/workflows/release-binaries.yml) runs on v* tag pushes
 and workflow_dispatch with a tag and dry_run (default true). Each build checks out
@@ -174,8 +177,8 @@ A PR-triggered read-only v0.5.1 build is the bootstrap test when GitHub cannot
 register workflow_dispatch until the file exists on main. Dispatch dry runs build,
 smoke-test, collect and check release/tag/body but never attest/upload; they allow
 existing assets because they cannot change them. Live dispatch must run the reviewed
-workflow on main with dry_run=false. After merge, run a dispatch dry run first,
-then dispatch v0.5.1 with dry_run=false. Do not create a public throwaway release.
+workflow on main with dry_run=false. After a successful reviewed dry run and coordinator merge, dispatch the
+authorized version with dry_run=false. Do not create a public throwaway release.
 After uploading, download all five live assets, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.
 
@@ -183,3 +186,12 @@ See [install verification and unsigned prompts](INSTALL.md). GitHub provenance i
 separate from Windows Authenticode/Apple Developer ID or notarization; no paid OS
 signing is configured. Keep historical no-assets records dated and intact. New
 assets do not change immutable crates.io payloads or the release's source tag.
+
+[Verify published binary downloads](../.github/workflows/verify-release-binaries.yml)
+is read-only: dispatch with the tag to download all five assets, check exact notes/
+source/license, SHA256SUMS and every GitHub attestation, then run the actual downloaded
+Windows ZIP/Linux musl binary on native hosted runners. No Rust rebuild/install,
+release mutation, write token or OIDC permission is used. API credentials are removed
+from the product executable's environment. Save its reports with the release record;
+its native-execution scope is Windows/Linux, not post-download macOS execution or
+browser quarantine UI.

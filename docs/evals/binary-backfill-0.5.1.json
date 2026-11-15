@@ -1,0 +1,227 @@
+{
+  "version": "0.5.1",
+  "tag": "v0.5.1",
+  "source_commit": "112ef7a7a71d40349c601f299f965199b5b279ba",
+  "workflow_commit": "cb9833a8bd18cf71f17c6e9d5cc0962ae39f7cfd",
+  "qualified_workflow_head": "51eb1686d4383b37772de1bd8477c90570e91e98",
+  "backfill_run": 43693076759,
+  "native_download_verification_run": 43693774323,
+  "main_ci": 43693060733,
+  "assets_before": 0,
+  "assets_after": 5,
+  "assets": [
+    {
+      "name": "SHA256SUMS",
+      "sha256": "431f5f732f48ad8310f94ebc61d92eb271f38fce9557d1dd52ef6862433bb171",
+      "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.1/SHA256SUMS",
+      "size": 451,
+      "attestation_verified": true
+    },
+    {
+      "name": "rust-mirror-0.5.1-aarch64-apple-darwin.tar.gz",
+      "sha256": "a07b4359ad1ed16e32ab49f50b6be7c3ebd1ca95fe8cf4cbb7aed1223ef6827b",
+      "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.1/rust-mirror-0.5.1-aarch64-apple-darwin.tar.gz",
+      "size": 3557354,
+      "attestation_verified": true
+    },
+    {
+      "name": "rust-mirror-0.5.1-x86_64-apple-darwin.tar.gz",
+      "sha256": "c95f884266694e9e1ba143bc1f2be5913081404dceb8229205322a5a1742ed10",
+      "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.1/rust-mirror-0.5.1-x86_64-apple-darwin.tar.gz",
+      "size": 3759819,
+      "attestation_verified": true
+    },
+    {
+      "name": "rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip",
+      "sha256": "0b2293a4a424c6fa42724d6bf9f6188ae24650859d38537568e2ba4d5bd71a7c",
+      "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.1/rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip",
+      "size": 3504661,
+      "attestation_verified": true
+    },
+    {
+      "name": "rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz",
+      "sha256": "d79e96a285edd6c62c6c54b83ba08478669f8a9ec831a637f2124f1e274cdb19",
+      "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.1/rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz",
+      "size": 4001330,
+      "attestation_verified": true
+    }
+  ],
+  "release_body_sha256": "77654786910a962fc0ca18776fc69b8fd328dcfeec17f7e20f2d01b4db72a48a",
+  "release_body_unchanged": true,
+  "source_tag_unchanged": true,
+  "local_attestation_verification": true,
+  "signer_workflow": "rustcommons/rust-mirror/.github/workflows/release-binaries.yml",
+  "native_downloads": {
+    "windows": {
+      "tag": "v0.5.1",
+      "source": "112ef7a7a71d40349c601f299f965199b5b279ba",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.5.1",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "431f5f732f48ad8310f94ebc61d92eb271f38fce9557d1dd52ef6862433bb171",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-aarch64-apple-darwin.tar.gz": {
+          "sha256": "a07b4359ad1ed16e32ab49f50b6be7c3ebd1ca95fe8cf4cbb7aed1223ef6827b",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-x86_64-apple-darwin.tar.gz": {
+          "sha256": "c95f884266694e9e1ba143bc1f2be5913081404dceb8229205322a5a1742ed10",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip": {
+          "sha256": "0b2293a4a424c6fa42724d6bf9f6188ae24650859d38537568e2ba4d5bd71a7c",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "d79e96a285edd6c62c6c54b83ba08478669f8a9ec831a637f2124f1e274cdb19",
+          "verified": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-pc-windows-msvc",
+      "downloaded_archive": "rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip",
+      "binary_sha256": "e320e7ecae423a4f783abcd16079fc090c1cd5d3b04de564ade7210a0bd780d4",
+      "human_version": "rust-mirror 0.5.1",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.5.1",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.5.1"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "imports": [
+          "KERNEL32.dll",
+          "bcryptprimitives.dll",
+          "kernel32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "bcrypt.dll",
+          "ADVAPI32.dll",
+          "ntdll.dll",
+          "WS2_32.dll"
+        ],
+        "external_crt_imports": false
+      },
+      "read_only": true
+    },
+    "linux": {
+      "tag": "v0.5.1",
+      "source": "112ef7a7a71d40349c601f299f965199b5b279ba",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.5.1",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "431f5f732f48ad8310f94ebc61d92eb271f38fce9557d1dd52ef6862433bb171",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-aarch64-apple-darwin.tar.gz": {
+          "sha256": "a07b4359ad1ed16e32ab49f50b6be7c3ebd1ca95fe8cf4cbb7aed1223ef6827b",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-x86_64-apple-darwin.tar.gz": {
+          "sha256": "c95f884266694e9e1ba143bc1f2be5913081404dceb8229205322a5a1742ed10",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip": {
+          "sha256": "0b2293a4a424c6fa42724d6bf9f6188ae24650859d38537568e2ba4d5bd71a7c",
+          "verified": true
+        },
+        "rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "d79e96a285edd6c62c6c54b83ba08478669f8a9ec831a637f2124f1e274cdb19",
+          "verified": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-unknown-linux-musl",
+      "downloaded_archive": "rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz",
+      "binary_sha256": "e7964d999e1655da87f3178ff8efcbc528835470a0c73e152e07e26277d66f22",
+      "human_version": "rust-mirror 0.5.1",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.5.1",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.5.1"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "file": "/home/runner/work/_temp/live-binary-verification/rust-mirror-0.5.1-x86_64-unknown-linux-musl/rust-mirror: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, BuildID[sha1]=c98c4f468c4602b588b7be660a3411809bb0eb44, not stripped",
+        "ldd": "statically linked",
+        "no_interpreter_or_needed": true
+      },
+      "read_only": true
+    }
+  },
+  "linux_build_linkage": {
+    "file": "/home/runner/work/rust-mirror/rust-mirror/source/target/x86_64-unknown-linux-musl/release/rust-mirror: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, BuildID[sha1]=c98c4f468c4602b588b7be660a3411809bb0eb44, not stripped",
+    "ldd": "statically linked",
+    "ldd_exit": 0,
+    "program_headers": "Elf file type is DYN (Position-Independent Executable file)\nEntry point 0x65679\nThere are 10 program headers, starting at offset 64\n\nProgram Headers:\n  Type           Offset             VirtAddr           PhysAddr\n                 FileSiz            MemSiz              Flags  Align\n  LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000\n                 0x0000000000038a68 0x0000000000038a68  R      0x1000\n  LOAD           0x0000000000039000 0x0000000000039000 0x0000000000039000\n                 0x000000000069063c 0x000000000069063c  R E    0x1000\n  LOAD           0x00000000006ca000 0x00000000006ca000 0x00000000006ca000\n                 0x000000000010cff8 0x000000000010cff8  R      0x1000\n  LOAD           0x00000000007d78f8 0x00000000007d88f8 0x00000000007d88f8\n                 0x00000000000c5348 0x00000000000c6c50  RW     0x1000\n  DYNAMIC        0x0000000000898c38 0x0000000000899c38 0x0000000000899c38\n                 0x0000000000000180 0x0000000000000180  RW     0x8\n  NOTE           0x0000000000000270 0x0000000000000270 0x0000000000000270\n                 0x0000000000000024 0x0000000000000024  R      0x4\n  TLS            0x0000000000870f00 0x0000000000871f00 0x0000000000871f00\n                 0x0000000000000078 0x0000000000000170  R      0x8\n  GNU_EH_FRAME   0x0000000000783bd8 0x0000000000783bd8 0x0000000000783bd8\n                 0x00000000000139ec 0x00000000000139ec  R      0x4\n  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000\n                 0x0000000000000000 0x0000000000000000  RW     0x10\n  GNU_RELRO      0x00000000007d78f8 0x00000000007d88f8 0x00000000007d88f8\n                 0x00000000000c4708 0x00000000000c4708  R      0x1\n\n Section to Segment mapping:\n  Segment Sections...\n   00     .note.gnu.build-id .gnu.hash .dynsym .dynstr .rela.dyn \n   01     .init .plt .plt.got .text .fini \n   02     .rodata .eh_frame_hdr .gcc_except_table \n   03     .eh_frame .tdata .init_array .fini_array .data.rel.ro .dynamic .got .data .bss \n   04     .dynamic \n   05     .note.gnu.build-id \n   06     .tdata .tbss \n   07     .eh_frame_hdr \n   08     \n   09     .eh_frame .tdata .init_array .fini_array .data.rel.ro .dynamic .got",
+    "dynamic_section": "Dynamic section at offset 0x898c38 contains 20 entries:\n  Tag        Type                         Name/Value\n 0x000000000000000c (INIT)               0x39000\n 0x000000000000000d (FINI)               0x6c9639\n 0x0000000000000019 (INIT_ARRAY)         0x871f78\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x871f80\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x298\n 0x0000000000000005 (STRTAB)             0x2d0\n 0x0000000000000006 (SYMTAB)             0x2b8\n 0x000000000000000a (STRSZ)              1 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x899db8\n 0x0000000000000007 (RELA)               0x2d8\n 0x0000000000000008 (RELASZ)             231312 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          9638\n 0x0000000000000000 (NULL)               0x0",
+    "no_interpreter_or_needed": true,
+    "empty_root_version": "rust-mirror 0.5.1"
+  },
+  "linux_network": {
+    "direct_official_dns_tls_sync": true,
+    "hosts": [
+      "index.crates.io",
+      "static.crates.io"
+    ],
+    "tls": "rustls; verification enabled; bundled public roots",
+    "resolver_files_present": {
+      "/etc/hosts": true,
+      "/etc/resolv.conf": true
+    },
+    "glibc_nss_plugins": false,
+    "private_ca_proxy_kill_resumed": true,
+    "private_ca_proxy_cancel_resumed": true,
+    "retry_and_heartbeats": true
+  },
+  "crate_archive_sha256_unchanged": "29b547bb8b762beb0f403dda6f8f628ab7706a18ccd52bb0f01711382a0bda39",
+  "scope": "Four runner build/unpacked smokes; post-download native execution on Windows and Linux only. No universal legacy kernel/NSS/SSO, browser quarantine UI or production Nexus guarantee."
+}

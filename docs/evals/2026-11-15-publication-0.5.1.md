@@ -108,3 +108,11 @@ Postmerge [main CI](https://github.com/rustcommons/rust-mirror/actions/runs/4366
 passed at the release merge. Main was clean and remote-aligned before this excluded-
 documentation record branch. This PR changes no packaged source, dependency, version,
 immutable tag/archive or release-note body and requires coordinator review before merge.
+
+## Subsequent authorized binary backfill
+
+The initial notes-only/no-assets observations above precede the owner's binary
+distribution authorization. After the separately reviewed workflow merge,
+[v0.5.1 binary backfill](2026-11-15-binary-backfill-0.5.1.md) attached four archives
+and SHA256SUMS with verified provenance. The existing notes, source tag and crates.io
+archive were unchanged. Preserve the initial publication record and its hashes.
