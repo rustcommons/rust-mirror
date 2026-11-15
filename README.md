@@ -1,5 +1,11 @@
 # rust-mirror
 
+[![CI](https://github.com/rustcommons/rust-mirror/actions/workflows/ci.yml/badge.svg)](https://github.com/rustcommons/rust-mirror/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rustcommons/rust-mirror/badge)](https://scorecard.dev/viewer/?uri=github.com/rustcommons/rust-mirror)
+[![crates.io](https://img.shields.io/crates/v/rust-mirror.svg)](https://crates.io/crates/rust-mirror)
+[![docs.rs](https://docs.rs/rust-mirror/badge.svg)](https://docs.rs/rust-mirror/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/rustcommons/rust-mirror/blob/main/LICENSE)
+
 Prepare verified Rust toolchain and curated crate mirrors for offline development.
 Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 

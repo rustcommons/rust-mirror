@@ -1,0 +1,253 @@
+{
+  "date": "2026-11-15",
+  "base": "c269ad144c680f55432af19226a24ac6f8262764",
+  "provider": {
+    "security": {
+      "default_branch": "main",
+      "security_and_analysis": {
+        "dependabot_security_updates": {
+          "status": "enabled"
+        },
+        "secret_scanning": {
+          "status": "enabled"
+        },
+        "secret_scanning_non_provider_patterns": {
+          "status": "disabled"
+        },
+        "secret_scanning_push_protection": {
+          "status": "enabled"
+        },
+        "secret_scanning_validity_checks": {
+          "status": "disabled"
+        }
+      },
+      "visibility": "public"
+    },
+    "private_reporting": {
+      "enabled": true
+    },
+    "rules": [
+      {
+        "enforcement": "active",
+        "name": "protect-main",
+        "target": "branch"
+      },
+      {
+        "enforcement": "active",
+        "name": "protect-release-tags",
+        "target": "tag"
+      }
+    ],
+    "environment": {
+      "deployment_branch_policy": {
+        "custom_branch_policies": true,
+        "protected_branches": false
+      },
+      "name": "crates-io",
+      "protection_rule_types": [
+        "required_reviewers",
+        "branch_policy"
+      ]
+    },
+    "tag_policy": [
+      {
+        "name": "v*",
+        "type": "tag"
+      }
+    ],
+    "codeql": {
+      "languages": [
+        "actions",
+        "python",
+        "rust"
+      ],
+      "query_suite": "default",
+      "state": "configured"
+    }
+  },
+  "action_pins": [
+    {
+      "reference": "actions/attest-build-provenance@v4.2.2",
+      "verified_commit": "4d101475d8b20a2381f78447822ac1eab6504dd8",
+      "source_url": "https://github.com/actions/attest-build-provenance/commit/4d101475d8b20a2381f78447822ac1eab6504dd8",
+      "matched": true
+    },
+    {
+      "reference": "actions/attest-sbom@v4.1.0",
+      "verified_commit": "c604332985a26aa8cf1bdc465b92731239ec6b9e",
+      "source_url": "https://github.com/actions/attest-sbom/commit/c604332985a26aa8cf1bdc465b92731239ec6b9e",
+      "matched": true
+    },
+    {
+      "reference": "actions/checkout@v4",
+      "verified_commit": "11d5960a326750d5838078e36cf38b85af677262",
+      "source_url": "https://github.com/actions/checkout/commit/11d5960a326750d5838078e36cf38b85af677262",
+      "matched": true
+    },
+    {
+      "reference": "actions/checkout@v7",
+      "verified_commit": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "source_url": "https://github.com/actions/checkout/commit/3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "matched": true
+    },
+    {
+      "reference": "actions/download-artifact@v8",
+      "verified_commit": "9000827ccba6bdab643e8b6fd33ac0654aef8333",
+      "source_url": "https://github.com/actions/download-artifact/commit/9000827ccba6bdab643e8b6fd33ac0654aef8333",
+      "matched": true
+    },
+    {
+      "reference": "actions/setup-python@v5",
+      "verified_commit": "a26af69be951a213d495a4c3e4e4022e16d87065",
+      "source_url": "https://github.com/actions/setup-python/commit/a26af69be951a213d495a4c3e4e4022e16d87065",
+      "matched": true
+    },
+    {
+      "reference": "actions/upload-artifact@v4",
+      "verified_commit": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+      "source_url": "https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02",
+      "matched": true
+    },
+    {
+      "reference": "actions/upload-artifact@v7",
+      "verified_commit": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+      "source_url": "https://github.com/actions/upload-artifact/commit/cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+      "matched": true
+    },
+    {
+      "reference": "dtolnay/rust-toolchain@1.90.0",
+      "verified_commit": "547f64eaa184fd62768e02b77019e5408713ca53",
+      "source_url": "https://github.com/dtolnay/rust-toolchain/commit/547f64eaa184fd62768e02b77019e5408713ca53",
+      "matched": true
+    },
+    {
+      "reference": "github/codeql-action@v4.39.1",
+      "verified_commit": "9b3254085494b55a0f7c4c2b3d2d52cc712ce370",
+      "source_url": "https://github.com/github/codeql-action/commit/9b3254085494b55a0f7c4c2b3d2d52cc712ce370",
+      "matched": true
+    },
+    {
+      "reference": "ossf/scorecard-action@v2.5.0",
+      "verified_commit": "fa7117db83c52d787ae5a89f350999701505d78e",
+      "source_url": "https://github.com/ossf/scorecard-action/commit/fa7117db83c52d787ae5a89f350999701505d78e",
+      "matched": true
+    },
+    {
+      "reference": "rust-lang/crates-io-auth-action@v1.0.6",
+      "verified_commit": "3268eb413133e2960fa4ae0e963ca76380c54cd9",
+      "source_url": "https://github.com/rust-lang/crates-io-auth-action/commit/3268eb413133e2960fa4ae0e963ca76380c54cd9",
+      "matched": true
+    },
+    {
+      "reference": "zizmorcore/zizmor-action@v0.8.1",
+      "verified_commit": "45d7276c9ca790aabd705e31ca99c6185c3e76dd",
+      "source_url": "https://github.com/zizmorcore/zizmor-action/commit/45d7276c9ca790aabd705e31ca99c6185c3e76dd",
+      "matched": true
+    }
+  ],
+  "direct_action_instances": 100,
+  "zizmor": {
+    "version": "1.32.0",
+    "initial_findings": {
+      "unpinned-uses": 72,
+      "artipacked": 13
+    },
+    "final_unsuppressed_findings": 0,
+    "narrow_inline_note": "Same-commit ./ reusable spelling retained for actionlint1.7.12, which cannot yet parse recommended $/ spelling"
+  },
+  "cargo_deny": {
+    "version": "0.20.2",
+    "rustsec_db_revision": "02e2517f457a359fc6d3440ea4560c8ea188fee8",
+    "initial_tls_advisories": [
+      "RUSTSEC-2026-0049",
+      "RUSTSEC-2026-0098",
+      "RUSTSEC-2026-0099",
+      "RUSTSEC-2026-0104",
+      "RUSTSEC-2026-0285",
+      "RUSTSEC-2026-0346",
+      "RUSTSEC-2026-0348",
+      "RUSTSEC-2026-0349",
+      "RUSTSEC-2026-0381",
+      "RUSTSEC-2026-0382"
+    ],
+    "additional_full_graph_advisories": [
+      "RUSTSEC-2026-0486"
+    ],
+    "final_result": "advisories ok, bans ok, licenses ok, sources ok",
+    "warnings": [
+      "getrandom major-version split",
+      "syn major-version split"
+    ],
+    "ignored_advisories": [],
+    "lock_changes": [
+      {
+        "name": "libc",
+        "before": "0.2.178",
+        "after": "0.2.191"
+      },
+      {
+        "name": "linux-raw-sys",
+        "before": "0.11.0",
+        "after": "0.12.1"
+      },
+      {
+        "name": "rustix",
+        "before": "1.1.2",
+        "after": "1.1.6"
+      },
+      {
+        "name": "rustls",
+        "before": "0.23.35",
+        "after": "0.23.46"
+      },
+      {
+        "name": "rustls-webpki",
+        "before": "0.103.8",
+        "after": "0.103.17"
+      },
+      {
+        "name": "webpki-roots",
+        "before": "1.0.4",
+        "after": "1.0.10"
+      }
+    ],
+    "new_crate_names": []
+  },
+  "sbom": {
+    "generator": "cargo-cyclonedx 0.5.9 --locked",
+    "format": "CycloneDX 1.5 JSON",
+    "scope": "All-target/all-feature frozen Cargo graph; not OS/runtime/compiler/CI-tool inventory",
+    "clean_source_test": "c269ad144c680f55432af19226a24ac6f8262764",
+    "independent_scratch_outputs_sha256": [
+      "7a40cdf0d62ef08b876d6d6172c89a010e75c73d01262baf9d23b630cdc67631",
+      "7a40cdf0d62ef08b876d6d6172c89a010e75c73d01262baf9d23b630cdc67631"
+    ],
+    "path_canonicalization": "exact disposable root package IDs rewritten to git source commit; references updated together; lock/source properties added"
+  },
+  "trusted_publisher_registration": {
+    "crate": "rust-mirror",
+    "repository_owner": "rustcommons",
+    "repository": "rust-mirror",
+    "workflow_filename": "publish-crates.yml",
+    "environment": "crates-io",
+    "publish_order": [
+      "rust-mirror"
+    ],
+    "token_exchange_performed": false,
+    "software_publication_performed": false
+  },
+  "live_write_paths": "Future owner-approved immutable main-reachable release only; untested here by explicit no-publication scope",
+  "slsa3_badge": false,
+  "reproducibility": "Per-target raw executable/archive comparisons are emitted by the two-clean-job workflow. Record actual CI table/JSON in the PR; no bit-identity assertion in advance.",
+  "local_validation": {
+    "rust_tests_passed": 191,
+    "python_tests_passed": 55,
+    "fmt": "passed",
+    "clippy_all_targets_warnings_denied": "passed",
+    "rustdoc_warnings_denied": "passed",
+    "actionlint": "1.7.12 passed",
+    "pin_checker": "100 direct references passed",
+    "published_release_docs": "8 versions passed",
+    "software_publication": false
+  }
+}

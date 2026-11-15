@@ -25,7 +25,8 @@ def main():
     live = json.loads(command(['gh', 'api', f'repos/{release.REPO}/releases/tags/{args.tag}']))
     release.validate_release(live, expected, release.remote_commit(root, args.tag))
     targets = release.legacy_or_current_targets(expected['version'], [a['name'] for a in live['assets']])
-    names = sorted(release.asset_name(expected['version'], target) for target in targets)
+    names = sorted([release.asset_name(expected['version'], target) for target in targets] + ([] if release.has_legacy_assets(expected['version']) else [release.sbom_name(expected['version'])]))
+    signer = '/.github/workflows/release-binaries.yml' if release.has_legacy_assets(expected['version']) else '/.github/workflows/build-binaries.yml'
     assets = {a['name']: a for a in live['assets']}
     release.require(len(live['assets']) == len(names) + 1 and set(assets) == set(names + ['SHA256SUMS']), 'expected exact release archive profile and SHA256SUMS')
     release.require(all(a['state'] == 'uploaded' and a['size'] <= release.MAX_ARCHIVE for a in assets.values()), 'asset incomplete or oversized')
@@ -41,11 +42,20 @@ def main():
         path = downloads / name; actual = release.digest(path.read_bytes())
         release.require(assets[name]['digest'] == 'sha256:' + actual, 'GitHub asset digest mismatch')
         if name != 'SHA256SUMS': release.require(checksums[name] == actual, 'archive checksum mismatch')
-        proof = command(['gh', 'attestation', 'verify', path, '--repo', release.REPO, '--signer-workflow', release.REPO + '/.github/workflows/release-binaries.yml', '--format', 'json'])
+        proof = command(['gh', 'attestation', 'verify', path, '--repo', release.REPO, '--signer-workflow', release.REPO + signer, '--predicate-type', 'https://slsa.dev/provenance/v1', '--format', 'json'])
         result = json.loads(proof); release.require(bool(result), 'empty attestation verification')
         (output / ('attestation-' + name + '.json')).write_text(proof)
         attestations[name] = dict(sha256=actual, verified=True)
     chosen = release.asset_name(expected['version'], args.target)
+    if not release.has_legacy_assets(expected['version']):
+        from release_sbom import validate, validate_binding
+        document = json.loads((downloads / release.sbom_name(expected['version'])).read_text())
+        validate(document, 'rust-mirror', expected['version'])
+        properties = {p['name']:p['value'] for p in document['metadata'].get('properties', [])}
+        release.require(properties.get('rust-mirror:source:commit') == expected['commit'] and properties.get('rust-mirror:source:lock-sha256') == expected['lock_sha256'], 'public SBOM source/lock differs from tag')
+        proof = command(['gh', 'attestation', 'verify', downloads / chosen, '--repo', release.REPO, '--signer-workflow', release.REPO + signer, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'])
+        validate_binding(json.loads(proof), document, release.digest((downloads / chosen).read_bytes()))
+        (output / 'sbom-binding.json').write_text(proof)
     exe = 'rust-mirror.exe' if 'windows' in args.target else 'rust-mirror'
     prefix = chosen.removesuffix('.zip').removesuffix('.tar.gz')
     contents = release.read_archive(downloads / chosen, prefix, exe)

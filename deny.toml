@@ -1,0 +1,27 @@
+[graph]
+all-features = true
+
+[advisories]
+db-urls = ["https://github.com/RustSec/advisory-db"]
+yanked = "deny"
+# Report unmaintained/unsound advisories across the whole graph, including transitives.
+unmaintained = "all"
+unsound = "all"
+ignore = []
+
+[licenses]
+confidence-threshold = 0.93
+# SPDX alternatives accepted by the current full cross-platform dependency graph.
+allow = ["Apache-2.0", "MIT", "BSD-3-Clause", "ISC", "Unicode-3.0", "Zlib", "CDLA-Permissive-2.0"]
+
+[bans]
+# Existing getrandom/syn major-version splits are transitive;
+# warning keeps them visible without forcing unrelated API migrations.
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

@@ -10,6 +10,8 @@ import hashlib
 import io
 import json
 import os
+import platform
+import zlib
 from pathlib import Path
 import re
 import subprocess
@@ -49,6 +51,14 @@ def asset_name(version, target):
     return f'rust-mirror-{version}-{target}' + ('.zip' if 'windows' in target else '.tar.gz')
 
 
+def sbom_name(version):
+    return f'rust-mirror-{version}.cdx.json'
+
+
+def has_legacy_assets(version):
+    return version in ('0.5.1', '0.5.2')
+
+
 def record(root, tag, candidate_commit=None):
     require(TAG.fullmatch(tag), 'expected a v-prefixed semantic version tag')
     if candidate_commit is not None:
@@ -63,7 +73,8 @@ def record(root, tag, candidate_commit=None):
     require(manifest['package']['rust-version'] == '1.90', 'review the pinned release toolchain after an MSRV change')
     notes = subprocess.check_output(['git', 'show', f'{commit}:docs/releases/{tag}.md'], cwd=root).decode()
     license_bytes = subprocess.check_output(['git', 'show', f'{commit}:LICENSE'], cwd=root)
-    return dict(tag=tag, version=tag[1:], commit=commit, notes=notes, license=license_bytes)
+    lock_sha256 = digest(subprocess.check_output(['git', 'show', f'{commit}:Cargo.lock'], cwd=root))
+    return dict(tag=tag, version=tag[1:], commit=commit, notes=notes, license=license_bytes, lock_sha256=lock_sha256)
 
 
 def remote_commit(root, tag):
@@ -267,9 +278,11 @@ def package(args):
         validate_gnu_report(glibc, args.commit, digest(binary.read_bytes()))
     linux_static = static_linux(binary, r['version']) if args.target == 'x86_64-unknown-linux-musl' else None
     prefix = f'rust-mirror-{r["version"]}-{args.target}'
-    readme = f'''rust-mirror {r['version']} ({args.target})
+    source_ref = r['commit'] if args.candidate else r['tag']
+    candidate_note = 'UNRELEASED CANDIDATE: not a public release; no production attestations.\n' if args.candidate else ''
+    readme = f'''{candidate_note}rust-mirror {r['version']} ({args.target})
 Prepare verified Rust toolchain and curated crate mirrors for offline development.
-Source: https://github.com/{REPO}/tree/{r['tag']}
+Source: https://github.com/{REPO}/tree/{source_ref}
 Source commit: {r['commit']}
 Built with Rust {TOOLCHAIN}; run ./{exe} --version (Windows: .\\{exe} --version).
 Put the executable in a folder on PATH; no Rust/Cargo installation is needed.
@@ -321,15 +334,16 @@ License: Apache-2.0; see LICENSE.
     with tempfile.TemporaryDirectory(prefix='rust-mirror-binary-smoke-') as directory:
         extracted = Path(directory) / exe; extracted.write_bytes(contents[exe]); extracted.chmod(0o755)
         smoke(extracted, r['version'])
-    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'linux_static': linux_static, 'glibc_baseline': glibc, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
+    report = {'runner_image_version': os.environ.get('ImageVersion'), 'python_version': platform.python_version(), 'zlib_version': zlib.ZLIB_VERSION, 'host_os': platform.system(), 'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'linux_static': linux_static, 'glibc_baseline': glibc, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
     (args.output / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 
 
-def collect(root, r, artifacts, output):
+def collect(root, r, artifacts, output, sbom=None, artifact_prefix=""):
+    require(re.fullmatch(r'(?:[a-z][a-z0-9-]{0,20})?', artifact_prefix), 'unsafe artifact prefix')
     output.mkdir(parents=True, exist_ok=False)
     for target in TARGETS:
-        folder = artifacts / f'binary-{target}'
+        folder = artifacts / f'{artifact_prefix}binary-{target}'
         report = json.loads((folder / 'build-report.json').read_text())
         name = asset_name(r['version'], target); path = folder / name
         require(report['target'] == target and report['commit'] == r['commit'] and report['tag'] == r['tag'] and report['archive'] == name and report['archive_smoke'] is True, 'build report does not match frozen tag/target')
@@ -339,6 +353,13 @@ def collect(root, r, artifacts, output):
         require(files['LICENSE'] == r['license'] and digest(files[exe]) == report['binary_sha256'], 'license/binary does not match the tagged build')
         require(f"Source commit: {r['commit']}\n".encode() in files['README.txt'], 'archive source record mismatch')
         (output / name).write_bytes(raw)
+    require(sbom is not None and sbom.is_file() and not sbom.is_symlink() and sbom.stat().st_size <= 8 * 1024 * 1024, 'missing, linked or oversized SBOM')
+    from release_sbom import validate
+    sbom_data = sbom.read_bytes()
+    validate(json.loads(sbom_data), 'rust-mirror', r['version'])
+    properties = {p['name']: p['value'] for p in json.loads(sbom_data)['metadata'].get('properties', [])}
+    require(properties.get('rust-mirror:source:commit') == r['commit'] and properties.get('rust-mirror:source:lock-sha256') == r['lock_sha256'], 'SBOM source/lock differs from frozen build')
+    (output / sbom_name(r['version'])).write_bytes(sbom_data)
     sums = ''.join(f'{digest(p.read_bytes())}  {p.name}\n' for p in sorted(output.iterdir()))
     (output / 'SHA256SUMS').write_text(sums)
     return sums
@@ -353,6 +374,8 @@ def main():
         if command == 'collect':
             parser.add_argument('--artifacts', type=Path, required=True)
             parser.add_argument('--candidate', action='store_true', help='Read-only pre-tag candidate validation')
+            parser.add_argument('--sbom', type=Path, required=True)
+            parser.add_argument('--artifact-prefix', default='')
         if command in ('collect', 'upload'): parser.add_argument('--output', type=Path, required=True)
         if command == 'preflight':
             parser.add_argument('--wait-seconds', type=int, default=0)
@@ -368,10 +391,10 @@ def main():
             for key in ('tag', 'version', 'commit'): out.write(f'{key}={r[key]}\n')
         print(json.dumps({k: r[k] for k in ('tag', 'version', 'commit')})); return
     require(r['commit'] == args.commit, 'tag changed since build preparation')
-    if args.command == 'collect': print(collect(args.root, r, args.artifacts, args.output)); return
+    if args.command == 'collect': print(collect(args.root, r, args.artifacts, args.output, args.sbom, args.artifact_prefix)); return
     release = check_release(args.root, r, args.wait_seconds if args.command == 'preflight' else 0, args.allow_existing if args.command == 'preflight' else False)
     if args.command == 'preflight': print('Existing release/tag/body match; dry-run allows existing assets' if args.allow_existing else 'Existing release/tag/body match; no assets present'); return
-    expected = sorted([asset_name(r['version'], t) for t in TARGETS] + ['SHA256SUMS'])
+    expected = sorted([asset_name(r['version'], t) for t in TARGETS] + [sbom_name(r['version']), 'SHA256SUMS'])
     require(sorted(p.name for p in args.output.iterdir()) == expected, 'unexpected or missing release asset')
     sums = ''.join(f'{digest((args.output / n).read_bytes())}  {n}\n' for n in expected if n != 'SHA256SUMS')
     require((args.output / 'SHA256SUMS').read_text() == sums, 'checksum manifest mismatch')

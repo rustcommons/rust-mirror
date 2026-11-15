@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-No changes yet.
+- Add weekly grouped dependency/action updates, pinned action commits, RustSec/
+  license/source checks, workflow security lint and OpenSSF Scorecard reporting.
+- Prepare owner-reviewed crates.io Trusted Publishing while retaining the manual
+  release path. Future binary releases add a source-bound Cargo CycloneDX SBOM,
+  reusable build/sign isolation and independent reproducibility measurements.
+- Update locked rustls, rustls-webpki, webpki-roots and rustix to address RustSec
+  advisories, with required existing libc/linux-raw-sys updates. No new crate
+  dependency names are added. These fixes are unreleased; published 0.5.2
+  archives remain immutable.
 
 ## [0.5.2] - 2026-11-15
 

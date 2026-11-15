@@ -18,9 +18,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.90.0
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Build native drivers and check catalog, approval, transfer and retention fixtures
@@ -43,7 +45,7 @@ jobs:
           python scripts/check_crates_archive_overfetch.py --mirror "$RUNNER_TEMP/top100-run/mirror" --conformance "$RUNNER_TEMP/crates-top100" --output "$RUNNER_TEMP/top100-archive-overfetch.json"
       - name: Save plans, observed metadata, Cargo locks and conformance evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: crates-top100-conformance
           path: |
@@ -66,9 +68,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.90.0
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Build actual CLI
@@ -79,7 +83,7 @@ jobs:
         run: python scripts/prove_crates_resume.py --binary ${{ matrix.binary }} --evidence "${{ runner.temp }}/crates-resume"
       - name: Save client evidence without private keys or downloaded archives
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: crates-https-client-${{ matrix.os }}
           path: |
@@ -99,9 +103,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.90.0
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - run: cargo build --locked --jobs 2
@@ -133,7 +139,7 @@ jobs:
           sudo python3 scripts/run_nexus_proof.py --runtime docker --image docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09 --allow-raw-mime-types --snapshot "$RUNNER_TEMP/nexus-crates-run/mirror" --evidence "$RUNNER_TEMP/crates-nexus-proof" --publisher-cli "$PWD/target/debug/rust-mirror" --cargo "$CRATES_PROOF_CARGO" --rustc "$CRATES_PROOF_RUSTC"
       - name: Retain scoped proof evidence without credentials, private keys or archives
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: crates-disposable-nexus-proof
           path: |

@@ -16,6 +16,40 @@ Preserve the earlier Windows-local uncommitted prototype. Assess it before impor
 or replacement; do not delete or overwrite it. Keep `ROM-REQ` identifiers stable
 across the rename. Do not publish placeholder crates merely to reserve names.
 
+## Security baseline and protected refs
+
+The owner approved the organization baseline on 2026-11-15; the coordinator enabled
+provider security features, CodeQL default setup, main/release-tag rulesets and the
+crates-io environment. **All main changes go through PRs**; never push directly to
+main or use administrative bypass for routine work. Preserve lf-only and other CI
+gates. Never update/delete protected v* tags, force-push or discard concurrent work.
+
+Pin every direct third-party action to a full commit with its version comment.
+Disable checkout credential persistence. Keep workflow defaults read-only and
+scope writes to the jobs that need them. Require zizmor and cargo-deny under
+[the security guide](docs/SECURITY-BASELINE.md); keep audit exceptions narrow and
+justified inline, source restrictions strict, and informational/duplicate warnings
+visible. Do not bypass an advisory to make CI green. Document current lock findings
+and the source/qualification of fixes. No new crate dependency names are authorized.
+
+Future binary profiles use the source-bound Cargo CycloneDX SBOM, shared read-only
+build core, reusable build/sign boundary and measured two-clean-build comparison.
+Do not retroactively alter published profiles/manifests. No SLSA3 badge or claim
+until an approved future release actually verifies the new provenance. Preserve
+honest raw reproducibility outcomes and unknown causes; metadata-normalized analysis
+is not bit identity. Only the isolated reusable signer gets OIDC/attestation writes;
+the asset uploader gets contents write only. The Scorecard job alone also needs
+OIDC/security-events writes to publish its metrics on main/schedule, never PR code.
+
+Trusted crates.io publishing is an additional owner-reviewed path, not a replacement
+for the coordinator/owner-machine process. It requires immutable v* source reachable
+from main and the crates-io environment's owner approval, with only that publishing
+job receiving its OIDC grant. Never store a long-lived Cargo token or publish a test
+version/tag to qualify it. The owner must configure the exact publisher values in
+[the guide](docs/SECURITY-BASELINE.md#optional-trusted-publishing). This baseline task
+authorizes no crate version bump, tag creation, software publication or existing
+release mutation. Leave existing Dependabot/user branches untouched; use one PR.
+
 ## Repository layout and validation
 
 - `README.md`: current public introduction and experimental boundaries.
@@ -346,8 +380,9 @@ replacing the earlier notes-only distribution boundary. Use the reviewed
 [release workflow](.github/workflows/release-binaries.yml) and
 [release policy](docs/RELEASING.md#prebuilt-github-release-binaries): exact immutable
 tagged source, locked Rust 1.90 builds, native Windows/macOS and static Linux musl smoke tests,
-LICENSE/README.txt, SHA256SUMS and GitHub/Sigstore attestations. Only the publish
-job may hold contents/id-token/attestations write permissions. Never replace/delete
+LICENSE/README.txt, SHA256SUMS and GitHub/Sigstore attestations. Under the newer
+security baseline the reusable signer alone holds OIDC/attestation writes and the
+separate asset publisher holds contents write; native jobs stay read-only. Never replace/delete
 existing release assets or change notes/tags to pass an upload check. Keep OS
 signing/notarization absent and user prompts explicit. Windows release builds use
 static CRT with DLL-import refusal; The Linux static variant uses x86_64-unknown-linux-musl with no
