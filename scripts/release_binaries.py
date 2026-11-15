@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import struct
 import tarfile
 import tempfile
 import time
@@ -132,6 +133,36 @@ def read_archive(path, prefix, executable):
     return {name.split('/', 1)[1]: content for name, content in entries.items()}
 
 
+def windows_imports(data):
+    """Read bounded PE32+ import names; record actual runtime DLL prerequisites."""
+    pe = struct.unpack_from('<I', data, 0x3c)[0]
+    require(data[pe:pe + 4] == b'PE\0\0', 'Windows executable is not PE')
+    require(struct.unpack_from('<H', data, pe + 4)[0] == 0x8664, 'Windows executable is not x86-64')
+    count = struct.unpack_from('<H', data, pe + 6)[0]
+    optional = pe + 24; size = struct.unpack_from('<H', data, pe + 20)[0]
+    require(struct.unpack_from('<H', data, optional)[0] == 0x20b and count <= 96, 'unsupported PE layout')
+    sections = []
+    for n in range(count):
+        virtual_size, address, raw_size, pointer = struct.unpack_from('<IIII', data, optional + size + 40 * n + 8)
+        sections.append((address, max(virtual_size, raw_size), pointer))
+    def offset(rva):
+        for address, length, pointer in sections:
+            if address <= rva < address + length:
+                return pointer + rva - address
+        raise ValueError('PE import address outside sections')
+    start = offset(struct.unpack_from('<I', data, optional + 120)[0])
+    names = []
+    for n in range(128):
+        row = struct.unpack_from('<IIIII', data, start + 20 * n)
+        if not any(row): return names
+        pos = offset(row[3]); end = data.find(b'\0', pos, pos + 256)
+        require(end != -1, 'unterminated PE import name')
+        name = data[pos:end].decode('ascii')
+        require(re.fullmatch(r'[A-Za-z0-9_.-]+', name), 'unexpected PE import name')
+        names.append(name)
+    raise ValueError('PE import count exceeds bound')
+
+
 def package(args):
     root = args.source.resolve()
     require(run('git', 'rev-parse', 'HEAD', cwd=root) == args.commit, 'source checkout differs from frozen commit')
@@ -144,6 +175,7 @@ def package(args):
     exe = 'rust-mirror.exe' if 'windows' in args.target else 'rust-mirror'
     binary = root / 'target' / args.target / 'release' / exe
     human = smoke(binary, r['version'])
+    dlls = windows_imports(binary.read_bytes()) if 'windows' in args.target else None
     glibc = None
     if args.target == 'x86_64-unknown-linux-gnu':
         symbols = run('readelf', '--version-info', str(binary))
@@ -170,6 +202,9 @@ License: Apache-2.0; see LICENSE.
     if glibc:
         readme += f"Linux: tested on Ubuntu 22.04/glibc 2.35; maximum required GLIBC symbol {glibc['maximum_required_symbol']}.\nOther distributions/older glibc are not qualified by this runner smoke test.\n"
         readme += 'Dynamic dependencies: ' + ', '.join(line.split()[0] for line in glibc['ldd'].splitlines()) + '\n'
+    if dlls:
+        readme += 'Windows imported DLLs: ' + ', '.join(dlls) + '\n'
+        readme += 'If VCRUNTIME140.dll is missing, install the official Microsoft Visual C++ v14 x64 Redistributable.\nhttps://learn.microsoft.com/cpp/windows/latest-supported-vc-redist\n'
     files = {exe: binary.read_bytes(), 'LICENSE': r['license'], 'README.txt': readme.encode()}
     require(sum(map(len, files.values())) <= MAX_ARCHIVE, 'binary archive payload too large')
     args.output.mkdir(parents=True, exist_ok=False)
@@ -194,7 +229,7 @@ License: Apache-2.0; see LICENSE.
     with tempfile.TemporaryDirectory(prefix='rust-mirror-binary-smoke-') as directory:
         extracted = Path(directory) / exe; extracted.write_bytes(contents[exe]); extracted.chmod(0o755)
         smoke(extracted, r['version'])
-    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'glibc': glibc}
+    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'glibc': glibc, 'windows_imports': dlls}
     (args.output / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 
@@ -255,4 +290,4 @@ def main():
 
 if __name__ == '__main__':
     try: main()
-    except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as error: raise SystemExit(str(error))
+    except (ValueError, OSError, KeyError, subprocess.CalledProcessError, struct.error) as error: raise SystemExit(str(error))

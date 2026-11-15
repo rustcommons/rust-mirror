@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 import subprocess
+import struct
 import sys
 import tarfile
 import tempfile
@@ -39,7 +40,7 @@ class ReleaseBinariesTests(unittest.TestCase):
         git('tag', '-a', 'v1.2.3', '-m', 'Fixture')
         (self.root / 'Cargo.toml').write_text('dirty and unrelated')
         result = release.record(self.root, 'v1.2.3')
-        self.assertEqual(result['notes'], self.record['notes'])
+        self.assertEqual(result['notes'].replace('\r\n', '\n'), self.record['notes'])
         self.assertEqual(result['license'], b'license')
         git('tag', 'v1.2.4')
         with self.assertRaisesRegex(ValueError, 'version disagree'):
@@ -84,6 +85,22 @@ class ReleaseBinariesTests(unittest.TestCase):
                     info = tarfile.TarInfo(bad); info.type = tarfile.SYMTYPE; info.linkname = '../../secret'
                     archive.addfile(info)
         return path, prefix
+
+    def test_pe_import_audit_records_runtime_and_refuses_wrong_machine(self):
+        data = bytearray(1024)
+        struct.pack_into('<I', data, 0x3c, 0x80)
+        data[0x80:0x84] = b'PE\0\0'
+        struct.pack_into('<HH', data, 0x84, 0x8664, 1)
+        struct.pack_into('<H', data, 0x94, 240)
+        struct.pack_into('<H', data, 0x98, 0x20b)
+        struct.pack_into('<I', data, 0x98 + 120, 0x1000)
+        struct.pack_into('<IIII', data, 0x98 + 240 + 8, 512, 0x1000, 512, 512)
+        struct.pack_into('<IIIII', data, 512, 0, 0, 0, 0x1080, 1)
+        data[640:657] = b'VCRUNTIME140.dll\0'
+        self.assertEqual(release.windows_imports(bytes(data)), ['VCRUNTIME140.dll'])
+        struct.pack_into('<H', data, 0x84, 0x14c)
+        with self.assertRaisesRegex(ValueError, 'not x86-64'):
+            release.windows_imports(bytes(data))
 
     def test_archive_boundary_and_link_refusals(self):
         for suffix in ('.zip', '.tar.gz'):

@@ -18,6 +18,12 @@ contains one directory of that name with the executable, LICENSE and README.txt.
 Put the executable in a directory on PATH or run it by its full path.
 There is no installer, service or automatic updater.
 
+The Windows MSVC executable imports VCRUNTIME140.dll. If Windows reports that DLL
+missing, install Microsoft's official
+[Visual C++ v14 x64 Redistributable](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist).
+No Visual Studio SDK is required. README.txt lists the executable's actual DLL
+imports; the hosted Windows smoke runner already has this runtime.
+
 Linux builds use Ubuntu 22.04, the oldest available practical Ubuntu hosted runner,
 with glibc 2.35. Require glibc 2.35 or newer and the system libraries listed in the
 archive's README.txt. README.txt records the highest GLIBC symbol version required

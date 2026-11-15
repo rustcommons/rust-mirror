@@ -128,7 +128,9 @@ Build targets are x86_64-pc-windows-msvc on windows-latest,
 x86_64-unknown-linux-gnu on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
 x86_64-apple-darwin on macos-15-intel. Ubuntu 22.04 is the oldest practical hosted
 Ubuntu runner; record its glibc 2.35, actual maximum required GLIBC symbol and
-linked libraries. Fail if the baseline rises or required symbols exceed 2.35.
+linked libraries. Record Windows PE DLL imports and disclose the Visual C++ v14
+x64 runtime prerequisite; hosted smoke testing is not a clean Windows installation
+without that runtime. Fail if the baseline rises or required symbols exceed 2.35.
 This bounds runner compatibility, not all distributions or older OS versions.
 
 Each rust-mirror-VERSION-TARGET.zip (Windows) or .tar.gz (Unix) contains one
