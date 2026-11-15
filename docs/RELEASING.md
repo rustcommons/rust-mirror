@@ -51,6 +51,15 @@ The coordinator published from the owner's Windows machine after normal merge;
 [postpublication verification](evals/2026-11-15-publication-0.5.1.md) records the
 registry payload, docs.rs, fresh installation, tag/release and workflow.
 
+The owner authorized 0.5.2 publication on 2026-11-15 for five prebuilt downloads,
+including the owner-selected cargo-libc 0.7.0 glibc 2.17 GNU variant. Mirroring
+runtime source and dependency identities are unchanged from 0.5.1; carry the named
+0.5.1 native/client/Nexus evidence only within its original bounds. Require fresh
+version/package/doc checks and exact-candidate five-platform binary qualification,
+including all eight GNU userland gates. The coordinator merges and publishes from
+the owner's machine; tag/release/assets and registry/download verification follow
+publication confirmation. See [0.5.2 notes](releases/v0.5.2.md).
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
@@ -90,7 +99,7 @@ registry payload, docs.rs, fresh installation, tag/release and workflow.
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.5.1.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.5.2.md) as the GitHub Release, latest and
   with binary archives/checksums attached only through the release workflow under
   the owner's 2026-11-15 authorization. Do not change historical note bodies.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
@@ -127,10 +136,10 @@ backfills require separate approval.
 and workflow_dispatch with a tag and dry_run (default true). Each build checks out
 the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
 --locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
-From the next release, five build targets are x86_64-pc-windows-msvc on windows-latest,
+From 0.5.2, five build targets are x86_64-pc-windows-msvc on windows-latest,
 x86_64-unknown-linux-gnu built with pinned cargo-libc 0.7.0 targeting glibc 2.17,
 x86_64-unknown-linux-musl on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
-x86_64-apple-darwin on macos-15-intel. The CLI Linux static variant remains musl. The new dynamic GNU variant starts next release;
+x86_64-apple-darwin on macos-15-intel. The CLI Linux static variant remains musl. The new dynamic GNU variant starts with 0.5.2;
 v0.5.1 remains immutable with four archives and one SHA256SUMS. Install musl-tools only on the Linux build runner for existing C sources;
 set CC_x86_64_unknown_linux_musl=musl-gcc and release-only static-CRT RUSTFLAGS.
 Fail if file/ldd do not identify static linkage, or ELF headers include INTERP or
@@ -173,12 +182,22 @@ repair is permitted. Concurrent publish jobs for the same tag are serialized.
 An interrupted upload may leave a successful prefix: preserve it and ask the owner
 for a recovery decision; never delete/rebuild existing published files.
 
-A PR-triggered read-only v0.5.1 build is the bootstrap test when GitHub cannot
-register workflow_dispatch until the file exists on main. Dispatch dry runs build,
-smoke-test, collect and check release/tag/body but never attest/upload; they allow
-existing assets because they cannot change them. Live dispatch must run the reviewed
-workflow on main with dry_run=false. After a successful reviewed dry run and coordinator merge, dispatch the
-authorized version with dry_run=false. Do not create a public throwaway release.
+A PR-triggered read-only **candidate** build freezes the exact PR head and reads
+its package version and committed notes without creating a tag or GitHub Release.
+For explicit pre-tag qualification dispatch the branch with tag=vVERSION,
+dry_run=true and candidate=true. The helper accepts an exact candidate commit only
+for resolve/package/collect; preflight/upload never accept candidate options.
+Prepare refuses candidate=true with dry_run=false, and the privileged publish job
+independently requires candidate=false. Candidate runs skip only the unavailable
+live release/tag/body check; they still smoke all five binaries, require all eight
+GNU gates, collect/verify one five-entry manifest and inspect committed notes.
+They cannot attest or upload release assets.
+
+Ordinary dispatch dry runs (candidate=false) still build from an existing immutable
+tag and check its live release/tag/body, allowing existing assets because they
+cannot change them. Live dispatch must use reviewed main with dry_run=false and
+candidate=false. Tag-triggered publication always uses the immutable tag. Never
+create a public throwaway release to qualify a candidate.
 After uploading, download all six live assets, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.
 
@@ -190,7 +209,7 @@ assets do not change immutable crates.io payloads or the release's source tag.
 [Verify published binary downloads](../.github/workflows/verify-release-binaries.yml)
 is read-only: dispatch with the tag to download the exact versioned asset profile, check exact notes/
 source/license, SHA256SUMS and every GitHub attestation, then run the actual downloaded
-Windows ZIP/Linux musl binary on native hosted runners. No Rust rebuild/install,
+Windows ZIP/Linux GNU and musl binaries on native hosted runners. No Rust rebuild/install,
 release mutation, write token or OIDC permission is used. API credentials are removed
 from the product executable's environment. Save its reports with the release record;
 its native-execution scope is Windows/Linux, not post-download macOS execution or
@@ -199,7 +218,7 @@ browser quarantine UI.
 ## Glibc baseline and CI-only compatibility measurements
 
 Owner decision, 2026-11-15, following the measured Alma8 baseline: publish the
-cargo-libc 0.7.0 **glibc 2.17** build starting with the next release. Pin the tool
+cargo-libc 0.7.0 **glibc 2.17** build starting with 0.5.2. Pin the tool
 source to e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25. The Ubuntu24.04 release job
 installs that source with --locked, uses Rust1.90 and Clang18/GCC13, and runs:
 
@@ -242,7 +261,7 @@ The initial ordinary Alma8 baseline and proposal remain historical evidence. The
 owner has now selected the proven 2.17 method above; lower/new candidates remain
 CI-only until measured and separately approved.
 
-The five-archive layout starts with the NEXT authorized release, one SHA256SUMS for
+The five-archive layout starts with owner-authorized 0.5.2, one SHA256SUMS for
 all five. Do not backfill GNU into v0.5.1, replace its manifest/assets, add a second
 manifest or move its tag. No new crate dependency, version bump or crate publication
 is authorized by this pipeline/measurement task.

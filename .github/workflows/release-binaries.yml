@@ -8,6 +8,10 @@ on:
         description: Existing immutable v-prefixed source tag
         required: true
         type: string
+      candidate:
+        description: Qualify this workflow ref as an untagged candidate (dry run only)
+        type: boolean
+        default: false
       dry_run:
         description: Build, smoke-test and validate without attesting or uploading
         type: boolean
@@ -19,6 +23,9 @@ on:
       - 'scripts/glibc_measure.py'
       - 'scripts/release_gnu.py'
       - 'tests/test_release_binaries.py'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'docs/releases/**'
 permissions:
   contents: read
 concurrency:
@@ -31,9 +38,11 @@ jobs:
     outputs:
       tag: ${{ steps.source.outputs.tag }}
       commit: ${{ steps.source.outputs.commit }}
+      candidate: ${{ steps.source.outputs.candidate }}
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@v5
@@ -44,11 +53,24 @@ jobs:
         run: |
           echo 'Live binary dispatch must use the reviewed workflow on main' >&2
           exit 1
-      - name: Resolve and freeze the exact tag (PR bootstrap is read-only v0.5.1)
+      - name: Resolve and freeze the exact tag or read-only PR candidate
         id: source
         env:
-          RELEASE_TAG: ${{ inputs.tag || (github.event_name == 'push' && github.ref_name) || 'v0.5.1' }}
-        run: python scripts/release_binaries.py resolve --root . --tag "$RELEASE_TAG" --output "$GITHUB_OUTPUT"
+          RELEASE_TAG: ${{ inputs.tag || (github.event_name == 'push' && github.ref_name) || '' }}
+          CANDIDATE: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.candidate) }}
+          DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run }}
+        run: |
+          if [[ "$CANDIDATE" == true ]]; then
+            test "$DRY_RUN" = true || { echo 'Candidate builds cannot publish' >&2; exit 1; }
+            if [[ -z "$RELEASE_TAG" ]]; then
+              RELEASE_TAG="v$(python -c 'import tomllib; print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')"
+            fi
+            python scripts/release_binaries.py resolve --root . --tag "$RELEASE_TAG" --candidate-commit "$(git rev-parse HEAD)" --output "$GITHUB_OUTPUT"
+            echo 'candidate=true' >> "$GITHUB_OUTPUT"
+          else
+            python scripts/release_binaries.py resolve --root . --tag "$RELEASE_TAG" --output "$GITHUB_OUTPUT"
+            echo 'candidate=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Release helper refusal tests
         run: python -m unittest discover -s tests -p test_release_binaries.py
   build:
@@ -74,6 +96,7 @@ jobs:
       RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
       RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
       RELEASE_TARGET: ${{ matrix.target }}
+      CANDIDATE: ${{ needs.prepare.outputs.candidate }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -130,8 +153,9 @@ jobs:
         shell: bash
         run: |
           extra=()
+          if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
           if [[ "$RELEASE_TARGET" == x86_64-unknown-linux-gnu ]]; then
-            extra=(--glibc-report "$RUNNER_TEMP/gnu-qualified/gnu-report.json")
+            extra+=(--glibc-report "$RUNNER_TEMP/gnu-qualified/gnu-report.json")
           fi
           python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact" "${extra[@]}"
       - name: Save exact GNU producer and blocking runtime-gate evidence
@@ -204,6 +228,7 @@ jobs:
     env:
       RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
       RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
+      CANDIDATE: ${{ needs.prepare.outputs.candidate }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
@@ -219,8 +244,12 @@ jobs:
           pattern: binary-*
           path: binary-artifacts
       - name: Validate all five archives and generate SHA256SUMS
-        run: python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets
+        run: |
+          extra=()
+          if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
+          python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets "${extra[@]}"
       - name: Check existing release body and live tag without writing
+        if: needs.prepare.outputs.candidate != 'true'
         run: python scripts/release_binaries.py preflight --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --wait-seconds 600 --allow-existing
       - name: Verify sorted checksum manifest
         working-directory: release-assets
@@ -235,6 +264,7 @@ jobs:
     needs: [prepare, verify]
     if: >-
       github.repository == 'rustcommons/rust-mirror' &&
+      needs.prepare.outputs.candidate == 'false' &&
       (github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && !inputs.dry_run && github.ref == 'refs/heads/main'))
     runs-on: ubuntu-22.04

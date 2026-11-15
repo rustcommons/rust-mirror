@@ -2,14 +2,22 @@
 
 ## [Unreleased]
 
-- Prepare a GNU archive targeting glibc 2.17 with pinned cargo-libc 0.7.0 alongside
-  static musl for the next release, with blocking launch/HTTPS plan-sync checks in
-  eight measured container userlands. Old kernels are untested; v0.5.1 assets stay
-  immutable.
+No changes yet.
 
-- Add automatic unsigned Windows (static CRT), Linux (static musl) and macOS CLI archives on GitHub Releases,
-  with checksums, provenance attestations and install guidance. Existing published
-  crates and historical release-note bodies are unchanged.
+## [0.5.2] - 2026-11-15
+
+- Ship five prebuilt CLI downloads with one SHA256SUMS: Windows with static CRT,
+  dynamic GNU/Linux targeting glibc 2.17 via pinned cargo-libc 0.7.0, static musl
+  Linux, and both macOS architectures. All archives and the manifest receive GitHub
+  provenance attestations; executables remain unsigned by Windows/Apple.
+- Gate GNU downloads on launch and real HTTPS crate plan/sync in CentOS 7,
+  AlmaLinux 8, openSUSE Leap 42.3, Ubuntu 16.04/18.04/20.04 and Debian 8/9 container
+  userlands. Old kernels are untested; glibc below 2.17 should use static musl.
+- Put binary downloads first in install guidance, with checksum/provenance checks,
+  runtime requirements and unsigned-download prompts. Preserve v0.5.1's four
+  archives and original manifest unchanged.
+- No mirroring runtime logic, dependencies, schemas or protocol changes from
+  0.5.1; the reported tool/package version changes to 0.5.2.
 
 ## [0.5.1] - 2026-11-15
 

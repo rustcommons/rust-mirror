@@ -25,6 +25,45 @@ class ReleaseBinariesTests(unittest.TestCase):
         self.record = dict(tag='v1.2.3', version='1.2.3', commit='a' * 40, notes='Reviewed notes\n', license=b'license')
         self.live = dict(tag_name='v1.2.3', draft=False, html_url='https://github.com/rustcommons/rust-mirror/releases/tag/v1.2.3', body='Reviewed notes\n', assets=[], id=42)
 
+    def test_candidate_record_freezes_exact_commit_without_creating_a_tag(self):
+        def git(*args):
+            return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()
+        git('init', '-q'); git('config', 'user.name', 'Release fixture'); git('config', 'user.email', 'fixture@example.invalid')
+        (self.root / 'Cargo.toml').write_text('[package]\nname="rust-mirror"\nversion="1.2.3"\nrust-version="1.90"\n')
+        (self.root / 'LICENSE').write_bytes(b'license')
+        (self.root / 'docs/releases').mkdir(parents=True)
+        (self.root / 'docs/releases/v1.2.3.md').write_text('Reviewed notes\n')
+        git('add', '.'); git('commit', '-qm', 'Candidate source')
+        commit = git('rev-parse', 'HEAD')
+        with patch.object(release, 'remote_commit', side_effect=AssertionError('candidate must not need a public tag')):
+            output = self.root / 'outputs'
+            argv = ['helper', 'resolve', '--root', str(self.root), '--tag', 'v1.2.3', '--candidate-commit', commit, '--output', str(output)]
+            with patch.object(sys, 'argv', argv): release.main()
+        self.assertIn('commit=' + commit, output.read_text())
+        self.assertEqual(git('tag'), '')
+        self.assertEqual(release.record(self.root, 'v1.2.3', commit)['notes'], 'Reviewed notes\n')
+        with self.assertRaisesRegex(ValueError, 'exact commit'):
+            release.record(self.root, 'v1.2.3', 'HEAD')
+        with self.assertRaisesRegex(ValueError, 'version disagree'):
+            release.record(self.root, 'v1.2.4', commit)
+
+    def test_candidate_flags_are_never_accepted_by_upload_or_preflight(self):
+        for verb in ('upload', 'preflight'):
+            for flag in ('--candidate', '--candidate-commit'):
+                with self.subTest(verb=verb, flag=flag), patch.object(release, 'api', side_effect=AssertionError('must never reach API')), patch('sys.stderr', new=io.StringIO()):
+                    argv = ['helper', verb, '--root', str(self.root), '--tag', 'v1.2.3', '--commit', 'a'*40, flag]
+                    if verb == 'upload': argv += ['--output', str(self.root)]
+                    with patch.object(sys, 'argv', argv), self.assertRaises(SystemExit) as error:
+                        release.main()
+                    self.assertEqual(error.exception.code, 2)
+
+    def test_downloaded_gnu_abi_gate_refuses_newer_symbols_and_wrong_linkage(self):
+        good = ('INTERP', '(NEEDED) Shared library: [libc.so.6]\n(NEEDED) Shared library: [libgcc_s.so.1]', 'GLIBC_2.2.5 GLIBC_2.17', 'ELF x86-64 dynamically linked')
+        self.assertEqual(release.validate_dynamic_linux(*good)['maximum_required_glibc'], '2.17')
+        for changed in (('', *good[1:]), (good[0], '', *good[2:]), (*good[:2], 'GLIBC_2.18', good[3]), (*good[:2], '', good[3]), (*good[:3], 'ELF ARM')):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                release.validate_dynamic_linux(*changed)
+
     def test_source_record_uses_tag_not_changed_worktree(self):
         def git(*args):
             subprocess.run(['git', *args], cwd=self.root, check=True, capture_output=True)

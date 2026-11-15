@@ -17,7 +17,7 @@ def command(args, env=None):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--tag', required=True)
-    p.add_argument('--target', choices=['x86_64-pc-windows-msvc', 'x86_64-unknown-linux-musl'], required=True)
+    p.add_argument('--target', choices=['x86_64-pc-windows-msvc', 'x86_64-unknown-linux-musl', 'x86_64-unknown-linux-gnu'], required=True)
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -69,8 +69,13 @@ def main():
         file_info = command(['file', binary]).strip()
         ldd = subprocess.run(['ldd', str(binary)], capture_output=True, text=True, env=public_env)
         ldd_text = (ldd.stdout + ldd.stderr).strip()
-        release.validate_static_linux(headers, dynamic, file_info, ldd_text)
-        linkage = dict(file=file_info, ldd=ldd_text, no_interpreter_or_needed=True)
+        if args.target == 'x86_64-unknown-linux-gnu':
+            versions = command(['readelf', '--version-info', binary])
+            linkage = release.validate_dynamic_linux(headers, dynamic, versions, file_info)
+            linkage.update(file=file_info, ldd=ldd_text)
+        else:
+            release.validate_static_linux(headers, dynamic, file_info, ldd_text)
+            linkage = dict(file=file_info, ldd=ldd_text, no_interpreter_or_needed=True)
     report = {'tag': args.tag, 'source': expected['commit'], 'release_url': live['html_url'], 'assets': attestations, 'checksums_match': True, 'notes_unchanged': True, 'target': args.target, 'downloaded_archive': chosen, 'binary_sha256': release.digest(binary.read_bytes()), 'human_version': human, 'events': events, 'linkage': linkage, 'read_only': True}
     (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))

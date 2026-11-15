@@ -12,13 +12,13 @@ Publish finished generations to a fresh Nexus Raw or static HTTPS prefix.
 | Computer | Archive target |
 | --- | --- |
 | Windows, Intel/AMD 64-bit | x86_64-pc-windows-msvc |
-| Linux glibc 2.17+ (next release) | x86_64-unknown-linux-gnu |
+| Linux glibc 2.17+ (0.5.2+) | x86_64-unknown-linux-gnu |
 | Any x86_64 Linux (fully static musl) | x86_64-unknown-linux-musl |
 | macOS, Apple Silicon | aarch64-apple-darwin |
 | macOS, Intel | x86_64-apple-darwin |
 
-v0.5.1 retains its original four archives; the GNU variant starts with the next
-release. GNU targets glibc 2.17; its container userland checks cover CentOS 7,
+0.5.2 adds the GNU download; v0.5.1 keeps its four original archives.
+GNU targets glibc 2.17; its container userland checks cover CentOS 7,
 AlmaLinux 8, openSUSE Leap 42.3, Ubuntu 16.04/18.04/20.04 and Debian 8/9.
 Old kernels are untested; for glibc below 2.17 use static musl. Choose GNU when your
 environment prefers dynamic glibc, or musl to avoid shared-library dependencies.

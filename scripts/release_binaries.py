@@ -49,9 +49,14 @@ def asset_name(version, target):
     return f'rust-mirror-{version}-{target}' + ('.zip' if 'windows' in target else '.tar.gz')
 
 
-def record(root, tag):
+def record(root, tag, candidate_commit=None):
     require(TAG.fullmatch(tag), 'expected a v-prefixed semantic version tag')
-    commit = run('git', 'rev-parse', f'refs/tags/{tag}^{{commit}}', cwd=root)
+    if candidate_commit is not None:
+        require(re.fullmatch(r'[0-9a-f]{40}', candidate_commit), 'candidate needs an exact commit ID')
+        commit = run('git', 'rev-parse', '--verify', candidate_commit + '^{commit}', cwd=root)
+        require(commit == candidate_commit, 'candidate commit differs from resolved object')
+    else:
+        commit = run('git', 'rev-parse', f'refs/tags/{tag}^{{commit}}', cwd=root)
     manifest = tomllib.loads(run('git', 'show', f'{commit}:Cargo.toml', cwd=root))
     require(manifest['package']['name'] == 'rust-mirror' and manifest['package']['version'] == tag[1:],
             'tag and Cargo package version disagree')
@@ -188,6 +193,15 @@ def validate_static_linux(headers, dynamic, file_output, ldd_output):
     require('not a dynamic executable' in ldd_output or 'statically linked' in ldd_output, 'ldd does not confirm static linkage')
 
 
+def validate_dynamic_linux(headers, dynamic, versions, file_output):
+    require('INTERP' in headers and 'x86-64' in file_output, 'GNU binary must be dynamic x86-64')
+    needed = re.findall(r'\(NEEDED\).*?\[(.*?)\]', dynamic)
+    require({'libc.so.6', 'libgcc_s.so.1'} <= set(needed), 'GNU binary lacks expected dynamic runtimes')
+    names = sorted(set(re.findall(r'\bGLIBC_([0-9]+(?:\.[0-9]+)+)\b', versions)), key=lambda s: tuple(map(int, s.split('.'))))
+    require(bool(names) and tuple(map(int, names[-1].split('.'))) <= (2, 17), 'GNU binary exceeds GLIBC_2.17 or lacks symbol evidence')
+    return dict(maximum_required_glibc=names[-1], required_glibc_versions=names, needed=needed)
+
+
 def static_linux(binary, version):
     headers = run('readelf', '--program-headers', str(binary))
     dynamic = run('readelf', '--dynamic', str(binary))
@@ -231,7 +245,7 @@ def package(args):
     root = args.source.resolve()
     require(run('git', 'rev-parse', 'HEAD', cwd=root) == args.commit, 'source checkout differs from frozen commit')
     require(not run('git', 'status', '--porcelain', cwd=root), 'source checkout is dirty')
-    r = record(root, args.tag)
+    r = record(root, args.tag, args.commit if args.candidate else None)
     require(r['commit'] == args.commit, 'tag differs from frozen commit')
     compiler = run('rustc', '-vV')
     require(compiler.splitlines()[0].startswith('rustc ' + TOOLCHAIN + ' '), 'wrong Rust compiler')
@@ -332,20 +346,24 @@ def collect(root, r, artifacts, output):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__); sub = p.add_subparsers(dest='command', required=True)
-    resolve = sub.add_parser('resolve'); resolve.add_argument('--root', type=Path, required=True); resolve.add_argument('--tag', required=True); resolve.add_argument('--output', type=Path, required=True)
-    build = sub.add_parser('package'); build.add_argument('--source', type=Path, required=True); build.add_argument('--tag', required=True); build.add_argument('--commit', required=True); build.add_argument('--target', choices=TARGETS, required=True); build.add_argument('--output', type=Path, required=True); build.add_argument('--glibc-report', type=Path)
+    resolve = sub.add_parser('resolve'); resolve.add_argument('--root', type=Path, required=True); resolve.add_argument('--tag', required=True); resolve.add_argument('--output', type=Path, required=True); resolve.add_argument('--candidate-commit', help='Read-only pre-tag qualification of this exact commit')
+    build = sub.add_parser('package'); build.add_argument('--source', type=Path, required=True); build.add_argument('--tag', required=True); build.add_argument('--commit', required=True); build.add_argument('--target', choices=TARGETS, required=True); build.add_argument('--output', type=Path, required=True); build.add_argument('--glibc-report', type=Path); build.add_argument('--candidate', action='store_true', help='Package a frozen pre-tag candidate; cannot authorize upload')
     for command in ('collect', 'preflight', 'upload'):
         parser = sub.add_parser(command); parser.add_argument('--root', type=Path, required=True); parser.add_argument('--tag', required=True); parser.add_argument('--commit', required=True)
-        if command == 'collect': parser.add_argument('--artifacts', type=Path, required=True)
+        if command == 'collect':
+            parser.add_argument('--artifacts', type=Path, required=True)
+            parser.add_argument('--candidate', action='store_true', help='Read-only pre-tag candidate validation')
         if command in ('collect', 'upload'): parser.add_argument('--output', type=Path, required=True)
         if command == 'preflight':
             parser.add_argument('--wait-seconds', type=int, default=0)
             parser.add_argument('--allow-existing', action='store_true', help='Read-only dry-run only; upload always refuses existing assets')
     args = p.parse_args()
     if args.command == 'package': return package(args)
-    r = record(args.root, args.tag)
+    candidate_commit = args.candidate_commit if args.command == 'resolve' else args.commit if args.command == 'collect' and args.candidate else None
+    r = record(args.root, args.tag, candidate_commit)
     if args.command == 'resolve':
-        require(remote_commit(args.root, args.tag) == r['commit'], 'local and live tag differ')
+        if candidate_commit is None:
+            require(remote_commit(args.root, args.tag) == r['commit'], 'local and live tag differ')
         with args.output.open('a') as out:
             for key in ('tag', 'version', 'commit'): out.write(f'{key}={r[key]}\n')
         print(json.dumps({k: r[k] for k in ('tag', 'version', 'commit')})); return
