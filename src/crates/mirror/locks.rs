@@ -65,6 +65,7 @@ pub(super) fn native(
             index_requests: 0,
             archive_requests: 0,
             attempts: 0,
+            index_warnings: vec![],
         })
     } else {
         super::super::plan(source, profiles, bounds)
@@ -131,6 +132,10 @@ pub(super) fn add(
                 ));
             }
             let bytes = cache.index(&pin.name, 32 * 1024 * 1024)?;
+            super::super::collisions::check(
+                &super::super::collisions::from_bytes(&pin.name, &bytes)?,
+                [(pin.name.clone(), pin.version.clone())],
+            )?;
             let parsed = records(&bytes).map_err(|_| {
                 refusal(
                     ("lock_unsupported_index", source_name),

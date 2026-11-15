@@ -2,6 +2,8 @@
 //!
 //! No Cargo executable is invoked at runtime. The schema-0 report remains a research
 //! format; approved frozen MVP operations live in [`mirror`].
+mod collisions;
+pub use collisions::{CollisionVersion, IndexWarning, IndexWarningKind};
 pub mod catalog;
 pub mod lockfile;
 pub mod mirror;
@@ -257,6 +259,9 @@ pub struct Plan {
     pub archive_requests: usize,
     /// Native search branches explored.
     pub attempts: usize,
+    /// Bounded historical collisions observed outside selected checksum identities.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub index_warnings: Vec<IndexWarning>,
 }
 struct Planner<'a> {
     source: &'a mut dyn IndexSource,
@@ -379,10 +384,11 @@ impl Planner<'_> {
             }
             let version =
                 Version::parse(&record.vers).map_err(|_| invalid("invalid index version"))?;
-            let mut unique_version = version.clone();
-            unique_version.build = semver::BuildMetadata::EMPTY;
-            if !seen.insert(unique_version.to_string()) {
-                return Err(invalid("duplicate index version"));
+            if !seen.insert(record.vers.clone()) {
+                return Err(invalid(format!(
+                    "duplicate exact index version {name}@{}",
+                    record.vers
+                )));
             }
             if record.v != 2 && !record.features2.is_empty() {
                 return Err(invalid("features2 requires index schema 2"));
@@ -914,6 +920,14 @@ pub fn plan(source: &mut dyn IndexSource, roots: &[Root], bounds: Bounds) -> Res
             return Err(budget("plan version count exceeded"));
         }
     }
+    let mut index_warnings = Vec::new();
+    for (name, entries) in &planner.cache {
+        index_warnings.extend(collisions::inspect(
+            name,
+            entries.iter().map(|e| &e.record),
+        )?);
+    }
+    collisions::check(&index_warnings, planned.keys().cloned())?;
     events::stage("closure-check")?;
     planner.frozen = true;
     for entries in planner.cache.values_mut() {
@@ -936,6 +950,7 @@ pub fn plan(source: &mut dyn IndexSource, roots: &[Root], bounds: Bounds) -> Res
         index_requests: planner.cache.len(),
         archive_requests: 0,
         attempts: planner.attempts,
+        index_warnings,
     })
 }
 /// Run Phase 0 planning under an embedding application's existing observer/cancellation session.

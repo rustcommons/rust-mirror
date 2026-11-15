@@ -990,3 +990,119 @@ fn pruned_crate_chain_can_be_pruned_again() {
             && dir.path().join("run-2/.download/state.json").exists()
     );
 }
+
+fn collision_metadata(source: &PayloadSource, base: &str) -> Vec<u8> {
+    let mut first: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    first["vers"] = json!(base);
+    let mut other = first.clone();
+    other["vers"] = json!(format!("{base}+historical"));
+    other["cksum"] = json!("1".repeat(64));
+    other["yanked"] = json!(true);
+    [first, other]
+        .into_iter()
+        .flat_map(|r| {
+            let mut b = serde_json::to_vec(&r).unwrap();
+            b.push(b'\n');
+            b
+        })
+        .collect()
+}
+#[test]
+fn historical_collision_is_typed_and_original_selected_bytes_survive_frozen_roundtrip() {
+    let (catalog, mut source) = payload_fixture();
+    let original = source.metadata.clone();
+    source.metadata = collision_metadata(&source, "0.9.0");
+    source.metadata.extend_from_slice(&original);
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    assert_eq!(plan.versions.len(), 1);
+    assert_eq!(plan.versions[0].index_line.as_bytes(), original);
+    assert_eq!(plan.index_warnings.len(), 1);
+    let warning = serde_json::to_value(&plan.index_warnings[0]).unwrap();
+    assert_eq!(warning["kind"], "build_metadata_collision");
+    assert_eq!(warning["name"], "x");
+    assert_eq!(warning["versions"].as_array().unwrap().len(), 2);
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("plan.json");
+    plan.save_new(&path).unwrap();
+    assert_eq!(FrozenPlan::load(&path).unwrap().plan_id, plan.plan_id);
+    assert_eq!(source.calls.load(Ordering::SeqCst), 0);
+}
+#[test]
+fn selected_collision_refuses_with_both_original_versions_and_checksums() {
+    let (catalog, mut source) = payload_fixture();
+    source.metadata = collision_metadata(&source, "1.0.0");
+    let err = mirror::plan(&catalog, &source, None, false).unwrap_err();
+    let report = serde_json::to_value(
+        err.downcast_ref::<rust_mirror::Error>()
+            .unwrap()
+            .report
+            .as_ref()
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(report["kind"], "index_version_collision");
+    assert_eq!(report["name"], "x");
+    assert_eq!(report["selected_version"], "1.0.0");
+    assert_eq!(report["versions"][1]["version"], "1.0.0+historical");
+    assert_eq!(report["versions"][1]["checksum"], "1".repeat(64));
+    assert!(err.to_string().contains("1.0.0+historical"));
+    assert_eq!(source.calls.load(Ordering::SeqCst), 0);
+}
+#[test]
+fn retained_collision_refuses_even_when_new_selection_is_unambiguous() {
+    use mirror::{Approval, FetchOptions};
+    let (mut catalog, mut source) = payload_fixture();
+    let first = mirror::plan(&catalog, &source, None, false).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let fetched = mirror::fetch(
+        &first,
+        &source,
+        &FetchOptions {
+            output: dir.path().join("first"),
+            resume: false,
+            previous: None,
+        },
+        &Approval {
+            plan_id: first.plan_id.clone(),
+        },
+    )
+    .unwrap();
+    let mut newer: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    newer["vers"] = json!("2.0.0");
+    source.metadata = collision_metadata(&source, "1.0.0");
+    source.metadata.extend(serde_json::to_vec(&newer).unwrap());
+    source.metadata.push(b'\n');
+    catalog.crates.get_mut("x").unwrap().version = "=2.0.0".into();
+    let err = mirror::plan(&catalog, &source, Some(&fetched.mirror), false).unwrap_err();
+    let report = err
+        .downcast_ref::<rust_mirror::Error>()
+        .unwrap()
+        .report
+        .as_ref()
+        .unwrap();
+    assert_eq!(report["selected_version"].as_str(), Some("1.0.0"));
+}
+#[test]
+fn lock_only_selected_collision_cannot_bypass_native_candidate_checks() {
+    use rust_mirror::{
+        crates::lockfile::{self, LockInput},
+        events::Control,
+    };
+    let (catalog, mut source) = payload_fixture();
+    source.metadata = collision_metadata(&source, "1.0.0");
+    let hash = serde_json::from_slice::<serde_json::Value>(
+        source.metadata.split(|b| *b == b'\n').next().unwrap(),
+    )
+    .unwrap()["cksum"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let empty=Catalog::parse("[crates]\n[crate-policy]\nhosts=['x86_64-pc-windows-msvc']\ntargets=['x86_64-pc-windows-msvc']\n[crate-output]\nbase-url='https://mirror.example/gen'\n").unwrap();
+    let input=LockInput{source_name:"project".into(),file_name:"Cargo.lock".into(),text:format!("version=4\n[[package]]\nname='x'\nversion='1.0.0'\nsource='registry+https://github.com/rust-lang/crates.io-index'\nchecksum='{hash}'\n")};
+    let imported =
+        lockfile::preview_import(&empty, &[input], 2_000_000_000, &Control::default()).unwrap();
+    assert!(imported.accepted);
+    let err = mirror::plan(imported.catalog.as_ref().unwrap(), &source, None, false).unwrap_err();
+    assert!(err.to_string().contains("index version collision"));
+    drop(catalog);
+}
