@@ -355,9 +355,13 @@ dynamic interpreter/NEEDED libraries, empty-root and real DNS/TLS plan/sync proo
 Keep these flags scoped to release jobs. No new crate dependency or
 crate publication is authorized by this distribution change.
 
-Prepare and qualify the workflow in a PR for coordinator review/merge. After merge,
-backfill v0.5.1 only via dispatch; verify live archives, hashes and attestations.
-Do not create throwaway public releases. Preserve dated notes-only publication
+The coordinator merged the workflow; the authorized v0.5.1 dispatch backfill is
+complete. Its [record](docs/evals/2026-11-15-binary-backfill-0.5.1.md) identifies
+live hashes, attestations and actual native Windows/Linux downloads. Use the
+[read-only verification workflow](.github/workflows/verify-release-binaries.yml)
+after later asset uploads. Additional historical backfills need separate approval;
+future authorized release tags use the automatic workflow. Do not create throwaway
+public releases. Preserve dated notes-only publication
 records as historical observations and record new binary distribution separately.
 
 ## User-facing documentation
