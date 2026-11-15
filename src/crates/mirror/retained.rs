@@ -178,6 +178,15 @@ fn merge(
                 "retention observation is duplicate or not previously mirrored",
             ));
         }
+        if observation
+            .index_warnings
+            .iter()
+            .any(|w| w.name != observation.identity.name)
+        {
+            return Err(invalid(
+                "retained collision warning names a different package",
+            ));
+        }
         crate::valid_hash(&observation.index_sha256)?;
         if observation.index_bytes == 0 || observation.index_bytes > 32 * 1024 * 1024 {
             return Err(budget("retained metadata observation exceeds bound"));

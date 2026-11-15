@@ -367,7 +367,6 @@ impl Planner<'_> {
             return Err(budget("aggregate metadata exceeded"));
         }
         let mut entries = Vec::new();
-        let mut seen = BTreeSet::new();
         for raw in bytes.split_inclusive(|b| *b == b'\n') {
             self.tick()?;
             let record: Record = serde_json::from_slice(raw)
@@ -384,12 +383,6 @@ impl Planner<'_> {
             }
             let version =
                 Version::parse(&record.vers).map_err(|_| invalid("invalid index version"))?;
-            if !seen.insert(record.vers.clone()) {
-                return Err(invalid(format!(
-                    "duplicate exact index version {name}@{}",
-                    record.vers
-                )));
-            }
             if record.v != 2 && !record.features2.is_empty() {
                 return Err(invalid("features2 requires index schema 2"));
             }

@@ -132,10 +132,6 @@ pub(super) fn add(
                 ));
             }
             let bytes = cache.index(&pin.name, 32 * 1024 * 1024)?;
-            super::super::collisions::check(
-                &super::super::collisions::from_bytes(&pin.name, &bytes)?,
-                [(pin.name.clone(), pin.version.clone())],
-            )?;
             let parsed = records(&bytes).map_err(|_| {
                 refusal(
                     ("lock_unsupported_index", source_name),
@@ -161,6 +157,10 @@ pub(super) fn add(
                         None,
                     )
                 })?;
+            super::super::collisions::check(
+                &super::super::collisions::from_bytes(&pin.name, &bytes)?,
+                [(pin.name.clone(), pin.version.clone())],
+            )?;
             if crate::valid_hash(&r.cksum).is_err() {
                 return Err(refusal(
                     ("lock_unsupported_index", source_name),

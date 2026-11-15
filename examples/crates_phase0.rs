@@ -28,19 +28,30 @@ impl IndexSource for Cache {
 }
 fn main() -> rust_mirror::Result<()> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
-    if !(args.len() == 3 || args.len() == 4 && args[3] == "--offline") {
-        return Err("usage: crates_phase0 ROOTS.json CACHE_DIR NEW_PLAN.json".into());
+    if args.len() < 3
+        || args.len() > 5
+        || args[3..]
+            .iter()
+            .any(|a| a != "--offline" && a != "--production-bounds")
+    {
+        return Err("usage: crates_phase0 ROOTS.json CACHE_DIR NEW_PLAN.json [--offline] [--production-bounds]".into());
     }
     let roots: Vec<Root> = serde_json::from_slice(&fs::read(&args[0])?)?;
     let mut source = Cache {
         path: PathBuf::from(&args[1]),
-        upstream: if args.len() == 4 {
+        upstream: if args[3..].iter().any(|a| a == "--offline") {
             None
         } else {
             Some(SparseIndex::new(Default::default())?)
         },
     };
-    let plan = crates::plan(&mut source, &roots, Bounds::default())?;
+    let mut bounds = Bounds::default();
+    if args[3..].iter().any(|a| a == "--production-bounds") {
+        // Match the existing catalog planner; do not change runtime defaults.
+        bounds.work = 20_000_000;
+        bounds.attempts = 1_000_000;
+    }
+    let plan = crates::plan(&mut source, &roots, bounds)?;
     use std::io::Write;
     let mut file = fs::OpenOptions::new()
         .write(true)

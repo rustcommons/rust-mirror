@@ -29,7 +29,7 @@ pub struct IndexWarning {
     pub name: String,
     /// Semver identity with build metadata removed.
     pub normalized_version: String,
-    /// Distinct original records, bounded to 32 members per group.
+    /// Original records, bounded to 32 members per group.
     pub versions: Vec<CollisionVersion>,
 }
 fn normalized(version: &str) -> Result<String> {
@@ -45,17 +45,10 @@ pub(super) fn inspect<'a>(
     records: impl Iterator<Item = &'a Record>,
 ) -> Result<Vec<IndexWarning>> {
     let mut groups: BTreeMap<String, Vec<CollisionVersion>> = BTreeMap::new();
-    let mut exact = BTreeSet::new();
     for r in records {
         events::check()?;
         if r.name != name || crate::valid_hash(&r.cksum).is_err() {
             return Err(invalid(format!("inconsistent index identity for {name}")));
-        }
-        if !exact.insert(&r.vers) {
-            return Err(invalid(format!(
-                "duplicate exact index version {name}@{}",
-                r.vers
-            )));
         }
         let group = groups.entry(normalized(&r.vers)?).or_default();
         if group.len() >= 32 {

@@ -649,6 +649,13 @@ impl FrozenPlan {
                 return Err(invalid("root is neither matching nor explicitly pinned"));
             }
         }
+        if self
+            .index_warnings
+            .iter()
+            .any(|w| !self.observations.iter().any(|o| o.name == w.name))
+        {
+            return Err(invalid("collision warning requires an index observation"));
+        }
         super::collisions::check(
             &self.index_warnings,
             self.versions

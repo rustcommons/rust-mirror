@@ -258,3 +258,28 @@ is absent; this never treats an unfinished/partial mirror as a completed prune. 
 protocol 1; old plan/inventory readers refuse the new schemas. Whole-plan approval,
 metadata-only preview loading, immutable replay/resume and existing error meanings
 remain unchanged. Lock sources need no original file after import.
+
+## 0.5.1 index collision reports (protocol 1)
+
+Crate plan/show and needs_approval.preview add optional `index_warnings` (absent means
+empty). Each entry has `kind: "build_metadata_collision"`, `name`,
+`normalized_version`, and `versions: [{version, checksum, yanked}, ...]`. These
+observations retain full upstream identities and are bound into frozen approval;
+existing human `warnings` strings remain separate. Groups are bounded to 32 records,
+1,024 warning groups per plan and 1,024 bytes per version string. A budget refusal
+replaces silent truncation. Fetch/resume does not refresh these frozen observations.
+
+Selecting or retaining a normalized identity whose observed records disagree on
+checksum fails with error.kind `invalid`, error.report.kind
+`index_version_collision`, the same name/normalized_version/versions context, and
+`selected_version`. The human message names a conflicting pair and both checksums.
+Yanked/nonmatching records stay outside ordinary candidate selection; no checksum
+or original index line is merged. Same-checksum variants retain distinct full
+identities. Other validation and resource refusals still apply.
+
+Public library types are `crates::{IndexWarning, IndexWarningKind, CollisionVersion}`;
+`Plan`, `mirror::FrozenPlan`, `Cohort` and `RetentionObservation` expose
+`index_warnings`. Empty arrays are omitted so legacy canonical identities remain
+unchanged. Rust callers constructing these structs must initialize the new fields.
+An older 0.5.0 strict reader refuses a new plan containing these fields; use 0.5.1
+throughout such a plan's lifecycle. The framing/protocol version remains 1.

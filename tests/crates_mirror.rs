@@ -1106,3 +1106,58 @@ fn lock_only_selected_collision_cannot_bypass_native_candidate_checks() {
     assert!(err.to_string().contains("index version collision"));
     drop(catalog);
 }
+
+#[test]
+fn checksum_equal_metadata_variants_are_not_merged_or_mistaken_for_conflicting_data() {
+    let (catalog, mut source) = payload_fixture();
+    let raw = collision_metadata(&source, "1.0.0");
+    let mut records: Vec<serde_json::Value> = raw
+        .split(|b| *b == b'\n')
+        .filter(|l| !l.is_empty())
+        .map(|l| serde_json::from_slice(l).unwrap())
+        .collect();
+    records[1]["cksum"] = records[0]["cksum"].clone();
+    source.metadata = records
+        .iter()
+        .flat_map(|r| {
+            let mut b = serde_json::to_vec(r).unwrap();
+            b.push(b'\n');
+            b
+        })
+        .collect();
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    assert_eq!(plan.versions.len(), 1);
+    assert_eq!(plan.index_warnings[0].versions.len(), 2);
+    assert!(source
+        .metadata
+        .split_inclusive(|b| *b == b'\n')
+        .any(|r| r == plan.versions[0].index_line.as_bytes()));
+}
+#[test]
+fn exact_repeated_version_checksum_conflicts_also_have_contextual_selection_scoped_refusals() {
+    let (catalog, mut source) = payload_fixture();
+    let raw = collision_metadata(&source, "1.0.0");
+    let mut records: Vec<serde_json::Value> = raw
+        .split(|b| *b == b'\n')
+        .filter(|l| !l.is_empty())
+        .map(|l| serde_json::from_slice(l).unwrap())
+        .collect();
+    records[1]["vers"] = records[0]["vers"].clone();
+    source.metadata = records
+        .iter()
+        .flat_map(|r| {
+            let mut b = serde_json::to_vec(r).unwrap();
+            b.push(b'\n');
+            b
+        })
+        .collect();
+    let err = mirror::plan(&catalog, &source, None, false).unwrap_err();
+    let report = err
+        .downcast_ref::<rust_mirror::Error>()
+        .unwrap()
+        .report
+        .as_ref()
+        .unwrap();
+    assert_eq!(report["kind"].as_str(), Some("index_version_collision"));
+    assert_eq!(report["versions"].as_array().unwrap().len(), 2);
+}
