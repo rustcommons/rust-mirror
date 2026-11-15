@@ -16,6 +16,7 @@ on:
     paths:
       - '.github/workflows/release-binaries.yml'
       - 'scripts/release_binaries.py'
+      - 'scripts/glibc_measure.py'
       - 'tests/test_release_binaries.py'
 permissions:
   contents: read
@@ -58,6 +59,8 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
           - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-22.04
             target: x86_64-unknown-linux-musl
           - os: macos-15
             target: aarch64-apple-darwin
@@ -97,7 +100,10 @@ jobs:
         shell: bash
         working-directory: source
         run: |
-          if [[ "$RELEASE_TARGET" == x86_64-pc-windows-msvc ]]; then
+          if [[ "$RELEASE_TARGET" == x86_64-unknown-linux-gnu ]]; then
+            python ../automation/scripts/glibc_measure.py baseline --source . --output "$RUNNER_TEMP/gnu-baseline" --version "${RELEASE_TAG#v}"
+            exit 0
+          elif [[ "$RELEASE_TARGET" == x86_64-pc-windows-msvc ]]; then
             export RUSTFLAGS='-C target-feature=+crt-static'
           elif [[ "$RELEASE_TARGET" == x86_64-unknown-linux-musl ]]; then
             export RUSTFLAGS='-C target-feature=+crt-static'
@@ -106,7 +112,12 @@ jobs:
           cargo build --release --locked --target "$RELEASE_TARGET"
       - name: Smoke both original and archived binary; record ABI and exact source
         shell: bash
-        run: python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact"
+        run: |
+          extra=()
+          if [[ "$RELEASE_TARGET" == x86_64-unknown-linux-gnu ]]; then
+            extra=(--glibc-report "$RUNNER_TEMP/gnu-baseline/baseline-report.json")
+          fi
+          python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact" "${extra[@]}"
       - name: Musl real DNS/TLS plan, approved sync and isolated Cargo client
         if: matrix.target == 'x86_64-unknown-linux-musl'
         shell: bash
@@ -181,7 +192,7 @@ jobs:
         with:
           pattern: binary-*
           path: binary-artifacts
-      - name: Validate all four archives and generate SHA256SUMS
+      - name: Validate all five archives and generate SHA256SUMS
         run: python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets
       - name: Check existing release body and live tag without writing
         run: python scripts/release_binaries.py preflight --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --wait-seconds 600 --allow-existing

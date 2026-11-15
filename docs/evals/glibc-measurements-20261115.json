@@ -1,0 +1,1165 @@
+{
+  "measurement_script_sha256": "43db34b46661f0b95c6e92144af5556e4f037ce8307a3636611ba86dcad90c0d",
+  "workflow_sha256": "31fed55dd76d11e4686fd07bb13edeaec3e2144c60e8f2ea468531f429df41d0",
+  "source_commit": "112ef7a7a71d40349c601f299f965199b5b279ba",
+  "cargo_libc_commit": "e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25",
+  "cargo_libc_version": "cargo-libc 0.7.0",
+  "host_kernel": "7.0.0-1014-aws",
+  "ci_only": true,
+  "builds": [
+    {
+      "target_glibc": "2.28",
+      "command": [
+        "cargo",
+        "libc",
+        "build",
+        "--target",
+        "x86_64-unknown-linux-gnu.2.28",
+        "--cc",
+        "/usr/bin/clang-18",
+        "--artifact",
+        "/home/runner/work/_temp/measurements/target-2.28/build/x86_64-unknown-linux-gnu/release/rust-mirror",
+        "--",
+        "--release",
+        "--locked"
+      ],
+      "exit": 0,
+      "result": "passed",
+      "failure_reason": null,
+      "linkage": {
+        "required_glibc_versions": [
+          "2.2.5",
+          "2.3",
+          "2.3.4",
+          "2.4",
+          "2.10",
+          "2.12",
+          "2.14",
+          "2.16",
+          "2.17",
+          "2.18",
+          "2.25",
+          "2.28"
+        ],
+        "maximum_required_glibc": "2.28",
+        "needed": [
+          "libc.so.6",
+          "libm.so.6",
+          "libpthread.so.0",
+          "libgcc_s.so.1",
+          "libdl.so.2"
+        ],
+        "dynamic_section": "\nDynamic section at offset 0x83cb08 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]\n 0x000000000000000c (INIT)               0x403000\n 0x000000000000000d (FINI)               0xa72588\n 0x0000000000000019 (INIT_ARRAY)         0xc15e78\n 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc15e88\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x400340\n 0x0000000000000005 (STRTAB)             0x400e18\n 0x0000000000000006 (SYMTAB)             0x400368\n 0x000000000000000a (STRSZ)              1513 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc3dd38\n 0x0000000000000002 (PLTRELSZ)           120 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x402058\n 0x0000000000000007 (RELA)               0x401638\n 0x0000000000000008 (RELASZ)             2592 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW\n 0x000000006ffffffe (VERNEED)            0x4014e8\n 0x000000006fffffff (VERNEEDNUM)         4\n 0x000000006ffffff0 (VERSYM)             0x401402\n 0x0000000000000000 (NULL)               0x0\n"
+      }
+    },
+    {
+      "target_glibc": "2.17",
+      "command": [
+        "cargo",
+        "libc",
+        "build",
+        "--target",
+        "x86_64-unknown-linux-gnu.2.17",
+        "--cc",
+        "/usr/bin/clang-18",
+        "--artifact",
+        "/home/runner/work/_temp/measurements/target-2.17/build/x86_64-unknown-linux-gnu/release/rust-mirror",
+        "--",
+        "--release",
+        "--locked"
+      ],
+      "exit": 0,
+      "result": "passed",
+      "failure_reason": null,
+      "linkage": {
+        "required_glibc_versions": [
+          "2.2.5",
+          "2.3",
+          "2.3.4",
+          "2.4",
+          "2.10",
+          "2.12",
+          "2.14",
+          "2.16",
+          "2.17"
+        ],
+        "maximum_required_glibc": "2.17",
+        "needed": [
+          "libc.so.6",
+          "libm.so.6",
+          "libpthread.so.0",
+          "libgcc_s.so.1",
+          "libdl.so.2"
+        ],
+        "dynamic_section": "\nDynamic section at offset 0x83cb08 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]\n 0x000000000000000c (INIT)               0x403000\n 0x000000000000000d (FINI)               0xa72588\n 0x0000000000000019 (INIT_ARRAY)         0xc15e78\n 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc15e88\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x400340\n 0x0000000000000005 (STRTAB)             0x400e18\n 0x0000000000000006 (SYMTAB)             0x400368\n 0x000000000000000a (STRSZ)              1480 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc3dd38\n 0x0000000000000002 (PLTRELSZ)           144 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x401ff0\n 0x0000000000000007 (RELA)               0x4015e8\n 0x0000000000000008 (RELASZ)             2568 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW\n 0x000000006ffffffe (VERNEED)            0x4014c8\n 0x000000006fffffff (VERNEEDNUM)         4\n 0x000000006ffffff0 (VERSYM)             0x4013e0\n 0x0000000000000000 (NULL)               0x0\n"
+      }
+    },
+    {
+      "target_glibc": "2.16",
+      "command": [
+        "cargo",
+        "libc",
+        "build",
+        "--target",
+        "x86_64-unknown-linux-gnu.2.16",
+        "--cc",
+        "/usr/bin/clang-18",
+        "--artifact",
+        "/home/runner/work/_temp/measurements/target-2.16/build/x86_64-unknown-linux-gnu/release/rust-mirror",
+        "--",
+        "--release",
+        "--locked"
+      ],
+      "exit": 1,
+      "result": "failed",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n"
+    }
+  ],
+  "results": [
+    {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "image_record": {
+        "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+        "repo_digests": [
+          "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.28",
+      "result": "passed",
+      "plan_id": "839aa1ef0491831e1d356efd86990a80d9fbb21db3c98952f2e5ac116f89fdb5",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "centos:7",
+      "image_record": {
+        "image": "centos:7",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9",
+        "repo_digests": [
+          "centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.17",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.18' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "opensuse/leap:42.3",
+      "image_record": {
+        "image": "opensuse/leap:42.3",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:8e098189cc8dcb9cf52438dded1403b802a5822acb22e44db027705a146fef7a",
+        "repo_digests": [
+          "opensuse/leap@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.22",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "ubuntu:20.04",
+      "image_record": {
+        "image": "ubuntu:20.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b7bab04fd9aa0c771e5720bf0cc7cbf993fd6946645983d9096126e5af45d713",
+        "repo_digests": [
+          "ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.31",
+      "result": "passed",
+      "plan_id": "a2316362c680b8ba14758d788464c2688c68adbea3d7a9d2a3f9cc9003f3c56b",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "ubuntu:18.04",
+      "image_record": {
+        "image": "ubuntu:18.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:f9a80a55f492e823bf5d51f1bd5f87ea3eed1cb31788686aa99a2fb61a27af6a",
+        "repo_digests": [
+          "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.27",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "ubuntu:16.04",
+      "image_record": {
+        "image": "ubuntu:16.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b6f50765242581c887ff1acc2511fa2d885c52d8fb3ac8c4bba131fd86567f2e",
+        "repo_digests": [
+          "ubuntu@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.23",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "debian:9",
+      "image_record": {
+        "image": "debian:9",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:662c05203bab4c59568d24689fa5c3955439360a35c483178598d226b9a5ad10",
+        "repo_digests": [
+          "debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.24",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "debian:8",
+      "image_record": {
+        "image": "debian:8",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:3aaeab7a47777b5ca21fc6de40a6f9e7ee7ebb7302e7a025795eb9e73200c404",
+        "repo_digests": [
+          "debian@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.19",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "debian:7",
+      "image_record": {
+        "image": "debian:7",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:10fcec6d95c4a29f49fa388ed39cded37e63a1532a081ae2386193942fc12e21",
+        "repo_digests": [
+          "debian@sha256:2259b099d947443e44bbd1c94967c785361af8fd22df48a08a3942e2d5630849"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.13",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.14' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.16' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.17' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.18' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "centos:6",
+      "image_record": {
+        "image": "centos:6",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:5bf9684f472089d6d5cb636041d3d6dc748dbde39f1aefc374bbd367bd2aabbf",
+        "repo_digests": [
+          "centos@sha256:a93df2e96e07f56ea48f215425c6f1673ab922927894595bb5c0ee4c5a955133"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.12",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.16' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.17' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.18' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "almalinux8",
+      "target_glibc": "2.28-build-baseline"
+    },
+    {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "image_record": {
+        "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+        "repo_digests": [
+          "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.28",
+      "result": "passed",
+      "plan_id": "a612ab0a5fa0a614ea60b456cab2860061d8e8fa504d33126c51ca80e78f6751",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "centos:7",
+      "image_record": {
+        "image": "centos:7",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9",
+        "repo_digests": [
+          "centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.17",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.18' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "opensuse/leap:42.3",
+      "image_record": {
+        "image": "opensuse/leap:42.3",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:8e098189cc8dcb9cf52438dded1403b802a5822acb22e44db027705a146fef7a",
+        "repo_digests": [
+          "opensuse/leap@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.22",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "ubuntu:20.04",
+      "image_record": {
+        "image": "ubuntu:20.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b7bab04fd9aa0c771e5720bf0cc7cbf993fd6946645983d9096126e5af45d713",
+        "repo_digests": [
+          "ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.31",
+      "result": "passed",
+      "plan_id": "41fe2b718704dbeb55b144c4bc960d79dbd7940681532db48edd093bcb287468",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "ubuntu:18.04",
+      "image_record": {
+        "image": "ubuntu:18.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:f9a80a55f492e823bf5d51f1bd5f87ea3eed1cb31788686aa99a2fb61a27af6a",
+        "repo_digests": [
+          "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.27",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "ubuntu:16.04",
+      "image_record": {
+        "image": "ubuntu:16.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b6f50765242581c887ff1acc2511fa2d885c52d8fb3ac8c4bba131fd86567f2e",
+        "repo_digests": [
+          "ubuntu@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.23",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "debian:9",
+      "image_record": {
+        "image": "debian:9",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:662c05203bab4c59568d24689fa5c3955439360a35c483178598d226b9a5ad10",
+        "repo_digests": [
+          "debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.24",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "debian:8",
+      "image_record": {
+        "image": "debian:8",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:3aaeab7a47777b5ca21fc6de40a6f9e7ee7ebb7302e7a025795eb9e73200c404",
+        "repo_digests": [
+          "debian@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.19",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "debian:7",
+      "image_record": {
+        "image": "debian:7",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:10fcec6d95c4a29f49fa388ed39cded37e63a1532a081ae2386193942fc12e21",
+        "repo_digests": [
+          "debian@sha256:2259b099d947443e44bbd1c94967c785361af8fd22df48a08a3942e2d5630849"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.13",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.16' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.17' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.14' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.18' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "centos:6",
+      "image_record": {
+        "image": "centos:6",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:5bf9684f472089d6d5cb636041d3d6dc748dbde39f1aefc374bbd367bd2aabbf",
+        "repo_digests": [
+          "centos@sha256:a93df2e96e07f56ea48f215425c6f1673ab922927894595bb5c0ee4c5a955133"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.12",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.16' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.17' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.18' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.28"
+    },
+    {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "image_record": {
+        "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+        "repo_digests": [
+          "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.28",
+      "result": "passed",
+      "plan_id": "79d0ccdd75c1b4a36c8b9c5142bc1088a35ac191050d25d549fc410dbcb33914",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "centos:7",
+      "image_record": {
+        "image": "centos:7",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9",
+        "repo_digests": [
+          "centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.17",
+      "result": "passed",
+      "plan_id": "2b199e332959dbc4c4366470b4dc9e4c713378fb786b2eb6aae865aa2d2786cf",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "opensuse/leap:42.3",
+      "image_record": {
+        "image": "opensuse/leap:42.3",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:8e098189cc8dcb9cf52438dded1403b802a5822acb22e44db027705a146fef7a",
+        "repo_digests": [
+          "opensuse/leap@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.22",
+      "result": "passed",
+      "plan_id": "2b199e332959dbc4c4366470b4dc9e4c713378fb786b2eb6aae865aa2d2786cf",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "ubuntu:20.04",
+      "image_record": {
+        "image": "ubuntu:20.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b7bab04fd9aa0c771e5720bf0cc7cbf993fd6946645983d9096126e5af45d713",
+        "repo_digests": [
+          "ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.31",
+      "result": "passed",
+      "plan_id": "476da55f77b1b6b623ec44d24b4a18adf01df64851b1a6385d979d8b79eaf62c",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "ubuntu:18.04",
+      "image_record": {
+        "image": "ubuntu:18.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:f9a80a55f492e823bf5d51f1bd5f87ea3eed1cb31788686aa99a2fb61a27af6a",
+        "repo_digests": [
+          "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.27",
+      "result": "passed",
+      "plan_id": "3ab616cf74f9a30fee1bcd2a4beccb55ae9c3acfe105de9ceff4b21d3503bf3b",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "ubuntu:16.04",
+      "image_record": {
+        "image": "ubuntu:16.04",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:b6f50765242581c887ff1acc2511fa2d885c52d8fb3ac8c4bba131fd86567f2e",
+        "repo_digests": [
+          "ubuntu@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.23",
+      "result": "passed",
+      "plan_id": "3ab616cf74f9a30fee1bcd2a4beccb55ae9c3acfe105de9ceff4b21d3503bf3b",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "debian:9",
+      "image_record": {
+        "image": "debian:9",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:662c05203bab4c59568d24689fa5c3955439360a35c483178598d226b9a5ad10",
+        "repo_digests": [
+          "debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.24",
+      "result": "passed",
+      "plan_id": "a54efa6400867d25f1f77bb3cc7f6b5c021873abee61940578d16a31b369f092",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "debian:8",
+      "image_record": {
+        "image": "debian:8",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:3aaeab7a47777b5ca21fc6de40a6f9e7ee7ebb7302e7a025795eb9e73200c404",
+        "repo_digests": [
+          "debian@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.19",
+      "result": "passed",
+      "plan_id": "751f70e3093104779e581e9d41d8fd214545e5c8dd4e606e4969ecfad66ec8c5",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "debian:7",
+      "image_record": {
+        "image": "debian:7",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:10fcec6d95c4a29f49fa388ed39cded37e63a1532a081ae2386193942fc12e21",
+        "repo_digests": [
+          "debian@sha256:2259b099d947443e44bbd1c94967c785361af8fd22df48a08a3942e2d5630849"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.13",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.16' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.17' not found (required by /rust-mirror)\n/rust-mirror: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.14' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "centos:6",
+      "image_record": {
+        "image": "centos:6",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:5bf9684f472089d6d5cb636041d3d6dc748dbde39f1aefc374bbd367bd2aabbf",
+        "repo_digests": [
+          "centos@sha256:a93df2e96e07f56ea48f215425c6f1673ab922927894595bb5c0ee4c5a955133"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "runtime_probe": "glibc 2.12",
+      "result": "failed",
+      "failure_stage": "version",
+      "failure_reason": "/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.16' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.17' not found (required by /rust-mirror)\n/rust-mirror: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /rust-mirror)\n",
+      "exit": 1,
+      "method": "cargo-libc",
+      "target_glibc": "2.17"
+    },
+    {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "centos:7",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "opensuse/leap:42.3",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "ubuntu:20.04",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "ubuntu:18.04",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "ubuntu:16.04",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "debian:9",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "debian:8",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "debian:7",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    },
+    {
+      "image": "centos:6",
+      "result": "not_run",
+      "version_ok": false,
+      "plan_ok": false,
+      "sync_ok": false,
+      "failure_stage": "build",
+      "failure_reason": "cargo-libc: supported glibc target releases start at 2.17 (glibc 2.x only)\n",
+      "method": "cargo-libc",
+      "target_glibc": "2.16"
+    }
+  ],
+  "limits": [
+    "Containers share the host kernel; no native old-kernel proof",
+    "No commercial SLES image/EULA used; openSUSE Leap42.3 is a community SLE12-era proxy"
+  ],
+  "images": [
+    {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+      "repo_digests": [
+        "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "centos:7",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9",
+      "repo_digests": [
+        "centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "opensuse/leap:42.3",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:8e098189cc8dcb9cf52438dded1403b802a5822acb22e44db027705a146fef7a",
+      "repo_digests": [
+        "opensuse/leap@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "ubuntu:20.04",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:b7bab04fd9aa0c771e5720bf0cc7cbf993fd6946645983d9096126e5af45d713",
+      "repo_digests": [
+        "ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "ubuntu:18.04",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:f9a80a55f492e823bf5d51f1bd5f87ea3eed1cb31788686aa99a2fb61a27af6a",
+      "repo_digests": [
+        "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "ubuntu:16.04",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:b6f50765242581c887ff1acc2511fa2d885c52d8fb3ac8c4bba131fd86567f2e",
+      "repo_digests": [
+        "ubuntu@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "debian:9",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:662c05203bab4c59568d24689fa5c3955439360a35c483178598d226b9a5ad10",
+      "repo_digests": [
+        "debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "debian:8",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:3aaeab7a47777b5ca21fc6de40a6f9e7ee7ebb7302e7a025795eb9e73200c404",
+      "repo_digests": [
+        "debian@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "debian:7",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:10fcec6d95c4a29f49fa388ed39cded37e63a1532a081ae2386193942fc12e21",
+      "repo_digests": [
+        "debian@sha256:2259b099d947443e44bbd1c94967c785361af8fd22df48a08a3942e2d5630849"
+      ],
+      "architecture": "amd64"
+    },
+    {
+      "image": "centos:6",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:5bf9684f472089d6d5cb636041d3d6dc748dbde39f1aefc374bbd367bd2aabbf",
+      "repo_digests": [
+        "centos@sha256:a93df2e96e07f56ea48f215425c6f1673ab922927894595bb5c0ee4c5a955133"
+      ],
+      "architecture": "amd64"
+    }
+  ],
+  "evaluation_date": "2026-11-15",
+  "measurement_run": 43726536233,
+  "five_archive_dry_run": 43726536265,
+  "automation_head": "62a399beda85ab439c440e4709268ac8a32de509",
+  "baseline_build": {
+    "method": "almalinux8",
+    "binary_sha256": "b8dce5b5103e79740204cda48da442b16cc261b6fa4c940f063291fd0e1a570a",
+    "source_commit": "112ef7a7a71d40349c601f299f965199b5b279ba",
+    "base_image": {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "available": true,
+      "failure_reason": null,
+      "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+      "repo_digests": [
+        "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+      ],
+      "architecture": "amd64"
+    },
+    "toolchain": {
+      "glibc": "glibc 2.28",
+      "gcc": "gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-31)",
+      "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+      "python": "3.9"
+    },
+    "linkage": {
+      "required_glibc_versions": [
+        "2.2.5",
+        "2.3",
+        "2.3.4",
+        "2.4",
+        "2.10",
+        "2.12",
+        "2.14",
+        "2.16",
+        "2.17",
+        "2.18",
+        "2.25",
+        "2.28"
+      ],
+      "maximum_required_glibc": "2.28",
+      "needed": [
+        "libc.so.6",
+        "ld-linux-x86-64.so.2",
+        "libpthread.so.0",
+        "libgcc_s.so.1",
+        "libdl.so.2"
+      ],
+      "dynamic_section": "\nDynamic section at offset 0x887180 contains 31 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]\n 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000007 (RELA)               0x1728\n 0x0000000000000008 (RELASZ)             233856 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000006ffffff9 (RELACOUNT)          9633\n 0x0000000000000017 (JMPREL)             0x3a8a8\n 0x0000000000000002 (PLTRELSZ)           168 (bytes)\n 0x0000000000000003 (PLTGOT)             0x88c980\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000006 (SYMTAB)             0x340\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000005 (STRTAB)             0x10cc\n 0x000000000000000a (STRSZ)              1623 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x10b0\n 0x0000000000000019 (INIT_ARRAY)         0x889170\n 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x889168\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000000000000c (INIT)               0x8603bc\n 0x000000000000000d (FINI)               0x8603d8\n 0x000000006ffffff0 (VERSYM)             0xe50\n 0x000000006ffffffe (VERNEED)            0xf3c\n 0x000000006fffffff (VERNEEDNUM)         5\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    "runtime": {
+      "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+      "image_record": {
+        "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+        "available": true,
+        "failure_reason": null,
+        "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+        "repo_digests": [
+          "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+        ],
+        "architecture": "amd64"
+      },
+      "version_ok": true,
+      "plan_ok": true,
+      "sync_ok": true,
+      "runtime_probe": "glibc 2.28",
+      "result": "passed",
+      "plan_id": "80adac42aecd6346e17d5bcffe60b791be3449d0614df559163853cb4611230a",
+      "failure_stage": null,
+      "failure_reason": null,
+      "dns_tls_hosts": [
+        "index.crates.io",
+        "static.crates.io"
+      ],
+      "tls_verification": true
+    },
+    "host_kernel": "7.0.0-1014-aws",
+    "container_kernel_scope": "containers share CI host kernel; not native old-kernel qualification"
+  },
+  "publication_choice": "ordinary Alma8 baseline; cargo-libc2.17 proposed to coordinator, not automatically selected"
+}

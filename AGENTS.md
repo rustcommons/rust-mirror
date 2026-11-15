@@ -350,7 +350,7 @@ LICENSE/README.txt, SHA256SUMS and GitHub/Sigstore attestations. Only the publis
 job may hold contents/id-token/attestations write permissions. Never replace/delete
 existing release assets or change notes/tags to pass an upload check. Keep OS
 signing/notarization absent and user prompts explicit. Windows release builds use
-static CRT with DLL-import refusal; Linux uses x86_64-unknown-linux-musl with no
+static CRT with DLL-import refusal; The Linux static variant uses x86_64-unknown-linux-musl with no
 dynamic interpreter/NEEDED libraries, empty-root and real DNS/TLS plan/sync proofs.
 Keep these flags scoped to release jobs. No new crate dependency or
 crate publication is authorized by this distribution change.
@@ -360,7 +360,14 @@ complete. Its [record](docs/evals/2026-11-15-binary-backfill-0.5.1.md) identifie
 live hashes, attestations and actual native Windows/Linux downloads. Use the
 [read-only verification workflow](.github/workflows/verify-release-binaries.yml)
 after later asset uploads. Additional historical backfills need separate approval;
-future authorized release tags use the automatic workflow. Do not create throwaway
+future authorized release tags use the automatic workflow. The owner approved a
+fifth GNU/glibc archive starting with the NEXT release on 2026-11-15: build in
+digest-pinned AlmaLinux8, qualify real DNS/TLS plan/sync, and keep static musl.
+v0.5.1 stays at four archives with its original single SHA256SUMS; no GNU backfill
+or secondary manifest is permitted. cargo-libc older-glibc experiments are CI-only,
+with every build/userland outcome in docs/evals; report tool bugs/limits to its
+maintainer. A proven older build requires coordinator approval before replacing
+the ordinary Alma8 GNU publication baseline. Do not create throwaway
 public releases. Preserve dated notes-only publication
 records as historical observations and record new binary distribution separately.
 
