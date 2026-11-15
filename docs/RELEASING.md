@@ -47,6 +47,9 @@ conformance for real ndk-sys, synthetic selected/unselected conflicts and window
 regressions; preserve selected/retained checksum refusal and exact index bytes.
 See [0.5.1 notes](releases/v0.5.1.md) and [bounded evidence](evals/2026-11-15-index-collisions.md).
 No runtime dependency or resource-default changes are part of this patch.
+The coordinator published from the owner's Windows machine after normal merge;
+[postpublication verification](evals/2026-11-15-publication-0.5.1.md) records the
+registry payload, docs.rs, fresh installation, tag/release and workflow.
 
 ## Before merge and publication
 
