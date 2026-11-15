@@ -9,13 +9,13 @@ No Rust/Cargo installation is needed to run the CLI.
 | Computer | Archive target | Format |
 | --- | --- | --- |
 | Windows, Intel/AMD 64-bit | x86_64-pc-windows-msvc | .zip |
-| Linux glibc 2.17+ (next release) | x86_64-unknown-linux-gnu | .tar.gz |
+| Linux glibc 2.17+ (0.5.2+) | x86_64-unknown-linux-gnu | .tar.gz |
 | Any x86_64 Linux, fully static musl | x86_64-unknown-linux-musl | .tar.gz |
 | macOS, Apple Silicon | aarch64-apple-darwin | .tar.gz |
 | macOS, Intel | x86_64-apple-darwin | .tar.gz |
 
 v0.5.1 keeps its four existing archives and original SHA256SUMS. The GNU archive
-starts with the next release; it is not added to v0.5.1. Later releases have five
+starts with 0.5.2; it is not added to v0.5.1. Releases from 0.5.2 have five
 archives covered by one SHA256SUMS.
 
 Choose **musl** to avoid dynamic libc/runtime dependencies across x86_64 Linux
@@ -63,16 +63,16 @@ not establish every older OS version or native SDK combination.
 ### Verify before running
 
 Download the archive and SHA256SUMS from the same release. SHA256SUMS has one sorted
-line per archive (four for v0.5.1, five starting with the next release): lowercase SHA-256, two spaces, file name. Verify the checksum and
+line per archive (four for v0.5.1, five from 0.5.2): lowercase SHA-256, two spaces, file name. Verify the checksum and
 [GitHub provenance](https://cli.github.com/manual/gh_attestation_verify), using a
-recent GitHub CLI with artifact attestation support. These examples pin 0.5.1;
+recent GitHub CLI with artifact attestation support. These examples pin 0.5.2;
 substitute another published version and your target as appropriate.
 
 Windows PowerShell:
 
 ```powershell
-$archive = 'rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip'
-gh release download v0.5.1 --repo rustcommons/rust-mirror --pattern $archive --pattern SHA256SUMS
+$archive = 'rust-mirror-0.5.2-x86_64-pc-windows-msvc.zip'
+gh release download v0.5.2 --repo rustcommons/rust-mirror --pattern $archive --pattern SHA256SUMS
 if ($LASTEXITCODE -ne 0) { throw 'Release download failed' }
 $lines = @(Get-Content .\SHA256SUMS | Where-Object { $_ -cmatch "^[0-9a-f]{64}  $([regex]::Escape($archive))$" })
 if ($lines.Count -ne 1) { throw 'Missing or duplicate checksum entry' }
@@ -84,22 +84,22 @@ if ($LASTEXITCODE -ne 0) { throw 'Archive provenance verification failed' }
 gh attestation verify SHA256SUMS --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
 if ($LASTEXITCODE -ne 0) { throw 'Checksum provenance verification failed' }
 Expand-Archive -LiteralPath ".\$archive" -DestinationPath .\rust-mirror-download
-.\rust-mirror-download\rust-mirror-0.5.1-x86_64-pc-windows-msvc\rust-mirror.exe --version
+.\rust-mirror-download\rust-mirror-0.5.2-x86_64-pc-windows-msvc\rust-mirror.exe --version
 ```
 
 Unix shell (Linux example; choose an Apple target on macOS):
 
 ```sh
 set -eu
-archive=rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz
-gh release download v0.5.1 --repo rustcommons/rust-mirror --pattern "$archive" --pattern SHA256SUMS
+archive=rust-mirror-0.5.2-x86_64-unknown-linux-musl.tar.gz
+gh release download v0.5.2 --repo rustcommons/rust-mirror --pattern "$archive" --pattern SHA256SUMS
 grep -F "  $archive" SHA256SUMS > "$archive.sha256"
 shasum -a 256 -c "$archive.sha256"
 # Linux alternative: sha256sum --check "$archive.sha256"
 gh attestation verify "$archive" --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
 gh attestation verify SHA256SUMS --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
 tar -xzf "$archive"
-./rust-mirror-0.5.1-x86_64-unknown-linux-musl/rust-mirror --version
+./rust-mirror-0.5.2-x86_64-unknown-linux-musl/rust-mirror --version
 ```
 
 Attestations bind the downloaded file digest to this repository's release workflow.
@@ -127,8 +127,8 @@ Privacy & Security > Open Anyway** for that item, if offered. Alternatively remo
 only that verified executable's download quarantine flag, then retry:
 
 ```sh
-xattr -d com.apple.quarantine ./rust-mirror-0.5.1-aarch64-apple-darwin/rust-mirror
-./rust-mirror-0.5.1-aarch64-apple-darwin/rust-mirror --version
+xattr -d com.apple.quarantine ./rust-mirror-0.5.2-aarch64-apple-darwin/rust-mirror
+./rust-mirror-0.5.2-aarch64-apple-darwin/rust-mirror --version
 ```
 
 Use your actual extracted path. A missing quarantine attribute needs no removal.
@@ -144,7 +144,7 @@ With Rust/Cargo 1.90 or newer:
 ```sh
 cargo install rust-mirror --locked
 # Pin a particular crate release when needed:
-cargo install rust-mirror --version 0.5.1 --locked
+cargo install rust-mirror --version 0.5.2 --locked
 ```
 
 Cargo installs the executable into its configured binary directory (normally

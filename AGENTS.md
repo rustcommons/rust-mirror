@@ -379,6 +379,24 @@ Do not create throwaway
 public releases. Preserve dated notes-only publication
 records as historical observations and record new binary distribution separately.
 
+## 0.5.2 release authorization
+
+On 2026-11-15 the owner authorized publishing 0.5.2 to ship five prebuilt downloads:
+Windows static CRT, GNU/Linux via the selected cargo-libc 0.7.0 glibc 2.17 method,
+unchanged static musl and macOS arm64/x86_64, with one SHA256SUMS and attestations.
+Follow [the release policy](docs/RELEASING.md) and [0.5.2 notes](docs/releases/v0.5.2.md).
+There is no mirroring runtime logic or dependency change from 0.5.1; only the
+reported version and packaged user documentation change. Reuse historical native/
+Nexus/conformance evidence only where source bytes and dependency identities match.
+Require a clean package audit and green exact-PR-head release-binaries candidate
+dry run, including all eight GNU userland launch/real HTTPS plan-sync gates.
+Candidate builds must never tag, create a release, attest or upload release assets.
+The coordinator reviews/merges and publishes from the owner's machine. Only after
+publication confirmation create the annotated exact-merge tag and committed GitHub
+Release notes, let the tag workflow attach the five archives plus one SHA256SUMS,
+verify all six live assets/attestations and execute downloaded Windows/GNU/musl
+archives. Open the bounded publication record PR. Never change v0.5.1 assets.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
