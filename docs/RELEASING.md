@@ -40,6 +40,14 @@ pruning. The coordinator reviews/merges and publishes from the owner's machine;
 published after normal merge; [postpublication verification](evals/2026-11-13-publication-0.5.0.md)
 records registry payload, docs.rs, fresh installation, tag/release and workflow evidence.
 
+The owner authorized qualified 0.5.1 publication for historical build-metadata
+index collisions, resumed on 2026-11-15. The coordinator reviews/merges and publishes
+from the owner's machine after green checks. Require Cargo 1.90 full/filtered-index
+conformance for real ndk-sys, synthetic selected/unselected conflicts and windowing
+regressions; preserve selected/retained checksum refusal and exact index bytes.
+See [0.5.1 notes](releases/v0.5.1.md) and [bounded evidence](evals/2026-11-15-index-collisions.md).
+No runtime dependency or resource-default changes are part of this patch.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
@@ -79,7 +87,7 @@ records registry payload, docs.rs, fresh installation, tag/release and workflow 
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.5.0.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.5.1.md) as the GitHub Release, latest and
   without attached standalone binaries unless separately authorized.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.

@@ -319,6 +319,21 @@ The coordinator published 0.5.0 from the owner's Windows machine after normal me
 `2bf44ca46f52b2a8974d606eeac0ff6a729c26d1`. The [publication record](docs/evals/2026-11-13-publication-0.5.0.md)
 identifies registry payload, docs.rs, installed proofs and release verification.
 
+## 0.5.1 collision patch authorization
+
+The owner approved implementing and, once qualified, publishing 0.5.1 for historical
+index build-metadata collisions. The coordinator resumed this work after the owner's
+pause; publication remains from the owner's machine after review/merge and green CI.
+Do not publish from this checkout. Refuse selected or retained normalized-version
+collisions with different checksums using contextual typed diagnostics. Tolerate and
+report unselected historical collisions as typed preview warnings, preserving Cargo
+candidate exclusions, original full identities and byte-exact served lines. Never
+merge checksums or silently substitute an older unambiguous candidate. Require real
+Cargo 1.90 full/filtered conformance, pinned ndk-sys metadata, synthetic collision
+cases and windowing/Bevy-style regressions. Keep existing safety/resource gates;
+no new dependency or runtime Cargo invocation is authorized. See
+[collision evidence](docs/evals/2026-11-15-index-collisions.md).
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to

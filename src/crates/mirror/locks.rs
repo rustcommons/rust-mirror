@@ -65,6 +65,7 @@ pub(super) fn native(
             index_requests: 0,
             archive_requests: 0,
             attempts: 0,
+            index_warnings: vec![],
         })
     } else {
         super::super::plan(source, profiles, bounds)
@@ -156,6 +157,10 @@ pub(super) fn add(
                         None,
                     )
                 })?;
+            super::super::collisions::check(
+                &super::super::collisions::from_bytes(&pin.name, &bytes)?,
+                [(pin.name.clone(), pin.version.clone())],
+            )?;
             if crate::valid_hash(&r.cksum).is_err() {
                 return Err(refusal(
                     ("lock_unsupported_index", source_name),

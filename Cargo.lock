@@ -547,7 +547,7 @@ dependencies = [
 
 [[package]]
 name = "rust-mirror"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex",
  "semver",

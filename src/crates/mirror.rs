@@ -233,6 +233,9 @@ pub struct FrozenPlan {
     pub previous_inventory_sha256: Option<String>,
     /// Bounded coverage and size warnings for user review.
     pub warnings: Vec<String>,
+    /// Typed historical index collisions; empty is omitted to preserve legacy identities.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub index_warnings: Vec<super::IndexWarning>,
     /// Flat, independently validated historical selection proofs; empty for a first generation.
     #[serde(default)]
     pub cohorts: Vec<Cohort>,
@@ -646,6 +649,19 @@ impl FrozenPlan {
                 return Err(invalid("root is neither matching nor explicitly pinned"));
             }
         }
+        if self
+            .index_warnings
+            .iter()
+            .any(|w| !self.observations.iter().any(|o| o.name == w.name))
+        {
+            return Err(invalid("collision warning requires an index observation"));
+        }
+        super::collisions::check(
+            &self.index_warnings,
+            self.versions
+                .iter()
+                .map(|r| (r.name.clone(), r.version.clone())),
+        )?;
         let (counts, sizes, budgets) = summaries(self)?;
         if counts != self.counts || sizes != self.size_estimate || budgets != self.budgets {
             return Err(
@@ -751,9 +767,14 @@ impl FilteredIndex {
         for (name, mut rows) in map {
             rows.sort_by_key(|r| r.source_ordinal);
             let mut bytes = Vec::new();
+            let selected: Vec<_> = rows
+                .iter()
+                .map(|r| (r.name.clone(), r.version.clone()))
+                .collect();
             for row in rows {
                 bytes.extend_from_slice(row.index_line.as_bytes());
             }
+            super::collisions::check(&super::collisions::from_bytes(&name, &bytes)?, selected)?;
             files.insert(name, bytes);
         }
         Ok(Self { files })
@@ -951,6 +972,7 @@ pub fn plan(
         .collect();
     let mut semantic = catalog.clone();
     semantic.network = None;
+    let index_warnings = collision_observations(&cache, &versions)?;
     let mut value = FrozenPlan {
         schema: 2,
         plan_id: String::new(),
@@ -966,6 +988,7 @@ pub fn plan(
         changes: Changes::default(),
         previous_inventory_sha256: None,
         cohorts: Vec::new(),
+        index_warnings,
         retention_observations: Vec::new(),
         warnings: vec![
             "Declared features with all-platform normal/build lock coverage; build success is not implied.".into(),
@@ -1227,4 +1250,19 @@ pub fn client_config(plan: &FrozenPlan) -> Result<String> {
 /// Publication and pruning must still use the full inventory verification paths.
 pub fn client_config_for_generation(root: &Path) -> Result<String> {
     client_config(&Inventory::inspect(root)?.plan)
+}
+
+fn collision_observations(
+    cache: &Cache<'_>,
+    rows: &[VersionRow],
+) -> Result<Vec<super::IndexWarning>> {
+    let mut warnings = Vec::new();
+    for (name, bytes) in &cache.files {
+        warnings.extend(super::collisions::from_bytes(name, bytes)?);
+    }
+    super::collisions::check(
+        &warnings,
+        rows.iter().map(|r| (r.name.clone(), r.version.clone())),
+    )?;
+    Ok(warnings)
 }

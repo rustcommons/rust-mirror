@@ -418,3 +418,34 @@ fn cycle_gate_does_not_mistake_native_existence_for_cargo_success() {
     );
     assert!(crates::plan(&mut index, &[root("root")], Bounds::default()).is_err());
 }
+
+#[test]
+fn winit_style_target_edge_tolerates_only_unselected_historical_collision() {
+    let mut index = Index::default();
+    let mut edge = dep("ndk-sys", "0.6");
+    edge["target"] = json!("cfg(target_os = \"android\")");
+    put(
+        &mut index,
+        "root",
+        vec![record("root", "1.0.0", vec![edge], json!({}))],
+    );
+    let mut bad = record("ndk-sys", "0.4.0+25.0.8775105", vec![], json!({}));
+    bad["cksum"] = json!("1".repeat(64));
+    bad["yanked"] = json!(true);
+    put(
+        &mut index,
+        "ndk-sys",
+        vec![
+            record("ndk-sys", "0.4.0", vec![], json!({})),
+            bad,
+            record("ndk-sys", "0.6.0+11769913", vec![], json!({})),
+        ],
+    );
+    let plan = crates::plan(&mut index, &[root("root")], Bounds::default()).unwrap();
+    assert!(ids(&plan).contains(&"ndk-sys@0.6.0+11769913".into()));
+    assert_eq!(plan.index_warnings.len(), 1);
+    let mut old = root("ndk-sys");
+    old.version = "0.4.0".into();
+    let err = crates::plan(&mut index, &[old], Bounds::default()).unwrap_err();
+    assert!(err.to_string().contains("ndk-sys"));
+}

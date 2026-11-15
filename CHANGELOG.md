@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-15
+
+- Allow usable crate previews when an upstream index contains historical,
+  unselected versions that differ only in build metadata. Report typed collision
+  warnings instead of rejecting the entire index, including the old ndk-sys
+  records reached through windowing dependencies.
+- Refuse selected, lock-pinned or retained normalized versions with conflicting
+  checksums, naming the crate, original versions and checksums. Keep full identities
+  and original index lines; never merge conflicting records or bypass yank rules.
+- Carry bounded warning observations in frozen previews and retained proofs while
+  preserving identities of older plans whose new warning fields are empty.
+
 ## [0.5.0] - 2026-11-13
 
 - Import Cargo.lock formats 1–4 as copied named pin/graph sources with digest/time

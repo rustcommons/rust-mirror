@@ -22,6 +22,9 @@ pub struct Cohort {
     pub observations: Vec<Observation>,
     /// Original bounded warnings.
     pub warnings: Vec<String>,
+    /// Collision observations bound to this historical selection.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub index_warnings: Vec<super::super::IndexWarning>,
 }
 /// Upstream yank observation for an already verified retained archive; never rewrites its original line.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -39,6 +42,9 @@ pub struct RetentionObservation {
     pub index_sha256: String,
     /// Length of that complete sparse metadata file.
     pub index_bytes: u64,
+    /// Current full-index collision observations for this retained package.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub index_warnings: Vec<super::super::IndexWarning>,
 }
 fn legacy_schema() -> u32 {
     1
@@ -57,6 +63,7 @@ impl Cohort {
             witnesses: plan.witnesses.clone(),
             observations: plan.observations.clone(),
             warnings: plan.warnings.clone(),
+            index_warnings: plan.index_warnings.clone(),
         }
     }
     fn first(&self) -> Result<FrozenPlan> {
@@ -75,6 +82,7 @@ impl Cohort {
             changes: Changes::default(),
             previous_inventory_sha256: None,
             warnings: self.warnings.clone(),
+            index_warnings: self.index_warnings.clone(),
             cohorts: Vec::new(),
             retention_observations: Vec::new(),
         };
@@ -170,6 +178,15 @@ fn merge(
                 "retention observation is duplicate or not previously mirrored",
             ));
         }
+        if observation
+            .index_warnings
+            .iter()
+            .any(|w| w.name != observation.identity.name)
+        {
+            return Err(invalid(
+                "retained collision warning names a different package",
+            ));
+        }
         crate::valid_hash(&observation.index_sha256)?;
         if observation.index_bytes == 0 || observation.index_bytes > 32 * 1024 * 1024 {
             return Err(budget("retained metadata observation exceeds bound"));
@@ -252,8 +269,24 @@ fn merge(
         &value.catalog,
     );
     value.previous_inventory_sha256 = Some(previous_hash);
-    value.cohorts = cohorts;
+
+    value.index_warnings = cohorts
+        .iter()
+        .flat_map(|c| c.index_warnings.iter())
+        .chain(observations.iter().flat_map(|o| o.index_warnings.iter()))
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    super::super::collisions::check(
+        &value.index_warnings,
+        value
+            .versions
+            .iter()
+            .map(|r| (r.name.clone(), r.version.clone())),
+    )?;
     value.retention_observations = observations;
+    value.cohorts = cohorts;
     let (counts, sizes, budgets) = summaries(&value)?;
     value.counts = counts;
     value.size_estimate = sizes;
@@ -405,6 +438,7 @@ pub(super) fn plan(
             previously_yanked,
             index_sha256: crate::sha256(&data),
             index_bytes: data.len() as u64,
+            index_warnings: super::super::collisions::from_bytes(&row.name, &data)?,
         });
     }
     let value = merge(cohorts, observations, crate::sha256(&raw))?;

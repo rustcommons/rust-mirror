@@ -302,3 +302,25 @@ sources union with manual rules, including exact checksums and lock-scoped yanks
 See that guide for syntax/API/events/results, structured retention reasons and
 [qualification bounds](evals/2026-11-13-lock-import.md) and the
 [0.5.0 publication record](evals/2026-11-13-publication-0.5.0.md).
+
+## Historical index collisions
+
+0.5.1 tolerates historical index records whose SemVer identities collide after
+removing build metadata when their conflicting normalized version is not selected.
+The normal yank, requirement and feature filters still govern candidates. Preview
+`index_warnings` carries typed original version/checksum/yank observations. A selected,
+lock-pinned or retained normalized version with different checksums refuses with
+`index_version_collision` context; it is never silently replaced by an older version.
+Identical checksums do not authorize combining index lines or full identities.
+
+The motivating ndk-sys index contains non-yanked `0.4.0` and yanked
+`0.4.0+25.0.8775105`; selecting `0.6.0+11769913` can proceed while reporting that
+older collision. This is tolerance for observed historical data, not removal of
+Cargo's documented registry uniqueness rule. See [protocol shapes](EVENTS.md#051-index-collision-reports-protocol-1)
+and [bounded conformance evidence](evals/2026-11-15-index-collisions.md).
+
+Original selected index lines remain byte-exact and in upstream order. Warning
+observations are part of frozen approval/history; empty new fields preserve old
+plan identities. Use 0.5.1 to load plans with nonempty typed warnings. Catalogs and
+root profiles still face the existing solver/resource/unsupported-semantics gates;
+this patch does not promise arbitrary Bevy/eframe builds or raise runtime limits.

@@ -6,6 +6,8 @@ on:
       - 'tests/crates_phase0.rs'
       - 'examples/crates_phase0.rs'
       - 'scripts/*crates_phase0*'
+      - 'scripts/check_crates_collisions.py'
+      - 'tests/fixtures/ndk-sys-20261114.index'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/crates-phase0.yml'
@@ -30,10 +32,17 @@ jobs:
           cargo build --locked --example crates_phase0
       - name: Real Cargo oracle against filtered sparse registries
         run: python scripts/check_crates_phase0.py --driver target/debug/examples/crates_phase0 --work "$RUNNER_TEMP/crates-phase0"
+      - name: Historical collisions and real windowing roots against Cargo 1.90
+        run: python scripts/check_crates_collisions.py --driver target/debug/examples/crates_phase0 --work "${{ runner.temp }}/crates-collisions"
       - name: Save exact metadata, plans, locks, logs and overfetch evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: crates-phase0-evidence
-          path: ${{ runner.temp }}/crates-phase0
+          path: |
+            ${{ runner.temp }}/crates-phase0
+            ${{ runner.temp }}/crates-collisions/*/summary.json
+            ${{ runner.temp }}/crates-collisions/*/plan.json
+            ${{ runner.temp }}/crates-collisions/*/*.log
+            ${{ runner.temp }}/crates-collisions/summary.json
           if-no-files-found: warn
