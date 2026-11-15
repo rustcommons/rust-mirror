@@ -95,7 +95,7 @@ and “Not applicable”. Future ideas are not approved requirements.
 
 
 
-| ROM-REQ-054 | Publish automatic unsigned prebuilt CLI binaries for four native targets from exact tags, locked pinned Rust; license/readme, checksums, attestations, immutable release checks and dry-run qualification. Source: owner authorization, 2026-11-15. | [Workflow](../.github/workflows/release-binaries.yml); [packaging/refusal helper](../scripts/release_binaries.py); [install guide](INSTALL.md); [policy](RELEASING.md#prebuilt-github-release-binaries). | [Refusal tests](../tests/test_release_binaries.py); four-runner dry-run evidence and live v0.5.1 backfill are recorded separately after their executions. | Implemented—partial verification; unsigned binaries, hosted-runner smoke scope and glibc 2.35 floor. No older-OS or production-environment guarantee. |
+| ROM-REQ-054 | Publish automatic unsigned prebuilt CLI binaries for four native targets from exact tags, locked pinned Rust; license/readme, checksums, attestations, immutable release checks and dry-run qualification. Source: owner authorization, 2026-11-15. | [Workflow](../.github/workflows/release-binaries.yml); [packaging/refusal helper](../scripts/release_binaries.py); [install guide](INSTALL.md); [policy](RELEASING.md#prebuilt-github-release-binaries). | [Refusal tests](../tests/test_release_binaries.py); four-runner dry-run evidence and live v0.5.1 backfill are recorded separately after their executions. | Implemented—partial verification; unsigned binaries, Windows static-CRT/DLL checks and fully static Linux musl with bounded DNS/TLS/private-CA/resume proof. No older-OS or production-environment guarantee. |
 
 ## Documentation map
 

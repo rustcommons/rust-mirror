@@ -9,7 +9,7 @@ No Rust/Cargo installation is needed to run the CLI.
 | Computer | Archive target | Format |
 | --- | --- | --- |
 | Windows, Intel/AMD 64-bit | x86_64-pc-windows-msvc | .zip |
-| Linux, Intel/AMD 64-bit, glibc | x86_64-unknown-linux-gnu | .tar.gz |
+| Any x86_64 Linux, fully static musl | x86_64-unknown-linux-musl | .tar.gz |
 | macOS, Apple Silicon | aarch64-apple-darwin | .tar.gz |
 | macOS, Intel | x86_64-apple-darwin | .tar.gz |
 
@@ -23,12 +23,24 @@ Redistributable is needed. The release build's DLL audit refuses MSVC/UCRT runti
 imports; normal Windows system DLLs remain required. This applies to the release
 archives, not independently compiled Cargo/development builds.
 
-Linux builds use Ubuntu 22.04, the oldest available practical Ubuntu hosted runner,
-with glibc 2.35. Require glibc 2.35 or newer and the system libraries listed in the
-archive's README.txt. README.txt records the highest GLIBC symbol version required
-by that particular executable. A lower symbol version alone does not qualify older
-distributions. Windows and macOS builds are smoke-tested on their named hosted
-runners; this does not establish every older OS version or native SDK combination.
+The Linux executable is fully static musl: no glibc, OpenSSL or other shared-library
+runtime dependency. Its build gate checks file/ldd and ELF headers, refuses a dynamic
+interpreter or NEEDED libraries, and runs it in an empty chroot. The musl binary
+also performs real crate preview/approved sync over HTTPS and a private-CA proxy
+resume/cancellation fixture. Normal Linux kernel/CPU/filesystem requirements still
+apply; this is not execution evidence for every enterprise kernel/configuration.
+
+DNS uses musl's resolver with /etc/hosts and /etc/resolv.conf; it does not load
+glibc NSS modules such as SSSD/mDNS integrations. Corporate name resolution must
+work through normal DNS or an explicitly configured proxy. TLS uses rustls and
+bundled public roots, with corporate CA files added explicitly through
+[network options](NETWORK.md); OpenSSL and a glibc trust-store plugin are not needed.
+The [musl resolver reference](https://wiki.musl-libc.org/functional-differences-from-glibc.html)
+describes differences from glibc. Named DNS/TLS smoke evidence is recorded with the
+release qualification; it does not certify every proxy/SSO/NSS policy.
+
+Windows and macOS builds are smoke-tested on their named hosted runners; this does
+not establish every older OS version or native SDK combination.
 
 ### Verify before running
 
@@ -61,7 +73,7 @@ Unix shell (Linux example; choose an Apple target on macOS):
 
 ```sh
 set -eu
-archive=rust-mirror-0.5.1-x86_64-unknown-linux-gnu.tar.gz
+archive=rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz
 gh release download v0.5.1 --repo rustcommons/rust-mirror --pattern "$archive" --pattern SHA256SUMS
 grep -F "  $archive" SHA256SUMS > "$archive.sha256"
 shasum -a 256 -c "$archive.sha256"
@@ -69,7 +81,7 @@ shasum -a 256 -c "$archive.sha256"
 gh attestation verify "$archive" --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
 gh attestation verify SHA256SUMS --repo rustcommons/rust-mirror --signer-workflow rustcommons/rust-mirror/.github/workflows/release-binaries.yml
 tar -xzf "$archive"
-./rust-mirror-0.5.1-x86_64-unknown-linux-gnu/rust-mirror --version
+./rust-mirror-0.5.1-x86_64-unknown-linux-musl/rust-mirror --version
 ```
 
 Attestations bind the downloaded file digest to this repository's release workflow.

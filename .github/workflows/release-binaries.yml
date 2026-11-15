@@ -58,7 +58,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
           - os: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
+            target: x86_64-unknown-linux-musl
           - os: macos-15
             target: aarch64-apple-darwin
           - os: macos-15-intel
@@ -88,17 +88,72 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install musl C compiler for existing C dependencies
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y musl-tools
       - name: Locked native build from frozen tag
         shell: bash
         working-directory: source
         run: |
           if [[ "$RELEASE_TARGET" == x86_64-pc-windows-msvc ]]; then
             export RUSTFLAGS='-C target-feature=+crt-static'
+          elif [[ "$RELEASE_TARGET" == x86_64-unknown-linux-musl ]]; then
+            export RUSTFLAGS='-C target-feature=+crt-static'
+            export CC_x86_64_unknown_linux_musl=musl-gcc
           fi
           cargo build --release --locked --target "$RELEASE_TARGET"
       - name: Smoke both original and archived binary; record ABI and exact source
         shell: bash
         run: python automation/scripts/release_binaries.py package --source source --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --target "$RELEASE_TARGET" --output "$RUNNER_TEMP/binary-artifact"
+      - name: Musl real DNS/TLS plan, approved sync and isolated Cargo client
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        shell: bash
+        run: python automation/scripts/prove_crates_platform.py --binary source/target/x86_64-unknown-linux-musl/release/rust-mirror --evidence "$RUNNER_TEMP/musl-network"
+      - name: Musl private-CA proxy, killed transfer and cancellation/resume
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        shell: bash
+        run: python automation/scripts/prove_crates_resume.py --binary source/target/x86_64-unknown-linux-musl/release/rust-mirror --evidence "$RUNNER_TEMP/musl-resume"
+      - name: Record musl DNS/TLS scope and resolver files
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        shell: bash
+        run: |
+          python - <<'PYTHON'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          def result(name):
+              rows = [json.loads(line) for line in (root / 'musl-network' / name).read_text().splitlines()]
+              assert rows[-1]['type'] == 'result' and rows[-1]['ok']
+              return rows[-1]['report']
+          preview = result('sync-preview.jsonl')
+          completed = result('sync-approved.jsonl')
+          assert preview['status'] == 'needs_approval' and completed['status'] == 'completed'
+          assert preview['plan_id'] == completed['plan_id']
+          private_ca = json.loads((root / 'musl-resume/resume-proof.json').read_text())
+          summary = {'source': os.environ['RELEASE_COMMIT'], 'target': os.environ['RELEASE_TARGET'],
+            'direct_official_dns_tls_sync': True, 'hosts': ['index.crates.io', 'static.crates.io'],
+            'plan_id': completed['plan_id'], 'tls': 'rustls; verification enabled; bundled public roots',
+            'resolver_files_present': {p: Path(p).is_file() for p in ['/etc/hosts', '/etc/resolv.conf']},
+            'glibc_nss_plugins': False, 'private_ca_proxy_kill_cancel_resume': private_ca,
+            'scope': 'Successful named official HTTPS operations, not DNS packet inspection or all NSS/proxy policies'}
+          (root / 'binary-artifact/network-smoke.json').write_text(json.dumps(summary, indent=2) + '\n')
+          PYTHON
+      - name: Save bounded musl network evidence without private keys or Cargo homes
+        if: matrix.target == 'x86_64-unknown-linux-musl' && always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: musl-network-evidence
+          path: |
+            ${{ runner.temp }}/musl-network/*.jsonl
+            ${{ runner.temp }}/musl-network/*.stderr
+            ${{ runner.temp }}/musl-network/https-client/client-proof.json
+            ${{ runner.temp }}/musl-resume/resume-proof.json
+            ${{ runner.temp }}/musl-resume/*.jsonl
+            ${{ runner.temp }}/musl-resume/*.stderr
+          if-no-files-found: warn
+          retention-days: 14
       - uses: actions/upload-artifact@v7
         with:
           name: binary-${{ matrix.target }}

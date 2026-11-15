@@ -125,17 +125,24 @@ and workflow_dispatch with a tag and dry_run (default true). Each build checks o
 the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
 --locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
 Build targets are x86_64-pc-windows-msvc on windows-latest,
-x86_64-unknown-linux-gnu on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
-x86_64-apple-darwin on macos-15-intel. Ubuntu 22.04 is the oldest practical hosted
-Ubuntu runner; record its glibc 2.35, actual maximum required GLIBC symbol and
-linked libraries. Windows release builds alone set RUSTFLAGS to
+x86_64-unknown-linux-musl on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
+x86_64-apple-darwin on macos-15-intel. The CLI Linux archive is fully static musl,
+replacing the original GNU/glibc proposal after the owner's enterprise-compatibility
+decision. Install musl-tools only on the Linux build runner for existing C sources;
+set CC_x86_64_unknown_linux_musl=musl-gcc and release-only static-CRT RUSTFLAGS.
+Fail if file/ldd do not identify static linkage, or ELF headers include INTERP or
+NEEDED libraries. Smoke the binary in an empty chroot, then run real DNS/TLS crate
+preview/approval/sync and the existing private-CA proxy kill/cancel/resume fixture.
+Record linkage, resolver-file availability, exact run IDs and network results.
+No glibc runtime floor remains. Kernel/CPU/network policy and musl resolver/NSS
+differences remain bounded in the install guide; do not claim every enterprise
+kernel or name-service configuration was executed.
+Windows release builds alone set RUSTFLAGS to
 -C target-feature=+crt-static; do not change repository-wide configuration, normal
 CI or development builds. Audit native DLL imports with vswhere + dumpbin
 /dependents and the bounded PE parser: fail if no imports are parsed or if any
 match ^(vcruntime|msvcp|ucrtbase|api-ms-win-crt-) case-insensitively. Record actual
 system DLL imports; no Visual C++ Redistributable is required by these archives.
-Fail if the baseline rises or required symbols exceed 2.35.
-This bounds runner compatibility, not all distributions or older OS versions.
 
 Each rust-mirror-VERSION-TARGET.zip (Windows) or .tar.gz (Unix) contains one
 same-named folder with the executable, original tagged LICENSE and README.txt.

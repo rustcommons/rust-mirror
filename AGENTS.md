@@ -345,11 +345,14 @@ The owner authorized unsigned GitHub Release binary attachments on 2026-11-15,
 replacing the earlier notes-only distribution boundary. Use the reviewed
 [release workflow](.github/workflows/release-binaries.yml) and
 [release policy](docs/RELEASING.md#prebuilt-github-release-binaries): exact immutable
-tagged source, locked Rust 1.90 builds, native Windows/Linux/macOS smoke tests,
+tagged source, locked Rust 1.90 builds, native Windows/macOS and static Linux musl smoke tests,
 LICENSE/README.txt, SHA256SUMS and GitHub/Sigstore attestations. Only the publish
 job may hold contents/id-token/attestations write permissions. Never replace/delete
 existing release assets or change notes/tags to pass an upload check. Keep OS
-signing/notarization absent and user prompts explicit. No new crate dependency or
+signing/notarization absent and user prompts explicit. Windows release builds use
+static CRT with DLL-import refusal; Linux uses x86_64-unknown-linux-musl with no
+dynamic interpreter/NEEDED libraries, empty-root and real DNS/TLS plan/sync proofs.
+Keep these flags scoped to release jobs. No new crate dependency or
 crate publication is authorized by this distribution change.
 
 Prepare and qualify the workflow in a PR for coordinator review/merge. After merge,

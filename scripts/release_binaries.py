@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import subprocess
 import struct
+import shutil
 import tarfile
 import tempfile
 import time
@@ -24,7 +25,7 @@ import zipfile
 
 REPO = 'rustcommons/rust-mirror'
 TOOLCHAIN = '1.90.0'
-TARGETS = ('x86_64-pc-windows-msvc', 'x86_64-unknown-linux-gnu',
+TARGETS = ('x86_64-pc-windows-msvc', 'x86_64-unknown-linux-musl',
            'aarch64-apple-darwin', 'x86_64-apple-darwin')
 TAG = re.compile(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?')
 MAX_ARCHIVE = 128 * 1024 * 1024
@@ -181,6 +182,28 @@ def dumpbin_imports(binary):
     return names, output
 
 
+def validate_static_linux(headers, dynamic, file_output, ldd_output):
+    require('INTERP' not in headers and '(NEEDED)' not in dynamic, 'Linux binary has a dynamic interpreter or shared-library dependency')
+    require('x86-64' in file_output and ('static-pie linked' in file_output or 'statically linked' in file_output), 'file does not identify a static x86-64 executable')
+    require('not a dynamic executable' in ldd_output or 'statically linked' in ldd_output, 'ldd does not confirm static linkage')
+
+
+def static_linux(binary, version):
+    headers = run('readelf', '--program-headers', str(binary))
+    dynamic = run('readelf', '--dynamic', str(binary))
+    description = run('file', str(binary))
+    ldd = subprocess.run(['ldd', str(binary)], capture_output=True, text=True)
+    output = (ldd.stdout + ldd.stderr).strip()
+    validate_static_linux(headers, dynamic, description, output)
+    # An empty root has no dynamic loader, libc, OpenSSL, NSS modules or other libraries.
+    with tempfile.TemporaryDirectory(prefix='rust-mirror-static-root-') as directory:
+        executable = Path(directory) / 'rust-mirror'
+        shutil.copyfile(binary, executable); executable.chmod(0o755)
+        actual = run('sudo', 'chroot', directory, '/rust-mirror', '--version')
+        require(actual == f'rust-mirror {version}', 'empty-root static executable smoke failed')
+    return {'file': description, 'ldd': output, 'ldd_exit': ldd.returncode, 'program_headers': headers, 'dynamic_section': dynamic, 'no_interpreter_or_needed': True, 'empty_root_version': actual}
+
+
 def package(args):
     root = args.source.resolve()
     require(run('git', 'rev-parse', 'HEAD', cwd=root) == args.commit, 'source checkout differs from frozen commit')
@@ -189,7 +212,8 @@ def package(args):
     require(r['commit'] == args.commit, 'tag differs from frozen commit')
     compiler = run('rustc', '-vV')
     require(compiler.splitlines()[0].startswith('rustc ' + TOOLCHAIN + ' '), 'wrong Rust compiler')
-    require(f'host: {args.target}' in compiler.splitlines(), 'native runner host differs from requested target')
+    host = 'x86_64-unknown-linux-gnu' if args.target == 'x86_64-unknown-linux-musl' else args.target
+    require(f'host: {host}' in compiler.splitlines(), 'native runner architecture differs from requested target')
     exe = 'rust-mirror.exe' if 'windows' in args.target else 'rust-mirror'
     binary = root / 'target' / args.target / 'release' / exe
     human = smoke(binary, r['version'])
@@ -199,13 +223,7 @@ def package(args):
         validate_windows_imports(dlls)
         inspected, dumpbin = dumpbin_imports(binary)
         require({n.lower() for n in dlls} == {n.lower() for n in inspected}, 'PE and dumpbin import audits disagree')
-    glibc = None
-    if args.target == 'x86_64-unknown-linux-gnu':
-        symbols = run('readelf', '--version-info', str(binary))
-        versions = {tuple(map(int, v.split('.'))) for v in re.findall(r'GLIBC_([0-9]+\.[0-9]+(?:\.[0-9]+)?)', symbols)}
-        require(versions and max(versions) <= (2, 35), 'binary requires newer glibc than Ubuntu 22.04')
-        glibc = {'runner': run('getconf', 'GNU_LIBC_VERSION'), 'maximum_required_symbol': '.'.join(map(str, max(versions))), 'tested_floor': '2.35', 'ldd': run('ldd', str(binary))}
-        require(glibc['runner'] == 'glibc 2.35', 'review changed Ubuntu 22.04 glibc baseline')
+    linux_static = static_linux(binary, r['version']) if args.target == 'x86_64-unknown-linux-musl' else None
     prefix = f'rust-mirror-{r["version"]}-{args.target}'
     readme = f'''rust-mirror {r['version']} ({args.target})
 Prepare verified Rust toolchain and curated crate mirrors for offline development.
@@ -222,9 +240,11 @@ macOS may show Gatekeeper: verify first, then Privacy & Security > Open Anyway.
 Do not disable platform protection globally. GitHub provenance is separate from OS signing.
 License: Apache-2.0; see LICENSE.
 '''
-    if glibc:
-        readme += f"Linux: tested on Ubuntu 22.04/glibc 2.35; maximum required GLIBC symbol {glibc['maximum_required_symbol']}.\nOther distributions/older glibc are not qualified by this runner smoke test.\n"
-        readme += 'Dynamic dependencies: ' + ', '.join(line.split()[0] for line in glibc['ldd'].splitlines()) + '\n'
+    if linux_static:
+        readme += 'Any x86_64 Linux: fully static musl executable; no glibc or shared-library runtime dependency.\n'
+        readme += 'DNS uses /etc/hosts and /etc/resolv.conf; glibc NSS plugins are not loaded.\n'
+        readme += 'TLS uses rustls and bundled public roots; add corporate CAs explicitly with --extra-ca-file.\n'
+        readme += 'Kernel, CPU and network policy still apply; named smoke tests are not every enterprise configuration.\n'
     if dlls:
         readme += 'Windows imported DLLs: ' + ', '.join(dlls) + '\n'
         readme += 'Nothing else to install: the C runtime is built in, so no Visual C++ Redistributable is needed.\n'
@@ -252,7 +272,7 @@ License: Apache-2.0; see LICENSE.
     with tempfile.TemporaryDirectory(prefix='rust-mirror-binary-smoke-') as directory:
         extracted = Path(directory) / exe; extracted.write_bytes(contents[exe]); extracted.chmod(0o755)
         smoke(extracted, r['version'])
-    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'glibc': glibc, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
+    report = {'tag': r['tag'], 'commit': r['commit'], 'target': args.target, 'archive': destination.name, 'sha256': digest(destination.read_bytes()), 'binary_sha256': digest(files[exe]), 'license_sha256': digest(r['license']), 'rustc': compiler, 'smoke': human, 'archive_smoke': True, 'linux_static': linux_static, 'windows_imports': dlls, 'dumpbin_dependents': dumpbin, 'windows_crt_static': dlls is not None}
     (args.output / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

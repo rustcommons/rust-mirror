@@ -108,6 +108,13 @@ class ReleaseBinariesTests(unittest.TestCase):
             with self.subTest(names=names), self.assertRaises(ValueError):
                 release.validate_windows_imports(names)
 
+    def test_static_linux_audit_refuses_interpreter_needed_and_dynamic_file(self):
+        good = ('LOAD', 'There is no dynamic section', 'ELF 64-bit x86-64 static-pie linked', 'not a dynamic executable')
+        release.validate_static_linux(*good)
+        for changed in (('INTERP', *good[1:]), (good[0], '(NEEDED) libc.so.6', *good[2:]), (*good[:2], 'x86-64 dynamically linked', good[3]), (*good[:3], 'libc.so.6 => /lib/libc.so.6')):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                release.validate_static_linux(*changed)
+
     def test_archive_boundary_and_link_refusals(self):
         for suffix in ('.zip', '.tar.gz'):
             with self.subTest(suffix=suffix):
