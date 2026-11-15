@@ -7,7 +7,7 @@
 - Refresh locked rustls to 0.23.46, rustls-webpki to 0.103.17, webpki-roots to
   1.0.10 and rustix to 1.1.6 for eleven RustSec advisories. Required existing
   libc/linux-raw-sys entries also update; no new crate names or application logic.
-  Upgrade <=0.5.2 locked installs/prebuilt downloads; see [security details](docs/releases/v0.5.3.md#security)
+  Upgrade <=0.5.2 locked installs/prebuilt downloads; see [security details](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.5.3.md#security)
   for all GHSA/RustSec IDs, configuration exclusions and exposure bounds.
 - Ship a source-bound Cargo CycloneDX SBOM alongside the five archives, with one
   SHA256SUMS covering all six payloads. Reusable build/sign isolation, provenance
