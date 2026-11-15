@@ -178,7 +178,7 @@ No glibc runtime floor remains for musl; GNU has its measured dynamic runtime re
 differences remain bounded in the install guide; do not claim every enterprise
 kernel or name-service configuration was executed.
 Windows release builds alone set RUSTFLAGS to
--C target-feature=+crt-static; do not change repository-wide configuration, normal
+-C target-feature=+crt-static -C link-arg=/Brepro; do not change repository-wide configuration, normal
 CI or development builds. Audit native DLL imports with vswhere + dumpbin
 /dependents and the bounded PE parser: fail if no imports are parsed or if any
 match ^(vcruntime|msvcp|ucrtbase|api-ms-win-crt-) case-insensitively. Record actual
@@ -220,7 +220,7 @@ for resolve/package/collect; preflight/upload never accept candidate options.
 Prepare refuses candidate=true with dry_run=false, and the privileged publish job
 independently requires candidate=false. Candidate runs skip only the unavailable
 live release/tag/body check; they still smoke all five binaries, require all eight
-GNU gates, collect/verify one five-entry manifest and inspect committed notes.
+GNU gates, collect/verify one six-entry manifest (five archives plus SBOM) and inspect committed notes.
 They cannot attest or upload release assets.
 
 Ordinary dispatch dry runs (candidate=false) still build from an existing immutable
@@ -229,7 +229,7 @@ cannot change them. Live dispatch uses the exact immutable tag workflow ref with
 candidate=false; current main is allowed only when the tag and invocation SHA
 coincide. Alternate source refs cannot execute in main-scoped jobs. Tag-triggered publication always uses the immutable tag. Never
 create a public throwaway release to qualify a candidate.
-After uploading, download all six live assets, verify SHA256SUMS and attestations,
+For the future SBOM profile, download all seven live assets after uploading, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.
 
 See [install verification and unsigned prompts](INSTALL.md). GitHub provenance is

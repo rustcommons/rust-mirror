@@ -112,7 +112,9 @@ signing, independent code review or identical rebuilds.
 The commands above pin the historical v0.5.2 profile and original signer. Future
 SBOM-bearing releases add rust-mirror-VERSION.cdx.json to SHA256SUMS and require
 signer workflow rustcommons/rust-mirror/.github/workflows/build-binaries.yml instead.
-Verify the SBOM's checksum/provenance too. Archive SBOM bindings can additionally
+For that future profile, also pass --source-digest COMMIT --signer-digest COMMIT
+--deny-self-hosted-runners, where COMMIT is the independently inspected immutable
+release-tag commit. Verify the SBOM's checksum/provenance too. Archive SBOM bindings can additionally
 be checked with gh attestation verify --predicate-type https://cyclonedx.org/bom.
 See [release security automation](SECURITY-BASELINE.md#sbom-and-release-assets) for
 scope and reproducibility limits. Existing releases are not retrofitted.

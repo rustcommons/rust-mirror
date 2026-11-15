@@ -241,14 +241,15 @@
   "reproducibility": "Per-target raw executable/archive comparisons are emitted by the two-clean-job workflow. Record actual CI table/JSON in the PR; no bit-identity assertion in advance.",
   "local_validation": {
     "rust_tests_passed": 191,
-    "python_tests_passed": 55,
+    "python_tests_passed": 56,
     "fmt": "passed",
     "clippy_all_targets_warnings_denied": "passed",
     "rustdoc_warnings_denied": "passed",
     "actionlint": "1.7.12 passed",
     "pin_checker": "100 direct references passed",
     "published_release_docs": "8 versions passed",
-    "software_publication": false
+    "software_publication": false,
+    "exact_commit_attestation_verification": "Existing v0.5.2 manifest verified read-only with source/signer digest d9d4f16ba47dac26531bfbc8552e75aeaaeb09cb and hosted-runner restriction; new reusable signer remains future-release evidence."
   },
   "initial_hosted_failures": {
     "head": "cd821ea4138c8e7a8d86bde29235e2cd551e1188",

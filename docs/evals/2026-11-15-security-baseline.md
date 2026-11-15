@@ -55,7 +55,7 @@ references were resolved against live upstream GitHub commit APIs and matched th
 pins. These are read-only production-provider cases, not invented resolution data.
 Static actionlint1.7.12 and final local zizmor pass. Local Rust1.90 tests passed
 191 cases including the doctest; all-target Clippy/rustdoc warnings-denied, fmt
-and 55 Python tests passed. The only narrow inline notes
+and 56 Python tests passed. The only narrow inline notes
 retain the documented same-commit ./ reusable spelling because actionlint does not
 yet parse the newer $/ spelling. There is no global audit/severity bypass.
 
@@ -100,7 +100,12 @@ requires own-repository main-reachable immutable source, correct event/ref and
 strict empty-release preflight before signing. Native/core jobs explicitly downgrade
 to contents read. The isolated signer has OIDC/attestation writes and the separate
 uploader contents write only. Every archive must have both provenance and the exact
-SBOM binding verified before upload. Existing assets refuse; no replacement path.
+SBOM binding verified before upload. Future profiles require source AND reusable
+signer digests to equal the independently inspected release commit and refuse
+self-hosted runners. The flags were verified read-only against the existing v0.5.2
+manifest and its exact d9d4f16 commit; this does not qualify the future reusable
+signer. Historical backfill identities remain unchanged. Existing assets refuse;
+no replacement path.
 
 ## Qualification outcomes and remaining evidence
 

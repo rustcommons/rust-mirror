@@ -133,16 +133,18 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import subprocess,json,hashlib,sys
+          import subprocess,json,hashlib,sys,os
           sys.path.insert(0,'scripts')
           from release_sbom import validate_binding
+          from release_binaries import attestation_policy
+          policy=attestation_policy({'version':os.environ['RELEASE_TAG'][1:],'commit':os.environ['RELEASE_COMMIT']})
           sboms=list(Path('release-assets').glob('*.cdx.json'))
           assert len(sboms)==1
           document=json.loads(sboms[0].read_text())
           for asset in sorted(Path('release-assets').iterdir()):
-              subprocess.run(['gh', 'attestation', 'verify', str(asset), '--repo', 'rustcommons/rust-mirror', '--signer-workflow', 'rustcommons/rust-mirror/.github/workflows/build-binaries.yml', '--predicate-type', 'https://slsa.dev/provenance/v1'], check=True)
+              subprocess.run(['gh', 'attestation', 'verify', str(asset), *policy, '--predicate-type', 'https://slsa.dev/provenance/v1'], check=True)
               if asset.name.endswith(('.zip', '.tar.gz')):
-                  proof=subprocess.check_output(['gh', 'attestation', 'verify', str(asset), '--repo', 'rustcommons/rust-mirror', '--signer-workflow', 'rustcommons/rust-mirror/.github/workflows/build-binaries.yml', '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'],text=True)
+                  proof=subprocess.check_output(['gh', 'attestation', 'verify', str(asset), *policy, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'],text=True)
                   validate_binding(json.loads(proof),document,hashlib.sha256(asset.read_bytes()).hexdigest())
           PY
       - name: Recheck release and append assets without replacement

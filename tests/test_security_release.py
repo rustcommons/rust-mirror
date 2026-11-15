@@ -27,6 +27,21 @@ class SecurityReleaseTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
 
+    def test_future_attestation_requires_exact_source_and_signer_commits(self):
+        commit = 'a'*40
+        flags = release.attestation_policy({'version':'1.2.3', 'commit':commit})
+        for option in ('--source-digest', '--signer-digest'):
+            self.assertEqual(flags[flags.index(option)+1], commit)
+        self.assertIn('--deny-self-hosted-runners', flags)
+        self.assertTrue(flags[flags.index('--signer-workflow')+1].endswith('/build-binaries.yml'))
+        with self.assertRaises(ValueError):
+            release.attestation_policy({'version':'1.2.3', 'commit':'main'})
+        for version in ('0.5.1', '0.5.2'):
+            legacy = release.attestation_policy({'version':version, 'commit':commit})
+            self.assertNotIn('--source-digest', legacy)
+            self.assertNotIn('--signer-digest', legacy)
+            self.assertTrue(legacy[-1].endswith('/release-binaries.yml'))
+
     def test_sbom_refuses_wrong_format_root_and_incomplete_graph(self):
         good = {'bomFormat': 'CycloneDX', 'specVersion': '1.5', 'metadata': {'component': {'name': 'rust-mirror', 'version': '1.2.3'}}, 'components': [{'name': 'dep', 'version': '1.0.0'}]}
         release_sbom.validate(good, 'rust-mirror', '1.2.3')

@@ -59,6 +59,18 @@ def has_legacy_assets(version):
     return version in ('0.5.1', '0.5.2')
 
 
+
+def attestation_policy(expected):
+    """Bind future attestations to the approved source and reusable signer commit."""
+    legacy = has_legacy_assets(expected['version'])
+    signer = 'release-binaries.yml' if legacy else 'build-binaries.yml'
+    flags = ['--repo', REPO, '--signer-workflow', REPO + '/.github/workflows/' + signer]
+    if not legacy:
+        require(re.fullmatch(r'[0-9a-f]{40}', expected['commit']), 'expected exact attestation source commit')
+        flags += ['--source-digest', expected['commit'], '--signer-digest', expected['commit'], '--deny-self-hosted-runners']
+    return flags
+
+
 def record(root, tag, candidate_commit=None):
     require(TAG.fullmatch(tag), 'expected a v-prefixed semantic version tag')
     if candidate_commit is not None:

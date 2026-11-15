@@ -57,7 +57,10 @@ This follows [GitHub's reusable-workflow SLSA Build L3 design](https://docs.gith
 It does not upgrade existing v0.5.1/v0.5.2 provenance. There is no SLSA3 badge until
 an owner-approved future release actually produces and verifies the new provenance.
 For that profile, verify with signer workflow
-rustcommons/rust-mirror/.github/workflows/build-binaries.yml. Historical releases
+rustcommons/rust-mirror/.github/workflows/build-binaries.yml and require both
+--source-digest and --signer-digest to equal the independently inspected immutable
+release commit; refuse self-hosted runners. The automated upload/download verifiers
+enforce these checks ([CLI policy reference](https://cli.github.com/manual/gh_attestation_verify)). Historical releases
 still require their original release-binaries.yml signer. Same-repository ./ calls
 bind the caller commit; inline zizmor notes explain why current actionlint cannot
 yet parse the newer $/ spelling. No broad audit suppression is configured.
