@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0 are published;
-see docs/evals/2026-11-13-publication-0.5.0.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1 are published;
+see docs/evals/2026-11-15-publication-0.5.1.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -333,6 +333,11 @@ Cargo 1.90 full/filtered conformance, pinned ndk-sys metadata, synthetic collisi
 cases and windowing/Bevy-style regressions. Keep existing safety/resource gates;
 no new dependency or runtime Cargo invocation is authorized. See
 [collision evidence](docs/evals/2026-11-15-index-collisions.md).
+The coordinator published 0.5.1 from the owner's Windows machine after normal merge
+`112ef7a7a71d40349c601f299f965199b5b279ba`. The
+[publication record](docs/evals/2026-11-15-publication-0.5.1.md) identifies registry
+payload, docs.rs, fresh installed proofs, tag/release and verification workflow.
+Later publication still requires separate authorization.
 
 ## User-facing documentation
 

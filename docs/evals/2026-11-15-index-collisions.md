@@ -56,3 +56,10 @@ index semantics, native bounds and whole-index replay safeguards remain. No new
 dependency, runtime Cargo, publication from this checkout or broader completeness
 claim is introduced. Separate postpublication evidence is required after the owner
 publishes. Existing package/client/native/Nexus gates remain mandatory.
+
+## Publication resolution
+
+The coordinator published 0.5.1 after normal merge. The separate
+[postpublication record](2026-11-15-publication-0.5.1.md) identifies the exact merge,
+registry archive, installed proofs, public documentation and release verification.
+The candidate hash and initial development/paused observations above remain historical.
