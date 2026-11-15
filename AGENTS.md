@@ -42,7 +42,9 @@ the asset uploader gets contents write only. The Scorecard job alone also needs
 OIDC/security-events writes to publish its metrics on main/schedule, never PR code.
 
 Trusted crates.io publishing is an additional owner-reviewed path, not a replacement
-for the coordinator/owner-machine process. It requires immutable v* source reachable
+for the coordinator/owner-machine process. The owner standard, 2026-11-15, fixes
+the workflow path as .github/workflows/trusted-publishing.yml and the environment
+as crates-io; preserve those exact registration identities. It requires immutable v* source reachable
 from main and the crates-io environment's owner approval, with only that publishing
 job receiving its OIDC grant. Never store a long-lived Cargo token or publish a test
 version/tag to qualify it. The owner must configure the exact publisher values in

@@ -116,7 +116,7 @@ The owner approved [the security baseline](SECURITY-BASELINE.md) on 2026-11-15.
 All main changes require PRs, actions use full commit pins, security gates apply,
 and protected version tags cannot be updated/deleted. This approval does not
 authorize another software release or change a published version. Existing manual
-publication remains available; the optional [Trusted Publishing workflow](../.github/workflows/publish-crates.yml)
+publication remains available; the optional [Trusted Publishing workflow](../.github/workflows/trusted-publishing.yml)
 requires exact main-reachable tagged source and the owner's crates-io environment
 approval. Register the publisher values in the security guide before using it.
 

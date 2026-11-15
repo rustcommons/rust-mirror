@@ -228,7 +228,7 @@
     "crate": "rust-mirror",
     "repository_owner": "rustcommons",
     "repository": "rust-mirror",
-    "workflow_filename": "publish-crates.yml",
+    "workflow_filename": "trusted-publishing.yml",
     "environment": "crates-io",
     "publish_order": [
       "rust-mirror"

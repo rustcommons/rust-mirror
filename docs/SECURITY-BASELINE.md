@@ -109,7 +109,7 @@ not a universal reproducibility claim or proof on old native kernels.
 ## Optional Trusted Publishing
 
 The existing coordinator/owner-machine process remains available. The new
-[publish-crates.yml](../.github/workflows/publish-crates.yml) handles future v* tags.
+[trusted-publishing.yml](../.github/workflows/trusted-publishing.yml) handles future v* tags.
 A read-only job requires main ancestry, exact manifest/tag identity, one expected
 workspace crate and verified packaging. If the manual process already published
 that exact source, it verifies API/index/archive checksum and payload and skips
@@ -130,7 +130,7 @@ The owner must register exactly this publisher in crates.io settings:
 | Crate | rust-mirror |
 | Repository owner | rustcommons |
 | Repository name | rust-mirror |
-| Workflow filename | publish-crates.yml |
+| Workflow filename | trusted-publishing.yml |
 | Environment | crates-io |
 
 Configuration and an owner-approved real publication remain future validation;

@@ -124,3 +124,9 @@ attempted here. Scorecard's first new main-only result follows merge. All three
 constraints are documented, not silently treated as completed production evidence.
 See [the operational guide](../SECURITY-BASELINE.md) for job privileges, profile
 compatibility, exact owner settings and future verification commands.
+
+The owner standardized the crates.io workflow identity on 2026-11-15 as
+.github/workflows/trusted-publishing.yml, environment crates-io. This PR renames
+the workflow and updates maintained links and exact publisher settings before
+review; no publishing behavior, credentials or release artifacts change. Earlier
+PR-head validation remains dated evidence for the unchanged implementation.
