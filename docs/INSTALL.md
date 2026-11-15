@@ -9,7 +9,7 @@ No Rust/Cargo installation is needed to run the CLI.
 | Computer | Archive target | Format |
 | --- | --- | --- |
 | Windows, Intel/AMD 64-bit | x86_64-pc-windows-msvc | .zip |
-| Linux preferring dynamic glibc (next release) | x86_64-unknown-linux-gnu | .tar.gz |
+| Linux glibc 2.17+ (next release) | x86_64-unknown-linux-gnu | .tar.gz |
 | Any x86_64 Linux, fully static musl | x86_64-unknown-linux-musl | .tar.gz |
 | macOS, Apple Silicon | aarch64-apple-darwin | .tar.gz |
 | macOS, Intel | x86_64-apple-darwin | .tar.gz |
@@ -20,10 +20,16 @@ archives covered by one SHA256SUMS.
 
 Choose **musl** to avoid dynamic libc/runtime dependencies across x86_64 Linux
 userlands. Choose **GNU/glibc** when your environment prefers the standard dynamic
-glibc ABI. That variant is built inside digest-pinned AlmaLinux 8; its README records
-actual GLIBC symbol requirements and runtime libraries. Older-glibc cargo-libc
-experiments are CI-only measurements, not additional published downloads. See
-[the measurement policy](RELEASING.md#glibc-baseline-and-ci-only-compatibility-measurements).
+glibc ABI. The GNU variant targets **glibc 2.17** with pinned cargo-libc 0.7.0,
+Rust 1.90 and Clang 18. Each release must pass launch and real HTTPS crate
+preview/approved-sync checks in these digest-pinned container userlands:
+CentOS 7, AlmaLinux 8, openSUSE Leap 42.3, Ubuntu 16.04/18.04/20.04 and Debian 8/9.
+Its README records actual GLIBC symbol requirements and shared runtime libraries,
+including libgcc_s. These are **container userland checks only** on a modern host
+kernel; original old kernels, arbitrary NSS/SSO setups and native commercial SLES
+are untested. For **glibc below 2.17, use musl**. See
+[measured results](evals/2026-11-15-glibc-measurements.md) and
+[the build policy](RELEASING.md#glibc-baseline-and-ci-only-compatibility-measurements).
 
 Names use `rust-mirror-VERSION-TARGET`, without a `v` in VERSION. Each archive
 contains one directory of that name with the executable, LICENSE and README.txt.
@@ -35,7 +41,7 @@ Redistributable is needed. The release build's DLL audit refuses MSVC/UCRT runti
 imports; normal Windows system DLLs remain required. This applies to the release
 archives, not independently compiled Cargo/development builds.
 
-The Linux executable is fully static musl: no glibc, OpenSSL or other shared-library
+The musl Linux executable is fully static: no glibc, OpenSSL or other shared-library
 runtime dependency. Its build gate checks file/ldd and ELF headers, refuses a dynamic
 interpreter or NEEDED libraries, and runs it in an empty chroot. The musl binary
 also performs real crate preview/approved sync over HTTPS and a private-CA proxy

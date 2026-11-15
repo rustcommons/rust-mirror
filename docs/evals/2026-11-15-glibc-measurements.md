@@ -104,3 +104,15 @@ SHA-256s rather than repeat this unchanged expensive matrix. Core/packaging CI a
 the five-archive dry run remain independent gates. No experimental artifact is
 automatically attached to a release. Later approval/resolution must be appended
 without rewriting this initial result or v0.5.1's existing publication evidence.
+
+## Subsequent owner selection — 2026-11-15
+
+After reviewing the matrix above, the owner selected the pinned cargo-libc 0.7.0
+2.17 method for the next GNU download. The initial proposal/baseline and JSON
+publication_choice field above describe the measurement-time state and are retained
+as history. The release workflow now uses [the selected producer](../../scripts/release_gnu.py)
+and refuses packaging if CentOS7/Alma8 launch and real HTTPS plan/approved sync fail;
+the other six passing userlands are also blocking gates. Reports bind the source
+and binary hashes to actual compiler/image/linkage and runtime outcomes. This
+changes no v0.5.1 asset, tag or manifest and authorizes no new crate publication.
+Old native kernels remain untested; glibc below 2.17 should use static musl.

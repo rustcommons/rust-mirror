@@ -121,6 +121,23 @@ class ReleaseBinariesTests(unittest.TestCase):
         self.assertEqual(len(release.legacy_or_current_targets('0.5.2', [])), 5)
         self.assertIn('x86_64-unknown-linux-gnu', release.TARGETS)
 
+    def test_gnu_packaging_fails_closed_on_missing_or_failed_required_runtime_gate(self):
+        images = [
+            'almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b',
+            'centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4',
+        ]
+        report = dict(method='cargo-libc', target_glibc='2.17', cargo_libc_version='cargo-libc 0.7.0',
+                      cargo_libc_commit='e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25', source_commit='a'*40, binary_sha256='b'*64,
+                      linkage=dict(maximum_required_glibc='2.17', needed=['libc.so.6','libgcc_s.so.1']),
+                      runtime_gates=[dict(image=image, result='passed', version_ok=True, plan_ok=True, sync_ok=True) for image in images])
+        release.validate_gnu_report(report, 'a'*40, 'b'*64)
+        for change in (dict(runtime_gates=report['runtime_gates'][:1]), dict(binary_sha256='c'*64), dict(method='almalinux8'), dict(target_glibc='2.28')):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                release.validate_gnu_report(dict(report, **change), 'a'*40, 'b'*64)
+        report['runtime_gates'][1]['sync_ok'] = False
+        with self.assertRaisesRegex(ValueError, 'gate failed'):
+            release.validate_gnu_report(report, 'a'*40, 'b'*64)
+
     def test_archive_boundary_and_link_refusals(self):
         for suffix in ('.zip', '.tar.gz'):
             with self.subTest(suffix=suffix):
