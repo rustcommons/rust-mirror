@@ -37,10 +37,14 @@ OpenSSF Best Practices registration is handled by the owner; no badge is fabrica
 | Job/path | Token permissions beyond contents read | Guard |
 | --- | --- | --- |
 | Native build, tests, SBOM generation, comparison | None | Frozen commit; no signing token or upload authority |
-| Reusable build-binaries.yml attestation | id-token write, attestations write | Completed reviewed-source build; actual immutable tag or reviewed-main live dispatch; no candidate signing |
+| Reusable build-binaries.yml attestation | id-token write, attestations write | Completed reviewed-source build; main-reachable immutable tag; execution SHA equals invocation SHA; no candidate signing |
 | Release asset upload | contents write | Exact tag/notes, all attestations verified; refuses any existing asset |
 | crates.io publish | id-token write | v* tag, main ancestry, crates-io environment and owner review |
 | Scorecard | id-token write, security-events write | Main push or schedule only; no PR code |
+
+Build execution is fixed to the invoking PR/branch/tag SHA, never an arbitrary
+input ref in a main-scoped job. Dispatch a future historical release against its
+exact immutable version tag; unrelated main revisions cannot build alternate refs.
 
 The reusable [build-binaries.yml](../.github/workflows/build-binaries.yml) calls
 [the shared read-only core](../.github/workflows/build-binaries-core.yml), then
@@ -67,7 +71,7 @@ The generator is cargo-cyclonedx0.5.9, installed with --locked. It reads a clean
 frozen source copy, keeps the lock byte-identical and verifies every registry
 component checksum against it. SOURCE_DATE_EPOCH fixes time metadata; temporary
 local package IDs are rewritten consistently to the exact source commit, preserving
-the dependency graph. Source commit and lock SHA-256 are recorded in the SBOM.
+the dependency graph; local file-download qualifiers are removed only from purls. Source commit and lock SHA-256 are recorded in the SBOM.
 
 This is an all-target/all-feature Cargo dependency inventory, including build-time
 dependencies. It is a superset for any individual target; it does not inventory OS
@@ -132,5 +136,5 @@ tag, weaken protected tags or remove owner review to exercise it. For an optiona
 future tag-first Trusted Publishing release, approve promptly and create the exact
 GitHub Release notes after registry confirmation; binary automation waits ten
 minutes for that release and otherwise stops without uploading. A later approved
-live dispatch can retry when no assets exist. The manual publish-then-tag sequence
+live dispatch at the exact immutable tag can retry when no assets exist. The manual publish-then-tag sequence
 continues to work unchanged.

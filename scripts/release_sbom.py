@@ -37,15 +37,16 @@ def validate_binding(verified_proofs, document, archive_sha256):
 def canonicalize(document, scratch, commit, lock_sha256):
     # Cargo's local package IDs contain the disposable source directory. Rewrite
     # only that exact prefix in IDs/references together, preserving the graph.
-    old = 'path+file://' + str(scratch)
+    old = 'path+' + scratch.as_uri()
     new = 'git+https://github.com/rustcommons/rust-mirror@' + commit
-    def visit(value):
+    def visit(value, key=None):
         if isinstance(value, str):
-            return value.replace(old, new).replace('?download_url=file://.', '')
+            value = value.replace(old, new)
+            return value.replace('?download_url=file://.', '') if key == 'purl' else value
         if isinstance(value, list):
             return [visit(v) for v in value]
         if isinstance(value, dict):
-            return {k: visit(v) for k, v in value.items()}
+            return {k: visit(v, k) for k, v in value.items()}
         return value
     result = visit(document)
     result['metadata'].setdefault('properties', []).extend([

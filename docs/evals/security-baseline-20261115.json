@@ -249,5 +249,19 @@
     "pin_checker": "100 direct references passed",
     "published_release_docs": "8 versions passed",
     "software_publication": false
+  },
+  "initial_hosted_failures": {
+    "head": "cd821ea4138c8e7a8d86bde29235e2cd551e1188",
+    "windows_ci": 43756551827,
+    "windows_findings": [
+      "Fixture archive used working-tree CRLF bytes instead of frozen Git blobs",
+      "URI fixture assumed native Path string spelling"
+    ],
+    "codeql_check": 132943858134,
+    "codeql_findings": [
+      "Exact URL stub replaces substring matching",
+      "Caller-input checkout ref could execute code in main-scoped dispatch cache namespace"
+    ],
+    "source_fix": "Execution checkout SHA comes only from invoking PR head or GitHub context SHA; validated input must match it. Historical dispatch uses the immutable tag context."
   }
 }

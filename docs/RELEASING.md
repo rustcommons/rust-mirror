@@ -225,8 +225,9 @@ They cannot attest or upload release assets.
 
 Ordinary dispatch dry runs (candidate=false) still build from an existing immutable
 tag and check its live release/tag/body, allowing existing assets because they
-cannot change them. Live dispatch must use reviewed main with dry_run=false and
-candidate=false. Tag-triggered publication always uses the immutable tag. Never
+cannot change them. Live dispatch uses the exact immutable tag workflow ref with dry_run=false and
+candidate=false; current main is allowed only when the tag and invocation SHA
+coincide. Alternate source refs cannot execute in main-scoped jobs. Tag-triggered publication always uses the immutable tag. Never
 create a public throwaway release to qualify a candidate.
 After uploading, download all six live assets, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.

@@ -36,6 +36,7 @@ jobs:
           python-version: '3.12'
       - name: Validate frozen source and signing boundary
         env:
+          CONTEXT_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           SOURCE_COMMIT: ${{ inputs.commit }}
           RELEASE_TAG: ${{ inputs.tag }}
           CANDIDATE: ${{ inputs.candidate }}
@@ -50,13 +51,14 @@ jobs:
           assert os.environ['GITHUB_REPOSITORY']=='rustcommons/rust-mirror', 'foreign callers are not supported'
           commit=os.environ['SOURCE_COMMIT']
           assert re.fullmatch(r'[0-9a-f]{40}',commit)
+          assert commit==os.environ['CONTEXT_COMMIT'], 'Build source must equal the invoking PR/branch/tag SHA; dispatch historical source at its immutable tag'
           assert re.fullmatch(r'(?:[a-z][a-z0-9-]{0,20})?',os.environ['ARTIFACT_PREFIX'])
           candidate=os.environ['CANDIDATE']=='true'
           record=release.record(Path('.'),os.environ['RELEASE_TAG'],commit if candidate else None)
           assert record['commit']==commit
           if os.environ['ATTEST']=='true':
               event=__import__('json').load(open(os.environ['GITHUB_EVENT_PATH']))
-              allowed=(os.environ['GITHUB_EVENT_NAME']=='push' and os.environ['GITHUB_REF']=='refs/tags/'+record['tag']) or (os.environ['GITHUB_EVENT_NAME']=='workflow_dispatch' and os.environ['GITHUB_REF']=='refs/heads/main' and str(event['inputs'].get('dry_run')).lower()=='false')
+              allowed=(os.environ['GITHUB_EVENT_NAME']=='push' and os.environ['GITHUB_REF']=='refs/tags/'+record['tag']) or (os.environ['GITHUB_EVENT_NAME']=='workflow_dispatch' and os.environ['GITHUB_REF'] in ('refs/heads/main','refs/tags/'+record['tag']) and str(event['inputs'].get('dry_run')).lower()=='false')
               assert allowed and not candidate
               assert release.remote_commit(Path('.'),record['tag'])==commit
               subprocess.run(['git','merge-base','--is-ancestor',commit,'origin/main'],check=True)
@@ -95,7 +97,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ inputs.commit }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           path: source
           fetch-depth: 0
           persist-credentials: false
@@ -238,7 +240,7 @@ jobs:
           python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ inputs.commit }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           path: frozen-source
           fetch-depth: 0
           persist-credentials: false

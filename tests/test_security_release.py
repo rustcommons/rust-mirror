@@ -2,7 +2,7 @@
 import hashlib
 import io
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import shutil
 import struct
 import subprocess
@@ -35,13 +35,18 @@ class SecurityReleaseTests(unittest.TestCase):
                 release_sbom.validate(dict(good, **changed), 'rust-mirror', '1.2.3')
 
     def test_sbom_canonicalization_preserves_references_and_removes_only_scratch_ids(self):
-        a = {'metadata': {'component': {'bom-ref': 'path+file:///tmp/a#root', 'purl': 'pkg:cargo/root@1?download_url=file://.'}}, 'dependencies': [{'ref': 'path+file:///tmp/a#root'}], 'other': '/unrelated/file'}
+        a = {'metadata': {'component': {'bom-ref': 'path+file:///tmp/a#root', 'purl': 'pkg:cargo/root@1?download_url=file://.'}}, 'dependencies': [{'ref': 'path+file:///tmp/a#root'}], 'other': '/unrelated/file', 'description': '?download_url=file://.'}
         b = json.loads(json.dumps(a).replace('/tmp/a', '/tmp/b'))
-        first = release_sbom.canonicalize(a, Path('/tmp/a'), 'a'*40, 'b'*64)
-        second = release_sbom.canonicalize(b, Path('/tmp/b'), 'a'*40, 'b'*64)
+        first = release_sbom.canonicalize(a, PurePosixPath('/tmp/a'), 'a'*40, 'b'*64)
+        second = release_sbom.canonicalize(b, PurePosixPath('/tmp/b'), 'a'*40, 'b'*64)
         self.assertEqual(first, second)
         self.assertEqual(first['metadata']['component']['bom-ref'], first['dependencies'][0]['ref'])
         self.assertEqual(first['other'], '/unrelated/file')
+        self.assertEqual(first['description'], '?download_url=file://.')
+        for path, uri in [(PureWindowsPath('C:/tmp/a'), 'path+file:///C:/tmp/a#root'), (PureWindowsPath('C:/space dir'), 'path+file:///C:/space%20dir#root')]:
+            result = release_sbom.canonicalize({'metadata': {'component': {'bom-ref': uri}}, 'dependencies': [{'ref': uri}]}, path, 'a'*40, 'b'*64)
+            self.assertEqual(result['metadata']['component']['bom-ref'], first['metadata']['component']['bom-ref'])
+            self.assertEqual(result['metadata']['component']['bom-ref'], result['dependencies'][0]['ref'])
         self.assertEqual(first['metadata']['properties'][0]['value'], 'a'*40)
 
     def test_verified_sbom_predicate_must_match_document_and_archive_digest(self):
@@ -63,7 +68,7 @@ class SecurityReleaseTests(unittest.TestCase):
         (self.root/'docs/releases').mkdir(parents=True);(self.root/'docs/releases/v1.2.3.md').write_text('Notes\n')
         git('add','.');git('commit','-qm','Fixture');git('tag','-a','v1.2.3','-m','Fixture')
         r=release.record(self.root,'v1.2.3')
-        files={p:(self.root/p).read_bytes() for p in ['Cargo.toml','Cargo.lock','LICENSE','README.md','CHANGELOG.md','src/lib.rs']}
+        files={p:subprocess.check_output(['git','show',r['commit']+':'+p],cwd=self.root) for p in ['Cargo.toml','Cargo.lock','LICENSE','README.md','CHANGELOG.md','src/lib.rs']}
         files['Cargo.toml.orig']=files['Cargo.toml'];files['.cargo_vcs_info.json']=json.dumps({'git':{'sha1':r['commit']}}).encode()
         return r,files
 
@@ -84,10 +89,12 @@ class SecurityReleaseTests(unittest.TestCase):
 
     def test_registry_checksum_gate_and_existing_manual_release_are_read_only(self):
         r,files=self.fixture();raw=self.archive(files);sha=hashlib.sha256(raw).hexdigest()
-        def get(url):
-            if 'api/v1/' in url:return json.dumps({'version':{'checksum':sha,'yanked':False}}).encode()
-            if 'index.crates.io' in url:return json.dumps({'vers':'1.2.3','cksum':sha,'yanked':False}).encode()
-            return raw
+        responses={
+            'https://crates.io/api/v1/crates/rust-mirror/1.2.3':json.dumps({'version':{'checksum':sha,'yanked':False}}).encode(),
+            'https://index.crates.io/ru/st/rust-mirror':json.dumps({'vers':'1.2.3','cksum':sha,'yanked':False}).encode(),
+            'https://static.crates.io/crates/rust-mirror/rust-mirror-1.2.3.crate':raw,
+        }
+        def get(url): return responses[url]
         with patch.object(registry,'get',side_effect=get):
             result=registry.check(self.root,'v1.2.3');self.assertTrue(result['published']);self.assertEqual(result['archive_sha256'],sha)
         with patch.object(registry,'get',return_value=json.dumps({'version':{'checksum':'0'*64,'yanked':True}}).encode()),self.assertRaises(ValueError):

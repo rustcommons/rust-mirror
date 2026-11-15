@@ -74,7 +74,7 @@ Pinned cargo-cyclonedx0.5.9 was installed with --locked and exercised on an exac
 clean source worktree. Two disposable-source generations had identical canonical
 SBOM bytes; their SHA-256s/source are in JSON. The helper checks every registry
 component checksum against the untouched lock and records source commit/lock hash.
-Only exact temporary package-ID prefixes are rewritten consistently; all references
+Only exact temporary package-ID prefixes and local purl download qualifiers are rewritten consistently; all references
 and checksum identities remain. SOURCE_DATE_EPOCH fixes metadata time. This is a
 Cargo all-target graph, not a complete OS/compiler/CI-tool SBOM.
 
@@ -86,6 +86,13 @@ measured in the independent runs, not assumed. PE timestamp
 normalization is diagnosis only; actual hashes and nonidentity remain recorded.
 The known published v0.5.2 read-only verifier matched its real API/index/archive,
 clean tag VCS and original payload without token exchange or upload.
+
+The first hosted Windows run exposed fixture-only CRLF/URI assumptions; fixture
+payloads now come from frozen Git objects and URI cases use explicit POSIX paths.
+CodeQL flagged default-branch cache scope for caller-selected checkout refs; source
+execution is now bound to the invocation SHA instead of input refs. The test HTTP
+stub also uses exact URL keys, avoiding misleading substring sanitization. Earlier
+failed checks remain in PR history; subsequent exact-head checks qualify the fixes.
 
 PR/repro callers invoke the read-only shared core, not a workflow declaring a
 signing-capable job. Production calls the reusable build/sign wrapper, whose core
