@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.5.3] - 2026-11-15
+## [0.5.3] - 2026-11-16
 
 - Refresh locked rustls to 0.23.46, rustls-webpki to 0.103.17, webpki-roots to
   1.0.10 and rustix to 1.1.6 for eleven RustSec advisories. Required existing
