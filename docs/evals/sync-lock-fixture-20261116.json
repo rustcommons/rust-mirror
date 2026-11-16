@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-16",
+  "issue": 67,
+  "base": "de622a3126d34fb7a17401cabebb969fbcf43ebd",
+  "failed_source": "192bc5fe128055ae28b0f84d9c5ef6bd6b33490a",
+  "test": "unknown_entries_locks_and_nested_outputs_refuse_without_touching_user_files",
+  "test_file": "tests/sync.rs",
+  "failed_line": 182,
+  "ci": {
+    "run": 43864342715,
+    "attempt": 1,
+    "job": 133288918426,
+    "failure_at": "2026-11-16T12:13:47Z",
+    "os": "Ubuntu24.04.5",
+    "label": "ubuntu-latest",
+    "image": "ubuntu-24.04",
+    "image_version": "20261111.127.1",
+    "runner_agent": "2.338.2",
+    "rust": "1.90.0",
+    "sync_suite_passed": 19,
+    "sync_suite_failed": 1,
+    "windows": "cancelled by matrix fail-fast",
+    "error_kind": "Locked",
+    "error_message": "another sync owns this workspace, or file locking is unavailable",
+    "same_head_attempt2": "Ubuntu and Windows passed without source changes; not causal proof"
+  },
+  "fork_probe": {
+    "platform": "Linux-7.0.0-1011-aws-aarch64-with-glibc2.36",
+    "cases": [
+      {
+        "explicit_unlock": false,
+        "file_has_cloexec": true,
+        "contender_blocked_while_child_holds_inherited_description": true,
+        "contender_acquires_after_child_exit": true,
+        "handshake": "pipes; no sleeps or timing race",
+        "child_reaped": true
+      },
+      {
+        "explicit_unlock": true,
+        "file_has_cloexec": true,
+        "contender_blocked_while_child_holds_inherited_description": false,
+        "contender_acquires_after_child_exit": true,
+        "handshake": "pipes; no sleeps or timing race",
+        "child_reaped": true
+      }
+    ]
+  },
+  "regression": {
+    "platform": "Linux/aarch64",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "command": "cargo test --locked --test sync unknown_entries_locks_and_nested_outputs_refuse_without_touching_user_files -- --exact",
+    "model": "keep File::try_clone alive to model shared open file description",
+    "drop_only": "one selected test failed with matching Locked error; zero passed, one failed, nineteen filtered",
+    "explicit_unlock": "one selected test passed while duplicate remained open; one passed, zero failed, nineteen filtered",
+    "retry_or_sleep": false
+  },
+  "classification": "Test fixture release assumption invalid; production correctly refuses while kernel lock exists",
+  "limits": "Original inheriting process cannot be proven without historical FD/process trace; no general zero-latency release guarantee across forks or production exclusion defect established",
+  "production_source_changed": false,
+  "new_dependencies": false,
+  "local_validation": {
+    "rust_tests_passed": 191,
+    "python_tests_passed": 58,
+    "fmt": "passed",
+    "clippy_all_targets_deny_warnings": "passed",
+    "rustdoc_deny_warnings": "passed"
+  }
+}

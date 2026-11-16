@@ -177,9 +177,20 @@ fn unknown_entries_locks_and_nested_outputs_refuse_without_touching_user_files()
         .open(out.join(".sync.lock"))
         .unwrap();
     f.try_lock().unwrap();
-    assert!(run(&cfg, None, &out, true, &source(0, false)).is_err());
+    // Deterministically model an in-flight fork retaining the same Linux flock.
+    #[cfg(target_os = "linux")]
+    let inherited_description = f.try_clone().unwrap();
+    let blocked = run(&cfg, None, &out, true, &source(0, false)).unwrap_err();
+    assert_eq!(
+        rust_mirror::error_kind(blocked.as_ref()),
+        rust_mirror::ErrorKind::Locked
+    );
+    // Closing our descriptor alone need not release a fork-inherited description.
+    f.unlock().unwrap();
     drop(f);
     let completed = run(&cfg, None, &out, true, &source(0, false)).unwrap();
+    #[cfg(target_os = "linux")]
+    drop(inherited_description);
     let nested = completed.mirror.join("new-run");
     assert!(run(
         &cfg,
