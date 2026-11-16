@@ -15,8 +15,11 @@ No Rust/Cargo installation is needed to run the CLI.
 | macOS, Intel | x86_64-apple-darwin | .tar.gz |
 
 v0.5.1 keeps its four existing archives and original SHA256SUMS. The GNU archive
-starts with 0.5.2; it is not added to v0.5.1. Releases from 0.5.2 have five
-archives covered by one SHA256SUMS; from 0.5.3 the SBOM is covered too.
+starts with 0.5.2; it is not added to v0.5.1. Version 0.5.3 is crate-only:
+its failed SBOM attestation uploaded no prebuilt downloads. Version 0.5.4 is the
+first prebuilt profile with the 0.5.3 security fixes and adds a Cargo SBOM to the
+five archives, covered by one six-entry SHA256SUMS. Prefer 0.5.4 or newer downloads;
+0.5.1/0.5.2 downloads retain their original, unpatched dependency graph.
 
 Choose **musl** to avoid dynamic libc/runtime dependencies across x86_64 Linux
 userlands. Choose **GNU/glibc** when your environment prefers the standard dynamic
@@ -62,12 +65,12 @@ not establish every older OS version or native SDK combination.
 
 ### Verify before running
 
-From 0.5.3, download the archive, rust-mirror-VERSION.cdx.json and SHA256SUMS from
+From 0.5.4, download the archive, rust-mirror-VERSION.cdx.json and SHA256SUMS from
 one release. The manifest has six sorted entries: five archives plus the SBOM.
 v0.5.1 retains four entries and v0.5.2 five; those historical releases retain their
 original release-binaries.yml signer and have no SBOM retrofit.
 
-These examples pin 0.5.3 and use a recent [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify).
+These examples pin 0.5.4 and use a recent [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify).
 Obtain the commit from the protected annotated tag through the GitHub API and
 confirm it against the merged release PR before running a download. Do not take
 an expected source commit from an unverified archive. The reusable signer and
@@ -76,9 +79,9 @@ source must both identify that exact commit; self-hosted runners are refused.
 Windows PowerShell:
 
 ```powershell
-$tag = 'v0.5.3'
-$archive = 'rust-mirror-0.5.3-x86_64-pc-windows-msvc.zip'
-$sbom = 'rust-mirror-0.5.3.cdx.json'
+$tag = 'v0.5.4'
+$archive = 'rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip'
+$sbom = 'rust-mirror-0.5.4.cdx.json'
 $tagObject = gh api "repos/rustcommons/rust-mirror/git/ref/tags/$tag" --jq '.object.sha'
 if ($LASTEXITCODE -ne 0) { throw 'Tag lookup failed' }
 $commit = gh api "repos/rustcommons/rust-mirror/git/tags/$tagObject" --jq '.object.sha'
@@ -102,16 +105,16 @@ foreach ($file in @($archive, $sbom, 'SHA256SUMS')) {
 gh attestation verify $archive @policy --predicate-type https://cyclonedx.org/bom
 if ($LASTEXITCODE -ne 0) { throw 'Archive SBOM attestation verification failed' }
 Expand-Archive -LiteralPath ".\$archive" -DestinationPath .\rust-mirror-download
-.\rust-mirror-download\rust-mirror-0.5.3-x86_64-pc-windows-msvc\rust-mirror.exe --version
+.\rust-mirror-download\rust-mirror-0.5.4-x86_64-pc-windows-msvc\rust-mirror.exe --version
 ```
 
 Unix shell (Linux example; choose an Apple target on macOS):
 
 ```sh
 set -eu
-tag=v0.5.3
-archive=rust-mirror-0.5.3-x86_64-unknown-linux-musl.tar.gz
-sbom=rust-mirror-0.5.3.cdx.json
+tag=v0.5.4
+archive=rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz
+sbom=rust-mirror-0.5.4.cdx.json
 tag_object=$(gh api "repos/rustcommons/rust-mirror/git/ref/tags/$tag" --jq '.object.sha')
 commit=$(gh api "repos/rustcommons/rust-mirror/git/tags/$tag_object" --jq '.object.sha')
 printf '%s\n' "$commit" | grep -E '^[0-9a-f]{40}$'
@@ -131,11 +134,11 @@ verify "$sbom" https://slsa.dev/provenance/v1
 verify SHA256SUMS https://slsa.dev/provenance/v1
 verify "$archive" https://cyclonedx.org/bom
 tar -xzf "$archive"
-./rust-mirror-0.5.3-x86_64-unknown-linux-musl/rust-mirror --version
+./rust-mirror-0.5.4-x86_64-unknown-linux-musl/rust-mirror --version
 ```
 
 The read-only [public-download workflow](../.github/workflows/verify-release-binaries.yml),
-dispatched with tag v0.5.3 after publication, additionally compares the exact signed
+dispatched with tag v0.5.4 after publication, additionally compares the exact signed
 SBOM predicate with the downloaded document and the selected archive digest. It
 checks every asset's provenance and source/lock binding before native execution.
 The manual commands above verify the typed signed attestations; they do not perform
@@ -165,8 +168,8 @@ Privacy & Security > Open Anyway** for that item, if offered. Alternatively remo
 only that verified executable's download quarantine flag, then retry:
 
 ```sh
-xattr -d com.apple.quarantine ./rust-mirror-0.5.3-aarch64-apple-darwin/rust-mirror
-./rust-mirror-0.5.3-aarch64-apple-darwin/rust-mirror --version
+xattr -d com.apple.quarantine ./rust-mirror-0.5.4-aarch64-apple-darwin/rust-mirror
+./rust-mirror-0.5.4-aarch64-apple-darwin/rust-mirror --version
 ```
 
 Use your actual extracted path. A missing quarantine attribute needs no removal.
@@ -182,7 +185,7 @@ With Rust/Cargo 1.90 or newer:
 ```sh
 cargo install rust-mirror --locked
 # Pin a particular crate release when needed:
-cargo install rust-mirror --version 0.5.3 --locked
+cargo install rust-mirror --version 0.5.4 --locked
 ```
 
 Cargo installs the executable into its configured binary directory (normally

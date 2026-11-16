@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-11-16
+
+- Deliver the first prebuilt downloads carrying the security-sensitive dependency
+  fixes already published in the 0.5.3 crate. Version 0.5.3 is crate-only: its SBOM
+  attestation failed before any binary upload. Use 0.5.4 downloads, or a patched
+  0.5.3-or-later crate installed with --locked; older binaries remain unchanged.
+- Fix release SBOM attestation input by adding a deterministic canonical UUID
+  serialNumber. Keep five archives plus the Cargo CycloneDX SBOM and one six-entry
+  SHA256SUMS, with reusable provenance and per-archive SBOM bindings.
+- No application implementation or locked dependency identity changes from 0.5.3;
+  only the reported package/tool version and user documentation change. Keep
+  immutable tags, exact source/signer checks and historical release outcomes.
+  See [0.5.4 details](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.5.4.md).
+
 ## [0.5.3] - 2026-11-16
 
 - Refresh locked rustls to 0.23.46, rustls-webpki to 0.103.17, webpki-roots to

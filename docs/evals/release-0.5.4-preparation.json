@@ -1,0 +1,38 @@
+{
+  "base": "1823844ab73cfe7fdb7b926cb6d8f26c9f7b91dd",
+  "published_0_5_3_source": "e74f91b3f39f7ff78675f184b75c5602d681d377",
+  "all_application_rust_and_examples_byte_identical_to_both": true,
+  "dependency_lock_identical_except_root_version": true,
+  "manifest_identical_except_root_version": true,
+  "merged_sbom_fix_unchanged": true,
+  "root_version": "0.5.4",
+  "main_ci": 43803258833,
+  "source_files": 33,
+  "cargo_lock_sha256": "0345c88ff9416b27e717d5e0ce2f63078b421e90c63da97fe27326a66c218435",
+  "local_checks": {
+    "rust_toolchain": "1.90.0",
+    "fmt": "passed",
+    "rust_tests_including_doctest": 191,
+    "clippy_warnings_denied": "passed",
+    "rustdoc_warnings_denied": "passed",
+    "python_tests": 57
+  },
+  "phase": "Release preparation; clean candidate identity/package/dry-run results recorded in PR review",
+  "historical_0_5_3": {
+    "body_unchanged": true,
+    "body_sha256": "91973ed47422d6c498592644fe50eceefa186be70c71dbc7e287bc8d5232bde3",
+    "asset_count": 0,
+    "note_edit": "Not permitted by exact tagged-note policy; owner allowed leaving as-is"
+  },
+  "registry_0_5_4_before_release": {
+    "status": 404,
+    "interpretation": "No current publication; not a reservation or future publication proof"
+  },
+  "advisory": {
+    "state": "draft",
+    "affected": "<=0.5.2",
+    "patched_crate": "0.5.3",
+    "first_patched_downloads": "0.5.4 (authorized, not published)",
+    "published": false
+  }
+}

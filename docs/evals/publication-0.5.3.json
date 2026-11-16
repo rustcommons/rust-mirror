@@ -795,5 +795,11 @@
     "All five archive SBOM bindings",
     "Actual public Windows/GNU/musl execution"
   ],
-  "recovery": "Requires review and explicit policy for immutable application source versus a different approved builder/OIDC revision; no current verification weakened"
+  "recovery": "Requires review and explicit policy for immutable application source versus a different approved builder/OIDC revision; no current verification weakened",
+  "owner_resolution": {
+    "date": "2026-11-16",
+    "decision": "No recovery exception or backfill for0.5.3; keep crate-only and historical notes/assets unchanged",
+    "successor": "0.5.4 authorized with merged serial fix; not yet published",
+    "historical_recovery_proposal": "Not approved; do not execute"
+  }
 }
