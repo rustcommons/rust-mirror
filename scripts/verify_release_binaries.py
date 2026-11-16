@@ -11,7 +11,7 @@ import release_binaries as release
 
 
 def command(args, env=None):
-    return subprocess.check_output([str(a) for a in args], text=True, env=env)
+    return subprocess.check_output([str(a) for a in args], text=True, encoding='utf-8', env=env)
 
 
 def main():
@@ -33,7 +33,7 @@ def main():
     output = args.output.resolve(); output.mkdir(parents=True, exist_ok=False)
     downloads = output / 'downloads'
     command(['gh', 'release', 'download', args.tag, '--repo', release.REPO, '--dir', downloads])
-    lines = (downloads / 'SHA256SUMS').read_text().splitlines()
+    lines = (downloads / 'SHA256SUMS').read_text(encoding='utf-8').splitlines()
     release.require(len(lines) == len(names) and all(re.fullmatch(r'[0-9a-f]{64}  [A-Za-z0-9_.-]+', line) for line in lines), 'invalid checksum manifest')
     checksums = dict(line.split('  ')[::-1] for line in lines)
     release.require(len(checksums) == len(names) and list(checksums) == names, 'checksum names/order/duplicates mismatch')
@@ -44,18 +44,18 @@ def main():
         if name != 'SHA256SUMS': release.require(checksums[name] == actual, 'archive checksum mismatch')
         proof = command(['gh', 'attestation', 'verify', path, *policy, '--predicate-type', 'https://slsa.dev/provenance/v1', '--format', 'json'])
         result = json.loads(proof); release.require(bool(result), 'empty attestation verification')
-        (output / ('attestation-' + name + '.json')).write_text(proof)
+        (output / ('attestation-' + name + '.json')).write_text(proof, encoding='utf-8')
         attestations[name] = dict(sha256=actual, verified=True)
     chosen = release.asset_name(expected['version'], args.target)
     if not release.has_legacy_assets(expected['version']):
         from release_sbom import validate, validate_binding
-        document = json.loads((downloads / release.sbom_name(expected['version'])).read_text())
+        document = json.loads((downloads / release.sbom_name(expected['version'])).read_text(encoding='utf-8'))
         validate(document, 'rust-mirror', expected['version'])
         properties = {p['name']:p['value'] for p in document['metadata'].get('properties', [])}
         release.require(properties.get('rust-mirror:source:commit') == expected['commit'] and properties.get('rust-mirror:source:lock-sha256') == expected['lock_sha256'], 'public SBOM source/lock differs from tag')
         proof = command(['gh', 'attestation', 'verify', downloads / chosen, *policy, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'])
         validate_binding(json.loads(proof), document, release.digest((downloads / chosen).read_bytes()))
-        (output / 'sbom-binding.json').write_text(proof)
+        (output / 'sbom-binding.json').write_text(proof, encoding='utf-8')
     exe = 'rust-mirror.exe' if 'windows' in args.target else 'rust-mirror'
     prefix = chosen.removesuffix('.zip').removesuffix('.tar.gz')
     contents = release.read_archive(downloads / chosen, prefix, exe)
@@ -87,7 +87,7 @@ def main():
             release.validate_static_linux(headers, dynamic, file_info, ldd_text)
             linkage = dict(file=file_info, ldd=ldd_text, no_interpreter_or_needed=True)
     report = {'tag': args.tag, 'source': expected['commit'], 'release_url': live['html_url'], 'assets': attestations, 'checksums_match': True, 'notes_unchanged': True, 'target': args.target, 'downloaded_archive': chosen, 'binary_sha256': release.digest(binary.read_bytes()), 'human_version': human, 'events': events, 'linkage': linkage, 'read_only': True}
-    (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
+    (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(report, indent=2))
 
 
