@@ -32,6 +32,18 @@ justified inline, source restrictions strict, and informational/duplicate warnin
 visible. Do not bypass an advisory to make CI green. Document current lock findings
 and the source/qualification of fixes. No new crate dependency names are authorized.
 
+
+Owner amendment, 2026-11-15: version updates are monthly, with two open PRs per
+ecosystem; retain grouped minor/patch updates and the seven-day cooldown. Security
+updates remain immediate and independent. Dependabot-authored PRs run core checks
+only (Ubuntu fmt/test/Clippy, Python tests, cargo-deny, zizmor, lf-only and managed
+CodeQL); no package-install, native-client/Nexus, release, reproducibility or glibc
+qualification matrices. Keep full manual/main/release qualification available.
+Every repository PR-entry workflow cancels superseded runs per PR; never use PR
+cancellation to interrupt publication. Refresh old bot branches before fresh runs;
+rerunning an old cancelled run retains its old workflow. Never merge bot PRs as
+part of this maintenance; majors need separate migration/qualification review.
+
 Future binary profiles use the source-bound Cargo CycloneDX SBOM, shared read-only
 build core, reusable build/sign boundary and measured two-clean-build comparison.
 Do not retroactively alter published profiles/manifests. No SLSA3 badge or claim

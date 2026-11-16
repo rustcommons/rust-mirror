@@ -11,11 +11,15 @@ on:
     paths:
       - '.github/workflows/verify-release-binaries.yml'
       - 'scripts/verify_release_binaries.py'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
   attestations: read
 jobs:
   download-and-run:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     strategy:
       fail-fast: false
       matrix:

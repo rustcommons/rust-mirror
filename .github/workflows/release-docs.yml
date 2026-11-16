@@ -1,6 +1,8 @@
 name: Release documentation
 on:
   push:
+    branches: [main]
+    tags: ['v*']
   pull_request:
   release:
     types: [published, edited]
@@ -10,10 +12,14 @@ on:
         description: Verify all existing GitHub Release notes and the latest version
         type: boolean
         default: false
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
   release-documentation:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

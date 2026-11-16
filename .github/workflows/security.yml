@@ -5,6 +5,9 @@ on:
     branches: [main]
   schedule:
     - cron: '23 5 * * 1'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:

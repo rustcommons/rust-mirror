@@ -1,15 +1,19 @@
 name: CI
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
   check:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: ${{ fromJSON(github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && '["ubuntu-latest"]' || '["ubuntu-latest","windows-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -25,19 +29,21 @@ jobs:
       - run: cargo test --locked
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo doc --locked --no-deps
+        if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           RUSTDOCFLAGS: -D warnings
       - name: Verify packaged documentation and source
+        if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
         run: cargo package --locked
       - name: Save verified Rust 1.90 package
-        if: matrix.os == 'ubuntu-latest'
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: rust-mirror-package
           path: target/package/rust-mirror-*.crate
           if-no-files-found: error
       - name: Install verified package with a fresh Cargo home
-        if: matrix.os == 'ubuntu-latest'
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'
         shell: bash
         env:
           CARGO_BUILD_JOBS: '2'
@@ -52,13 +58,13 @@ jobs:
           CARGO_HOME="$RUNNER_TEMP/candidate-cargo" cargo install --path "$RUNNER_TEMP/candidate-source/rust-mirror-$candidate_version" --locked --root "$RUNNER_TEMP/candidate-install" -j 2
           "$RUNNER_TEMP/candidate-install/bin/rust-mirror" --events jsonl --version > "$RUNNER_TEMP/candidate-version.jsonl"
       - name: Installed publisher in a loopback-only namespace
-        if: matrix.os == 'ubuntu-latest'
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           trap 'sudo rm -f -- "$RUNNER_TEMP/candidate-publisher/ca.key" "$RUNNER_TEMP/candidate-publisher/server.key"' EXIT
           sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/candidate-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/candidate-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
       - name: Verify fixture key cleanup
-        if: matrix.os == 'ubuntu-latest' && always()
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest' && always()
         shell: bash
         run: |
           python3 - <<'PYTHON'
@@ -69,7 +75,7 @@ jobs:
           (root/'candidate-cleanup.json').write_text(json.dumps({'private_keys_destroyed': True, 'fixture_created': proof.exists()})+'\n')
           PYTHON
       - name: Save installed package proof
-        if: matrix.os == 'ubuntu-latest' && always()
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest' && always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: candidate-installed-publisher

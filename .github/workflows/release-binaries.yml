@@ -32,10 +32,11 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: release-binaries-${{ github.event_name }}-${{ inputs.tag || github.ref }}
-  cancel-in-progress: false
+  group: release-binaries-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.tag || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   prepare:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     outputs:
@@ -78,7 +79,7 @@ jobs:
         run: python -m unittest discover -s tests -p test_release_binaries.py
   dry-build:
     needs: prepare
-    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
     uses: ./.github/workflows/build-binaries-core.yml # zizmor: ignore[self-repository] ./ also binds the caller commit; pinned actionlint 1.7.12 does not support $/ yet.
     with:
       tag: ${{ needs.prepare.outputs.tag }}

@@ -11,10 +11,14 @@ on:
       - 'Cargo.lock'
       - '.github/workflows/crates-mvp.yml'
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
   top100-conformance:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -55,6 +59,7 @@ jobs:
           if-no-files-found: warn
 
   cargo-https-clients:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     strategy:
       fail-fast: false
       matrix:
@@ -100,6 +105,7 @@ jobs:
           if-no-files-found: warn
 
   disposable-nexus-crate-client:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

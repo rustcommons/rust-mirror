@@ -13,8 +13,10 @@ delete main; protected v* tags cannot be updated or deleted. Do not use the rule
 administrative bypass as a normal workflow. The coordinator enabled the provider
 settings on 2026-11-15; this PR does not alter repository settings.
 
-Dependabot checks Cargo and Actions weekly, groups minor/patch version updates,
-limits each ecosystem to five open version-update PRs, and uses a seven-day version cooldown.
+The owner amended the baseline on 2026-11-15 after the initial update wave exhausted
+runner capacity. Dependabot checks Cargo and Actions monthly, groups minor/patch
+version updates, limits each ecosystem to two open version-update PRs, and keeps
+the seven-day version cooldown.
 GitHub security updates bypass that cooldown and schedule. All direct third-party
 actions use full commits with version comments. Checkout credentials are not
 persisted. Top-level tokens are read-only; job privileges are listed below.
@@ -27,8 +29,33 @@ versions warn, and non-crates.io/git dependency sources refuse. There are no ign
 advisories. The remaining getrandom/syn splits are transitive major versions, with
 warning rather than unrelated API migration. Recheck changing upstream findings.
 
+
+Dependabot-authored PRs keep Ubuntu fmt/Clippy/Rust and Python tests, cargo-deny,
+zizmor, required lf-only and provider-managed CodeQL. They skip package installation,
+client/Nexus qualification, release/reproducibility and glibc matrices at job entry,
+before allocating matrix runners. Guards use the PR author, so maintainer activity
+on the same bot PR does not accidentally enable heavy jobs. Manual dispatch/main
+and version-tag runs retain full checks; CI also supports manual dispatch for the
+full core OS matrix. Release-document branch-push duplicates are removed; its
+main/tag/release/manual checks remain, and non-bot PRs keep the check.
+
+All repository PR-entry workflows use workflow/event/PR concurrency groups and
+cancel superseded PR runs. Non-PR runs are not cancelled by that policy; the
+existing serialized no-overwrite release uploader remains unchanged. Reusable
+build cores inherit caller cancellation instead of sharing a group that could
+cancel parallel comparison builds. Default CodeQL setup is GitHub-managed and
+remains enabled; its generated workflow concurrency is not set in this repository.
+
+After merge, refresh existing Dependabot branches before starting fresh runs.
+[Re-running an old run](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
+uses its original SHA/ref and can execute the pre-amendment heavy workflow. To
+qualify an approved update fully, dispatch the maintained qualification workflows
+against the refreshed branch. No open bot PR is approved, merged or closed here;
+major updates require explicit migration/MSRV/runtime review, not just a green bot
+core check. See [Dependabot scheduling/cooldown semantics](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference).
+
 OpenSSF Scorecard runs on main pushes and weekly, publishes results and uploads
-SARIF. Its badge is not a promised score; the first new workflow run follows merge.
+SARIF. Its badge is not a promised score; main activation was observed in run43770689989.
 CodeQL default setup and organization security features remain provider-managed.
 OpenSSF Best Practices registration is handled by the owner; no badge is fabricated.
 
