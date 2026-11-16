@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2 are published;
-see docs/evals/2026-11-15-publication-0.5.2.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3 are published;
+see docs/evals/2026-11-16-publication-0.5.3.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -472,6 +472,16 @@ checksums/provenance/SBOM bindings and public Windows/GNU/musl execution; record
 a PR. Draft the repository advisory only; the coordinator publishes it after release.
 Do not tag/publish before merge, move protected tags, change existing assets or
 claim SLSA3 until the new live provenance is verified.
+
+The owner approved the crates-io environment and Trusted Publishing published
+0.5.3 from the exact release merge. See the
+[publication checkpoint](docs/evals/2026-11-16-publication-0.5.3.md) for verified
+registry/docs.rs/installation evidence and the failed SBOM-attestation dispatch.
+Binary upload and public-download verification remain incomplete; do not claim the
+seven-file profile or SLSA3 yet. Preserve both failed workflow attempts. The
+protected release tag cannot absorb a workflow fix: obtain coordinator review of
+a recovery path before signing/uploading with another workflow revision. The
+repository advisory stays draft until the coordinator publishes it.
 
 ## User-facing documentation
 

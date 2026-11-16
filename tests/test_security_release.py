@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import urllib.error
+import uuid
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
@@ -43,9 +44,9 @@ class SecurityReleaseTests(unittest.TestCase):
             self.assertTrue(legacy[-1].endswith('/release-binaries.yml'))
 
     def test_sbom_refuses_wrong_format_root_and_incomplete_graph(self):
-        good = {'bomFormat': 'CycloneDX', 'specVersion': '1.5', 'metadata': {'component': {'name': 'rust-mirror', 'version': '1.2.3'}}, 'components': [{'name': 'dep', 'version': '1.0.0'}]}
+        good = {'bomFormat': 'CycloneDX', 'specVersion': '1.5', 'serialNumber': 'urn:uuid:12345678-1234-1234-1234-123456789012', 'metadata': {'component': {'name': 'rust-mirror', 'version': '1.2.3'}}, 'components': [{'name': 'dep', 'version': '1.0.0'}]}
         release_sbom.validate(good, 'rust-mirror', '1.2.3')
-        for changed in (dict(bomFormat='SPDX'), dict(specVersion='1.3'), dict(metadata={}), dict(components=[]), dict(components=[{'name': 'dep'}]), dict(components=[{}]*10001)):
+        for changed in (dict(serialNumber=None), dict(serialNumber=''), dict(serialNumber='not-a-uuid'), dict(serialNumber='urn:uuid:not-a-uuid'), dict(bomFormat='SPDX'), dict(specVersion='1.3'), dict(metadata={}), dict(components=[]), dict(components=[{'name': 'dep'}]), dict(components=[{}]*10001)):
             with self.subTest(changed=list(changed)), self.assertRaises(ValueError):
                 release_sbom.validate(dict(good, **changed), 'rust-mirror', '1.2.3')
 
@@ -63,6 +64,24 @@ class SecurityReleaseTests(unittest.TestCase):
             self.assertEqual(result['metadata']['component']['bom-ref'], first['metadata']['component']['bom-ref'])
             self.assertEqual(result['metadata']['component']['bom-ref'], result['dependencies'][0]['ref'])
         self.assertEqual(first['metadata']['properties'][0]['value'], 'a'*40)
+
+    def test_generated_sbom_has_action_required_serial_and_retains_reproducibility(self):
+        # cargo-cyclonedx 0.5.9 omits serialNumber; the pinned action rejects it.
+        raw = {'bomFormat': 'CycloneDX', 'specVersion': '1.5',
+               'metadata': {'component': {'name': 'rust-mirror', 'version': '0.5.3'}},
+               'components': [{'name': 'dep', 'version': '1.0.0'}]}
+        with self.assertRaisesRegex(ValueError, 'serialNumber'):
+            release_sbom.validate(raw, 'rust-mirror', '0.5.3')
+        normalize = lambda doc, commit='a'*40: release_sbom.canonicalize(doc, PurePosixPath('/tmp/source'), commit, 'b'*64)
+        first = normalize(raw)
+        release_sbom.validate(first, 'rust-mirror', '0.5.3')
+        self.assertEqual(uuid.UUID(first['serialNumber'][9:]).version, 5)
+        self.assertEqual(first, normalize(dict(raw, serialNumber=uuid.uuid4().urn)))
+        self.assertNotEqual(first['serialNumber'], normalize(raw, 'c'*40)['serialNumber'])
+        changed = dict(raw, components=[{'name': 'dep', 'version': '2.0.0'}])
+        self.assertNotEqual(first['serialNumber'], normalize(changed)['serialNumber'])
+        # The exact pinned action's CycloneDX detector requires all three.
+        self.assertTrue(all(first.get(k) for k in ('bomFormat', 'serialNumber', 'specVersion')))
 
     def test_verified_sbom_predicate_must_match_document_and_archive_digest(self):
         document = {'bomFormat': 'CycloneDX', 'version': 1}

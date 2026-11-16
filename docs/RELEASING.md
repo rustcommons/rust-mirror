@@ -89,6 +89,14 @@ publication evidence distinct; record the first real Trusted Publishing outcome
 without assuming success. Existing releases and the manual fallback process remain
 unchanged; this authorization selects Trusted Publishing for 0.5.3 specifically.
 
+The [0.5.3 publication checkpoint](evals/2026-11-16-publication-0.5.3.md)
+records successful Trusted Publishing, registry/docs.rs/install verification and
+both failed binary attempts: initial collector timeout, then a missing SBOM serial
+rejected by the pinned attestation action. No binary assets were uploaded. Keep
+this partial outcome separate from the permanent checklist. Repairing the generator
+on main does not change protected tagged workflows; a different builder revision
+needs an explicitly reviewed source/signer recovery policy before live upload.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and

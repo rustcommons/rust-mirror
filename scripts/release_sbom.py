@@ -10,11 +10,18 @@ import subprocess
 import tarfile
 import tempfile
 import tomllib
+import uuid
 
 
 def validate(document, name, version):
     if document.get('bomFormat') != 'CycloneDX' or document.get('specVersion') != '1.5':
         raise ValueError('expected CycloneDX 1.5 JSON')
+    serial = document.get('serialNumber', '')
+    try:
+        if not isinstance(serial, str) or not serial.startswith('urn:uuid:') or uuid.UUID(serial[9:]).urn != serial:
+            raise ValueError
+    except (ValueError, AttributeError):
+        raise ValueError('expected a canonical CycloneDX serialNumber UUID URN for attestation') from None
     root = document.get('metadata', {}).get('component', {})
     if (root.get('name'), root.get('version')) != (name, version):
         raise ValueError('SBOM root differs from the frozen package')
@@ -54,6 +61,13 @@ def canonicalize(document, scratch, commit, lock_sha256):
         {'name': 'rust-mirror:source:lock-sha256', 'value': lock_sha256},
         {'name': 'rust-mirror:scope', 'value': 'All-target Cargo dependency graph; excludes OS runtimes and CI tools'},
     ])
+    # The pinned attestation action requires this optional CycloneDX field.
+    # Bind its deterministic UUID to the complete canonical document, excluding
+    # any generator-supplied random serial, so independent builds still match.
+    result.pop('serialNumber', None)
+    result['serialNumber'] = uuid.uuid5(
+        uuid.NAMESPACE_URL, json.dumps(result, sort_keys=True, separators=(',', ':'))
+    ).urn
     return result
 
 
@@ -93,12 +107,12 @@ def generate(source, commit, tool, output):
         if len(data) > 8 * 1024 * 1024:
             raise ValueError('SBOM exceeds 8 MiB')
         document = json.loads(data)
-        validate(document, manifest['name'], manifest['version'])
         expected = {(p['name'], p['version']): p['checksum'] for p in tomllib.loads(lock.decode())['package'] if p.get('source', '').startswith('registry+')}
         observed = {(p['name'], p['version']): next(h['content'] for h in p.get('hashes', []) if h['alg'] == 'SHA-256') for p in document['components']}
         if expected != observed:
             raise ValueError('SBOM dependency checksums differ from the frozen full lockfile')
         document = canonicalize(document, scratch, commit, hashlib.sha256(lock).hexdigest())
+        validate(document, manifest['name'], manifest['version'])
         data = (json.dumps(document, sort_keys=True, indent=2) + '\n').encode()
         with output.open('xb') as file:
             file.write(data)
