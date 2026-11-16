@@ -67,8 +67,8 @@ downloads and registry installation.
 
 Owner authorization, 2026-11-15: release the merged RustSec dependency fixes plus
 existing main as 0.5.3; no further application code. See [security notes](releases/v0.5.3.md)
-for all upstream IDs and bounded exposure. Prepare a draft repository advisory;
-the coordinator publishes that advisory only after the software release.
+for all upstream IDs and bounded exposure. Preparation allowed a draft repository
+advisory; the coordinator retained publication authority until release verification.
 
 The coordinator merges the green release PR. Unlike the manual publish-then-tag
 route below, create the annotated v0.5.3 tag at the exact merge **before registry
@@ -115,8 +115,8 @@ Publishing waits for owner environment approval. Confirm publication, create the
 exact notes, let the tag workflow attach assets, and perform all registry/docs.rs/
 installation/provenance/SBOM/public Windows/GNU/musl gates before recording completion.
 A collector timeout may use the approved exact-tag dispatch with an empty release,
-never a new source/signer revision. Keep the advisory draft with <=0.5.2 affected,
-patched crate 0.5.3 and patched downloads 0.5.4 until the coordinator publishes it.
+never a new source/signer revision. The advisory identifies <=0.5.2 affected,
+patched crate 0.5.3 and patched downloads 0.5.4; publication was coordinator-owned.
 
 The [completed 0.5.4 record](evals/2026-11-16-publication-0.5.4.md) identifies the
 actual registry/tag, all seven assets/provenances, all five SBOM bindings, docs.rs,
@@ -124,8 +124,9 @@ fresh installs and public Windows/GNU/musl execution. Preserve its initial Windo
 reader-locale failure and corrected UTF-8 proof. Verification tools must decode
 GitHub CLI JSON and proof files explicitly as UTF-8 and compare the exact signed
 SBOM; never normalize away a mismatch. Reader fixes do not authorize producer/tag/
-asset changes or a source/signer exception. Keep the advisory draft for coordinator
-publication and older immutable profiles unchanged.
+asset changes or a source/signer exception. The coordinator published
+[GHSA-46c8-w6pp-97pw](https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw) at 2026-11-16T05:35:02Z after verification.
+Keep earlier draft observations dated and older immutable profiles unchanged.
 
 ## Before merge and publication
 

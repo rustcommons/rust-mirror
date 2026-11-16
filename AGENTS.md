@@ -469,7 +469,8 @@ long-lived token or the owner-machine route for this release. Create exact commi
 GitHub Release notes after registry confirmation so binary automation can attach
 its seven-file profile. Verify registry/payload, docs.rs, fresh install, all
 checksums/provenance/SBOM bindings and public Windows/GNU/musl execution; record in
-a PR. Draft the repository advisory only; the coordinator publishes it after release.
+a PR. Release preparation authorized advisory drafting only; publication remained
+with the coordinator. Its completed publication is recorded below.
 Do not tag/publish before merge, move protected tags, change existing assets or
 claim SLSA3 until the new live provenance is verified.
 
@@ -481,8 +482,8 @@ Binary upload and public-download verification remain incomplete; do not claim t
 seven-file profile or SLSA3 yet. Preserve both failed workflow attempts. The
 protected release tag cannot absorb a workflow fix. On 2026-11-16 the owner
 rejected a recovery exception and authorized 0.5.4 instead, as recorded below.
-Version 0.5.3 remains crate-only. The repository advisory stays draft until the
-coordinator publishes it.
+Version 0.5.3 remains crate-only. The coordinator subsequently published the
+repository advisory after 0.5.4 verification, as recorded below.
 
 ## 0.5.4 download security release authorization
 
@@ -507,8 +508,8 @@ binary automation and verify registry/source, docs.rs, fresh install, seven asse
 new reusable signer/SBOM bindings and public Windows/GNU/musl execution. If the
 collector wait expires, only the existing exact-tag dispatch path is allowed,
 with no assets present. Never relax source/signer guards or use a different builder.
-Record publication in a PR. Keep the advisory draft; its affected range is <=0.5.2,
-patched crate 0.5.3, first patched downloads 0.5.4. The coordinator publishes it.
+Record publication in a PR. Advisory publication was reserved for the coordinator:
+affected <=0.5.2, patched crate 0.5.3, first patched downloads 0.5.4.
 
 Owner-approved Trusted Publishing and the tag-bound seven-file upload completed.
 The [publication record](docs/evals/2026-11-16-publication-0.5.4.md) verifies all
@@ -517,8 +518,9 @@ execution. The initial Windows reader CP1252 failure and explicit UTF-8 correcti
 remain recorded; the producer, tag and assets never changed. Keep strict exact
 predicate matching and distinguish reader revisions from immutable artifact source.
 The release-specific L3 badge follows verified live reusable provenance, not an
-independent certification or a claim about older signers. Advisory publication
-remains with the coordinator; do not publish it as part of the record PR.
+independent certification or a claim about older signers. The coordinator published
+[GHSA-46c8-w6pp-97pw](https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw) at 2026-11-16T05:35:02Z. Preserve dated draft
+observations as history; current status is published.
 
 ## User-facing documentation
 

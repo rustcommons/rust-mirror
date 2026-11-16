@@ -788,7 +788,7 @@
       }
     }
   },
-  "advisory_state": "draft; coordinator publication reserved",
+  "advisory_state": "published; coordinator publication 2026-11-16T05:35:02Z",
   "uncompleted": [
     "Live seven-file profile",
     "Live reusable provenance verification",
@@ -801,5 +801,13 @@
     "decision": "No recovery exception or backfill for0.5.3; keep crate-only and historical notes/assets unchanged",
     "successor": "0.5.4 authorized with merged serial fix; not yet published",
     "historical_recovery_proposal": "Not approved; do not execute"
+  },
+  "advisory_state_at_initial_checkpoint": "draft; coordinator publication reserved",
+  "advisory_publication_resolution": {
+    "state": "published",
+    "published_at": "2026-11-16T05:35:02Z",
+    "url": "https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw",
+    "publisher": "coordinator",
+    "scope": "Later resolution; initial checkpoint draft state and 0.5.3 binary failures remain historical"
   }
 }
