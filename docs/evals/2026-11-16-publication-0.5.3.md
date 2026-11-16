@@ -114,3 +114,12 @@ GNU tests prove container userlands, not old kernels/commercial SLES; macOS nati
 smokes are not public-download/Gatekeeper UI evidence. OS signing/notarization
 remain absent. This repair changes release tooling/tests and excluded records,
 not application Rust source, versions, dependencies or any published artifact.
+
+## Subsequent owner decision — 2026-11-16
+
+The owner rejected a recovery exception for 0.5.3 and authorized a new 0.5.4
+release with the merged serial fix. The earlier recovery proposal above is a
+historical unapproved proposal; do not execute it. Version 0.5.3 remains crate-only
+with no prebuilt assets. Preserve its protected source, exact GitHub Release body
+and both failed attempts. See [0.5.4 notes](../releases/v0.5.4.md) for the intended
+first patched-download profile; no 0.5.4 publication is claimed at this checkpoint.

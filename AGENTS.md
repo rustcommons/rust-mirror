@@ -479,9 +479,36 @@ The owner approved the crates-io environment and Trusted Publishing published
 registry/docs.rs/installation evidence and the failed SBOM-attestation dispatch.
 Binary upload and public-download verification remain incomplete; do not claim the
 seven-file profile or SLSA3 yet. Preserve both failed workflow attempts. The
-protected release tag cannot absorb a workflow fix: obtain coordinator review of
-a recovery path before signing/uploading with another workflow revision. The
-repository advisory stays draft until the coordinator publishes it.
+protected release tag cannot absorb a workflow fix. On 2026-11-16 the owner
+rejected a recovery exception and authorized 0.5.4 instead, as recorded below.
+Version 0.5.3 remains crate-only. The repository advisory stays draft until the
+coordinator publishes it.
+
+## 0.5.4 download security release authorization
+
+Owner decision, 2026-11-16: no recovery exception or binary backfill for 0.5.3.
+That published crate remains available without prebuilt downloads; preserve its
+immutable tag, notes, failed workflow history and empty asset profile. The release
+policy requires historical GitHub note bodies to match their tagged records, so
+leave 0.5.3 notes untouched and explain the outcome in maintained docs/0.5.4 notes.
+
+The owner authorizes 0.5.4 with the same application code and locked dependencies
+as 0.5.3, the merged deterministic SBOM serial fix and existing main. Only root
+version/user documentation changes are needed. Follow [0.5.4 notes](docs/releases/v0.5.4.md)
+and [the release policy](docs/RELEASING.md#054-download-security-release).
+Require a clean package audit and exact-head five-target/seven-file candidate dry
+run with all eight GNU gates. Exercise SBOM generation/final validation/collection;
+dry runs cannot claim actual OIDC signing or live SBOM bindings.
+
+The coordinator reviews/merges the green release PR. Then tag v0.5.4 at the exact
+normal merge; Trusted Publishing waits for the owner to approve crates-io. After
+confirmed publication, create the exact committed GitHub Release, run tag-bound
+binary automation and verify registry/source, docs.rs, fresh install, seven assets,
+new reusable signer/SBOM bindings and public Windows/GNU/musl execution. If the
+collector wait expires, only the existing exact-tag dispatch path is allowed,
+with no assets present. Never relax source/signer guards or use a different builder.
+Record publication in a PR. Keep the advisory draft; its affected range is <=0.5.2,
+patched crate 0.5.3, first patched downloads 0.5.4. The coordinator publishes it.
 
 ## User-facing documentation
 

@@ -93,9 +93,30 @@ The [0.5.3 publication checkpoint](evals/2026-11-16-publication-0.5.3.md)
 records successful Trusted Publishing, registry/docs.rs/install verification and
 both failed binary attempts: initial collector timeout, then a missing SBOM serial
 rejected by the pinned attestation action. No binary assets were uploaded. Keep
-this partial outcome separate from the permanent checklist. Repairing the generator
-on main does not change protected tagged workflows; a different builder revision
-needs an explicitly reviewed source/signer recovery policy before live upload.
+this partial outcome separate from the permanent checklist. On 2026-11-16 the
+owner rejected any different-builder recovery exception for 0.5.3 and selected
+0.5.4 instead. The 0.5.3 release remains crate-only with its exact historical body.
+
+## 0.5.4 download security release
+
+Owner decision and authorization, 2026-11-16: do not recover/backfill 0.5.3 under a
+new builder or loosen source/signer identity. Its crate is published with patched
+dependencies; no prebuilt assets were uploaded. Preserve the protected tag, exact
+historical GitHub Release body and both failed attempts. The owner selected a new
+0.5.4 release containing the merged SBOM serial fix and the same application code/
+locked dependency identities. See [0.5.4 notes](releases/v0.5.4.md).
+
+Qualify the exact clean PR head, package and five-target/seven-file dry run with
+all eight GNU gates. The dry run checks final SBOM shape, serial, graph/source/lock,
+archive collection and checksums on the shared build path; OIDC signatures and
+archive/SBOM bindings are verified only after an authorized merged tag. The
+coordinator reviews/merges, then create v0.5.4 on that normal merge. Trusted
+Publishing waits for owner environment approval. Confirm publication, create the
+exact notes, let the tag workflow attach assets, and perform all registry/docs.rs/
+installation/provenance/SBOM/public Windows/GNU/musl gates before recording completion.
+A collector timeout may use the approved exact-tag dispatch with an empty release,
+never a new source/signer revision. Keep the advisory draft with <=0.5.2 affected,
+patched crate 0.5.3 and patched downloads 0.5.4 until the coordinator publishes it.
 
 ## Before merge and publication
 
@@ -138,7 +159,7 @@ needs an explicitly reviewed source/signer recovery policy before live upload.
 - For manual owner-machine releases, create the annotated version tag at the exact
   release commit after publication. Trusted Publishing creates it before publication
   as described above. Publish the exact
-  committed [versioned notes](releases/v0.5.3.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.5.4.md) as the GitHub Release, latest and
   with binary archives/checksums attached only through the release workflow under
   the owner's 2026-11-15 authorization. Do not change historical note bodies.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
