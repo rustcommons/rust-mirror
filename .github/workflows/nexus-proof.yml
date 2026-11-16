@@ -18,7 +18,7 @@ jobs:
         run: docker pull docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09
       - name: Run disposable isolated Nexus proof
         run: sudo python3 scripts/run_nexus_proof.py --runtime docker --image docker.io/sonatype/nexus3@sha256:390b8ec7e712c680ed8b449b766695a7c5ebbf41e489317618e63ca199f2cc09 --allow-raw-mime-types --snapshot "$RUNNER_TEMP/snapshot/mirror" --evidence "$RUNNER_TEMP/nexus-proof"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: nexus-proof-logs
