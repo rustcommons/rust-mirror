@@ -1,0 +1,379 @@
+{
+  "date": "2026-11-15",
+  "source_base": "7e0b9aae6752f4102fac5435ca46d317aecbb0f7",
+  "primary_provider_cases": 20,
+  "rustsec_files_verified": 11,
+  "ghsa_records_verified": 8,
+  "ghsa_endpoint_unavailable": 1,
+  "advisories": [
+    {
+      "id": "RUSTSEC-2026-0049",
+      "package": "rustls-webpki",
+      "aliases": [
+        "CVE-2026-93602",
+        "GHSA-pwjx-qhcg-rvj4"
+      ],
+      "patched": [
+        ">= 0.103.10"
+      ],
+      "title": "CRLs not considered authoritative by Distribution Point due to faulty matching logic",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0049.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls-webpki/RUSTSEC-2026-0049.md",
+      "source_blob": "642f030a1d6f84aebd5ed8f42edcf353d8c1bafa",
+      "ghsa": [
+        {
+          "id": "GHSA-pwjx-qhcg-rvj4",
+          "url": "https://github.com/advisories/GHSA-pwjx-qhcg-rvj4",
+          "severity": "medium",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0098",
+      "package": "rustls-webpki",
+      "aliases": [
+        "CVE-2026-93600",
+        "GHSA-965h-392x-2mh5"
+      ],
+      "patched": [
+        ">= 0.103.12, < 0.104.0-alpha.1",
+        ">= 0.104.0-alpha.6"
+      ],
+      "title": "Name constraints for URI names were incorrectly accepted",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0098.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls-webpki/RUSTSEC-2026-0098.md",
+      "source_blob": "501391f1ff1e1e7209b08df000d895d5318cdc95",
+      "ghsa": [
+        {
+          "id": "GHSA-965h-392x-2mh5",
+          "url": "https://github.com/advisories/GHSA-965h-392x-2mh5",
+          "severity": "low",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0099",
+      "package": "rustls-webpki",
+      "aliases": [
+        "CVE-2026-93601",
+        "GHSA-xgp8-3hg3-c2mh"
+      ],
+      "patched": [
+        ">= 0.103.12, < 0.104.0-alpha.1",
+        ">= 0.104.0-alpha.6"
+      ],
+      "title": "Name constraints were accepted for certificates asserting a wildcard name",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0099.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls-webpki/RUSTSEC-2026-0099.md",
+      "source_blob": "1171f2e8aed7295d3551284aabb5096467270ef9",
+      "ghsa": [
+        {
+          "id": "GHSA-xgp8-3hg3-c2mh",
+          "url": "https://github.com/advisories/GHSA-xgp8-3hg3-c2mh",
+          "severity": "low",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0104",
+      "package": "rustls-webpki",
+      "aliases": [
+        "CVE-2026-93599",
+        "GHSA-82j2-j2ch-gfr8"
+      ],
+      "patched": [
+        ">= 0.103.13, < 0.104.0-alpha.1",
+        ">= 0.104.0-alpha.7"
+      ],
+      "title": "Reachable panic in certificate revocation list parsing",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0104.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls-webpki/RUSTSEC-2026-0104.md",
+      "source_blob": "e67d9c3224a3df010689043c212d217214b92c20",
+      "ghsa": [
+        {
+          "id": "GHSA-82j2-j2ch-gfr8",
+          "url": "https://github.com/advisories/GHSA-82j2-j2ch-gfr8",
+          "severity": "high",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0285",
+      "package": "rustls",
+      "aliases": [
+        "CVE-2026-123613",
+        "GHSA-2mjx-qc3c-rqvc"
+      ],
+      "patched": [
+        ">= 0.23.45"
+      ],
+      "title": "TLS 1.3 handshake messages incorrectly accepted across encryption level boundaries",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0285.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0285.md",
+      "source_blob": "bb52d6c592f757b080cdceb4cf8ca0b4c7f4ce38",
+      "ghsa": [
+        {
+          "id": "GHSA-2mjx-qc3c-rqvc",
+          "url": "https://github.com/advisories/GHSA-2mjx-qc3c-rqvc",
+          "severity": "medium",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0346",
+      "package": "rustls",
+      "aliases": [
+        "CVE-2026-123609",
+        "GHSA-c8m5-c952-6cm4"
+      ],
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "title": "`Debug` impls for client session values expose TLS secrets",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0346.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0346.md",
+      "source_blob": "26ee11c1606756031eaeff7c327f1f2fa3685207",
+      "ghsa": [
+        {
+          "id": "GHSA-c8m5-c952-6cm4",
+          "url": "https://github.com/advisories/GHSA-c8m5-c952-6cm4",
+          "severity": "medium",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0348",
+      "package": "rustls",
+      "aliases": [
+        "CVE-2026-123610",
+        "GHSA-h2v8-394m-p7vv"
+      ],
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "title": "Brotli certificate decompression can allocate up to 1 GiB before authentication",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0348.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0348.md",
+      "source_blob": "90f520f6dd5450e5e44aeb058aeb24b6184cff38",
+      "ghsa": [
+        {
+          "id": "GHSA-h2v8-394m-p7vv",
+          "url": "https://github.com/advisories/GHSA-h2v8-394m-p7vv",
+          "severity": "low",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0349",
+      "package": "rustls",
+      "aliases": [
+        "CVE-2026-123611",
+        "GHSA-w44r-93j7-qv28"
+      ],
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "title": "Unauthenticated ServerHello can downgrade later connections to classical key exchange",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0349.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls/RUSTSEC-2026-0349.md",
+      "source_blob": "92b549de400cc7a32c71dba037a41bd635fed8b7",
+      "ghsa": [
+        {
+          "id": "GHSA-w44r-93j7-qv28",
+          "url": "https://github.com/advisories/GHSA-w44r-93j7-qv28",
+          "severity": "low",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": "RUSTSEC-2026-0381",
+      "package": "webpki-roots",
+      "aliases": [
+        "CVE-2026-111943"
+      ],
+      "patched": [
+        ">= 1.0.10"
+      ],
+      "title": "Bundled root certificates allow trust in distrusted emSign intermediates",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0381.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/webpki-roots/RUSTSEC-2026-0381.md",
+      "source_blob": "8aa7dfd0db5194f543c755e6ce815e0a82d04e04",
+      "ghsa": []
+    },
+    {
+      "id": "RUSTSEC-2026-0382",
+      "package": "rustls-webpki",
+      "aliases": [
+        "CVE-2026-111943"
+      ],
+      "patched": [
+        ">= 0.103.16, < 0.104.0-alpha.1",
+        ">= 0.104.0-alpha.8"
+      ],
+      "title": "Certificate verification may accept distrusted intermediates",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0382.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustls-webpki/RUSTSEC-2026-0382.md",
+      "source_blob": "27291e4f4bf088548cfa9d502cdb00842dd824b1",
+      "ghsa": []
+    },
+    {
+      "id": "RUSTSEC-2026-0486",
+      "package": "rustix",
+      "aliases": [
+        "GHSA-jh2m-fhpj-3vr7"
+      ],
+      "patched": [
+        ">= 1.1.6"
+      ],
+      "title": "xattr functions mark unwritten bytes as initialized when given a zero-length buffer",
+      "rustsec_url": "https://rustsec.org/advisories/RUSTSEC-2026-0486.html",
+      "source_url": "https://github.com/rustsec/advisory-db/blob/main/crates/rustix/RUSTSEC-2026-0486.md",
+      "source_blob": "771621348de211646db0157792e6d23637b28581",
+      "ghsa": [
+        {
+          "id": "GHSA-jh2m-fhpj-3vr7",
+          "status": 404,
+          "evidence": "Alias is explicitly present in the verified RustSec source; GitHub global advisory endpoint unavailable at audit."
+        }
+      ]
+    }
+  ],
+  "locked_rustls_features": [
+    "log",
+    "logging",
+    "ring",
+    "std",
+    "tls12"
+  ],
+  "brotli_enabled": false,
+  "source_audit": {
+    "crls_configured": false,
+    "custom_client_session_store": false,
+    "session_value_debug_formatting": false,
+    "key_logger_installed": false,
+    "rustix_xattr_calls": false
+  },
+  "publication_route": {
+    "workflow": "trusted-publishing.yml",
+    "environment": "crates-io",
+    "owner_review_required": true,
+    "long_lived_token_permitted": false
+  },
+  "candidate_and_publication_evidence": "Exact-head package/CI results belong to the release PR review record; live registry/install/assets are postpublication evidence.",
+  "rustsec_web_links": [
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0049.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0098.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0099.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0104.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0285.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0346.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0348.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0349.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0381.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0382.html",
+      "status": 200,
+      "id_in_page": true
+    },
+    {
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0486.html",
+      "status": 200,
+      "id_in_page": true
+    }
+  ],
+  "historical_locked_dependencies": {
+    "v0.1.0": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.1.1": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.2.0": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.3.0": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.4.0": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.5.0": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.5.1": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    },
+    "v0.5.2": {
+      "rustix": "1.1.2",
+      "rustls": "0.23.35",
+      "rustls-webpki": "0.103.8",
+      "webpki-roots": "1.0.4"
+    }
+  },
+  "dependency_identities_match_main_except_own_version": true
+}

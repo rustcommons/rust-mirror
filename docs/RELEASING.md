@@ -63,6 +63,32 @@ published after normal merge; [postpublication verification](evals/2026-11-15-pu
 records registry/docs.rs, all six public assets/attestations, native Windows/GNU/musl
 downloads and registry installation.
 
+## 0.5.3 Trusted Publishing release
+
+Owner authorization, 2026-11-15: release the merged RustSec dependency fixes plus
+existing main as 0.5.3; no further application code. See [security notes](releases/v0.5.3.md)
+for all upstream IDs and bounded exposure. Prepare a draft repository advisory;
+the coordinator publishes that advisory only after the software release.
+
+The coordinator merges the green release PR. Unlike the manual publish-then-tag
+route below, create the annotated v0.5.3 tag at the exact merge **before registry
+publication**. Verify merge/candidate tree equality first. The canonical
+[trusted-publishing.yml](../.github/workflows/trusted-publishing.yml) qualifies the
+package and waits for the owner's crates-io environment approval, then uses its
+short-lived OIDC token. Never supply a long-lived Cargo token or bypass the review.
+After confirmed registry publication, create the GitHub Release from the exact
+committed notes; let release-binaries attach the five archives, SBOM and SHA256SUMS.
+If owner approval outlasts the binary workflow's bounded release wait, retry the
+non-dry workflow at the exact immutable tag after the release exists, only with no
+existing assets. Never delete/replace a successful upload prefix.
+
+Verify the registry checksum/payload against the merge, docs.rs, a fresh registry
+install, all seven files, reusable signer/source commit digests, archive SBOM
+bindings and actual downloaded Windows/GNU/musl executables. Keep candidate and
+publication evidence distinct; record the first real Trusted Publishing outcome
+without assuming success. Existing releases and the manual fallback process remain
+unchanged; this authorization selects Trusted Publishing for 0.5.3 specifically.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
@@ -101,8 +127,10 @@ downloads and registry installation.
   status, exact release VCS and qualified payload; verify docs.rs build and links.
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
-- Create the annotated version tag at the exact release commit. Publish the exact
-  committed [versioned notes](releases/v0.5.2.md) as the GitHub Release, latest and
+- For manual owner-machine releases, create the annotated version tag at the exact
+  release commit after publication. Trusted Publishing creates it before publication
+  as described above. Publish the exact
+  committed [versioned notes](releases/v0.5.3.md) as the GitHub Release, latest and
   with binary archives/checksums attached only through the release workflow under
   the owner's 2026-11-15 authorization. Do not change historical note bodies.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
