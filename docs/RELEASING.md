@@ -118,6 +118,15 @@ A collector timeout may use the approved exact-tag dispatch with an empty releas
 never a new source/signer revision. Keep the advisory draft with <=0.5.2 affected,
 patched crate 0.5.3 and patched downloads 0.5.4 until the coordinator publishes it.
 
+The [completed 0.5.4 record](evals/2026-11-16-publication-0.5.4.md) identifies the
+actual registry/tag, all seven assets/provenances, all five SBOM bindings, docs.rs,
+fresh installs and public Windows/GNU/musl execution. Preserve its initial Windows
+reader-locale failure and corrected UTF-8 proof. Verification tools must decode
+GitHub CLI JSON and proof files explicitly as UTF-8 and compare the exact signed
+SBOM; never normalize away a mismatch. Reader fixes do not authorize producer/tag/
+asset changes or a source/signer exception. Keep the advisory draft for coordinator
+publication and older immutable profiles unchanged.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
@@ -177,7 +186,7 @@ publication remains available; the optional [Trusted Publishing workflow](../.gi
 requires exact main-reachable tagged source and the owner's crates-io environment
 approval. Register the publisher values in the security guide before using it.
 
-Starting with the next separately authorized release, add the Cargo CycloneDX JSON
+Starting with 0.5.4, include the Cargo CycloneDX JSON
 SBOM to the five-archive profile and the single SHA256SUMS: seven public files,
 six manifest entries. Sign provenance inside [the reusable build workflow](../.github/workflows/build-binaries.yml)
 and bind the SBOM to each archive with attest-sbom. Keep native generation read-only

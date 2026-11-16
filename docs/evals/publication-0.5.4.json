@@ -1,0 +1,1830 @@
+{
+  "version": "0.5.4",
+  "recorded_at": "2026-11-16T05:21:48.984448+00:00",
+  "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+  "qualified_head": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+  "merge_tree_equals_qualified": true,
+  "tag": {
+    "name": "v0.5.4",
+    "object": "3b99876b897704e0c382c2dcb7aa37a1e4c69363",
+    "commit": "b254027cd8a31ebadd92f712671ed0d76c28561a"
+  },
+  "registry": {
+    "checksum": "a11f6b58f2004b6df41ea1c33720bed7762c9daff815ce2eb3c3195fbbe908f2",
+    "created_at": "2026-11-16T05:03:22.470151Z",
+    "yanked": false,
+    "published_by": null,
+    "trustpub_data": {
+      "provider": "github",
+      "repository": "rustcommons/rust-mirror",
+      "run_id": "43807377829",
+      "sha": "b254027cd8a31ebadd92f712671ed0d76c28561a"
+    }
+  },
+  "registry_payload": {
+    "url": "https://static.crates.io/crates/rust-mirror/rust-mirror-0.5.4.crate",
+    "checksum": "a11f6b58f2004b6df41ea1c33720bed7762c9daff815ce2eb3c3195fbbe908f2",
+    "all_members_regular": true,
+    "archive_members": 45,
+    "original_source_files": 43,
+    "qualified_head": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+    "candidate_payload_differences": [
+      ".cargo_vcs_info.json"
+    ],
+    "published_vcs": {
+      "git": {
+        "sha1": "b254027cd8a31ebadd92f712671ed0d76c28561a"
+      },
+      "path_in_vcs": ""
+    },
+    "payload_sha256": {
+      ".cargo_vcs_info.json": "fc0f22c350e65cb6e3535a9b2ff8327831492e8dd95d28ce7b453fc9fdf25932",
+      "CHANGELOG.md": "74eb9e31028e484acde14c79d4dae541f7037498ad876663bed65d7268cd51aa",
+      "Cargo.lock": "0345c88ff9416b27e717d5e0ce2f63078b421e90c63da97fe27326a66c218435",
+      "Cargo.toml": "f6c5ef6a782fff654d3407ab5ac016fd782e1e582a22a3884856b1cf91a470a4",
+      "Cargo.toml.orig": "e6e1c704436ca623cdb54c9de033656a21350d2507db7f32c651534a2122dcb7",
+      "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "README.md": "d4f3cb170771cb41d2daf63d481c715dffdef87fc4db818244ea89a067ce3a4e",
+      "examples/crates_mvp.rs": "1a59641b23c3a64ec594558beb4d2c0cc9d5754fa7fc939ad3ce48579fe250ea",
+      "examples/crates_phase0.rs": "4da19dd2249bcaf69870233a0208d01c38630ac288e0174996204df50bd75146",
+      "examples/mirror.toml": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e",
+      "examples/multi-version.toml": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d",
+      "examples/retention.toml": "7d0d6ac740ebccd768e4b237fd6a12ea9b30281fc14efe86893a2032b0d2e5dd",
+      "examples/sync-demo.toml": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc",
+      "src/cli/crates.rs": "0ab8b32cc1f41c713c0b2b9ff5e0f27b93c91089b4226e56713b23bdcb788ed6",
+      "src/cli/lock_import.rs": "5bdb90ddf17a87df8da87d1163eb5aed71db01e659e52c3fa6b530dce7f65098",
+      "src/cli/network_options.rs": "00a61a04ef75e929d5dd9c4aec1fa14294baeba5263a439cd652a9f4b897955b",
+      "src/cli.rs": "10d2505ab74d4e36e49c31a8efacfdf3bccf07daccc7626af31aa9bb53fa3c76",
+      "src/crates/catalog.rs": "f826ef7088b174b207fb6ba4019c86874d6f0804728bf57480b9c2aa96cc821d",
+      "src/crates/collisions.rs": "121333b7ed014118506b15454394f6742fc5efcc9e9f97cb8fd140f235de3c69",
+      "src/crates/lockfile/parse.rs": "8c67e4fb8c2ecd23cba775bf47a75ca8c498020374f440a5f8ef2baf3486b749",
+      "src/crates/lockfile.rs": "4698f78075a1e8cfd0406af16154ef3a75c71b0571a4a67a8ce599c67ec60bb9",
+      "src/crates/mirror/fetch.rs": "fcb800237a5d51af7ebc764dec28dbda43bab932dfa7223fc61a5814350b6da8",
+      "src/crates/mirror/locks.rs": "e41053704d96c540ed081d7c2d5269a198db673c1abf79a7a178e21576154e43",
+      "src/crates/mirror/retained.rs": "460a47fbc99e698fa4197e2921754a12348348db8c2c0f876253e6ade43e8ce8",
+      "src/crates/mirror/sync.rs": "7ff0d0c8f0e138385f711cf319a1297c988947a51b0c1d443e3c837d9bb5eac4",
+      "src/crates/mirror.rs": "bb4935190dd5948b5f02aec048bd404962c345fd94aba14997b414b313ea6564",
+      "src/crates/mod.rs": "4e47a071836e3a1a7fedccfd27f55e64e4b207377cbf718ee82b2c79ce390c13",
+      "src/crates/retention.rs": "756856b48ca63d9381153ad880ccc2b17360a87893997fa958fbc737f4fc677b",
+      "src/crates/source.rs": "2c6c0ba62638593dbda9bb3f70283f37fde6067b37179732f439c7ccdbbd13e8",
+      "src/error.rs": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0",
+      "src/events.rs": "339a65f891172a46aca29c1905c72efb5e25541eb55392ecb94328d9a004a407",
+      "src/guide.md": "b24d9d6e2f754c88cfc11990160e16a8330700bff82db2d3e2ada60fe89e8949",
+      "src/lib.rs": "ca9ed8d984431cdc650ca8df0e979763dcc176e57a7f1dc80ea1ef4254088485",
+      "src/main.rs": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f",
+      "src/network.rs": "577d048ad404af81840adc7a6d72c3d932b69b8a495be1d1eb6c928b5acaf4ed",
+      "src/publish.rs": "c3491eb0960568a1cd1904471c67786a9df40600f06154b98220f2ee9771e13e",
+      "src/releases.rs": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78",
+      "src/resume.rs": "0b475598ad56c9c94c3d2cba1f9a3189a680f3cd913120b7eed2988a8ee0002c",
+      "src/selection/collection.rs": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc",
+      "src/selection/retention/catalog.rs": "a7a4540f3d44ac934a68f4b39e89fca7fa1c7d82121a3993097168e514ee5bdd",
+      "src/selection/retention.rs": "85d619a455b19faaaa433972e6de7c269ed8eb307bc8501c7b9d968591b6782b",
+      "src/selection/rustup.rs": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11",
+      "src/selection/sync.rs": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3",
+      "src/selection.rs": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd",
+      "src/signals.rs": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6"
+    }
+  },
+  "candidate_package": {
+    "candidate": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+    "base": "1823844ab73cfe7fdb7b926cb6d8f26c9f7b91dd",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "host": "aarch64-unknown-linux-gnu",
+    "archive_sha256": "2f3c2b68c33765df2e06f4ebd490e3ec453e5c9c6febd7d9124bf2e290bb4b24",
+    "archive_members": 45,
+    "original_source_files": 43,
+    "vcs": {
+      "git": {
+        "sha1": "8afa238ba13c7810e6c2829c7e34471c0b19d34a"
+      },
+      "path_in_vcs": ""
+    },
+    "dependency_identities_match_main_except_own_version": true,
+    "allowed_members_only": true,
+    "packaged_markdown_links_valid": true,
+    "payload_hashes": {
+      ".cargo_vcs_info.json": "874743d5095ffe60df5614bee8293b59569330c3e8ec110a53b6bfc47ba63753",
+      "CHANGELOG.md": "74eb9e31028e484acde14c79d4dae541f7037498ad876663bed65d7268cd51aa",
+      "Cargo.lock": "0345c88ff9416b27e717d5e0ce2f63078b421e90c63da97fe27326a66c218435",
+      "Cargo.toml": "f6c5ef6a782fff654d3407ab5ac016fd782e1e582a22a3884856b1cf91a470a4",
+      "Cargo.toml.orig": "e6e1c704436ca623cdb54c9de033656a21350d2507db7f32c651534a2122dcb7",
+      "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "README.md": "d4f3cb170771cb41d2daf63d481c715dffdef87fc4db818244ea89a067ce3a4e",
+      "examples/crates_mvp.rs": "1a59641b23c3a64ec594558beb4d2c0cc9d5754fa7fc939ad3ce48579fe250ea",
+      "examples/crates_phase0.rs": "4da19dd2249bcaf69870233a0208d01c38630ac288e0174996204df50bd75146",
+      "examples/mirror.toml": "3daa8af9b2f90468b12de5356c4ce6f7a0547f68ddfc674c9f9c48a04c9b292e",
+      "examples/multi-version.toml": "e4fbe19c3e2bee1d9b22ebf5c7625de0c390adda8c6bfa9d6193d9e7f547bd8d",
+      "examples/retention.toml": "7d0d6ac740ebccd768e4b237fd6a12ea9b30281fc14efe86893a2032b0d2e5dd",
+      "examples/sync-demo.toml": "92e58c01aea2be37a73d873fb9df1175b06a6f1ecccc9258b5ccb4a36cfe9fdc",
+      "src/cli.rs": "10d2505ab74d4e36e49c31a8efacfdf3bccf07daccc7626af31aa9bb53fa3c76",
+      "src/cli/crates.rs": "0ab8b32cc1f41c713c0b2b9ff5e0f27b93c91089b4226e56713b23bdcb788ed6",
+      "src/cli/lock_import.rs": "5bdb90ddf17a87df8da87d1163eb5aed71db01e659e52c3fa6b530dce7f65098",
+      "src/cli/network_options.rs": "00a61a04ef75e929d5dd9c4aec1fa14294baeba5263a439cd652a9f4b897955b",
+      "src/crates/catalog.rs": "f826ef7088b174b207fb6ba4019c86874d6f0804728bf57480b9c2aa96cc821d",
+      "src/crates/collisions.rs": "121333b7ed014118506b15454394f6742fc5efcc9e9f97cb8fd140f235de3c69",
+      "src/crates/lockfile.rs": "4698f78075a1e8cfd0406af16154ef3a75c71b0571a4a67a8ce599c67ec60bb9",
+      "src/crates/lockfile/parse.rs": "8c67e4fb8c2ecd23cba775bf47a75ca8c498020374f440a5f8ef2baf3486b749",
+      "src/crates/mirror.rs": "bb4935190dd5948b5f02aec048bd404962c345fd94aba14997b414b313ea6564",
+      "src/crates/mirror/fetch.rs": "fcb800237a5d51af7ebc764dec28dbda43bab932dfa7223fc61a5814350b6da8",
+      "src/crates/mirror/locks.rs": "e41053704d96c540ed081d7c2d5269a198db673c1abf79a7a178e21576154e43",
+      "src/crates/mirror/retained.rs": "460a47fbc99e698fa4197e2921754a12348348db8c2c0f876253e6ade43e8ce8",
+      "src/crates/mirror/sync.rs": "7ff0d0c8f0e138385f711cf319a1297c988947a51b0c1d443e3c837d9bb5eac4",
+      "src/crates/mod.rs": "4e47a071836e3a1a7fedccfd27f55e64e4b207377cbf718ee82b2c79ce390c13",
+      "src/crates/retention.rs": "756856b48ca63d9381153ad880ccc2b17360a87893997fa958fbc737f4fc677b",
+      "src/crates/source.rs": "2c6c0ba62638593dbda9bb3f70283f37fde6067b37179732f439c7ccdbbd13e8",
+      "src/error.rs": "bd6971c11ba62a1ce8c0ffdde14ad1f9e66d361f21cee989bb3bc65ea7ce26e0",
+      "src/events.rs": "339a65f891172a46aca29c1905c72efb5e25541eb55392ecb94328d9a004a407",
+      "src/guide.md": "b24d9d6e2f754c88cfc11990160e16a8330700bff82db2d3e2ada60fe89e8949",
+      "src/lib.rs": "ca9ed8d984431cdc650ca8df0e979763dcc176e57a7f1dc80ea1ef4254088485",
+      "src/main.rs": "637e00e2f69fa8ab76ad146b15b37b4841918199cc1cafe2fd0131d0747ada0f",
+      "src/network.rs": "577d048ad404af81840adc7a6d72c3d932b69b8a495be1d1eb6c928b5acaf4ed",
+      "src/publish.rs": "c3491eb0960568a1cd1904471c67786a9df40600f06154b98220f2ee9771e13e",
+      "src/releases.rs": "b7e1e8da2863a4ee5659053fb2df2f3734d5886ec7fd37883dec00cdfb81af78",
+      "src/resume.rs": "0b475598ad56c9c94c3d2cba1f9a3189a680f3cd913120b7eed2988a8ee0002c",
+      "src/selection.rs": "db669da231530e415ff263f1747a9138ede7f36dc73ff65192c3b1a81ebc7fdd",
+      "src/selection/collection.rs": "8195de6451714320b0c2d7e9193ff236f129ac4574440a02cc53c55b66af64cc",
+      "src/selection/retention.rs": "85d619a455b19faaaa433972e6de7c269ed8eb307bc8501c7b9d968591b6782b",
+      "src/selection/retention/catalog.rs": "a7a4540f3d44ac934a68f4b39e89fca7fa1c7d82121a3993097168e514ee5bdd",
+      "src/selection/rustup.rs": "03fd9dfd4c5cde3aaa70d8af0e813fb525eae3b9aecf75b57ceac79856f3ce11",
+      "src/selection/sync.rs": "961d5662fc2ac9a87584ea1c1113c580606e61efce47702d143e6c42013040d3",
+      "src/signals.rs": "603a3afbcb712dd1424fe500d215afa8f6837cb4481f96dff0477da7d9e3bfc6"
+    },
+    "application_rust_and_examples_unchanged_from": "1823844ab73cfe7fdb7b926cb6d8f26c9f7b91dd",
+    "packaged_docs_guide_link_changed": true
+  },
+  "merge_package": {
+    "merge": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+    "qualified_head": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+    "tree_identical": true,
+    "merge_archive_sha256": "a11f6b58f2004b6df41ea1c33720bed7762c9daff815ce2eb3c3195fbbe908f2",
+    "candidate_archive_sha256": "2f3c2b68c33765df2e06f4ebd490e3ec453e5c9c6febd7d9124bf2e290bb4b24",
+    "archive_members": 45,
+    "original_files": 43,
+    "payload_differences": [
+      ".cargo_vcs_info.json"
+    ],
+    "clean_vcs": {
+      "git": {
+        "sha1": "b254027cd8a31ebadd92f712671ed0d76c28561a"
+      },
+      "path_in_vcs": ""
+    },
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "host": "aarch64-unknown-linux-gnu"
+  },
+  "release": {
+    "tag": "v0.5.4",
+    "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+    "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.5.4",
+    "release_id": 446626544,
+    "release_notes_match": true,
+    "assets": {
+      "SHA256SUMS": {
+        "sha256": "d0d39b2c8b21bee5d6fe50167752c7b7e80a2286dfcc820b87a81d05a9fab0af",
+        "asset_id": 753538165,
+        "size": 660,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/SHA256SUMS"
+      },
+      "rust-mirror-0.5.4-aarch64-apple-darwin.tar.gz": {
+        "sha256": "47093583da0179d09fd8c85342885e3dc5a6d32b0988bb509aac83b741ec0623",
+        "asset_id": 753538177,
+        "size": 3541140,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/rust-mirror-0.5.4-aarch64-apple-darwin.tar.gz",
+        "sbom_binding_verified": true,
+        "archive_layout_license_source_verified": true,
+        "binary_sha256": "19c389c10ee4032e8dd40d0d4920e16a3e6f217dfc4d6885ef5ca9ed27f8c838"
+      },
+      "rust-mirror-0.5.4-x86_64-apple-darwin.tar.gz": {
+        "sha256": "08e6a62f2a7fc23426d95d655b2d29db510701eee364b3fd9b9abbd2c6a42a2a",
+        "asset_id": 753538200,
+        "size": 3750355,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/rust-mirror-0.5.4-x86_64-apple-darwin.tar.gz",
+        "sbom_binding_verified": true,
+        "archive_layout_license_source_verified": true,
+        "binary_sha256": "60b19b1ac6e81646409da4be0efeb411135402fccbf9af036eff671dd16e3a54"
+      },
+      "rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip": {
+        "sha256": "74f1ff5af14866c95c1cca86e1e04d93c8ef19ff1f93a325dae6730eb086ad1d",
+        "asset_id": 753538216,
+        "size": 3493394,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip",
+        "sbom_binding_verified": true,
+        "archive_layout_license_source_verified": true,
+        "binary_sha256": "c50dd9cb8dae1253d94d81e3eb2cb0a0845c0bf115b0749e86cfaac2f8f3a3e9"
+      },
+      "rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz": {
+        "sha256": "d1806bc1cbe8a95e125328f8f3cb3f053b2bdf8d8e4389a7ac843a42559b6228",
+        "asset_id": 753538241,
+        "size": 3877968,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz",
+        "sbom_binding_verified": true,
+        "archive_layout_license_source_verified": true,
+        "binary_sha256": "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676"
+      },
+      "rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz": {
+        "sha256": "fd2476364b104bac1c9898e7d172f6cd5e3872f3874feab479b05cf9528cd74d",
+        "asset_id": 753538265,
+        "size": 3992650,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz",
+        "sbom_binding_verified": true,
+        "archive_layout_license_source_verified": true,
+        "binary_sha256": "af0d83f256f1dba10e7806892942ffc67f6642302b5e651ddef72a15d876a846"
+      },
+      "rust-mirror-0.5.4.cdx.json": {
+        "sha256": "2265bac32b1393d9c96208696c629544b5ea9055562548a787b3b45e6b16b670",
+        "asset_id": 753538313,
+        "size": 147347,
+        "provenance_verified": true,
+        "url": "https://github.com/rustcommons/rust-mirror/releases/download/v0.5.4/rust-mirror-0.5.4.cdx.json"
+      }
+    },
+    "manifest_entries": 6,
+    "policy": [
+      "--repo",
+      "rustcommons/rust-mirror",
+      "--signer-workflow",
+      "rustcommons/rust-mirror/.github/workflows/build-binaries.yml",
+      "--source-digest",
+      "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "--signer-digest",
+      "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "--deny-self-hosted-runners"
+    ],
+    "provenance_count": 7,
+    "sbom_binding_count": 5,
+    "sbom": {
+      "format": "CycloneDX",
+      "spec_version": "1.5",
+      "properties": {
+        "cdx:rustc:sbom:target:all_targets": "true",
+        "rust-mirror:source:commit": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+        "rust-mirror:source:lock-sha256": "0345c88ff9416b27e717d5e0ce2f63078b421e90c63da97fe27326a66c218435",
+        "rust-mirror:scope": "All-target Cargo dependency graph; excludes OS runtimes and CI tools"
+      },
+      "dependency_count": 127,
+      "full_lock_checksums_match": true
+    },
+    "verification_count_scope": "Seven per-file provenance checks and five per-archive SBOM-binding checks; signed statements may have multiple subjects"
+  },
+  "read_only_verifier_revision": "c9f2a807a9a433cf4e4a4c12d5014ecb07784ff5",
+  "windows_reader_failure_and_resolution": {
+    "run": 43808394284,
+    "cause": "GH CLI emits UTF-8; Python Windows default CP1252 text decoding corrupts non-ASCII SBOM predicate",
+    "utf8_binding_pass": true,
+    "cp1252_binding_refused": true,
+    "first_difference": {
+      "path": "/components/24/author",
+      "detail": "Non-ASCII dependency author string decoded differently; public author identifiers omitted here"
+    },
+    "archive_sha256": "74f1ff5af14866c95c1cca86e1e04d93c8ef19ff1f93a325dae6730eb086ad1d"
+  },
+  "documentation": {
+    "initial": {
+      "checked_at": "2026-11-16T05:05:15.190023+00:00",
+      "results": [
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/",
+          "error": "HTTP Error 404: "
+        },
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/events/",
+          "error": "HTTP Error 404: "
+        },
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/crates/",
+          "error": "HTTP Error 404: "
+        },
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/crates/lockfile/",
+          "error": "HTTP Error 404: "
+        }
+      ]
+    },
+    "resolved": {
+      "checked_at": "2026-11-16T05:09:29.561915+00:00",
+      "results": [
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/",
+          "status": 200,
+          "final_url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/",
+          "version_present": true
+        },
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/events/",
+          "status": 200,
+          "final_url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/events/",
+          "version_present": true
+        },
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/crates/",
+          "status": 200,
+          "final_url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/crates/",
+          "version_present": true
+        },
+        {
+          "url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/crates/lockfile/",
+          "status": 200,
+          "final_url": "https://docs.rs/rust-mirror/0.5.4/rust_mirror/crates/lockfile/",
+          "version_present": true
+        }
+      ]
+    }
+  },
+  "registry_install_local": {
+    "registry_install": true,
+    "fresh_cargo_home": true,
+    "fresh_build_target": true,
+    "registry_token_removed": true,
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "host": "aarch64-unknown-linux-gnu",
+    "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+    "archive_sha256": "a11f6b58f2004b6df41ea1c33720bed7762c9daff815ce2eb3c3195fbbe908f2",
+    "binary_sha256": "66435ad94c532c5aadc00fb084b8878ad25ae3979f67064b731b403ee427f750",
+    "human_version": "rust-mirror 0.5.4",
+    "events": [
+      {
+        "command": "--version",
+        "elapsed_ms": 0,
+        "protocol": 1,
+        "seq": 0,
+        "tool_version": "0.5.4",
+        "type": "hello"
+      },
+      {
+        "elapsed_ms": 0,
+        "index": 1,
+        "name": "--version",
+        "seq": 1,
+        "total": null,
+        "type": "stage"
+      },
+      {
+        "elapsed_ms": 0,
+        "error": null,
+        "ok": true,
+        "report": {
+          "protocol": 1,
+          "tool_version": "0.5.4"
+        },
+        "seq": 2,
+        "type": "result"
+      }
+    ],
+    "missing_plan_refusal": [
+      {
+        "command": "crates-show",
+        "elapsed_ms": 0,
+        "protocol": 1,
+        "seq": 0,
+        "tool_version": "0.5.4",
+        "type": "hello"
+      },
+      {
+        "elapsed_ms": 0,
+        "index": 1,
+        "name": "crates-show",
+        "seq": 1,
+        "total": null,
+        "type": "stage"
+      },
+      {
+        "elapsed_ms": 0,
+        "error": {
+          "kind": "io",
+          "message": "No such file or directory (os error 2)",
+          "report": null
+        },
+        "ok": false,
+        "report": null,
+        "seq": 2,
+        "type": "result"
+      }
+    ],
+    "plan": {
+      "budgets": {
+        "exceeds_final_budget": false,
+        "exceeds_transfer_budget": false,
+        "oversized_files": []
+      },
+      "catalog": {
+        "crate-network": {
+          "attempts": 4,
+          "concurrency": 4,
+          "contact": "",
+          "max-wait-seconds": 60
+        },
+        "crate-output": {
+          "base-url": "https://mirror.example/qualification/054-published/"
+        },
+        "crate-policy": {
+          "features": "declared",
+          "hosts": [
+            "aarch64-unknown-linux-gnu"
+          ],
+          "max-file-bytes": 536870912,
+          "max-files": 10000,
+          "max-final-bytes": 10737418240,
+          "max-metadata-bytes": 268435456,
+          "max-transfer-bytes": 10737418240,
+          "max-versions": 3000,
+          "resolver": "2",
+          "targets": [
+            "aarch64-unknown-linux-gnu"
+          ]
+        },
+        "crate-rules": {},
+        "crates": {
+          "itoa": {
+            "default-features": true,
+            "features": [],
+            "optional": false,
+            "version": "=1.0.15"
+          }
+        }
+      },
+      "changes": {
+        "added": [
+          {
+            "name": "itoa",
+            "version": "1.0.15"
+          }
+        ],
+        "newly_yanked_retained": [],
+        "no_longer_selected_retained": [],
+        "retained": []
+      },
+      "cohorts": [],
+      "counts": {
+        "crates": 1,
+        "files": 4,
+        "roots": 1,
+        "versions": 1
+      },
+      "observations": [
+        {
+          "bytes": 9919,
+          "name": "itoa",
+          "sha256": "0997bac1899829d1597b4e7843de9ddf54d2a1c1059e99e78b1aa94350550cef"
+        }
+      ],
+      "observed_at": 1794805798,
+      "plan_id": "664a40d1c900fcc095f5b5dd52af616622907597d7041b1bc252f2b2110cdacd",
+      "retention_observations": [],
+      "roots": [
+        {
+          "alias": "itoa",
+          "profile": {
+            "default_features": true,
+            "features": [],
+            "name": "itoa",
+            "version": "1.0.15"
+          },
+          "requirement": "=1.0.15"
+        }
+      ],
+      "schema": 2,
+      "size_estimate": {
+        "estimated": true,
+        "generated_index_bytes": 421,
+        "known_archive_bytes": 0,
+        "unknown_archives": 1,
+        "expected_archive_bytes": null
+      },
+      "versions": [
+        {
+          "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c",
+          "index_line": "{\"name\":\"itoa\",\"vers\":\"1.0.15\",\"deps\":[{\"name\":\"no-panic\",\"req\":\"^0.1\",\"features\":[],\"optional\":true,\"default_features\":true,\"target\":null,\"kind\":\"normal\"}],\"cksum\":\"4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c\",\"features\":{},\"yanked\":false,\"rust_version\":\"1.36\",\"pubtime\":\"2025-03-03T23:42:45Z\"}\n",
+          "lock_only": false,
+          "name": "itoa",
+          "primary_reason": {
+            "alias": "itoa",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "requirement": "=1.0.15",
+            "root": 0,
+            "parent": null,
+            "target": null
+          },
+          "reasons": [
+            {
+              "alias": "itoa",
+              "conservative": false,
+              "default_features": true,
+              "features": [],
+              "lock_only": false,
+              "requirement": "=1.0.15",
+              "root": 0,
+              "parent": null,
+              "target": null
+            },
+            {
+              "alias": "itoa",
+              "conservative": true,
+              "default_features": true,
+              "features": [],
+              "lock_only": false,
+              "requirement": "=1.0.15",
+              "root": 0,
+              "parent": null,
+              "target": null
+            }
+          ],
+          "retained_from_previous": false,
+          "root_aliases": [
+            "itoa"
+          ],
+          "source_ordinal": 33,
+          "sources": [
+            {
+              "kind": "manual",
+              "name": "itoa"
+            }
+          ],
+          "version": "1.0.15",
+          "yanked": false,
+          "expected_bytes": null
+        }
+      ],
+      "warnings": [
+        "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+        "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+      ],
+      "witnesses": [
+        {
+          "root": {
+            "default_features": true,
+            "features": [],
+            "name": "itoa",
+            "version": "1.0.15"
+          },
+          "versions": [
+            "itoa@1.0.15"
+          ]
+        }
+      ],
+      "previous_inventory_sha256": null
+    },
+    "approved_fetch": {
+      "files_completed": 1,
+      "files_total": 1,
+      "inventory_sha256": "a0c9d7e7f7dec183f5c0bb3079d57c074e8c4337cb902745bd62520330b76f10",
+      "mirror": "/tmp/rom-054/postpub/installed-run/mirror",
+      "plan_id": "664a40d1c900fcc095f5b5dd52af616622907597d7041b1bc252f2b2110cdacd",
+      "reused_bytes": 0,
+      "total_transferred_bytes": 11231,
+      "transferred_bytes": 11231
+    },
+    "scope": "Actual fresh registry install, discovery/refusal, one exact itoa1.0.15 plan/approved fetch; no local Cargo-client build or actual Nexus claim"
+  },
+  "registry_workflow_identity": {
+    "version": "0.5.4",
+    "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+    "archive_sha256": "a11f6b58f2004b6df41ea1c33720bed7762c9daff815ce2eb3c3195fbbe908f2",
+    "vcs": {
+      "git": {
+        "sha1": "b254027cd8a31ebadd92f712671ed0d76c28561a"
+      },
+      "path_in_vcs": ""
+    },
+    "binary_sha256": "bb5365e953bac0884e6e1bea3825624f3178d3693042c1737273223e2685d176",
+    "events": [
+      {
+        "command": "--version",
+        "elapsed_ms": 0,
+        "protocol": 1,
+        "seq": 0,
+        "tool_version": "0.5.4",
+        "type": "hello"
+      },
+      {
+        "elapsed_ms": 0,
+        "index": 1,
+        "name": "--version",
+        "seq": 1,
+        "total": null,
+        "type": "stage"
+      },
+      {
+        "elapsed_ms": 0,
+        "error": null,
+        "ok": true,
+        "report": {
+          "protocol": 1,
+          "tool_version": "0.5.4"
+        },
+        "seq": 2,
+        "type": "result"
+      }
+    ],
+    "registry_install": true,
+    "fresh_cargo_home": true
+  },
+  "registry_workflow_publisher": {
+    "status": "passed",
+    "files": 9,
+    "transport": "HTTPS with private CA and scoped fixture credentials",
+    "fixture_only": true,
+    "untrusted_ca_refused": true,
+    "wrong_hostname_refused": true,
+    "typed_tls_auth_remote_exists": true,
+    "preflight_no_put": true,
+    "event_protocol": 1
+  },
+  "registry_workflow_isolation": {
+    "kind": "network-namespace",
+    "routes": []
+  },
+  "registry_workflow_cleanup": {
+    "private_keys_destroyed": true,
+    "fixture_created": true
+  },
+  "gnu_qualification": {
+    "method": "cargo-libc",
+    "target_glibc": "2.17",
+    "cargo_libc_commit": "e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25",
+    "cargo_libc_version": "cargo-libc 0.7.0",
+    "source_commit": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+    "binary_sha256": "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676",
+    "command": [
+      "cargo",
+      "libc",
+      "build",
+      "--target",
+      "x86_64-unknown-linux-gnu.2.17",
+      "--cc",
+      "/usr/bin/clang-18",
+      "--artifact",
+      "/home/runner/work/rust-mirror/rust-mirror/source/target/x86_64-unknown-linux-gnu/release/rust-mirror",
+      "--",
+      "--release",
+      "--locked"
+    ],
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+    "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "linkage": {
+      "required_glibc_versions": [
+        "2.2.5",
+        "2.3",
+        "2.3.4",
+        "2.4",
+        "2.10",
+        "2.12",
+        "2.14",
+        "2.16",
+        "2.17"
+      ],
+      "maximum_required_glibc": "2.17",
+      "needed": [
+        "libc.so.6",
+        "libm.so.6",
+        "libpthread.so.0",
+        "libgcc_s.so.1",
+        "libdl.so.2"
+      ],
+      "dynamic_section": "\nDynamic section at offset 0x839af0 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]\n 0x000000000000000c (INIT)               0x403000\n 0x000000000000000d (FINI)               0xa73188\n 0x0000000000000019 (INIT_ARRAY)         0xc128e8\n 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc128f8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x400340\n 0x0000000000000005 (STRTAB)             0x400e18\n 0x0000000000000006 (SYMTAB)             0x400368\n 0x000000000000000a (STRSZ)              1480 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc39d20\n 0x0000000000000002 (PLTRELSZ)           144 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x401ff0\n 0x0000000000000007 (RELA)               0x4015e8\n 0x0000000000000008 (RELASZ)             2568 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW\n 0x000000006ffffffe (VERNEED)            0x4014c8\n 0x000000006fffffff (VERNEEDNUM)         4\n 0x000000006ffffff0 (VERSYM)             0x4013e0\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    "host_kernel": "7.0.0-1017-azure",
+    "runtime_gates": [
+      {
+        "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+        "image_record": {
+          "image": "almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:a472c4fde2a835697f74c718f05b8fee393954456c1db4e1043894458c22263d",
+          "repo_digests": [
+            "almalinux@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.28",
+        "result": "passed",
+        "plan_id": "a15ca780ca0e7abae45fed187d8035c73e28964626781b17e2dd620d8e6aeddf",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4",
+        "image_record": {
+          "image": "centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:eeb6ee3f44bd0b5103bb561b4c16bcb82328cfe5809ab675bb17ab3a16c517c9",
+          "repo_digests": [
+            "centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.17",
+        "result": "passed",
+        "plan_id": "d4a33814e80b176033f61cc58775da2fb956acc4ac1453e592938b75c439d86b",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "opensuse/leap:42.3@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2",
+        "image_record": {
+          "image": "opensuse/leap:42.3@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:8e098189cc8dcb9cf52438dded1403b802a5822acb22e44db027705a146fef7a",
+          "repo_digests": [
+            "opensuse/leap@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.22",
+        "result": "passed",
+        "plan_id": "f778a4772fd8cbfee6d37cd4a6e7892f16e6e23be489c48d5600fed6ba6c9af0",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214",
+        "image_record": {
+          "image": "ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:b7bab04fd9aa0c771e5720bf0cc7cbf993fd6946645983d9096126e5af45d713",
+          "repo_digests": [
+            "ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.31",
+        "result": "passed",
+        "plan_id": "ae13ddde9063f364d120baccacc35b68f20df2521c2ebca0f5375aabb238faac",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98",
+        "image_record": {
+          "image": "ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:f9a80a55f492e823bf5d51f1bd5f87ea3eed1cb31788686aa99a2fb61a27af6a",
+          "repo_digests": [
+            "ubuntu@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.27",
+        "result": "passed",
+        "plan_id": "52a67cc6f479ff1ac17ad1622a3fd955290c7489c58dd40f46e995e43c533f9f",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "ubuntu:16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6",
+        "image_record": {
+          "image": "ubuntu:16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:b6f50765242581c887ff1acc2511fa2d885c52d8fb3ac8c4bba131fd86567f2e",
+          "repo_digests": [
+            "ubuntu@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.23",
+        "result": "passed",
+        "plan_id": "432f64f6501d0f8c5fd7661cb2d420e04ff8aeaa818575c6b1b7526cd9696de5",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "debian:9@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be",
+        "image_record": {
+          "image": "debian:9@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:662c05203bab4c59568d24689fa5c3955439360a35c483178598d226b9a5ad10",
+          "repo_digests": [
+            "debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.24",
+        "result": "passed",
+        "plan_id": "802f995643522d9e675c0acee7ed2ee02c0923bfce9316a63ea1826dc759179a",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      },
+      {
+        "image": "debian:8@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0",
+        "image_record": {
+          "image": "debian:8@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0",
+          "available": true,
+          "failure_reason": null,
+          "id": "sha256:3aaeab7a47777b5ca21fc6de40a6f9e7ee7ebb7302e7a025795eb9e73200c404",
+          "repo_digests": [
+            "debian@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0"
+          ],
+          "architecture": "amd64"
+        },
+        "version_ok": true,
+        "plan_ok": true,
+        "sync_ok": true,
+        "runtime_probe": "glibc 2.19",
+        "result": "passed",
+        "plan_id": "1cdcbba4d3985b1d45ee7a72c472a9c3c0f1a9b7851943428c98ccce5315f5d2",
+        "failure_stage": null,
+        "failure_reason": null,
+        "dns_tls_hosts": [
+          "index.crates.io",
+          "static.crates.io"
+        ],
+        "tls_verification": true
+      }
+    ],
+    "scope": "Container userland version and real HTTPS plan/sync; old native kernels not tested"
+  },
+  "public_downloaded_binaries": {
+    "x86_64-unknown-linux-musl": {
+      "tag": "v0.5.4",
+      "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.5.4",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "d0d39b2c8b21bee5d6fe50167752c7b7e80a2286dfcc820b87a81d05a9fab0af",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-aarch64-apple-darwin.tar.gz": {
+          "sha256": "47093583da0179d09fd8c85342885e3dc5a6d32b0988bb509aac83b741ec0623",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-apple-darwin.tar.gz": {
+          "sha256": "08e6a62f2a7fc23426d95d655b2d29db510701eee364b3fd9b9abbd2c6a42a2a",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip": {
+          "sha256": "74f1ff5af14866c95c1cca86e1e04d93c8ef19ff1f93a325dae6730eb086ad1d",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "d1806bc1cbe8a95e125328f8f3cb3f053b2bdf8d8e4389a7ac843a42559b6228",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "fd2476364b104bac1c9898e7d172f6cd5e3872f3874feab479b05cf9528cd74d",
+          "verified": true
+        },
+        "rust-mirror-0.5.4.cdx.json": {
+          "sha256": "2265bac32b1393d9c96208696c629544b5ea9055562548a787b3b45e6b16b670",
+          "verified": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-unknown-linux-musl",
+      "downloaded_archive": "rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz",
+      "binary_sha256": "af0d83f256f1dba10e7806892942ffc67f6642302b5e651ddef72a15d876a846",
+      "human_version": "rust-mirror 0.5.4",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.5.4",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.5.4"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "file": "/home/runner/work/_temp/live-binary-verification/rust-mirror-0.5.4-x86_64-unknown-linux-musl/rust-mirror: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, BuildID[sha1]=6689bae280b8caa34af0f15495da52e972fcbf67, not stripped",
+        "ldd": "statically linked",
+        "no_interpreter_or_needed": true
+      },
+      "read_only": true
+    },
+    "x86_64-pc-windows-msvc": {
+      "tag": "v0.5.4",
+      "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.5.4",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "d0d39b2c8b21bee5d6fe50167752c7b7e80a2286dfcc820b87a81d05a9fab0af",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-aarch64-apple-darwin.tar.gz": {
+          "sha256": "47093583da0179d09fd8c85342885e3dc5a6d32b0988bb509aac83b741ec0623",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-apple-darwin.tar.gz": {
+          "sha256": "08e6a62f2a7fc23426d95d655b2d29db510701eee364b3fd9b9abbd2c6a42a2a",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip": {
+          "sha256": "74f1ff5af14866c95c1cca86e1e04d93c8ef19ff1f93a325dae6730eb086ad1d",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "d1806bc1cbe8a95e125328f8f3cb3f053b2bdf8d8e4389a7ac843a42559b6228",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "fd2476364b104bac1c9898e7d172f6cd5e3872f3874feab479b05cf9528cd74d",
+          "verified": true
+        },
+        "rust-mirror-0.5.4.cdx.json": {
+          "sha256": "2265bac32b1393d9c96208696c629544b5ea9055562548a787b3b45e6b16b670",
+          "verified": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-pc-windows-msvc",
+      "downloaded_archive": "rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip",
+      "binary_sha256": "c50dd9cb8dae1253d94d81e3eb2cb0a0845c0bf115b0749e86cfaac2f8f3a3e9",
+      "human_version": "rust-mirror 0.5.4",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.5.4",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.5.4"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "imports": [
+          "KERNEL32.dll",
+          "bcryptprimitives.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "ws2_32.dll",
+          "kernel32.dll",
+          "bcrypt.dll",
+          "advapi32.dll",
+          "ntdll.dll"
+        ],
+        "external_crt_imports": false
+      },
+      "read_only": true
+    },
+    "x86_64-unknown-linux-gnu": {
+      "tag": "v0.5.4",
+      "source": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.5.4",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "d0d39b2c8b21bee5d6fe50167752c7b7e80a2286dfcc820b87a81d05a9fab0af",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-aarch64-apple-darwin.tar.gz": {
+          "sha256": "47093583da0179d09fd8c85342885e3dc5a6d32b0988bb509aac83b741ec0623",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-apple-darwin.tar.gz": {
+          "sha256": "08e6a62f2a7fc23426d95d655b2d29db510701eee364b3fd9b9abbd2c6a42a2a",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip": {
+          "sha256": "74f1ff5af14866c95c1cca86e1e04d93c8ef19ff1f93a325dae6730eb086ad1d",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "d1806bc1cbe8a95e125328f8f3cb3f053b2bdf8d8e4389a7ac843a42559b6228",
+          "verified": true
+        },
+        "rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "fd2476364b104bac1c9898e7d172f6cd5e3872f3874feab479b05cf9528cd74d",
+          "verified": true
+        },
+        "rust-mirror-0.5.4.cdx.json": {
+          "sha256": "2265bac32b1393d9c96208696c629544b5ea9055562548a787b3b45e6b16b670",
+          "verified": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-unknown-linux-gnu",
+      "downloaded_archive": "rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz",
+      "binary_sha256": "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676",
+      "human_version": "rust-mirror 0.5.4",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.5.4",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.5.4"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "maximum_required_glibc": "2.17",
+        "required_glibc_versions": [
+          "2.2.5",
+          "2.3",
+          "2.3.4",
+          "2.4",
+          "2.10",
+          "2.12",
+          "2.14",
+          "2.16",
+          "2.17"
+        ],
+        "needed": [
+          "libc.so.6",
+          "libm.so.6",
+          "libpthread.so.0",
+          "libgcc_s.so.1",
+          "libdl.so.2"
+        ],
+        "file": "/home/runner/work/_temp/live-binary-verification/rust-mirror-0.5.4-x86_64-unknown-linux-gnu/rust-mirror: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=b9ed996d0ee4c6f5ce399bb076c749a3dcf6ce4b, for GNU/Linux 2.6.32, not stripped",
+        "ldd": "linux-vdso.so.1 (0x00007ffe10dfa000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fbb41000000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fbb40f19000)\n\tlibpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fbb4128e000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fbb4126e000)\n\tlibdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fbb41269000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007fbb412a1000)"
+      },
+      "read_only": true
+    }
+  },
+  "candidate_reproducibility": {
+    "source": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+    "report": {
+      "version": "0.5.4",
+      "rows": [
+        {
+          "target": "x86_64-pc-windows-msvc",
+          "archive": "rust-mirror-0.5.4-x86_64-pc-windows-msvc.zip",
+          "executable_identical": true,
+          "archive_identical": true,
+          "binary_sha256": [
+            "c50dd9cb8dae1253d94d81e3eb2cb0a0845c0bf115b0749e86cfaac2f8f3a3e9",
+            "c50dd9cb8dae1253d94d81e3eb2cb0a0845c0bf115b0749e86cfaac2f8f3a3e9"
+          ],
+          "archive_sha256": [
+            "179277ea353c9d85eadf1bf72c1f8775ed67260d49e8c415f38631f2804d6d80",
+            "179277ea353c9d85eadf1bf72c1f8775ed67260d49e8c415f38631f2804d6d80"
+          ],
+          "differing_members": [],
+          "diagnostics": [
+            {
+              "pe_coff_timestamp": 1419818894,
+              "metadata_normalized_sha256": "7a3db0bd717db13a17dfd86b3678dee593b88db919510f23bf119b209fff99b3"
+            },
+            {
+              "pe_coff_timestamp": 1419818894,
+              "metadata_normalized_sha256": "7a3db0bd717db13a17dfd86b3678dee593b88db919510f23bf119b209fff99b3"
+            }
+          ],
+          "reason": "Bit-identical executable and archive for these two independent clean builds"
+        },
+        {
+          "target": "x86_64-unknown-linux-gnu",
+          "archive": "rust-mirror-0.5.4-x86_64-unknown-linux-gnu.tar.gz",
+          "executable_identical": true,
+          "archive_identical": true,
+          "binary_sha256": [
+            "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676",
+            "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676"
+          ],
+          "archive_sha256": [
+            "656de7f6984b92616837a5ac3fe175747e51ce704107f82f444f2fd1faa4726e",
+            "656de7f6984b92616837a5ac3fe175747e51ce704107f82f444f2fd1faa4726e"
+          ],
+          "differing_members": [],
+          "diagnostics": [
+            {
+              "metadata_normalized_sha256": "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676"
+            },
+            {
+              "metadata_normalized_sha256": "6451e8dd9e4aa5b9b418b84f61a55958f95e5685323716d352fc0c78ab447676"
+            }
+          ],
+          "reason": "Bit-identical executable and archive for these two independent clean builds"
+        },
+        {
+          "target": "x86_64-unknown-linux-musl",
+          "archive": "rust-mirror-0.5.4-x86_64-unknown-linux-musl.tar.gz",
+          "executable_identical": true,
+          "archive_identical": true,
+          "binary_sha256": [
+            "af0d83f256f1dba10e7806892942ffc67f6642302b5e651ddef72a15d876a846",
+            "af0d83f256f1dba10e7806892942ffc67f6642302b5e651ddef72a15d876a846"
+          ],
+          "archive_sha256": [
+            "d30be1eaed8dc873e746cd6eb6f1313dc28e778207fd1e1e219b60e770151388",
+            "d30be1eaed8dc873e746cd6eb6f1313dc28e778207fd1e1e219b60e770151388"
+          ],
+          "differing_members": [],
+          "diagnostics": [
+            {
+              "metadata_normalized_sha256": "af0d83f256f1dba10e7806892942ffc67f6642302b5e651ddef72a15d876a846"
+            },
+            {
+              "metadata_normalized_sha256": "af0d83f256f1dba10e7806892942ffc67f6642302b5e651ddef72a15d876a846"
+            }
+          ],
+          "reason": "Bit-identical executable and archive for these two independent clean builds"
+        },
+        {
+          "target": "aarch64-apple-darwin",
+          "archive": "rust-mirror-0.5.4-aarch64-apple-darwin.tar.gz",
+          "executable_identical": true,
+          "archive_identical": true,
+          "binary_sha256": [
+            "19c389c10ee4032e8dd40d0d4920e16a3e6f217dfc4d6885ef5ca9ed27f8c838",
+            "19c389c10ee4032e8dd40d0d4920e16a3e6f217dfc4d6885ef5ca9ed27f8c838"
+          ],
+          "archive_sha256": [
+            "7f034c1faf50a82944bfa833f98381cfed86cec1650aadee5ec5309a3513c936",
+            "7f034c1faf50a82944bfa833f98381cfed86cec1650aadee5ec5309a3513c936"
+          ],
+          "differing_members": [],
+          "diagnostics": [
+            {
+              "macho_uuid": "14425a401f2b316eb3a363a4e9e8f555",
+              "macho_code_signature_sha256": "3239a78b0d69a4542035420f72ca0ebe5b0ade1f30134b66a066b456104f13a7",
+              "metadata_normalized_sha256": "92898c711b58af92c8208009fbb7798b83f396b3401d5fce165208b87dc87a77"
+            },
+            {
+              "macho_uuid": "14425a401f2b316eb3a363a4e9e8f555",
+              "macho_code_signature_sha256": "3239a78b0d69a4542035420f72ca0ebe5b0ade1f30134b66a066b456104f13a7",
+              "metadata_normalized_sha256": "92898c711b58af92c8208009fbb7798b83f396b3401d5fce165208b87dc87a77"
+            }
+          ],
+          "reason": "Bit-identical executable and archive for these two independent clean builds"
+        },
+        {
+          "target": "x86_64-apple-darwin",
+          "archive": "rust-mirror-0.5.4-x86_64-apple-darwin.tar.gz",
+          "executable_identical": true,
+          "archive_identical": true,
+          "binary_sha256": [
+            "60b19b1ac6e81646409da4be0efeb411135402fccbf9af036eff671dd16e3a54",
+            "60b19b1ac6e81646409da4be0efeb411135402fccbf9af036eff671dd16e3a54"
+          ],
+          "archive_sha256": [
+            "62b3b86b8e5676b722703e811f757a603f9e05fdfeb5da3c42df118a04a54ee9",
+            "62b3b86b8e5676b722703e811f757a603f9e05fdfeb5da3c42df118a04a54ee9"
+          ],
+          "differing_members": [],
+          "diagnostics": [
+            {
+              "macho_uuid": "3eacf92689983b998bb211ceb3b38663",
+              "metadata_normalized_sha256": "6e293a00f48158463c4e48b1a97cfc1952c596081b3b7d1377ed5a6693fc63b7"
+            },
+            {
+              "macho_uuid": "3eacf92689983b998bb211ceb3b38663",
+              "metadata_normalized_sha256": "6e293a00f48158463c4e48b1a97cfc1952c596081b3b7d1377ed5a6693fc63b7"
+            }
+          ],
+          "reason": "Bit-identical executable and archive for these two independent clean builds"
+        }
+      ],
+      "all_bit_identical": true,
+      "sbom_sha256": [
+        "3c34ef924f07b24a00d26810760d82147e5039fac75eca2ad89c80f544ec5f3e",
+        "3c34ef924f07b24a00d26810760d82147e5039fac75eca2ad89c80f544ec5f3e"
+      ],
+      "scope": "Two fresh hosted jobs per target, no target cache; not a universal reproducibility guarantee. Differences are observations, never silently normalized away."
+    }
+  },
+  "runs": {
+    "trusted_publishing": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T04:59:42Z",
+      "databaseId": 43807377829,
+      "event": "push",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "qualify",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:44Z",
+          "completedAt": "2026-11-16T05:00:44Z"
+        },
+        {
+          "name": "publish",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:02:36Z",
+          "completedAt": "2026-11-16T05:03:27Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:03:28Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43807377829"
+    },
+    "tag_binary_producer": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T04:59:42Z",
+      "databaseId": 43807377864,
+      "event": "push",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "prepare",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:44Z",
+          "completedAt": "2026-11-16T04:59:52Z"
+        },
+        {
+          "name": "release-build / build / validate",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:54Z",
+          "completedAt": "2026-11-16T05:00:00Z"
+        },
+        {
+          "name": "dry-build",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-16T04:59:53Z",
+          "completedAt": "2026-11-16T04:59:52Z"
+        },
+        {
+          "name": "release-build / build / build (ubuntu-24.04, x86_64-unknown-linux-gnu)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:00:02Z",
+          "completedAt": "2026-11-16T05:03:03Z"
+        },
+        {
+          "name": "release-build / build / build (windows-latest, x86_64-pc-windows-msvc)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:00:02Z",
+          "completedAt": "2026-11-16T05:03:46Z"
+        },
+        {
+          "name": "release-build / build / build (ubuntu-22.04, x86_64-unknown-linux-musl)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:00:02Z",
+          "completedAt": "2026-11-16T05:02:28Z"
+        },
+        {
+          "name": "release-build / build / build (macos-15-intel, x86_64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:00:03Z",
+          "completedAt": "2026-11-16T05:05:17Z"
+        },
+        {
+          "name": "release-build / build / build (macos-15, aarch64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:00:03Z",
+          "completedAt": "2026-11-16T05:02:59Z"
+        },
+        {
+          "name": "release-build / build / verify",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:05:18Z",
+          "completedAt": "2026-11-16T05:07:06Z"
+        },
+        {
+          "name": "release-build / attest",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:07:08Z",
+          "completedAt": "2026-11-16T05:07:20Z"
+        },
+        {
+          "name": "publish",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:07:23Z",
+          "completedAt": "2026-11-16T05:08:24Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:08:25Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43807377864"
+    },
+    "registry_verification": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T05:05:15Z",
+      "databaseId": 43807954825,
+      "event": "workflow_dispatch",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "registry",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:05:18Z",
+          "completedAt": "2026-11-16T05:07:12Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:07:12Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43807954825"
+    },
+    "release_documentation": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T05:05:17Z",
+      "databaseId": 43807957584,
+      "event": "workflow_dispatch",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "release-documentation",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:05:20Z",
+          "completedAt": "2026-11-16T05:05:29Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:05:30Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43807957584"
+    },
+    "initial_public_download": {
+      "conclusion": "failure",
+      "createdAt": "2026-11-16T05:09:29Z",
+      "databaseId": 43808394284,
+      "event": "workflow_dispatch",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "download-and-run (windows-latest, x86_64-pc-windows-msvc)",
+          "conclusion": "failure",
+          "startedAt": "2026-11-16T05:09:32Z",
+          "completedAt": "2026-11-16T05:10:25Z"
+        },
+        {
+          "name": "download-and-run (ubuntu-22.04, x86_64-unknown-linux-gnu)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:09:32Z",
+          "completedAt": "2026-11-16T05:10:08Z"
+        },
+        {
+          "name": "download-and-run (ubuntu-22.04, x86_64-unknown-linux-musl)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:09:32Z",
+          "completedAt": "2026-11-16T05:10:19Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:10:26Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43808394284"
+    },
+    "corrected_public_download": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T05:14:23Z",
+      "databaseId": 43808915816,
+      "event": "workflow_dispatch",
+      "headSha": "c9f2a807a9a433cf4e4a4c12d5014ecb07784ff5",
+      "jobs": [
+        {
+          "name": "download-and-run (ubuntu-22.04, x86_64-unknown-linux-musl)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:14:26Z",
+          "completedAt": "2026-11-16T05:15:05Z"
+        },
+        {
+          "name": "download-and-run (ubuntu-22.04, x86_64-unknown-linux-gnu)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:14:25Z",
+          "completedAt": "2026-11-16T05:15:03Z"
+        },
+        {
+          "name": "download-and-run (windows-latest, x86_64-pc-windows-msvc)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T05:14:26Z",
+          "completedAt": "2026-11-16T05:15:21Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:15:22Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43808915816"
+    },
+    "candidate_dry_run": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T04:41:48Z",
+      "databaseId": 43805637244,
+      "event": "pull_request",
+      "headSha": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+      "jobs": [
+        {
+          "name": "prepare",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:41:56Z",
+          "completedAt": "2026-11-16T04:42:02Z"
+        },
+        {
+          "name": "dry-build / validate",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:42:17Z",
+          "completedAt": "2026-11-16T04:42:24Z"
+        },
+        {
+          "name": "release-build",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-16T04:42:03Z",
+          "completedAt": "2026-11-16T04:42:02Z"
+        },
+        {
+          "name": "publish",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-16T04:42:03Z",
+          "completedAt": "2026-11-16T04:42:02Z"
+        },
+        {
+          "name": "dry-build / build (macos-15-intel, x86_64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:48:03Z",
+          "completedAt": "2026-11-16T04:54:09Z"
+        },
+        {
+          "name": "dry-build / build (ubuntu-22.04, x86_64-unknown-linux-musl)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:45:21Z",
+          "completedAt": "2026-11-16T04:47:32Z"
+        },
+        {
+          "name": "dry-build / build (ubuntu-24.04, x86_64-unknown-linux-gnu)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:44:27Z",
+          "completedAt": "2026-11-16T04:47:12Z"
+        },
+        {
+          "name": "dry-build / build (windows-latest, x86_64-pc-windows-msvc)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:44:32Z",
+          "completedAt": "2026-11-16T04:47:12Z"
+        },
+        {
+          "name": "dry-build / build (macos-15, aarch64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:47:07Z",
+          "completedAt": "2026-11-16T04:49:38Z"
+        },
+        {
+          "name": "dry-build / verify",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:54:11Z",
+          "completedAt": "2026-11-16T04:56:06Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T04:56:07Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43805637244"
+    },
+    "candidate_reproducibility": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T04:41:48Z",
+      "databaseId": 43805637147,
+      "event": "pull_request",
+      "headSha": "8afa238ba13c7810e6c2829c7e34471c0b19d34a",
+      "jobs": [
+        {
+          "name": "source",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:41:50Z",
+          "completedAt": "2026-11-16T04:41:55Z"
+        },
+        {
+          "name": "first / validate",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:42:03Z",
+          "completedAt": "2026-11-16T04:42:08Z"
+        },
+        {
+          "name": "second / validate",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:42:10Z",
+          "completedAt": "2026-11-16T04:42:15Z"
+        },
+        {
+          "name": "first / build (windows-latest, x86_64-pc-windows-msvc)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:42:25Z",
+          "completedAt": "2026-11-16T04:45:21Z"
+        },
+        {
+          "name": "first / build (macos-15-intel, x86_64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:42:39Z",
+          "completedAt": "2026-11-16T04:50:03Z"
+        },
+        {
+          "name": "first / build (macos-15, aarch64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:42:47Z",
+          "completedAt": "2026-11-16T04:45:21Z"
+        },
+        {
+          "name": "first / build (ubuntu-22.04, x86_64-unknown-linux-musl)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:43:30Z",
+          "completedAt": "2026-11-16T04:45:23Z"
+        },
+        {
+          "name": "first / build (ubuntu-24.04, x86_64-unknown-linux-gnu)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:43:02Z",
+          "completedAt": "2026-11-16T04:46:01Z"
+        },
+        {
+          "name": "second / build (windows-latest, x86_64-pc-windows-msvc)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:43:58Z",
+          "completedAt": "2026-11-16T04:46:38Z"
+        },
+        {
+          "name": "second / build (macos-15-intel, x86_64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:45:25Z",
+          "completedAt": "2026-11-16T04:51:46Z"
+        },
+        {
+          "name": "second / build (ubuntu-22.04, x86_64-unknown-linux-musl)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:44:28Z",
+          "completedAt": "2026-11-16T04:47:09Z"
+        },
+        {
+          "name": "second / build (macos-15, aarch64-apple-darwin)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:44:35Z",
+          "completedAt": "2026-11-16T04:47:06Z"
+        },
+        {
+          "name": "second / build (ubuntu-24.04, x86_64-unknown-linux-gnu)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:43:46Z",
+          "completedAt": "2026-11-16T04:46:27Z"
+        },
+        {
+          "name": "first / verify",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:50:04Z",
+          "completedAt": "2026-11-16T04:51:21Z"
+        },
+        {
+          "name": "second / verify",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:51:47Z",
+          "completedAt": "2026-11-16T04:53:19Z"
+        },
+        {
+          "name": "compare",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:53:21Z",
+          "completedAt": "2026-11-16T04:53:40Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T04:53:41Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43805637147"
+    },
+    "main_ci": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T04:59:06Z",
+      "databaseId": 43807324034,
+      "event": "push",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "check (ubuntu-latest)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:09Z",
+          "completedAt": "2026-11-16T05:02:22Z"
+        },
+        {
+          "name": "check (windows-latest)",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:09Z",
+          "completedAt": "2026-11-16T05:03:54Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:03:55Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43807324034"
+    },
+    "main_security": {
+      "conclusion": "success",
+      "createdAt": "2026-11-16T04:59:06Z",
+      "databaseId": 43807324067,
+      "event": "push",
+      "headSha": "b254027cd8a31ebadd92f712671ed0d76c28561a",
+      "jobs": [
+        {
+          "name": "cargo-deny",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:08Z",
+          "completedAt": "2026-11-16T05:01:22Z"
+        },
+        {
+          "name": "zizmor",
+          "conclusion": "success",
+          "startedAt": "2026-11-16T04:59:09Z",
+          "completedAt": "2026-11-16T04:59:25Z"
+        }
+      ],
+      "status": "completed",
+      "updatedAt": "2026-11-16T05:01:23Z",
+      "url": "https://github.com/rustcommons/rust-mirror/actions/runs/43807324067"
+    }
+  },
+  "previous_releases_unchanged": {
+    "v0.5.1": {
+      "id": 445760288,
+      "tag": "v0.5.1",
+      "body_sha256": "77654786910a962fc0ca18776fc69b8fd328dcfeec17f7e20f2d01b4db72a48a",
+      "assets": {
+        "rust-mirror-0.5.1-aarch64-apple-darwin.tar.gz": {
+          "id": 750311207,
+          "size": 3557354,
+          "digest": "sha256:a07b4359ad1ed16e32ab49f50b6be7c3ebd1ca95fe8cf4cbb7aed1223ef6827b"
+        },
+        "rust-mirror-0.5.1-x86_64-apple-darwin.tar.gz": {
+          "id": 750311252,
+          "size": 3759819,
+          "digest": "sha256:c95f884266694e9e1ba143bc1f2be5913081404dceb8229205322a5a1742ed10"
+        },
+        "rust-mirror-0.5.1-x86_64-pc-windows-msvc.zip": {
+          "id": 750311284,
+          "size": 3504661,
+          "digest": "sha256:0b2293a4a424c6fa42724d6bf9f6188ae24650859d38537568e2ba4d5bd71a7c"
+        },
+        "rust-mirror-0.5.1-x86_64-unknown-linux-musl.tar.gz": {
+          "id": 750311305,
+          "size": 4001330,
+          "digest": "sha256:d79e96a285edd6c62c6c54b83ba08478669f8a9ec831a637f2124f1e274cdb19"
+        },
+        "SHA256SUMS": {
+          "id": 750311162,
+          "size": 451,
+          "digest": "sha256:431f5f732f48ad8310f94ebc61d92eb271f38fce9557d1dd52ef6862433bb171"
+        }
+      }
+    },
+    "v0.5.2": {
+      "id": 446251724,
+      "tag": "v0.5.2",
+      "body_sha256": "232f838f2e7ea69fa87c1435f6c36564e8568750bab1169adab66b9d774a6976",
+      "assets": {
+        "rust-mirror-0.5.2-aarch64-apple-darwin.tar.gz": {
+          "id": 751865587,
+          "size": 3546936,
+          "digest": "sha256:b0c6573c7374711afe5b2374a801cbbc8d989eb4bd051930c7f32cd11580d070"
+        },
+        "rust-mirror-0.5.2-x86_64-apple-darwin.tar.gz": {
+          "id": 751865632,
+          "size": 3758859,
+          "digest": "sha256:36936a55e20df6922a04fbfa3ca97c53ff63bad07455be37a941ca34890d3775"
+        },
+        "rust-mirror-0.5.2-x86_64-pc-windows-msvc.zip": {
+          "id": 751865674,
+          "size": 3505435,
+          "digest": "sha256:cc28caa67ff34936de89f705e9ffb98c3c26f577f08ef4083100ae8e9f73ac01"
+        },
+        "rust-mirror-0.5.2-x86_64-unknown-linux-gnu.tar.gz": {
+          "id": 751865718,
+          "size": 3890151,
+          "digest": "sha256:26343042404fdb4ba4250af152f8cfad5e8eae9d412d530854795e675f8730cd"
+        },
+        "rust-mirror-0.5.2-x86_64-unknown-linux-musl.tar.gz": {
+          "id": 751865748,
+          "size": 4002796,
+          "digest": "sha256:665a9a3d9218dcbd9179d5a9fd5fb355a29a798f178c331ce329c5ee37575b2e"
+        },
+        "SHA256SUMS": {
+          "id": 751865551,
+          "size": 567,
+          "digest": "sha256:b32108940f4086c7633dc4e2a4171b934f70902936abf1473af8af824b392e95"
+        }
+      }
+    },
+    "v0.5.3": {
+      "id": 446583484,
+      "tag": "v0.5.3",
+      "body_sha256": "91973ed47422d6c498592644fe50eceefa186be70c71dbc7e287bc8d5232bde3",
+      "assets": {}
+    }
+  },
+  "advisory": {
+    "id": "GHSA-46c8-w6pp-97pw",
+    "state": "draft",
+    "published_at": null,
+    "affected": "<=0.5.2 locked/prebuilt",
+    "patched_crate": "0.5.3",
+    "first_patched_downloads": "0.5.4",
+    "publication_owner": "coordinator"
+  },
+  "limits": [
+    "All-target Cargo SBOM excludes OS/SDK/CI tools",
+    "GNU gates cover container userlands, not old native kernels or commercial SLES",
+    "macOS native build smoke and crypto verification are not public-download execution or Gatekeeper UI",
+    "Candidate paired identity is not a universal reproducibility guarantee or production two-build comparison",
+    "Registry publisher namespace proof is an HTTPS fixture, not actual Nexus",
+    "Build L3 workflow/provenance evidence is not independent security certification or OS code signing",
+    "Prior native/client/Nexus evidence retains named source/dependency/host/client/SDK bounds"
+  ],
+  "changes": "Documentation, read-only verifier UTF-8/default and regression only; no application/dependency/version/producer/tag/asset/note-body mutation"
+}

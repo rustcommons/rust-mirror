@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3 are published;
-see docs/evals/2026-11-16-publication-0.5.3.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3/0.5.4 are published;
+see docs/evals/2026-11-16-publication-0.5.4.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -509,6 +509,16 @@ collector wait expires, only the existing exact-tag dispatch path is allowed,
 with no assets present. Never relax source/signer guards or use a different builder.
 Record publication in a PR. Keep the advisory draft; its affected range is <=0.5.2,
 patched crate 0.5.3, first patched downloads 0.5.4. The coordinator publishes it.
+
+Owner-approved Trusted Publishing and the tag-bound seven-file upload completed.
+The [publication record](docs/evals/2026-11-16-publication-0.5.4.md) verifies all
+provenance/SBOM bindings, docs.rs, registry installation and public Windows/GNU/musl
+execution. The initial Windows reader CP1252 failure and explicit UTF-8 correction
+remain recorded; the producer, tag and assets never changed. Keep strict exact
+predicate matching and distinguish reader revisions from immutable artifact source.
+The release-specific L3 badge follows verified live reusable provenance, not an
+independent certification or a claim about older signers. Advisory publication
+remains with the coordinator; do not publish it as part of the record PR.
 
 ## User-facing documentation
 
