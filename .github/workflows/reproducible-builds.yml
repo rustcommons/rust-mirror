@@ -11,10 +11,14 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
   source:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     outputs:
@@ -37,6 +41,7 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'],'a') as f: f.write('tag=v'+version+'\n')
           PY
   first:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     needs: source
     uses: ./.github/workflows/build-binaries-core.yml # zizmor: ignore[self-repository] ./ also binds the caller commit; pinned actionlint 1.7.12 does not support $/ yet.
     with:
@@ -46,6 +51,7 @@ jobs:
       attest: false
       artifact-prefix: a-
   second:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     needs: source
     uses: ./.github/workflows/build-binaries-core.yml # zizmor: ignore[self-repository] ./ also binds the caller commit; pinned actionlint 1.7.12 does not support $/ yet.
     with:
@@ -55,6 +61,7 @@ jobs:
       attest: false
       artifact-prefix: b-
   compare:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     needs: [source, first, second]
     runs-on: ubuntu-22.04
     timeout-minutes: 10

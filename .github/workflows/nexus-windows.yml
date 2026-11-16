@@ -12,10 +12,14 @@ on:
       - 'Cargo.lock'
       - '.github/workflows/nexus-windows.yml'
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 jobs:
   windows-nexus:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: windows-latest
     timeout-minutes: 40
     env:
