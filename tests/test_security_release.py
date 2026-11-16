@@ -18,6 +18,7 @@ import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import release_binaries as release
 import release_sbom
+import verify_release_binaries as public_download
 import verify_registry_release as registry
 import compare_reproducible as repro
 
@@ -82,6 +83,20 @@ class SecurityReleaseTests(unittest.TestCase):
         self.assertNotEqual(first['serialNumber'], normalize(changed)['serialNumber'])
         # The exact pinned action's CycloneDX detector requires all three.
         self.assertTrue(all(first.get(k) for k in ('bomFormat', 'serialNumber', 'specVersion')))
+
+    def test_public_attestation_json_is_utf8_even_under_windows_ansi_locale(self):
+        document = {'bomFormat': 'CycloneDX', 'author': 'Zażółć ©'}
+        proof = [{'verificationResult': {'statement': {
+            'predicateType': 'https://cyclonedx.org/bom', 'predicate': document,
+            'subject': [{'digest': {'sha256': 'a'*64}}]}}}]
+        raw = json.dumps(proof, ensure_ascii=False).encode('utf-8')
+        # Reproduce GitHub CLI output, independent of the runner's code page.
+        script = 'import sys; sys.stdout.buffer.write(' + repr(raw) + ')'
+        with patch('locale.getencoding', return_value='cp1252'):
+            decoded = public_download.command([sys.executable, '-c', script])
+        release_sbom.validate_binding(json.loads(decoded), document, 'a'*64)
+        with self.assertRaises(ValueError):
+            release_sbom.validate_binding(json.loads(raw.decode('cp1252')), document, 'a'*64)
 
     def test_verified_sbom_predicate_must_match_document_and_archive_digest(self):
         document = {'bomFormat': 'CycloneDX', 'version': 1}
