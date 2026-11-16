@@ -4,6 +4,20 @@ The first published crate is `rust-mirror` 0.1.0. No placeholder crate is publis
 for name reservation. GUI work is governed separately. Publication requires
 the owner's separate go-ahead. This policy does not itself authorize publication.
 
+## Current publishing route
+
+Owner decision, 2026-11-16: the PC crates.io token was revoked. **Trusted Publishing
+is the only authorized crates.io publish route.** Use
+[trusted-publishing.yml](../.github/workflows/trusted-publishing.yml), the crates-io
+environment's owner approval and its short-lived OIDC token. Do not upload crates from a
+workstation, create/restore a long-lived Cargo token or use a manual fallback.
+Each version still needs owner authorization and all qualification/verification gates.
+
+The owner-machine publications and publish-then-tag sequences below are historical
+release records, not currently available fallbacks. Preserve their source identities,
+checksums, tags and outcomes. Current releases tag the reviewed merge before
+Trusted Publishing; see [the operational guide](SECURITY-BASELINE.md#trusted-publishing-only).
+
 ## Versioning and scope
 
 Use a minor release for new CLI/report/refusal contracts while pre-1.0; use a patch
@@ -86,8 +100,10 @@ Verify the registry checksum/payload against the merge, docs.rs, a fresh registr
 install, all seven files, reusable signer/source commit digests, archive SBOM
 bindings and actual downloaded Windows/GNU/musl executables. Keep candidate and
 publication evidence distinct; record the first real Trusted Publishing outcome
-without assuming success. Existing releases and the manual fallback process remain
-unchanged; this authorization selects Trusted Publishing for 0.5.3 specifically.
+without assuming success. The 0.5.3 authorization selected Trusted Publishing while
+the earlier manual process still existed. The owner revoked the PC token on
+2026-11-16; the current route above supersedes that historical fallback. Existing
+release artifacts and outcomes remain unchanged.
 
 The [0.5.3 publication checkpoint](evals/2026-11-16-publication-0.5.3.md)
 records successful Trusted Publishing, registry/docs.rs/install verification and
@@ -158,7 +174,7 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
    at the exact merge. Compare payloads; only VCS metadata may differ. Record the
    archive hash. Packaged README/changelog changes require a refreshed archive and
    candidate identity even when native evidence carries by unchanged code. Require
-   owner publication authorization before `cargo publish`.
+   owner publication authorization before the workflow runs `cargo publish`.
 
 ## After publication
 
@@ -166,9 +182,10 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
   status, exact release VCS and qualified payload; verify docs.rs build and links.
 - Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
-- For manual owner-machine releases, create the annotated version tag at the exact
-  release commit after publication. Trusted Publishing creates it before publication
-  as described above. Publish the exact
+- Current releases create the annotated version tag at the exact reviewed merge
+  before Trusted Publishing, as described above. Historical owner-machine releases
+  tagged after publication; preserve those records without treating that sequence
+  as a current fallback. Publish the exact
   committed [versioned notes](releases/v0.5.4.md) as the GitHub Release, latest and
   with binary archives/checksums attached only through the release workflow under
   the owner's 2026-11-15 authorization. Do not change historical note bodies.
@@ -182,10 +199,11 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
 The owner approved [the security baseline](SECURITY-BASELINE.md) on 2026-11-15.
 All main changes require PRs, actions use full commit pins, security gates apply,
 and protected version tags cannot be updated/deleted. This approval does not
-authorize another software release or change a published version. Existing manual
-publication remains available; the optional [Trusted Publishing workflow](../.github/workflows/trusted-publishing.yml)
-requires exact main-reachable tagged source and the owner's crates-io environment
-approval. Register the publisher values in the security guide before using it.
+authorize another software release or change a published version. Under the owner's
+2026-11-16 token-revocation decision, the [Trusted Publishing workflow](../.github/workflows/trusted-publishing.yml)
+is the sole publish route, requiring exact main-reachable tagged source and the
+owner's crates-io environment approval. Preserve the registered publisher values
+in the security guide; the former manual route is historical only.
 
 Starting with 0.5.4, include the Cargo CycloneDX JSON
 SBOM to the five-archive profile and the single SHA256SUMS: seven public files,
