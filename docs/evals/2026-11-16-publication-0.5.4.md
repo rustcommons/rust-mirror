@@ -147,9 +147,10 @@ passed at b254027 before this excluded-record branch.
 
 ## Advisory, immutable history and limits
 
-The repository advisory GHSA-46c8-w6pp-97pw remains **draft**, unpublished, for the
-coordinator. Its description now identifies verified available 0.5.4 downloads,
-affected <=0.5.2 and patched crate 0.5.3. This is the first download profile carrying
+At the initial record observation the repository advisory was draft. The
+coordinator published [GHSA-46c8-w6pp-97pw](https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw) at
+**2026-11-16T05:35:02Z**, confirmed by a read-only API check. Its description
+identifies verified available 0.5.4 downloads, affected <=0.5.2 and patched crate 0.5.3. This is the first download profile carrying
 those inherited dependency fixes, not a new application vulnerability fix.
 The [release security discussion](../releases/v0.5.4.md#security) preserves the
 complete upstream source/exposure bounds and absence of a demonstrated exploit.

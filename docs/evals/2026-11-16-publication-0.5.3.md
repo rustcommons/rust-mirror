@@ -123,3 +123,11 @@ historical unapproved proposal; do not execute it. Version 0.5.3 remains crate-o
 with no prebuilt assets. Preserve its protected source, exact GitHub Release body
 and both failed attempts. See [0.5.4 notes](../releases/v0.5.4.md) for the intended
 first patched-download profile; no 0.5.4 publication is claimed at this checkpoint.
+
+## Advisory publication resolution — 2026-11-16
+
+The earlier draft state above describes the initial checkpoint. After 0.5.4
+verification, the coordinator published [GHSA-46c8-w6pp-97pw](https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw)
+at 2026-11-16T05:35:02Z. Current publication details are in the
+[0.5.4 record](2026-11-16-publication-0.5.4.md#advisory-immutable-history-and-limits).
+The 0.5.3 crate-only outcome and both failed binary attempts remain unchanged.
