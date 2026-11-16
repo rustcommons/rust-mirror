@@ -133,14 +133,21 @@ normalized matches as bit identity. Other differences are explicitly unresolved
 and require review. Repeated-build success is bounded to those two environments,
 not a universal reproducibility claim or proof on old native kernels.
 
-## Optional Trusted Publishing
+<a id="optional-trusted-publishing"></a>
 
-The existing coordinator/owner-machine process remains available. The new
-[trusted-publishing.yml](../.github/workflows/trusted-publishing.yml) handles future v* tags.
+## Trusted Publishing only
+
+The owner revoked the PC crates.io token on 2026-11-16. There is no owner-machine
+or manual-token fallback: [trusted-publishing.yml](../.github/workflows/trusted-publishing.yml)
+is the only authorized publish route. Do not create/restore a long-lived Cargo
+token or upload crates from a workstation. Earlier manual publication records remain
+historical; the legacy section anchor above preserves their existing deep links.
+
 A read-only job requires main ancestry, exact manifest/tag identity, one expected
-workspace crate and verified packaging. If the manual process already published
-that exact source, it verifies API/index/archive checksum and payload and skips
-OIDC/publish. Existing versions with mismatched content or dirty VCS refuse.
+workspace crate and verified packaging. For an already-published exact source, it
+verifies API/index/archive checksum and payload and skips OIDC/publish. This
+idempotent check preserves existing releases; it does not authorize manual upload.
+Existing versions with mismatched content or dirty VCS refuse.
 
 For a missing version, the crates-io environment requires the owner's approval and
 permits only v* tags. After approval the job rechecks registry state, exchanges
@@ -160,11 +167,13 @@ The owner must register exactly this publisher in crates.io settings:
 | Workflow filename | trusted-publishing.yml |
 | Environment | crates-io |
 
-Configuration and an owner-approved real publication remain future validation;
-this security PR performs no publication/token exchange. Do not create a test v*
-tag, weaken protected tags or remove owner review to exercise it. For an optional
-future tag-first Trusted Publishing release, approve promptly and create the exact
-GitHub Release notes after registry confirmation; binary automation waits ten
-minutes for that release and otherwise stops without uploading. A later approved
-live dispatch at the exact immutable tag can retry when no assets exist. The manual publish-then-tag sequence
-continues to work unchanged.
+Owner-approved production publications are verified in the
+[0.5.3 checkpoint](evals/2026-11-16-publication-0.5.3.md) and
+[0.5.4 record](evals/2026-11-16-publication-0.5.4.md). The dated security-baseline
+PR's no-publication observations remain historical. Do not create a test v* tag,
+weaken protected tags or remove owner review to exercise this route. For each
+separately authorized release, tag the reviewed merge and obtain owner environment
+approval; create exact GitHub Release notes after registry confirmation. Binary
+automation waits ten minutes for that release and otherwise stops without upload.
+A later approved live dispatch at the exact immutable tag can retry with no assets.
+The former manual publish-then-tag process is not an available fallback.

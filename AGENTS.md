@@ -53,14 +53,18 @@ is not bit identity. Only the isolated reusable signer gets OIDC/attestation wri
 the asset uploader gets contents write only. The Scorecard job alone also needs
 OIDC/security-events writes to publish its metrics on main/schedule, never PR code.
 
-Trusted crates.io publishing is an additional owner-reviewed path, not a replacement
-for the coordinator/owner-machine process. The owner standard, 2026-11-15, fixes
+Owner decision, 2026-11-16: the PC crates.io token was revoked. Trusted Publishing
+is now the only authorized crates.io publish route; there is no owner-machine or
+manual-token fallback. Do not restore/create a long-lived Cargo token or publish
+crates from a workstation. Earlier owner-machine procedures below describe historical
+releases only. Each new version still requires separate owner authorization.
+The owner standard, 2026-11-15, fixes
 the workflow path as .github/workflows/trusted-publishing.yml and the environment
 as crates-io; preserve those exact registration identities. It requires immutable v* source reachable
 from main and the crates-io environment's owner approval, with only that publishing
 job receiving its OIDC grant. Never store a long-lived Cargo token or publish a test
 version/tag to qualify it. The owner must configure the exact publisher values in
-[the guide](docs/SECURITY-BASELINE.md#optional-trusted-publishing). This baseline task
+[the guide](docs/SECURITY-BASELINE.md#trusted-publishing-only). This baseline task
 authorizes no crate version bump, tag creation, software publication or existing
 release mutation. Leave existing Dependabot/user branches untouched; use one PR.
 
