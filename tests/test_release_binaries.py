@@ -68,6 +68,7 @@ class ReleaseBinariesTests(unittest.TestCase):
 
     def write_sbom(self, path, commit=None):
         document = {'bomFormat': 'CycloneDX', 'specVersion': '1.5',
+                    'serialNumber': 'urn:uuid:12345678-1234-1234-1234-123456789012',
                     'metadata': {'component': {'name': 'rust-mirror', 'version': '1.2.3'},
                                  'properties': [{'name': 'rust-mirror:source:commit', 'value': commit or self.record['commit']},
                                                 {'name': 'rust-mirror:source:lock-sha256', 'value': self.record['lock_sha256']}]},
