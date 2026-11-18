@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: |
           cargo package --locked
-          CARGO_HOME="$RUNNER_TEMP/package-cargo-home" cargo install --path "target/package/rust-mirror-$PACKAGE_VERSION" --version "=$PACKAGE_VERSION" --locked --root "$RUNNER_TEMP/package-install" -j 2
+          CARGO_HOME="$RUNNER_TEMP/package-cargo-home" cargo install rust-mirror --path "target/package/rust-mirror-$PACKAGE_VERSION" --version "=$PACKAGE_VERSION" --locked --root "$RUNNER_TEMP/package-install" -j 2
           cp "$RUNNER_TEMP/package-install/bin/rust-mirror" target/release/rust-mirror
           python3 - "$RUNNER_TEMP/package-qualification.json" <<'PYCODE'
           import hashlib,json,os,pathlib,subprocess,sys,tarfile

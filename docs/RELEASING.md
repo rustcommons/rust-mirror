@@ -172,7 +172,7 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
    Raw group URL. Never accept EULAs or use production credentials for qualification.
 5. Audit `cargo package --locked`: exact clean VCS, include list, source/manifest/
    lock/license bytes and no private evidence/keys/archives. Unpack and install
-   with `cargo install --path UNPACKED --version =VERSION --locked --root FRESH_ROOT` and a fresh
+   with `cargo install rust-mirror --path UNPACKED --version =VERSION --locked --root FRESH_ROOT` and a fresh
    Cargo home. Check `--version`, CLI/refusals and real native publication/lifecycle
    using the installed executable. A source-tree pass is not a package-install pass.
 6. Freeze the reviewed candidate, merge normally, verify tree equality and repackage

@@ -122,7 +122,7 @@ jobs:
           command -v clang-18 gcc g++ readelf
           clang-18 --version
           gcc --version
-          cargo install --path cargo-libc --version =0.7.0 --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
+          cargo install cargo-libc --path cargo-libc --version =0.7.0 --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
       - name: Install musl C compiler for existing C dependencies
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
