@@ -55,7 +55,7 @@ jobs:
               archive.extractall(pathlib.Path(os.environ['RUNNER_TEMP'])/'candidate-source', filter='data')
           PYTHON
           candidate_version=$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')
-          CARGO_HOME="$RUNNER_TEMP/candidate-cargo" cargo install --path "$RUNNER_TEMP/candidate-source/rust-mirror-$candidate_version" --locked --root "$RUNNER_TEMP/candidate-install" -j 2
+          CARGO_HOME="$RUNNER_TEMP/candidate-cargo" cargo install --path "$RUNNER_TEMP/candidate-source/rust-mirror-$candidate_version" --version "=$candidate_version" --locked --root "$RUNNER_TEMP/candidate-install" -j 2
           "$RUNNER_TEMP/candidate-install/bin/rust-mirror" --events jsonl --version > "$RUNNER_TEMP/candidate-version.jsonl"
       - name: Installed publisher in a loopback-only namespace
         if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'

@@ -36,6 +36,6 @@ jobs:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
       - name: Install the pinned audit tool
-        run: cargo install cargo-deny --version 0.20.2 --locked -j 2
+        run: cargo install cargo-deny --version =0.20.2 --locked -j 2
       - name: Audit advisories, licenses, duplicate versions and sources
         run: cargo deny --locked check

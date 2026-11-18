@@ -1,0 +1,47 @@
+name: ClusterFuzzLite batch
+on:
+  schedule:
+    - cron: '19 3 * * 2'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  fuzz:
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      # GitHub downgrades this for forks; ordinary pull_request stays unprivileged.
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build all bounded offline parser targets
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          language: rust
+          sanitizer: address
+          keep-unaffected-fuzz-targets: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fuzz parsers
+        id: fuzz
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          language: rust
+          sanitizer: address
+          mode: batch
+          fuzz-seconds: 1800
+          output-sarif: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload crash SARIF when produced and permitted
+        if: always() && hashFiles('cifuzz-sarif/results.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: cifuzz-sarif/results.sarif
+          category: clusterfuzzlite

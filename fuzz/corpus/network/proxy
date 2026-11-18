@@ -1,0 +1,3 @@
+proxy_mode="manual"
+proxy_url="http://proxy.example:8080"
+no_proxy=[]

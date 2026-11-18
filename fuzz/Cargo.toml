@@ -1,0 +1,71 @@
+[package]
+name = "rust-mirror-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+rust-version = "1.90"
+
+[package.metadata]
+cargo-fuzz = true
+
+# Standalone workspace: no fuzz dependency enters the distributed crate graph.
+[workspace]
+members = ["."]
+
+[dependencies]
+libfuzzer-sys = "=0.4.13"
+rust-mirror = { path = ".." }
+serde_json = "1.0"
+toml = "0.8"
+sha2 = "0.10"
+hex = "0.4"
+tempfile = "3.10"
+
+[[bin]]
+name = "lockfile"
+path = "fuzz_targets/lockfile.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "catalog"
+path = "fuzz_targets/catalog.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sparse_index"
+path = "fuzz_targets/sparse_index.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "channel_manifest"
+path = "fuzz_targets/channel_manifest.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "events"
+path = "fuzz_targets/events.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "network"
+path = "fuzz_targets/network.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "inventory"
+path = "fuzz_targets/inventory.rs"
+test = false
+doc = false
+bench = false

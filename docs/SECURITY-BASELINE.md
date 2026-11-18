@@ -59,6 +59,40 @@ SARIF. Its badge is not a promised score; main activation was observed in run437
 CodeQL default setup and organization security features remain provider-managed.
 OpenSSF Best Practices registration is handled by the owner; no badge is fabricated.
 
+## Pinned installs and SAST
+
+The owner extended the baseline on 2026-11-17. Never use `[skip ci]` or `[ci skip]`
+in commit or merge messages: these suppress CI and GitHub-managed CodeQL. Keep
+CodeQL default setup enabled; this change does not replace it with a custom workflow.
+
+Every direct action uses a full SHA and version comment. Cargo tool installs use
+`--locked` and an exact `--version =X.Y.Z`, including source installs (also bound
+to inspected source commits) and package proofs (bound to the validated manifest).
+Pip installs must use `pip install --require-hashes -r FILE` with all transitives
+and hashes in FILE; currently no workflow installs Python packages. Containers,
+including legacy measurement images and the fuzz builder, use SHA-256 digests.
+Never execute a downloaded installer before checking a committed expected SHA-256.
+The fuzz builder contains its dated nightly and cargo-fuzz inside the pinned image;
+it downloads no installer in this repository's Dockerfile. SHA-pinned actions can
+still have their own transitive tool/image downloads: the pin binds action source,
+not every external service or the mutable GitHub-hosted runner image.
+
+GNU jobs use the runner's preinstalled Clang 18/GCC/binutils and record versions,
+rather than installing floating packages. The musl compiler packages use exact
+Ubuntu package versions; the historical Alma8 build experiment uses explicit RPM
+NEVRAs. Distribution dependency resolution and hosted OS images are not hermetic
+or a whole-OS lockfile. Refresh pins with review when repositories retire versions;
+fail instead of silently falling back to latest.
+
+[Parser fuzzing](FUZZING.md) covers external lock/catalog/index/manifest/event/
+network/inventory input with a separate unpublished Cargo workspace and bounded,
+offline adapters. ClusterFuzzLite runs 300 seconds per applicable PR and 1800 seconds
+weekly, skips Dependabot, cancels superseded PR runs and produces crash artifacts
+and SARIF (code-scanning upload only when permitted). Fuzzing is finite evidence,
+not a guarantee of parser correctness; fixes and regressions remain mandatory.
+Local Scorecard checks assess source patterns; main's public score also depends on
+provider observations and prior CI history, so no new SAST score is promised here.
+
 ## Release privilege boundaries
 
 | Job/path | Token permissions beyond contents read | Guard |

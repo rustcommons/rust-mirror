@@ -68,6 +68,18 @@ version/tag to qualify it. The owner must configure the exact publisher values i
 authorizes no crate version bump, tag creation, software publication or existing
 release mutation. Leave existing Dependabot/user branches untouched; use one PR.
 
+
+Owner amendment, 2026-11-17: never put `[skip ci]` or `[ci skip]` in commit or
+merge messages; preserve CodeQL default setup and normal CI execution. Workflow
+installs require full action commits, exact locked Cargo tool versions, hashed pip
+requirements (`--require-hashes -r`), digest-bound containers, and a pinned SHA-256
+check before executing downloaded installers. No floating download-and-run paths.
+The approved `libfuzzer-sys`/`arbitrary` names are fuzz-only: keep `fuzz/` a separate,
+unpublished workspace outside the shipped crate dependency graph. Maintain the
+[offline parser targets](docs/FUZZING.md), small seed corpora and pinned
+ClusterFuzzLite PR/weekly jobs. Crashes require a regression/fix or owner escalation;
+never suppress, ignore or retry them into a green result. Bot PRs skip fuzzing.
+
 ## Repository layout and validation
 
 - `README.md`: current public introduction and experimental boundaries.

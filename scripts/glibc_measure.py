@@ -12,8 +12,17 @@ import time
 import uuid
 
 ALMA8 = 'almalinux:8@sha256:2d0f2eb2a83cc09dbc2eb92fade4dbe8f709628149e81aa00aec70630406603b'
-IMAGES = [ALMA8, 'centos:7', 'opensuse/leap:42.3', 'ubuntu:20.04', 'ubuntu:18.04',
-          'ubuntu:16.04', 'debian:9', 'debian:8', 'debian:7', 'centos:6']
+IMAGES = [ALMA8,
+          'centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4',
+          'opensuse/leap:42.3@sha256:271c921a1c84d65467d565e3f1c754b75aa01ceed1a7ac39de4816683c355fd2',
+          'ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214',
+          'ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98',
+          'ubuntu:16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6',
+          'debian:9@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be',
+          'debian:8@sha256:32ad5050caffb2c7e969dac873bce2c370015c2256ff984b70c1c08b3a2816a0',
+          'debian:7@sha256:2259b099d947443e44bbd1c94967c785361af8fd22df48a08a3942e2d5630849',
+          'centos:6@sha256:a93df2e96e07f56ea48f215425c6f1673ab922927894595bb5c0ee4c5a955133',
+]
 
 
 def execute(args, log, cwd=None, env=None, timeout=900):
@@ -120,7 +129,10 @@ def baseline(args):
     cache = args.output / 'cargo-cache'; cache.mkdir()
     # Python remains on the host for packaging/tomllib; python39 records the container's own toolchain.
     script = '''set -eu
-    dnf install -y git gcc binutils python39 tar gzip findutils which
+    dnf install -y git-0:2.43.7-1.el8_10.x86_64 gcc-0:8.5.0-31.el8_10.alma.1.x86_64 \
+      binutils-0:2.30-128.el8_10.x86_64 python39-0:3.9.25-2.module_el8.10.0+4083+53cad1fb.x86_64 \
+      tar-2:1.30-13.el8_10.x86_64 gzip-0:1.9-15.el8_10.x86_64 \
+      findutils-1:4.6.0-24.el8_10.x86_64 which-0:2.21-21.el8_10.x86_64
     git config --global --add safe.directory /work/source
     export PATH=/opt/rust/bin:$PATH
     export CARGO_HOME=/work/cargo-cache

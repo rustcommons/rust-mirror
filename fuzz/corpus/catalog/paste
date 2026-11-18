@@ -1,0 +1,4 @@
+[dependencies]
+good="1"
+one={git="https://example.invalid/repo",version="1"}
+two={path="../never-read",version="1"}

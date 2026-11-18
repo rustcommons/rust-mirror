@@ -1,0 +1,27 @@
+manifest-version="2"
+date="2025-09-18"
+[profiles]
+minimal=["rustc","cargo","rust-std"]
+[pkg.rust]
+version="1.90.0 (example)"
+[pkg.rust.target.x86_64-unknown-linux-gnu]
+available=true
+components=[{pkg="rustc",target="x86_64-unknown-linux-gnu"},{pkg="cargo",target="x86_64-unknown-linux-gnu"},{pkg="rust-std",target="x86_64-unknown-linux-gnu"}]
+[pkg.rustc]
+version="1.90.0"
+[pkg.rustc.target.x86_64-unknown-linux-gnu]
+available=true
+url="https://static.rust-lang.org/dist/2025-09-18/rustc.tar.gz"
+hash="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+[pkg.cargo]
+version="1.90.0"
+[pkg.cargo.target.x86_64-unknown-linux-gnu]
+available=true
+url="https://static.rust-lang.org/dist/2025-09-18/cargo.tar.gz"
+hash="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+[pkg.rust-std]
+version="1.90.0"
+[pkg.rust-std.target.x86_64-unknown-linux-gnu]
+available=true
+url="https://static.rust-lang.org/dist/2025-09-18/rust-std.tar.gz"
+hash="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
