@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+export CARGO_BUILD_JOBS=2
 cd /src/rust-mirror
 # Stable product MSRV stays 1.90; fuzz instrumentation uses this frozen nightly.
 rustc --version | grep -F '1.91.0-nightly'
