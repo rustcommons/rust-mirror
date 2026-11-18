@@ -38,6 +38,9 @@ jobs:
           mode: batch
           fuzz-seconds: 1800
           output-sarif: true
+          report-unreproducible-crashes: true
+          report-timeouts: true
+          report-ooms: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload crash SARIF when produced and permitted
         if: always() && hashFiles('cifuzz-sarif/results.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)

@@ -64,7 +64,8 @@ per-target options and zipped seeds, and exports all seven executables. Upstream
 ClusterFuzzLite engine actions are SHA-pinned; their internal runtime images remain
 managed by that upstream action, a transitive supply-chain limit. Crash artifacts
 are retained by ClusterFuzzLite. SARIF is uploaded from cifuzz-sarif/results.sarif
-when produced; fork PRs do not receive security-events writes. No external corpus
+when produced; fork PRs do not receive security-events writes. Unreproducible
+crashes, timeouts and OOMs are explicitly reportable rather than suppressed. No external corpus
 repository, write token or persistent corpus service is configured: batch corpora
 remain run artifacts, and reviewed small seeds live in Git.
 

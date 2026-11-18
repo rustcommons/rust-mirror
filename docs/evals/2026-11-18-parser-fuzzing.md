@@ -44,10 +44,21 @@ covers those job snippets. Local SAST cannot establish provider CodeQL history.
 
 ## Validation and bounds
 
-All seven fuzz binaries passed stable-MSRV cargo check with the separate lock.
-Sanitizer execution, complete local checks and exact-head CI outcomes are recorded
-in the PR review record after they finish; this source-audit observation does not
-claim those pending outcomes. The root Cargo.toml/Cargo.lock/source and package
+All seven fuzz binaries passed stable-MSRV cargo check and a frozen-nightly address
+sanitizer build. Each ran with a 15-second engine budget, 64 KiB cap, 10-second
+per-input timeout and 2 GiB RSS limit on Linux/aarch64. Total: 1,360,573 inputs,
+all seven exits zero, no finding in that finite run. The
+[machine-readable record](parser-fuzzing-20261118.json) gives each target's count.
+Default-parallel local validation passed 191 Rust tests, 58 Python tests, fmt,
+Clippy/rustdoc with warnings denied, action pins, release docs, LF and diff checks.
+Exact-head CI outcomes are identified in the PR review record after completion.
+
+Initial CI caught two setup errors: source cargo installs need the crate name
+when combining --path/--version (run44236153712), and ClusterFuzzLite requires
+/src/build.sh (run44236153835). Both were corrected in source; no parser crash was
+waived or retried away. A tiny independent Cargo 1.90 probe confirmed a mismatched
+source version is refused with the corrected syntax. Fuzz jobs explicitly report
+unreproducible crashes, timeouts and OOMs as well as reproducible findings. The root Cargo.toml/Cargo.lock/source and package
 include rules are unchanged; fuzz dependencies do not enter the shipped graph.
 No sanitizer failure is waived, retried away or converted to an ignored test.
 
