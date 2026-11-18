@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-18",
+  "base": "f27b7fb6f263a20d6f658aecd06196b135864609",
+  "platform": "Linux/aarch64",
+  "nightly": "nightly-2025-09-05 (1.91.0-nightly af00ff2ce)",
+  "cargo_fuzz": "0.13.1",
+  "sanitizer": "address",
+  "max_input_bytes": 65536,
+  "time_budget_seconds_per_target": 15,
+  "iterations": {
+    "lockfile": 99714,
+    "catalog": 217330,
+    "sparse_index": 261848,
+    "channel_manifest": 109516,
+    "events": 333951,
+    "network": 273618,
+    "inventory": 64596
+  },
+  "total_iterations": 1360573,
+  "all_exit_codes": 0,
+  "shipped_source_manifest_lock_unchanged": true,
+  "default_parallel_rust_tests_passed": 191,
+  "python_tests_passed": 58,
+  "fmt": "passed",
+  "clippy_warnings_denied": "passed",
+  "rustdoc_warnings_denied": "passed",
+  "scorecard": {
+    "version": "5.6.0",
+    "source": "61e84743356275f6ffca23b1b2f2cb945e19eb96",
+    "base": {
+      "Fuzzing": 0,
+      "Pinned-Dependencies": 10
+    },
+    "working_source": {
+      "Fuzzing": 10,
+      "Pinned-Dependencies": 10
+    },
+    "limit": "local source heuristics; dynamic OS-matrix parse incomplete; not public-score or SAST provider evidence"
+  }
+}

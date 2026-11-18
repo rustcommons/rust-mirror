@@ -1,0 +1,2 @@
+proxy_mode="direct"
+no_proxy=["localhost",".example.org:443"]

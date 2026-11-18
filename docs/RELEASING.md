@@ -1,5 +1,10 @@
 # Release policy and checklist
 
+Never use `[skip ci]` or `[ci skip]` in release, documentation, commit or merge
+messages. Required CI and GitHub-managed CodeQL must execute normally. Release
+workflow installs follow [the pinned-install rules](SECURITY-BASELINE.md#pinned-installs-and-sast).
+
+
 The first published crate is `rust-mirror` 0.1.0. No placeholder crate is published
 for name reservation. GUI work is governed separately. Publication requires
 the owner's separate go-ahead. This policy does not itself authorize publication.
@@ -167,7 +172,7 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
    Raw group URL. Never accept EULAs or use production credentials for qualification.
 5. Audit `cargo package --locked`: exact clean VCS, include list, source/manifest/
    lock/license bytes and no private evidence/keys/archives. Unpack and install
-   with `cargo install --path UNPACKED --locked --root FRESH_ROOT` and a fresh
+   with `cargo install rust-mirror --path UNPACKED --version =VERSION --locked --root FRESH_ROOT` and a fresh
    Cargo home. Check `--version`, CLI/refusals and real native publication/lifecycle
    using the installed executable. A source-tree pass is not a package-install pass.
 6. Freeze the reviewed candidate, merge normally, verify tree equality and repackage
@@ -180,7 +185,7 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
 
 - Verify the official crates.io archive against the API/index checksum, non-yanked
   status, exact release VCS and qualified payload; verify docs.rs build and links.
-- Perform a fresh actual `cargo install rust-mirror --version VERSION --locked`
+- Perform a fresh actual `cargo install rust-mirror --version =VERSION --locked`
   and installed-command proof. Do not claim registry installation before upload.
 - Current releases create the annotated version tag at the exact reviewed merge
   before Trusted Publishing, as described above. Historical owner-machine releases

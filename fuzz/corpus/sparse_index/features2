@@ -1,0 +1,1 @@
+{"name": "fixture", "vers": "1.0.0", "cksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "deps": [], "features": {"default": ["missing?/feature"]}, "features2": {}, "v": 2, "yanked": false}

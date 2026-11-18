@@ -31,7 +31,7 @@ jobs:
           import os,re
           assert re.fullmatch(r'\d+\.\d+\.\d+',os.environ['RELEASE_VERSION'])
           PY
-          CARGO_HOME="$RUNNER_TEMP/registry-cargo" cargo install rust-mirror --version "$RELEASE_VERSION" --locked --root "$RUNNER_TEMP/registry-install" -j 2
+          CARGO_HOME="$RUNNER_TEMP/registry-cargo" cargo install rust-mirror --version "=$RELEASE_VERSION" --locked --root "$RUNNER_TEMP/registry-install" -j 2
           python3 - <<'PY'
           import hashlib,json,os,pathlib,subprocess,tarfile,urllib.request
           version=os.environ['RELEASE_VERSION'];root=pathlib.Path(os.environ['RUNNER_TEMP'])

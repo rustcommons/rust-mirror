@@ -119,14 +119,15 @@ jobs:
         shell: bash
         run: |
           test "$(git -C cargo-libc rev-parse HEAD)" = e68ca7bf3a8ffd973c8576acc48abd0fbcc66d25
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y clang-18 gcc g++ binutils
-          cargo install --path cargo-libc --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
+          command -v clang-18 gcc g++ readelf
+          clang-18 --version
+          gcc --version
+          cargo install cargo-libc --path cargo-libc --version =0.7.0 --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
       - name: Install musl C compiler for existing C dependencies
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y musl-tools
+          sudo apt-get install --no-install-recommends -y musl-tools=1.2.2-4 musl-dev=1.2.2-4 musl=1.2.2-4
       - name: Locked native build from frozen tag
         shell: bash
         working-directory: source
@@ -253,7 +254,7 @@ jobs:
         env:
           SOURCE_COMMIT: ${{ inputs.commit }}
         run: |
-          cargo install cargo-cyclonedx --version 0.5.9 --locked --root "$RUNNER_TEMP/sbom-tool" -j 2
+          cargo install cargo-cyclonedx --version =0.5.9 --locked --root "$RUNNER_TEMP/sbom-tool" -j 2
           python scripts/release_sbom.py --source frozen-source --commit "$SOURCE_COMMIT" --tool "$RUNNER_TEMP/sbom-tool/bin/cargo-cyclonedx" --output "$RUNNER_TEMP/release.cdx.json"
       - name: Validate archives and SBOM; generate SHA256SUMS
         run: |

@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: v0.5.1
+          ref: 112ef7a7a71d40349c601f299f965199b5b279ba # v0.5.1 source
           fetch-depth: 0
           path: source
           persist-credentials: false
@@ -42,10 +42,11 @@ jobs:
           python-version: '3.12'
       - name: Install CI compiler/provider tools (no product dependencies)
         run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y clang-18 gcc g++ binutils
+          command -v clang-18 gcc g++ readelf
+          clang-18 --version
+          gcc --version
       - name: Install exact first-party cargo-libc revision and sibling helpers
-        run: cargo install --path cargo-libc --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
+        run: cargo install cargo-libc --path cargo-libc --version =0.7.0 --locked --root "$RUNNER_TEMP/cargo-libc-tools" -j 2
       - name: Build and qualify ordinary Alma8 baseline
         run: python automation/scripts/glibc_measure.py baseline --source source --output "$RUNNER_TEMP/baseline"
       - name: Measure 2.28, 2.17 and first unsupported lower boundary across old userlands
