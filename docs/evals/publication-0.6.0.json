@@ -1,0 +1,533 @@
+{
+  "version": "0.6.0",
+  "tag": "v0.6.0",
+  "tag_object": "c3d28289b64614d9201003ac22713f2fbe92dfa0",
+  "source": "eaa63546de95f617794d2d2d8fa100013dcea523",
+  "qualified_pr_head": "03ce7ec9fab6463c1f6a5ff19da2e7dd327696ee",
+  "merge_tree_equals_qualified_head": true,
+  "registry": {
+    "checksum": "beaffa1b9467cd04bd03efe7c3f68fbc3b7d4d042c19175f0115a85ba3eb3275",
+    "yanked": false,
+    "created_at": "2026-11-21T14:16:00.558826Z",
+    "rust_version": "1.90",
+    "crate_size": 174000,
+    "trustpub_data": {
+      "provider": "github",
+      "repository": "rustcommons/rust-mirror",
+      "run_id": "44906731148",
+      "sha": "eaa63546de95f617794d2d2d8fa100013dcea523"
+    },
+    "payload": {
+      "members": 45,
+      "regular": 45,
+      "byte_identical_to_merge": 43,
+      "normalized_manifest_equals_candidate": true,
+      "vcs_sha1": "eaa63546de95f617794d2d2d8fa100013dcea523"
+    },
+    "verifier": "scripts/verify_registry_release.py --tag v0.6.0: pass"
+  },
+  "candidate_archive_sha256": "d1525de52b17a373188f55257890c3e049f341c4c291014b8743fc5577f0dc66",
+  "runs": {
+    "trusted_publishing": 44906731148,
+    "tag_release_binaries_failed": 44906731143,
+    "exact_tag_dispatch_recovery": 44913249402,
+    "public_download_verification": 44913981641,
+    "release_pr_dry_run": 44905598952
+  },
+  "collector_timeout": {
+    "run": 44906731143,
+    "job": "release-build / build / verify",
+    "started": "2026-11-21T13:07:05Z",
+    "failed": "2026-11-21T13:18:47Z",
+    "message": "existing GitHub Release unavailable (HTTP 404)",
+    "cause": "Trusted Publishing waited for owner crates-io approval until 2026-11-21T14:16Z; the GitHub Release is created only after confirmed publication, so the bounded 600 s preflight wait expired first",
+    "attest_and_publish_jobs": "skipped",
+    "assets_uploaded": 0,
+    "attestations_created": false
+  },
+  "recovery": {
+    "dispatch": "workflow_dispatch release-binaries.yml --ref v0.6.0 tag=v0.6.0 dry_run=false candidate=false",
+    "created": "2026-11-21T14:18:30Z",
+    "completed": "2026-11-21T14:26:24Z",
+    "release_assets_before": 0,
+    "conclusion": "success",
+    "workflow_commit_equals_source": true,
+    "source_signer_exception": false,
+    "tag_moved": false
+  },
+  "github_release": {
+    "id": 453742658,
+    "name": "rust-mirror 0.6.0",
+    "draft": false,
+    "prerelease": false,
+    "latest": true,
+    "published_at": "2026-11-21T14:18:16Z",
+    "body_matches_tagged_notes": true,
+    "body_sha256": "03792abe4a482a4abe9c5967d1f26b4dd0282a76999d496952633741c261d4fb",
+    "published_docs_check": "PASS, 11 versions, local and published"
+  },
+  "assets": {
+    "SHA256SUMS": {
+      "sha256": "9a6f1013eb01290344877cd62ae2787f9b4618449b73286d1d9c45860c606a3c",
+      "asset_id": 775830707,
+      "size": 660,
+      "in_sha256sums": false,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0-aarch64-apple-darwin.tar.gz": {
+      "sha256": "d149ec6c2df2ae1ced34936142cd86f6ac0c9f31c0ea307eaffc78279b762d5b",
+      "asset_id": 775830762,
+      "size": 3490090,
+      "in_sha256sums": true,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0-x86_64-apple-darwin.tar.gz": {
+      "sha256": "fe59e999e25d188c27deb9fd65e8b570024678ed197aee07d386612372f39616",
+      "asset_id": 775830809,
+      "size": 3732039,
+      "in_sha256sums": true,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0-x86_64-pc-windows-msvc.zip": {
+      "sha256": "47764d58bd0c309c603254654b568f90e3132027ef5f7fd712548c88e41e57cf",
+      "asset_id": 775830876,
+      "size": 3448791,
+      "in_sha256sums": true,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0-x86_64-unknown-linux-gnu.tar.gz": {
+      "sha256": "28ae4a19678cd6e613864c542f630e0c54e77f1be6d2fdcfde4361ce55081d71",
+      "asset_id": 775830904,
+      "size": 3848961,
+      "in_sha256sums": true,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0-x86_64-unknown-linux-musl.tar.gz": {
+      "sha256": "4a6ff890ebcfe5f3ff603896c1d45ff34f1941591f20db8a69e847a7010c8176",
+      "asset_id": 775830936,
+      "size": 3952312,
+      "in_sha256sums": true,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0.cdx.json": {
+      "sha256": "90eb5cf32ea7bb081612d4ee8528b594519707a6d1bc5dd6cbfb8976f0ce8103",
+      "asset_id": 775831043,
+      "size": 147368,
+      "in_sha256sums": true,
+      "provenance_verified": true
+    },
+    "rust-mirror-0.6.0.intoto.jsonl": {
+      "sha256": "16f85dd17cf18f9920f0777a820028549bebc1f8efdbad83859dfeb852383b75",
+      "asset_id": 775831077,
+      "size": 12058,
+      "in_sha256sums": false,
+      "provenance_verified": false
+    }
+  },
+  "sha256sums_entries": 6,
+  "verification": {
+    "policy": [
+      "--repo",
+      "rustcommons/rust-mirror",
+      "--signer-workflow",
+      "rustcommons/rust-mirror/.github/workflows/build-binaries.yml",
+      "--source-digest",
+      "eaa63546de95f617794d2d2d8fa100013dcea523",
+      "--signer-digest",
+      "eaa63546de95f617794d2d2d8fa100013dcea523",
+      "--deny-self-hosted-runners"
+    ],
+    "slsa_provenance_verified_files": 7,
+    "sbom_bindings_verified_archives": 5,
+    "sbom_source_commit_and_lock_match": true,
+    "attached_bundle": {
+      "name": "rust-mirror-0.6.0.intoto.jsonl",
+      "lines": 1,
+      "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
+      "subjects": 7,
+      "subjects_equal_signed_assets": true,
+      "offline_bundle_verify_all_seven": true,
+      "matches_github_store": true,
+      "builder": "https://github.com/rustcommons/rust-mirror/.github/workflows/build-binaries.yml@refs/tags/v0.6.0",
+      "invocation": "https://github.com/rustcommons/rust-mirror/actions/runs/44913249402/attempts/1"
+    },
+    "archive_readme_source_and_license": true,
+    "host": "aarch64-unknown-linux-gnu, gh 2.100.0"
+  },
+  "public_downloaded_binaries": {
+    "x86_64-pc-windows-msvc": {
+      "downloaded_archive": "rust-mirror-0.6.0-x86_64-pc-windows-msvc.zip",
+      "binary_sha256": "9f654f55480a1e2892a897ccf737874946b345f0f22ecaae88b9ee66a7cf5dab",
+      "human_version": "rust-mirror 0.6.0",
+      "linkage": {
+        "imports": [
+          "KERNEL32.dll",
+          "bcryptprimitives.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "ws2_32.dll",
+          "kernel32.dll",
+          "bcrypt.dll",
+          "advapi32.dll",
+          "ntdll.dll"
+        ],
+        "external_crt_imports": false
+      },
+      "read_only": true,
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.6.0",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.6.0"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "9a6f1013eb01290344877cd62ae2787f9b4618449b73286d1d9c45860c606a3c",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-aarch64-apple-darwin.tar.gz": {
+          "sha256": "d149ec6c2df2ae1ced34936142cd86f6ac0c9f31c0ea307eaffc78279b762d5b",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-apple-darwin.tar.gz": {
+          "sha256": "fe59e999e25d188c27deb9fd65e8b570024678ed197aee07d386612372f39616",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-pc-windows-msvc.zip": {
+          "sha256": "47764d58bd0c309c603254654b568f90e3132027ef5f7fd712548c88e41e57cf",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "28ae4a19678cd6e613864c542f630e0c54e77f1be6d2fdcfde4361ce55081d71",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "4a6ff890ebcfe5f3ff603896c1d45ff34f1941591f20db8a69e847a7010c8176",
+          "verified": true
+        },
+        "rust-mirror-0.6.0.cdx.json": {
+          "sha256": "90eb5cf32ea7bb081612d4ee8528b594519707a6d1bc5dd6cbfb8976f0ce8103",
+          "verified": true
+        },
+        "rust-mirror-0.6.0.intoto.jsonl": {
+          "sha256": "16f85dd17cf18f9920f0777a820028549bebc1f8efdbad83859dfeb852383b75",
+          "matches_github_store": true
+        }
+      }
+    },
+    "x86_64-unknown-linux-gnu": {
+      "downloaded_archive": "rust-mirror-0.6.0-x86_64-unknown-linux-gnu.tar.gz",
+      "binary_sha256": "8fcde2c2c93165eb761079c74184fb7785a135de189e5b1355872ee016450480",
+      "human_version": "rust-mirror 0.6.0",
+      "linkage": {
+        "maximum_required_glibc": "2.17",
+        "required_glibc_versions": [
+          "2.2.5",
+          "2.3",
+          "2.3.4",
+          "2.4",
+          "2.10",
+          "2.12",
+          "2.14",
+          "2.16",
+          "2.17"
+        ],
+        "needed": [
+          "libc.so.6",
+          "libm.so.6",
+          "libpthread.so.0",
+          "libgcc_s.so.1",
+          "libdl.so.2"
+        ],
+        "file": "/home/runner/work/_temp/live-binary-verification/rust-mirror-0.6.0-x86_64-unknown-linux-gnu/rust-mirror: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=71ed2145e4aa210943e9b3cc0bb14968662ce932, for GNU/Linux 2.6.32, not stripped",
+        "ldd": "linux-vdso.so.1 (0x00007ffcca7f5000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f17d7800000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f17d7719000)\n\tlibpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f17d7a66000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f17d7a46000)\n\tlibdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f17d7a41000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f17d7a79000)"
+      },
+      "read_only": true,
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.6.0",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.6.0"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "9a6f1013eb01290344877cd62ae2787f9b4618449b73286d1d9c45860c606a3c",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-aarch64-apple-darwin.tar.gz": {
+          "sha256": "d149ec6c2df2ae1ced34936142cd86f6ac0c9f31c0ea307eaffc78279b762d5b",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-apple-darwin.tar.gz": {
+          "sha256": "fe59e999e25d188c27deb9fd65e8b570024678ed197aee07d386612372f39616",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-pc-windows-msvc.zip": {
+          "sha256": "47764d58bd0c309c603254654b568f90e3132027ef5f7fd712548c88e41e57cf",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "28ae4a19678cd6e613864c542f630e0c54e77f1be6d2fdcfde4361ce55081d71",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "4a6ff890ebcfe5f3ff603896c1d45ff34f1941591f20db8a69e847a7010c8176",
+          "verified": true
+        },
+        "rust-mirror-0.6.0.cdx.json": {
+          "sha256": "90eb5cf32ea7bb081612d4ee8528b594519707a6d1bc5dd6cbfb8976f0ce8103",
+          "verified": true
+        },
+        "rust-mirror-0.6.0.intoto.jsonl": {
+          "sha256": "16f85dd17cf18f9920f0777a820028549bebc1f8efdbad83859dfeb852383b75",
+          "matches_github_store": true
+        }
+      }
+    },
+    "x86_64-unknown-linux-musl": {
+      "downloaded_archive": "rust-mirror-0.6.0-x86_64-unknown-linux-musl.tar.gz",
+      "binary_sha256": "2903c47250f6944c27c6d93c7849830f4ebc4c3b24ef4e8c6c7e8c0fde56ec22",
+      "human_version": "rust-mirror 0.6.0",
+      "linkage": {
+        "file": "/home/runner/work/_temp/live-binary-verification/rust-mirror-0.6.0-x86_64-unknown-linux-musl/rust-mirror: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, BuildID[sha1]=2dd50fdc38d445f5484af4339bd4f5899f7afa6b, not stripped",
+        "ldd": "statically linked",
+        "no_interpreter_or_needed": true
+      },
+      "read_only": true,
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.6.0",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.6.0"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "9a6f1013eb01290344877cd62ae2787f9b4618449b73286d1d9c45860c606a3c",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-aarch64-apple-darwin.tar.gz": {
+          "sha256": "d149ec6c2df2ae1ced34936142cd86f6ac0c9f31c0ea307eaffc78279b762d5b",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-apple-darwin.tar.gz": {
+          "sha256": "fe59e999e25d188c27deb9fd65e8b570024678ed197aee07d386612372f39616",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-pc-windows-msvc.zip": {
+          "sha256": "47764d58bd0c309c603254654b568f90e3132027ef5f7fd712548c88e41e57cf",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "28ae4a19678cd6e613864c542f630e0c54e77f1be6d2fdcfde4361ce55081d71",
+          "verified": true
+        },
+        "rust-mirror-0.6.0-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "4a6ff890ebcfe5f3ff603896c1d45ff34f1941591f20db8a69e847a7010c8176",
+          "verified": true
+        },
+        "rust-mirror-0.6.0.cdx.json": {
+          "sha256": "90eb5cf32ea7bb081612d4ee8528b594519707a6d1bc5dd6cbfb8976f0ce8103",
+          "verified": true
+        },
+        "rust-mirror-0.6.0.intoto.jsonl": {
+          "sha256": "16f85dd17cf18f9920f0777a820028549bebc1f8efdbad83859dfeb852383b75",
+          "matches_github_store": true
+        }
+      }
+    }
+  },
+  "registry_install_local": {
+    "fresh_cargo_home": true,
+    "registry_token_removed": true,
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "host": "aarch64-unknown-linux-gnu",
+    "cached_crate_sha256": "beaffa1b9467cd04bd03efe7c3f68fbc3b7d4d042c19175f0115a85ba3eb3275",
+    "binary_sha256": "a3f831bd872c4c22673c325a48fb9eb25c123b261def2e5c9a64c4a064bafb91",
+    "human_version": "rust-mirror 0.6.0",
+    "events": [
+      {
+        "command": "--version",
+        "elapsed_ms": 0,
+        "protocol": 1,
+        "seq": 0,
+        "tool_version": "0.6.0",
+        "type": "hello"
+      },
+      {
+        "elapsed_ms": 0,
+        "index": 1,
+        "name": "--version",
+        "seq": 1,
+        "total": null,
+        "type": "stage"
+      },
+      {
+        "elapsed_ms": 0,
+        "error": null,
+        "ok": true,
+        "report": {
+          "protocol": 1,
+          "tool_version": "0.6.0"
+        },
+        "seq": 2,
+        "type": "result"
+      }
+    ],
+    "missing_plan_refusal": [
+      {
+        "command": "crates-show",
+        "elapsed_ms": 0,
+        "protocol": 1,
+        "seq": 0,
+        "tool_version": "0.6.0",
+        "type": "hello"
+      },
+      {
+        "elapsed_ms": 0,
+        "index": 1,
+        "name": "crates-show",
+        "seq": 1,
+        "total": null,
+        "type": "stage"
+      },
+      {
+        "elapsed_ms": 0,
+        "error": {
+          "kind": "io",
+          "message": "No such file or directory (os error 2)",
+          "report": null
+        },
+        "ok": false,
+        "report": null,
+        "seq": 2,
+        "type": "result"
+      }
+    ],
+    "approved_fetch": {
+      "files_completed": 1,
+      "files_total": 1,
+      "inventory_sha256": "6dce98e0c0831dff110bc3a73379e8213de247e7a3641599926ac2ac6a9fc2b6",
+      "mirror": "fetched/mirror",
+      "plan_id": "089f2a48e9c5a581a373912e98214d2e58f6bb25eb0e0057645bb8b93794e10c",
+      "reused_bytes": 0,
+      "total_transferred_bytes": 11231,
+      "transferred_bytes": 11231
+    },
+    "scope": "Fresh registry install, discovery/refusal and one exact itoa 1.0.15 plan/approved fetch; no Cargo-client build or Nexus claim"
+  },
+  "docs_rs": {
+    "observed": "2026-11-21T14:28:34Z",
+    "status_json": {
+      "doc_status": true,
+      "version": "0.6.0"
+    },
+    "pages_200_with_0_6_0": [
+      "https://docs.rs/rust-mirror/0.6.0/rust_mirror/",
+      "https://docs.rs/rust-mirror/0.6.0/rust_mirror/events/",
+      "https://docs.rs/rust-mirror/0.6.0/rust_mirror/crates/",
+      "https://docs.rs/rust-mirror/0.6.0/rust_mirror/crates/lockfile/"
+    ]
+  },
+  "previous_releases_unchanged": {
+    "v0.5.1": {
+      "id": 445760288,
+      "body_sha256": "77654786910a962fc0ca18776fc69b8fd328dcfeec17f7e20f2d01b4db72a48a",
+      "assets": 5,
+      "unchanged": true
+    },
+    "v0.5.2": {
+      "id": 446251724,
+      "body_sha256": "232f838f2e7ea69fa87c1435f6c36564e8568750bab1169adab66b9d774a6976",
+      "assets": 6,
+      "unchanged": true
+    },
+    "v0.5.3": {
+      "id": 446583484,
+      "body_sha256": "91973ed47422d6c498592644fe50eceefa186be70c71dbc7e287bc8d5232bde3",
+      "assets": 0,
+      "unchanged": true
+    },
+    "v0.5.4": {
+      "id": 446626544,
+      "assets": 7,
+      "unchanged": true,
+      "body_sha256": "9509677735cd484b7d225b1d553133350faefe0fb3af571244f94e2a3f6a594d",
+      "body_matches_tagged_notes": true
+    }
+  },
+  "limits": "Container GNU userlands on modern kernels; no public macOS execution or Gatekeeper UI; no OS code signing; SBOM covers the locked Cargo graph only"
+}

@@ -169,6 +169,13 @@ all eight assets, the bundle's match with GitHub's attestation store, the SBOM
 bindings and public Windows/GNU/musl execution before recording completion. A
 collector timeout may use only the exact-tag dispatch with an empty release.
 
+The [completed 0.6.0 record](evals/2026-11-21-publication-0.6.0.md) documents that
+path in use: tag run 44906731143 timed out before owner approval of publishing and
+uploaded nothing; after the exact notes were released, dispatch 44913249402 attached
+the eight assets. Expect this whenever crates.io approval takes longer than the
+collector's 600 s wait: create the release only after confirmed publication, then
+dispatch on the tag ref with dry_run=false and candidate=false.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
