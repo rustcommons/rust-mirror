@@ -81,4 +81,4 @@ Upstream hashes/trusted local storage are the trust model; signatures are preser
 without independent OpenPGP validation. No hostile-filesystem, NFS, globally atomic
 activation or arbitrary-platform guarantee is implied. Read the
 [requirements and evidence](https://github.com/rustcommons/rust-mirror/blob/main/docs/REQUIREMENTS.md)
-and [release notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.5.4.md).
+and [release notes](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.6.0.md).

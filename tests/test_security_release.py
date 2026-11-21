@@ -182,4 +182,13 @@ class SecurityReleaseTests(unittest.TestCase):
         self.assertEqual(repro.metadata(raw)['metadata_normalized_sha256'],repro.metadata(other)['metadata_normalized_sha256'])
 
 
+    def test_fuzz_lock_records_the_current_root_version(self):
+        # ClusterFuzzLite builds with --locked; a version bump must update fuzz/Cargo.lock too.
+        import tomllib
+        root = Path(__file__).resolve().parents[1]
+        version = tomllib.loads((root / 'Cargo.toml').read_text())['package']['version']
+        fuzz = [p['version'] for p in tomllib.loads((root / 'fuzz/Cargo.lock').read_text())['package'] if p['name'] == 'rust-mirror']
+        self.assertEqual(fuzz, [version])
+
+
 if __name__=='__main__':unittest.main()
