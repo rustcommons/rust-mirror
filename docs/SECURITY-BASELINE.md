@@ -140,7 +140,7 @@ yet parse the newer $/ spelling. No broad audit suppression is configured.
 The next authorized release has five archives, rust-mirror-VERSION.cdx.json, and
 one SHA256SUMS covering the five archives AND SBOM in sorted order. All seven files
 receive provenance; every archive additionally receives a CycloneDX SBOM attestation.
-From v0.5.5 an eighth asset, rust-mirror-VERSION.intoto.jsonl, attaches the signed
+From v0.6.0 an eighth asset, rust-mirror-VERSION.intoto.jsonl, attaches the signed
 SLSA provenance Sigstore bundle(s) from the signer job so offline verifiers and
 Scorecard Signed-Releases can see them. It must equal GitHub's stored attestation, cover
 exactly the seven signed files and stay out of SHA256SUMS (circular otherwise; it is

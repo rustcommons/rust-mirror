@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.5.5] - 2026-11-21
+## [0.6.0] - 2026-11-21
 
 - Update locked dependencies: `sha2` 0.11, `toml` 1.2, `serde` 1.0.229,
   `tempfile` 3.27, `indexmap` 2.14, and a direct `webpki-roots` 1.0 requirement.
@@ -10,12 +10,13 @@
   `webpki-roots` 1.0.10, as in 0.5.4; `ureq` still pulls the `webpki-roots` 0.26
   compatibility shim, which re-exports the same 1.0 roots. No application source
   change and no new direct dependency.
-- Library users: `Error::report` is now `Option<toml::Value>` from `toml` 1.x.
-  Code that names that type through its own `toml` 0.8 dependency must update.
+- **Breaking (library):** `Error::report` is now `Option<toml::Value>` from `toml`
+  1.x instead of 0.8, hence 0.6.0. Code that names that type through its own `toml`
+  0.8 dependency must move to `toml` 1. The CLI and event protocol 1 are unchanged.
 - First release whose GitHub assets include the signed provenance bundle
   `rust-mirror-VERSION.intoto.jsonl` for offline `gh attestation verify --bundle`.
   SHA256SUMS still covers the five archives and the SBOM.
-  See [0.5.5 details](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.5.5.md).
+  See [0.6.0 details](https://github.com/rustcommons/rust-mirror/blob/main/docs/releases/v0.6.0.md).
 
 ## [0.5.4] - 2026-11-16
 

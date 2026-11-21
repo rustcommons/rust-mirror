@@ -260,6 +260,8 @@ class ReleaseBinariesTests(unittest.TestCase):
     def test_provenance_asset_starts_after_immutable_v054(self):
         self.assertFalse(release.has_provenance_asset('0.5.4'))
         self.assertTrue(release.has_provenance_asset('0.5.5'))
+        self.assertTrue(release.has_provenance_asset('0.6.0'))
+        self.assertEqual(release.provenance_name('0.6.0'), 'rust-mirror-0.6.0.intoto.jsonl')
         self.assertTrue(release.has_provenance_asset('1.0.0-rc.1'))
 
     def test_stage_adds_signed_provenance_outside_sha256sums(self):
