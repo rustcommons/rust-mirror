@@ -14,9 +14,9 @@ semver = "1.0"
 serde_json = "1.0"
 hex = "0.4"
 serde = { version = "1.0", features = ["derive"] }
-sha2 = "0.10"
-toml = "0.8"
+sha2 = "0.11"
+toml = "1"
 ureq = { version = "2.9", features = ["tls"] }
 tempfile = "3.10"
-webpki-roots = "0.26"
+webpki-roots = "1"
 x509-parser = { version = "0.18", default-features = false }
