@@ -192,17 +192,20 @@ is the only authorized publish route. Do not create/restore a long-lived Cargo
 token or upload crates from a workstation. Earlier manual publication records remain
 historical; the legacy section anchor above preserves their existing deep links.
 
-A read-only job requires main ancestry, exact manifest/tag identity, one expected
-workspace crate and verified packaging. For an already-published exact source, it
-verifies API/index/archive checksum and payload and skips OIDC/publish. This
-idempotent check preserves existing releases; it does not authorize manual upload.
-Existing versions with mismatched content or dirty VCS refuse.
+The workflow follows the Rust Commons standard pipeline (2026-11-21; see
+[the release flow](RELEASING.md#standard-release-pipeline)). Its read-only `gate`
+requires an annotated tag, main ancestry with green CI, a dated changelog entry
+and notes, exact manifest/tag identity and one expected workspace crate; `build`
+packages, audits and installs the crate. In `publish`, an already-published exact
+source is verified (API/index/archive checksum and payload) and OIDC/publish are
+skipped. This idempotent check preserves existing releases; it does not authorize
+manual upload. Existing versions with mismatched content or dirty VCS refuse.
 
 For a missing version, the crates-io environment requires the owner's approval and
 permits only v* tags. After approval the job rechecks registry state, exchanges
 GitHub OIDC for a short-lived token using pinned rust-lang/crates-io-auth-action,
-publishes rust-mirror with --locked and verifies the official checksum/clean-tag
-payload. Authentication action cleanup revokes the token. No long-lived Cargo
+publishes rust-mirror with --locked only if the repackaged crate equals the attested
+one, and `verify` checks the official checksum/clean-tag payload. Authentication action cleanup revokes the token. No long-lived Cargo
 secret, implicit fallback token or token in command arguments is introduced.
 The one-crate workspace order is rust-mirror only; expanding it needs review.
 

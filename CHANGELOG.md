@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Repository
+
+- Adopt the Rust Commons standard release pipeline: `Trusted publishing` now gates
+  on an annotated tag, green CI on `main`, a dated changelog entry with release
+  notes and the existing source/one-crate guards; builds, audits and installs the
+  package with an SBOM and `SHA256SUMS-crates`; signs SLSA provenance; publishes
+  after owner approval; creates the GitHub Release from the committed notes with the
+  `.crate`, crate SBOM, `SHA256SUMS-crates` and `rust-mirror-VERSION.crates.intoto.jsonl`
+  attached; and verifies crates.io, attestations, docs.rs and a clean install.
+  Binaries stay in `release-binaries.yml`, whose uploader now accepts exactly those
+  crate files on the release. See
+  [the release flow](https://github.com/rustcommons/rust-mirror/blob/main/docs/RELEASING.md#standard-release-pipeline).
+  No crate or behavior change.
+
 ## [0.6.0] - 2026-11-21
 
 - Update locked dependencies: `sha2` 0.11, `toml` 1.2, `serde` 1.0.229,

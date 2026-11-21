@@ -120,6 +120,23 @@ class ReleaseBinariesTests(unittest.TestCase):
                 release.check_release(self.root, self.record)
             release.check_release(self.root, self.record, allow_existing=True)
 
+    def test_existing_crate_pipeline_files_are_the_only_allowed_assets(self):
+        crates = sorted(release.crate_pipeline_assets('1.2.3'))
+        self.assertEqual(crates, ['SHA256SUMS-crates', 'rust-mirror-1.2.3.crate', 'rust-mirror-1.2.3.crates.cdx.json', 'rust-mirror-1.2.3.crates.intoto.jsonl'])
+        with patch.object(release, 'remote_commit', return_value=self.record['commit']):
+            for allowed in ([], crates[:1], crates):
+                with self.subTest(allowed=allowed), patch.object(release, 'api', return_value=dict(self.live, assets=[{'name': n} for n in allowed])):
+                    release.check_release(self.root, self.record)
+            for extra in ('SHA256SUMS', 'rust-mirror-1.2.3.cdx.json', 'rust-mirror-1.2.3.intoto.jsonl', 'rust-mirror-1.2.4.crate'):
+                with self.subTest(extra=extra), patch.object(release, 'api', return_value=dict(self.live, assets=[{'name': n} for n in crates + [extra]])):
+                    with self.assertRaisesRegex(ValueError, 'already has assets'):
+                        release.check_release(self.root, self.record)
+
+    def test_crate_pipeline_files_start_after_v060(self):
+        self.assertFalse(release.has_crate_pipeline_assets('0.6.0'))
+        self.assertTrue(release.has_crate_pipeline_assets('0.6.1'))
+        self.assertTrue(release.has_crate_pipeline_assets('0.7.0'))
+
     def archive(self, suffix, bad=None):
         prefix = 'rust-mirror-1.2.3-x86_64-unknown-linux-gnu'
         names = ['rust-mirror', 'LICENSE', 'README.txt']

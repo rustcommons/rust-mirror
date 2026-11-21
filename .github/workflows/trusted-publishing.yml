@@ -1,21 +1,42 @@
-name: Trusted crates.io publishing
+# Rust Commons standard release pipeline; see
+# https://github.com/rustcommons/.github/blob/main/docs/TRUSTED-PUBLISHING.md
+# crates.io binds Trusted Publishing to this file name and the `crates-io`
+# environment; never rename either. Binaries stay in release-binaries.yml,
+# which attaches its files to the release that `github-release` creates.
+name: Trusted publishing
 on:
   push:
     tags: ['v*']
+  # Dry runs: gate and build only, never publish.
+  pull_request:
+    paths:
+      - '.github/workflows/trusted-publishing.yml'
+      - 'scripts/release-gate.py'
+      - 'scripts/check-release-docs.py'
+      - 'scripts/release_sbom.py'
+      - 'scripts/verify_registry_release.py'
+      - 'CHANGELOG.md'
+      - 'docs/releases/**'
+  workflow_dispatch:
 permissions:
   contents: read
+# A tag run is never cancelled; only newer pushes to the same PR supersede.
 concurrency:
-  group: crates-io-${{ github.ref }}
-  cancel-in-progress: false
+  group: trusted-publishing-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
-  qualify:
+  gate:
+    name: Release gate
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # Reads CI results for the tagged commit.
+      actions: read
     outputs:
-      published: ${{ steps.registry.outputs.published }}
-    env:
-      RELEASE_TAG: ${{ github.ref_name }}
-      CARGO_BUILD_JOBS: '2'
+      version: ${{ steps.gate.outputs.version }}
+      publish: ${{ steps.gate.outputs.publish }}
+      crates: ${{ steps.gate.outputs.crates }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -25,37 +46,180 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
-      - name: Require the immutable reviewed main source and one expected crate
+      - name: Decide whether this run may publish
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git merge-base --is-ancestor HEAD origin/main
-          python - <<'PY'
-          import json,subprocess,os,sys
+          python3 scripts/release-gate.py --event "$EVENT" --ref-name "$REF_NAME" \
+            --sha "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY"
+      - name: Require the immutable reviewed main source and one expected crate
+        env:
+          EVENT: ${{ github.event_name }}
+          VERSION: ${{ steps.gate.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = push ]; then git merge-base --is-ancestor HEAD origin/main; fi
+          python3 - <<'PY'
+          import json, os, subprocess, sys
           from pathlib import Path
-          sys.path.insert(0,'scripts')
+          sys.path.insert(0, 'scripts')
           import release_binaries
-          record=release_binaries.record(Path('.'),os.environ['RELEASE_TAG'])
-          assert record['commit']==subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-          metadata=json.loads(subprocess.check_output(['cargo','metadata','--locked','--no-deps','--format-version','1'],text=True))
-          assert len(metadata['workspace_members'])==1 and [p['name'] for p in metadata['packages']]==['rust-mirror']
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          tag = 'v' + os.environ['VERSION']
+          # Tag runs bind the tag; dry runs bind the checked-out commit as a candidate.
+          record = release_binaries.record(Path('.'), tag, None if os.environ['EVENT'] == 'push' else head)
+          assert record['commit'] == head, 'tag does not point to the checked-out commit'
+          metadata = json.loads(subprocess.check_output(['cargo', 'metadata', '--locked', '--no-deps', '--format-version', '1'], text=True))
+          assert len(metadata['workspace_members']) == 1 and [p['name'] for p in metadata['packages']] == ['rust-mirror'], 'expected exactly the rust-mirror crate'
+          print(f'Source {head} and the single rust-mirror crate match {tag}.')
           PY
-      - name: Verify an already published manual release without minting a token
-        id: registry
-        run: python scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
-      - name: Qualify the new package without publishing
-        if: steps.registry.outputs.published == 'false'
-        run: cargo package --locked
-  publish:
-    needs: qualify
-    if: needs.qualify.outputs.published == 'false' && github.repository == 'rustcommons/rust-mirror'
-    environment: crates-io
+
+  build:
+    name: Build
+    needs: gate
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.gate.outputs.version }}
+      CRATES: ${{ needs.gate.outputs.crates }}
+      CARGO_BUILD_JOBS: 2
+      PYTHONDONTWRITEBYTECODE: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The same toolchain publishes the crate.
+      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      # The SBOM generator requires the clean checkout, so it runs first. The
+      # crate SBOM is named .crates.cdx.json; release-binaries.yml attaches .cdx.json.
+      - name: SBOM from the clean source
+        run: |
+          set -euo pipefail
+          dist="$RUNNER_TEMP/dist"
+          mkdir -p "$dist"
+          echo "DIST=$dist" >> "$GITHUB_ENV"
+          cargo install cargo-cyclonedx --version =0.5.9 --locked --root "$RUNNER_TEMP/tools" -j 2
+          python3 scripts/release_sbom.py --source . --commit "$(git rev-parse HEAD)" \
+            --tool "$RUNNER_TEMP/tools/bin/cargo-cyclonedx" --output "$dist/rust-mirror-$VERSION.crates.cdx.json"
+      - name: Package release crates
+        run: |
+          set -euo pipefail
+          for crate in $(jq -r '.[]' <<<"$CRATES"); do
+            # Also builds the crate from its packaged source.
+            cargo package --locked -p "$crate"
+            cp "target/package/$crate-$VERSION.crate" "$DIST/"
+          done
+      - name: Package audit against the checked-out commit
+        run: |
+          python3 - "$DIST/rust-mirror-$VERSION.crate" <<'PY'
+          import json, subprocess, sys, tarfile
+          path = sys.argv[1]
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          prefix = path.rsplit('/', 1)[1].removesuffix('.crate') + '/'
+          members = tarfile.open(path).getmembers()
+          archive = tarfile.open(path)
+          assert members and all(m.isfile() and m.name.startswith(prefix) for m in members), 'only regular files under one root'
+          names = [m.name[len(prefix):] for m in members]
+          assert not any(n.startswith(('fuzz/', '.clusterfuzzlite/', '.github/')) for n in names), 'fuzz/CI content packaged'
+          for m, name in zip(members, names):
+              if name in ('Cargo.toml', '.cargo_vcs_info.json'):
+                  continue
+              source = 'Cargo.toml' if name == 'Cargo.toml.orig' else name
+              assert archive.extractfile(m).read() == subprocess.check_output(['git', 'show', f'HEAD:{source}']), f'{name} differs from the commit'
+          vcs = json.loads(archive.extractfile(prefix + '.cargo_vcs_info.json').read())
+          assert vcs['git']['sha1'] == head and not vcs['git'].get('dirty', False), 'VCS record is not this clean commit'
+          print(f'Package audit passed: {len(members)} regular members, VCS {head}.')
+          PY
+      - name: Clean locked install of the packaged crate
+        run: |
+          set -euo pipefail
+          unpacked="$RUNNER_TEMP/unpacked"
+          mkdir -p "$unpacked" "$RUNNER_TEMP/smoke"
+          tar -xzf "$DIST/rust-mirror-$VERSION.crate" -C "$unpacked"
+          export CARGO_HOME="$RUNNER_TEMP/package-cargo-home"
+          cargo install --path "$unpacked/rust-mirror-$VERSION" --locked --root "$RUNNER_TEMP/package-install"
+          bin="$RUNNER_TEMP/package-install/bin/rust-mirror"
+          test "$("$bin" --version)" = "rust-mirror $VERSION"
+          # Read from a file: piping into `head` would break rust-mirror's later writes.
+          "$bin" --events jsonl --version > "$RUNNER_TEMP/version.jsonl"
+          head -n1 "$RUNNER_TEMP/version.jsonl" | jq -e --arg v "$VERSION" '.type == "hello" and .protocol == 1 and .tool_version == $v'
+          cd "$RUNNER_TEMP/smoke"
+          if "$bin" --events jsonl crates show --plan missing.json > refusal.jsonl; then exit 1; fi
+          tail -n1 refusal.jsonl | jq -e '.ok == false and .error.kind == "io"'
+      - name: SHA256SUMS-crates
+        run: |
+          set -euo pipefail
+          cd "$DIST"
+          sha256sum ./*.crate ./*.crates.cdx.json | sed 's| \./| |' > SHA256SUMS-crates
+          cat SHA256SUMS-crates
+          sha256sum -c SHA256SUMS-crates
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ needs.gate.outputs.version }}
+          path: ${{ runner.temp }}/dist
+          if-no-files-found: error
+
+  attest:
+    name: Checksums and attestations
+    # `gate` is listed only so the condition can read its output.
+    needs: [gate, build]
+    if: needs.gate.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.gate.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-${{ needs.gate.outputs.version }}
+          path: ${{ runner.temp }}/dist
+      - name: Re-check SHA256SUMS-crates
+        run: cd "$RUNNER_TEMP/dist" && sha256sum -c SHA256SUMS-crates
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        id: attest
+        with:
+          subject-path: |
+            ${{ runner.temp }}/dist/*.crate
+            ${{ runner.temp }}/dist/*.crates.cdx.json
+      - name: Save the provenance bundle
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: cp "$BUNDLE" "$RUNNER_TEMP/dist/rust-mirror-$VERSION.crates.intoto.jsonl"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ needs.gate.outputs.version }}
+          path: ${{ runner.temp }}/dist
+          if-no-files-found: error
+          overwrite: true
+
+  publish:
+    name: Publish to crates.io
+    needs: [gate, build, attest]
+    if: needs.gate.outputs.publish == 'true' && github.repository == 'rustcommons/rust-mirror'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # The owner's approval click.
+    environment: crates-io
     permissions:
       contents: read
       id-token: write
     env:
-      CARGO_BUILD_JOBS: '2'
+      VERSION: ${{ needs.gate.outputs.version }}
+      CRATES: ${{ needs.gate.outputs.crates }}
       RELEASE_TAG: ${{ github.ref_name }}
+      CARGO_BUILD_JOBS: 2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -65,17 +229,156 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-${{ needs.gate.outputs.version }}
+          path: ${{ runner.temp }}/dist
+      - name: Re-check SHA256SUMS-crates
+        run: cd "$RUNNER_TEMP/dist" && sha256sum -c SHA256SUMS-crates
+      # An existing publication must already equal the exact tag payload; then no
+      # token is minted.
       - name: Recheck after owner approval; refuse a concurrent publication
         id: registry
-        run: python scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
-      - name: Obtain a short-lived owner-approved crates.io token
+        run: python3 scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
+      - uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
         if: steps.registry.outputs.published == 'false'
         id: auth
-        uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
-      - name: Publish the single crate in workspace order
+      - name: Publish release crates in dependency order
         if: steps.registry.outputs.published == 'false'
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-        run: cargo publish --locked --package rust-mirror
-      - name: Verify official archive checksum, clean VCS and exact tag payload
-        run: python scripts/verify_registry_release.py --tag "$RELEASE_TAG" --wait-seconds 180
+        run: |
+          set -euo pipefail
+          for crate in $(jq -r '.[]' <<<"$CRATES"); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -A 'rustcommons-release' \
+              "https://crates.io/api/v1/crates/$crate/$VERSION")
+            if [ "$status" = 200 ]; then
+              echo "$crate $VERSION is already on crates.io; skipping."
+              continue
+            fi
+            # Publish only bytes identical to the checksummed, attested file.
+            cargo package --locked -p "$crate"
+            cmp "target/package/$crate-$VERSION.crate" "$RUNNER_TEMP/dist/$crate-$VERSION.crate"
+            cargo publish --locked -p "$crate"
+          done
+
+  github-release:
+    name: GitHub release
+    needs: [gate, publish]
+    if: needs.gate.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.gate.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-${{ needs.gate.outputs.version }}
+          path: ${{ runner.temp }}/dist
+      # release-binaries.yml then attaches its archives, SBOM, SHA256SUMS and bundle.
+      - name: Create the release from the committed notes; add only missing files
+        run: |
+          set -euo pipefail
+          dist="$RUNNER_TEMP/dist"
+          (cd "$dist" && sha256sum -c SHA256SUMS-crates)
+          notes="docs/releases/v$VERSION.md"
+          title=$(grep -m1 '^# ' "$notes" | sed 's/^# //')
+          test -n "$title"
+          files=("$dist"/*.crate "$dist/rust-mirror-$VERSION.crates.cdx.json" "$dist/SHA256SUMS-crates" "$dist/rust-mirror-$VERSION.crates.intoto.jsonl")
+          for f in "${files[@]}"; do test -f "$f"; done
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            existing=$(gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+            for f in "${files[@]}"; do
+              if grep -Fxq "$(basename "$f")" <<<"$existing"; then
+                echo "Keeping existing asset $(basename "$f")"
+              else
+                gh release upload "v$VERSION" "$f" --repo "$GITHUB_REPOSITORY"
+              fi
+            done
+          else
+            gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "$title" --notes-file "$notes" "${files[@]}"
+          fi
+
+  verify:
+    name: Verify publication
+    needs: [gate, github-release]
+    if: needs.gate.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.gate.outputs.version }}
+      RELEASE_TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Download the attached crate files
+        run: |
+          set -euo pipefail
+          assets="$RUNNER_TEMP/assets"
+          mkdir -p "$assets"
+          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --dir "$assets" \
+            --pattern "rust-mirror-$VERSION.crate" --pattern "rust-mirror-$VERSION.crates.cdx.json" \
+            --pattern SHA256SUMS-crates --pattern "rust-mirror-$VERSION.crates.intoto.jsonl"
+          (cd "$assets" && sha256sum -c SHA256SUMS-crates)
+          echo "ASSETS=$assets" >> "$GITHUB_ENV"
+      - name: Live release body equals the committed notes
+        run: python3 scripts/check-release-docs.py --repo "$GITHUB_REPOSITORY" --published-tag "v$VERSION"
+      - name: crates.io checksum equals the attested crate; exact tag payload
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_registry_release.py --tag "$RELEASE_TAG" --wait-seconds 180
+          expected=$(sha256sum "$ASSETS/rust-mirror-$VERSION.crate" | cut -d' ' -f1)
+          actual=$(curl -s -A 'rustcommons-release' "https://crates.io/api/v1/crates/rust-mirror/$VERSION" | jq -r '.version.checksum')
+          test "$expected" = "$actual"
+          echo "crates.io checksum $actual equals the attested crate."
+      - name: Verify attestations of the attached files
+        run: |
+          set -euo pipefail
+          for f in "$ASSETS/rust-mirror-$VERSION.crate" "$ASSETS/rust-mirror-$VERSION.crates.cdx.json"; do
+            gh attestation verify "$f" --repo "$GITHUB_REPOSITORY" \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/trusted-publishing.yml" \
+              --source-digest "$GITHUB_SHA" --deny-self-hosted-runners \
+              --bundle "$ASSETS/rust-mirror-$VERSION.crates.intoto.jsonl"
+          done
+      - name: docs.rs build (pending is reported as pending)
+        run: |
+          set -euo pipefail
+          url="https://docs.rs/crate/rust-mirror/$VERSION/status.json"
+          for attempt in $(seq 1 40); do
+            body=$(curl -s -A 'rustcommons-release' -w '\n%{http_code}' "$url")
+            code=$(tail -n1 <<<"$body")
+            if [ "$code" = 200 ]; then
+              status=$(head -n -1 <<<"$body" | jq -r '.doc_status')
+              if [ "$status" = true ]; then echo "docs.rs built rust-mirror $VERSION."; exit 0; fi
+              if [ "$status" = false ]; then echo "::error::docs.rs build failed for rust-mirror $VERSION"; exit 1; fi
+            fi
+            sleep 30
+          done
+          echo "::warning::docs.rs build for rust-mirror $VERSION is still pending after 20 minutes; not a pass."
+          echo "docs.rs: PENDING" >> "$GITHUB_STEP_SUMMARY"
+      - name: Clean locked install from crates.io
+        run: |
+          set -euo pipefail
+          export CARGO_HOME="$RUNNER_TEMP/published-cargo-home"
+          root="$RUNNER_TEMP/published-install"
+          cargo install rust-mirror --version "=$VERSION" --locked --root "$root"
+          test "$("$root/bin/rust-mirror" --version)" = "rust-mirror $VERSION"
+          "$root/bin/rust-mirror" --events jsonl --version > "$RUNNER_TEMP/version.jsonl"
+          head -n1 "$RUNNER_TEMP/version.jsonl" | jq -e --arg v "$VERSION" '.type == "hello" and .protocol == 1 and .tool_version == $v'

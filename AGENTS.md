@@ -68,6 +68,24 @@ version/tag to qualify it. The owner must configure the exact publisher values i
 authorizes no crate version bump, tag creation, software publication or existing
 release mutation. Leave existing Dependabot/user branches untouched; use one PR.
 
+Standard release pipeline, owner-approved 2026-11-21: trusted-publishing.yml is the
+Rust Commons [standard pipeline](https://github.com/rustcommons/.github/blob/main/docs/TRUSTED-PUBLISHING.md),
+workflow `Trusted publishing` with jobs `gate` (Release gate), `build` (Build),
+`attest` (Checksums and attestations), `publish` (Publish to crates.io),
+`github-release` (GitHub release) and `verify` (Verify publication). Keep job ids,
+display names, order, conditions and per-job permissions in step with the standard;
+never rename the file or the crates-io environment. An annotated `vX.Y.Z` tag on a
+main commit with green CI starts it. `gate` also keeps this repository's guards:
+tag source reachable from main and equal to the tag record, and exactly one
+`rust-mirror` crate. `build` packages, audits, SBOMs, installs the packaged crate and
+writes `SHA256SUMS-crates`; PR dry runs exercise `gate` and `build` with
+publish=false. Only the owner's crates-io approval lets `publish` run. `github-release`
+then creates the GitHub Release from the committed notes, so write them in final
+form before tagging and never create the release by hand. `verify` checks crates.io,
+the exact tag payload, attestations, docs.rs and a clean install. Binaries stay in
+release-binaries.yml, which attaches its own files to that release; folding them
+into this pipeline is phase 2 in [the roadmap](docs/ROADMAP.md#standard-release-pipeline).
+
 
 Owner amendment, 2026-11-17: never put `[skip ci]` or `[ci skip]` in commit or
 merge messages; preserve CodeQL default setup and normal CI execution. Workflow
@@ -614,9 +632,10 @@ Preserve dated qualification history and explicitly carry only applicable eviden
 
 ## Release documentation
 
+- **Updating `CHANGELOG.md` is critical.** It is the source the release notes are written from, and the release gate refuses to publish without a dated `## [X.Y.Z] - YYYY-MM-DD` entry and `docs/releases/vX.Y.Z.md`. Add an `Unreleased` entry in the same PR as each noteworthy change, never later; a release PR only dates and moves those entries.
 - For a repository that ships versioned software, maintain a root `CHANGELOG.md` with an `Unreleased` section and dated, user-facing entries for shipped versions. Record noteworthy changes and their user impact as work is completed; do not substitute a roadmap, Git tag, CI log or validation report for a changelog.
 - Before publishing a version, commit its release notes under `docs/releases/vX.Y.Z.md` and link them, the changelog, and the maintained release policy. Explain changes, upgrade or dependency impact, validation and known limits; distinguish software changes from documentation-only releases.
-- A software release is not complete until its immutable source tag, applicable registry archives, GitHub Release notes, changelog, documentation, and required verification agree. GitHub Releases document the release; do not attach standalone binaries or other new distribution artifacts without authorization.
+- A software release is not complete until its immutable source tag, applicable registry archives, GitHub Release notes, changelog, documentation, and required verification agree. GitHub Releases document the release. The owner authorized on 2026-11-21 that the release pipeline attaches the published `.crate` file, the crate CycloneDX SBOM (`rust-mirror-<version>.crates.cdx.json`), `SHA256SUMS-crates` and the `rust-mirror-<version>.crates.intoto.jsonl` provenance bundle, and nothing else. Together with the binary assets authorized on 2026-11-15, attach no other distribution artifacts without further authorization.
 - Run the repository's release-documentation CI check before routine merges and release completion. For its first installation, review local checker/syntax evidence, register the workflow on the default branch, and require a green run before completing bootstrap or publishing notes. Verify the live GitHub Release and its tag, text and links after publication; a successful crate upload or tag alone is insufficient.
 - When backfilling history, reconstruct facts from existing tags, registry records and source/evidence. Preserve original source identities, distinguish original release dates from documentation backfill dates, and state unavailable historical validation. Never fabricate checks, move tags, republish versions, or imply that repository edits change immutable published archives.
 - For an organization profile, placeholder or project with no shipped version, record release verification as not applicable until its first authorized release. Do not invent versions, features, changelog history or GitHub Releases to satisfy this convention.

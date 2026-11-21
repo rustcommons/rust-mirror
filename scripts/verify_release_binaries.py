@@ -30,7 +30,9 @@ def main():
     assets = {a['name']: a for a in live['assets']}
     bundle = release.provenance_name(expected['version']) if release.has_provenance_asset(expected['version']) else None
     signed = names + ['SHA256SUMS']
-    release.require(len(live['assets']) == len(signed) + bool(bundle) and set(assets) == set(signed + ([bundle] if bundle else [])), 'expected exact release archive profile, SHA256SUMS and provenance bundle')
+    # Crate files from trusted-publishing.yml are verified by its own `verify` job.
+    crates = release.crate_pipeline_assets(expected['version']) if release.has_crate_pipeline_assets(expected['version']) else set()
+    release.require(len(live['assets']) == len(signed) + bool(bundle) + len(crates) and set(assets) == set(signed + ([bundle] if bundle else [])) | crates, 'expected exact release archive profile, SHA256SUMS, provenance bundle and crate files')
     release.require(all(a['state'] == 'uploaded' and a['size'] <= release.MAX_ARCHIVE for a in assets.values()), 'asset incomplete or oversized')
     output = args.output.resolve(); output.mkdir(parents=True, exist_ok=False)
     downloads = output / 'downloads'
@@ -43,7 +45,7 @@ def main():
     for name in sorted(assets):
         path = downloads / name; actual = release.digest(path.read_bytes())
         release.require(assets[name]['digest'] == 'sha256:' + actual, 'GitHub asset digest mismatch')
-        if name == bundle: continue
+        if name == bundle or name in crates: continue
         if name != 'SHA256SUMS': release.require(checksums[name] == actual, 'archive checksum mismatch')
         proof = command(['gh', 'attestation', 'verify', path, *policy, '--predicate-type', 'https://slsa.dev/provenance/v1', '--format', 'json'])
         result = json.loads(proof); release.require(bool(result), 'empty attestation verification')

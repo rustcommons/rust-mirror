@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-11-13 for owner decisions dated 2026-11-12. This is future work, not a release promise or a description of
+Updated 2026-11-21 (standard release pipeline); crate items reflect owner decisions dated 2026-11-12. This is future work, not a release promise or a description of
 implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md),
 [network contract](NETWORK.md), [retention contract](RETENTION.md) and
 [requirements index](REQUIREMENTS.md). The owner-approved lock-import iteration shipped in 0.5.0 on 2026-11-13;
@@ -65,6 +65,39 @@ and other Phase 3 registry modes or GUI work remain separately governed.
 | Bulk registry crawl/database dumps | Curated sparse access only. Most/all-crates mirroring requires a different capacity/policy design, not increasing this planner's caps. |
 | In-generation crate compaction and stable activation routing | Successor generations and explicit whole-generation retirement first; prove cache/concurrent-client safety before mutable aliases or record-level deletion. |
 | License/security approval automation | Closure review and upstream checksum integrity do not establish redistribution permission, vulnerability absence or build safety. Organization policy/tools need separate authorization. |
+
+## Standard release pipeline
+
+rust-mirror adopted the Rust Commons
+[standard release pipeline](https://github.com/rustcommons/.github/blob/main/docs/TRUSTED-PUBLISHING.md)
+on 2026-11-21, following the cargo-libc pilot (cargo-libc#43); see
+[the release flow](RELEASING.md#standard-release-pipeline). The PR dry run exercised
+`gate` and `build` with publish=false, and the gate passed locally against the
+existing v0.6.0 tag. Deferred, not lost:
+
+- **First tag run.** `attest`, `publish`, `github-release` and `verify` run only on a
+  tag; their first real use is the next authorized release. Record attestation
+  signing, bundle naming, `gh attestation verify --bundle`, the docs.rs wait and
+  re-run uploads, and how release-binaries.yml attaches to the release it finds.
+- **Phase 2: binaries in this pipeline** (planned, not approved). Move the five
+  binary builds, the GNU userland gates and their attestation into `build`/`attest`,
+  with one SHA256SUMS and one SBOM, keeping every qualification gate. Until then the
+  crate SBOM (`.crates.cdx.json`) and the binaries' SBOM (`.cdx.json`) are separate
+  files generated the same way from the same lock.
+- **Binary collector wait.** release-binaries.yml still waits only 600 s for the
+  GitHub Release, which now appears after owner approval. A later approval still
+  needs the exact-tag dispatch, as for 0.6.0. Phase 2 removes the wait; changing it
+  earlier needs approval because build-binaries*.yml is frozen for this adoption.
+- **Gate CI query.** GitHub's `status=success` run filter omitted v0.6.0's
+  successful CI run, so the gate filters `conclusion` itself. cargo-libc's gate
+  and the standard should take the same fix.
+- **Spec clarification.** As cargo-libc noted, `attest`, `github-release` and
+  `verify` also list `gate` in `needs` to read its output.
+- **Release-PR audit overlap.** `build` repeats the package audit and packaged
+  install at the tag. The manual release-PR checks stay until a release proves the
+  pipeline; then the release PR can cite the dry run instead.
+- **Already-published versions.** 0.6.0 and earlier keep their hand-created
+  releases and assets; none is re-tagged or re-released.
 
 ## Existing cross-cutting deferrals
 
