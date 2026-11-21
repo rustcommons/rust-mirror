@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Update dependencies: `rustls` 0.23.46 and `rustls-webpki` 0.103.17 (TLS stack),
+  `sha2` 0.11, `toml` 1.2, `webpki-roots` 1.0, `serde` 1.0.229 and `tempfile`
+  3.27. No behavior change is intended; `ureq` still pulls the `webpki-roots`
+  0.26 compatibility shim, which re-exports the same 1.0 roots.
+
 ## [0.5.4] - 2026-11-16
 
 - Deliver the first prebuilt downloads carrying the security-sensitive dependency
