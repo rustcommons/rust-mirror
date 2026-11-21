@@ -13,6 +13,15 @@ delete main; protected v* tags cannot be updated or deleted. Do not use the rule
 administrative bypass as a normal workflow. The coordinator enabled the provider
 settings on 2026-11-15; this PR does not alter repository settings.
 
+Workflows name explicit runner images (ubuntu-22.04, ubuntu-24.04, windows-2025,
+macos-15, macos-15-intel), never moving *-latest labels; GitHub began moving
+ubuntu-latest to Ubuntu 26.04 on 2026-10-19. Moving any job to Ubuntu 26.04 (or a
+newer Windows/macOS image) is a deliberate, reviewed change with its own CI proof,
+not a side effect of a label. Actions are pinned by full commit SHA with an exact
+`# vX.Y.Z` comment and must target a supported Node runtime (Node 24 since
+2026-11-21). dtolnay/rust-toolchain is pinned to the commit of its exact-version
+branch (currently 1.90.0) with no `toolchain:` input; a SHA pin ignores that input.
+
 The owner amended the baseline on 2026-11-15 after the initial update wave exhausted
 runner capacity. Dependabot checks Cargo and Actions monthly, groups minor/patch
 version updates, limits each ecosystem to two open version-update PRs, and keeps
