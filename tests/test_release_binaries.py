@@ -214,11 +214,10 @@ class ReleaseBinariesTests(unittest.TestCase):
                 release.main()
 
     def test_upload_validates_manifest_before_post_and_never_deletes(self):
-        names = sorted([release.asset_name('1.2.3', target) for target in release.TARGETS] + [release.sbom_name('1.2.3')])
-        for name in names:
-            (self.root / name).write_bytes(b'archive')
-        manifest = ''.join(f'{release.digest(b"archive")}  {name}\n' for name in names)
-        (self.root / 'SHA256SUMS').write_text(manifest)
+        manifest = self.write_assets()
+        with self.assertRaisesRegex(ValueError, 'unexpected or missing'):
+            release.staged_assets(self.record, self.root)
+        (self.root / release.provenance_name('1.2.3')).write_text(self.bundle_line(self.subjects()))
         methods = []
         def api(url, method='GET', data=None, content_type=None):
             methods.append(method)
@@ -234,7 +233,88 @@ class ReleaseBinariesTests(unittest.TestCase):
             self.assertEqual(methods, ['GET'])
             methods.clear(); (self.root / 'SHA256SUMS').write_text(manifest)
             release.main()
-        self.assertEqual(methods, ['GET'] + ['POST'] * (len(release.TARGETS) + 2))
+        self.assertEqual(methods, ['GET'] + ['POST'] * (len(release.TARGETS) + 3))
+
+    def write_assets(self):
+        names = sorted([release.asset_name('1.2.3', target) for target in release.TARGETS] + [release.sbom_name('1.2.3')])
+        for name in names:
+            (self.root / name).write_bytes(name.encode())
+        manifest = ''.join(f'{release.digest(name.encode())}  {name}\n' for name in names)
+        (self.root / 'SHA256SUMS').write_text(manifest)
+        return manifest
+
+    def subjects(self):
+        return {p.name: release.digest(p.read_bytes()) for p in self.root.iterdir() if not p.name.endswith('.intoto.jsonl')}
+
+    @staticmethod
+    def bundle(subjects, predicate=release.SLSA_PROVENANCE, sig='c2ln'):
+        statement = {'_type': 'https://in-toto.io/Statement/v1', 'predicateType': predicate, 'predicate': {},
+                     'subject': [{'name': n, 'digest': {'sha256': d}} for n, d in sorted(subjects.items())]}
+        payload = __import__('base64').b64encode(json.dumps(statement).encode()).decode()
+        return {'mediaType': 'application/vnd.dev.sigstore.bundle.v0.3+json', 'verificationMaterial': {'certificate': {}},
+                'dsseEnvelope': {'payload': payload, 'payloadType': 'application/vnd.in-toto+json', 'signatures': [{'sig': sig}]}}
+
+    def bundle_line(self, subjects, **kwargs):
+        return json.dumps(self.bundle(subjects, **kwargs)) + '\n'
+
+    def test_provenance_asset_starts_after_immutable_v054(self):
+        self.assertFalse(release.has_provenance_asset('0.5.4'))
+        self.assertTrue(release.has_provenance_asset('0.5.5'))
+        self.assertTrue(release.has_provenance_asset('1.0.0-rc.1'))
+
+    def test_stage_adds_signed_provenance_outside_sha256sums(self):
+        manifest = self.write_assets()
+        subjects = self.subjects()
+        bundle = self.root.parent / 'attestation.jsonl'
+        bundle.write_text(json.dumps(self.bundle(subjects), indent=2))  # pretty single JSON is normalised
+        names = release.staged_assets(self.record, self.root, bundle)
+        name = release.provenance_name('1.2.3')
+        self.assertIn(name, names)
+        self.assertNotIn(name, (self.root / 'SHA256SUMS').read_text())
+        self.assertEqual((self.root / 'SHA256SUMS').read_text(), manifest)
+        self.assertIn('SHA256SUMS', subjects)
+        lines = (self.root / name).read_text().splitlines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(json.loads(lines[0]), self.bundle(subjects))
+        with self.assertRaisesRegex(ValueError, 'already staged'):
+            release.staged_assets(self.record, self.root, bundle)
+
+    def test_stage_refuses_incomplete_foreign_or_unsigned_provenance(self):
+        self.write_assets()
+        subjects = self.subjects()
+        missing_sums = {k: v for k, v in subjects.items() if k != 'SHA256SUMS'}
+        wrong_digest = dict(subjects, SHA256SUMS='0' * 64)
+        unsigned = self.bundle(subjects); unsigned['dsseEnvelope']['signatures'] = []
+        cases = {'subjects differ': self.bundle_line(missing_sums), 'subjects differ ': self.bundle_line(wrong_digest),
+                 'not SLSA': self.bundle_line(subjects, predicate='https://cyclonedx.org/bom'),
+                 'signed in-toto': json.dumps(unsigned) + '\n', 'empty': ''}
+        bundle = self.root.parent / 'attestation.jsonl'
+        for message, text in cases.items():
+            with self.subTest(message=message):
+                bundle.write_text(text)
+                with self.assertRaisesRegex(ValueError, message.strip()):
+                    release.staged_assets(self.record, self.root, bundle)
+                (self.root / release.provenance_name('1.2.3')).unlink(missing_ok=True)
+
+    def test_attached_provenance_must_match_github_storage_for_every_asset(self):
+        self.write_assets()
+        subjects = self.subjects()
+        bundle = self.root.parent / 'attached.jsonl'; bundle.write_text(self.bundle_line(subjects))
+        assets = sorted(self.root.iterdir())
+        for stored_sig, ok in (('c2ln', True), ('b3RoZXI=', False)):
+            calls = []
+            def run(args, check, cwd=None, stdout=None):
+                calls.append(args[:3])
+                if args[2] == 'download':
+                    (Path(cwd) / 'sha256:x.jsonl').write_text(self.bundle_line(subjects, sig=stored_sig))
+            scratch = Path(tempfile.mkdtemp(dir=self.temp.name))
+            with self.subTest(ok=ok), patch.object(release.subprocess, 'run', side_effect=run):
+                if ok:
+                    release.verify_attached_provenance(assets, bundle, ['--repo', release.REPO], scratch)
+                    self.assertEqual(calls.count(['gh', 'attestation', 'verify']), len(assets))
+                else:
+                    with self.assertRaisesRegex(ValueError, 'GitHub-stored'):
+                        release.verify_attached_provenance(assets, bundle, ['--repo', release.REPO], scratch)
 
     def test_collector_binds_all_targets_to_tag_license_and_original_bytes(self):
         artifacts = self.root / 'artifacts'; artifacts.mkdir()
