@@ -18,6 +18,54 @@ environment's owner approval and its short-lived OIDC token. Do not upload crate
 workstation, create/restore a long-lived Cargo token or use a manual fallback.
 Each version still needs owner authorization and all qualification/verification gates.
 
+### Standard release pipeline
+
+Owner approval, 2026-11-21: [trusted-publishing.yml](../.github/workflows/trusted-publishing.yml)
+follows the Rust Commons [standard pipeline](https://github.com/rustcommons/.github/blob/main/docs/TRUSTED-PUBLISHING.md).
+The flow is:
+
+1. **Release notes final before tagging.** The release PR moves the `Unreleased`
+   CHANGELOG entries under a dated `## [X.Y.Z] - YYYY-MM-DD` heading and commits
+   `docs/releases/vX.Y.Z.md` in final form. The GitHub Release body is that file.
+2. **Tag.** After the coordinator's normal merge and green CI on that main commit,
+   push an annotated `vX.Y.Z` tag on the merge.
+3. **Release gate.** Refuses the run unless the tag is annotated and names the
+   version, the commit is reachable from main with successful CI, the dated
+   CHANGELOG entry, notes and release-documentation check pass, the tag record
+   equals the commit, and the workspace is exactly the `rust-mirror` crate.
+4. **Build.** Generates the crate SBOM with pinned cargo-cyclonedx 0.5.9 from the
+   clean source, runs `cargo package --locked`, audits the package (regular members,
+   original files equal to the commit, clean VCS record, no fuzz/CI content),
+   installs the packaged crate into a fresh root and checks version, protocol and a
+   typed refusal, then writes `SHA256SUMS-crates`. Pull requests that touch the
+   pipeline run `gate` and `build` as a dry run with publish=false.
+5. **Checksums and attestations.** Signs SLSA provenance for the `.crate` and the
+   SBOM and saves `rust-mirror-X.Y.Z.crates.intoto.jsonl`.
+6. **Owner approval, then publish.** The crates-io environment approval releases a
+   short-lived token. The job rechecks any existing publication against the exact
+   tag payload, skips a version crates.io already has, and publishes only bytes
+   identical (`cmp`) to the attested `.crate`.
+7. **Automatic GitHub release.** `github-release` creates `vX.Y.Z` from the
+   committed notes with `--verify-tag` and attaches the `.crate`,
+   `rust-mirror-X.Y.Z.crates.cdx.json`, `SHA256SUMS-crates` and the crate bundle.
+   A re-run uploads only missing files. **The maintainer no longer creates the
+   GitHub Release by hand.**
+8. **Verify publication.** Checks the live body against the notes, the registry
+   checksum and exact tag payload (`verify_registry_release.py`), the crates.io
+   checksum against the attested `.crate`, `gh attestation verify --bundle` for the
+   crate and SBOM, docs.rs (pending is reported as pending) and a clean
+   `cargo install --locked` from crates.io.
+
+Binaries are still built by [release-binaries.yml](../.github/workflows/release-binaries.yml)
+on the same tag. Its collector waits up to 600 s for the GitHub Release, which
+`github-release` now creates automatically after publication. If owner approval
+comes later than that wait, the collector still times out with nothing uploaded, as
+for 0.6.0; then dispatch release-binaries.yml on the tag ref with dry_run=false and
+candidate=false. Its uploader accepts a release that holds exactly the four crate
+files and still refuses any other existing asset. The binaries keep their own
+`SHA256SUMS`, `rust-mirror-X.Y.Z.cdx.json` and `rust-mirror-X.Y.Z.intoto.jsonl`.
+Folding them into this pipeline is [phase 2](ROADMAP.md#standard-release-pipeline).
+
 The owner-machine publications and publish-then-tag sequences below are historical
 release records, not currently available fallbacks. Preserve their source identities,
 checksums, tags and outcomes. Current releases tag the reviewed merge before
@@ -207,6 +255,8 @@ dispatch on the tag ref with dry_run=false and candidate=false.
    archive hash. Packaged README/changelog changes require a refreshed archive and
    candidate identity even when native evidence carries by unchanged code. Require
    owner publication authorization before the workflow runs `cargo publish`.
+   The pipeline's `build` job repeats the package audit and packaged install at the
+   tagged commit; the manual checks above remain release-PR evidence.
 
 ## After publication
 
@@ -217,10 +267,12 @@ dispatch on the tag ref with dry_run=false and candidate=false.
 - Current releases create the annotated version tag at the exact reviewed merge
   before Trusted Publishing, as described above. Historical owner-machine releases
   tagged after publication; preserve those records without treating that sequence
-  as a current fallback. Publish the exact
-  committed [versioned notes](releases/v0.6.0.md) as the GitHub Release, latest and
-  with binary archives/checksums attached only through the release workflow under
-  the owner's 2026-11-15 authorization. Do not change historical note bodies.
+  as a current fallback. The pipeline's `github-release` job publishes the exact
+  committed versioned notes (for example [0.6.0](releases/v0.6.0.md)) as the GitHub
+  Release with the crate files; do not create it by hand. Binary archives/checksums
+  are attached only through the release workflow under the owner's 2026-11-15
+  authorization. Do not change historical note bodies. Releases up to 0.6.0 were
+  created by hand and keep their existing assets.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
   and clean remote-aligned main. Record evidence in excluded documentation.
 - Never move a release tag, overwrite a published crate or rewrite failed history.

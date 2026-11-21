@@ -124,6 +124,17 @@ def verify_attached_provenance(assets, provenance, policy, scratch):
     require(matched == attached, 'attached provenance contains bundles absent from GitHub attestation storage')
 
 
+def crate_pipeline_assets(version):
+    """Files trusted-publishing.yml's `github-release` attaches before the binaries."""
+    return {f'rust-mirror-{version}.crate', f'rust-mirror-{version}.crates.cdx.json',
+            'SHA256SUMS-crates', f'rust-mirror-{version}.crates.intoto.jsonl'}
+
+
+def has_crate_pipeline_assets(version):
+    """Releases after 0.6.0 come from the standard pipeline, which attaches the crate files."""
+    return tuple(int(n) for n in re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version).groups()) > (0, 6, 0)
+
+
 def has_legacy_assets(version):
     return version in ('0.5.1', '0.5.2')
 
@@ -190,8 +201,10 @@ def check_release(root, release_record, wait=0, allow_existing=False):
             print('Waiting for the separately created GitHub Release', flush=True)
             time.sleep(min(10, max(0, deadline - time.monotonic())))
     validate_release(release, release_record, remote_commit(root, release_record['tag']))
-    # Refuse all existing assets, including partial prior uploads. No automatic repair/delete.
-    require(allow_existing or not release['assets'], 'release already has assets; refusing any replacement or partial rerun')
+    # Refuse all existing assets, including partial prior uploads, except exactly the
+    # crate files the standard pipeline attached. No automatic repair/delete.
+    existing = {a['name'] for a in release['assets']}
+    require(allow_existing or existing <= crate_pipeline_assets(release_record['version']), 'release already has assets; refusing any replacement or partial rerun')
     return release
 
 
