@@ -148,7 +148,9 @@ jobs:
           cargo install --path "$unpacked/rust-mirror-$VERSION" --locked --root "$RUNNER_TEMP/package-install"
           bin="$RUNNER_TEMP/package-install/bin/rust-mirror"
           test "$("$bin" --version)" = "rust-mirror $VERSION"
-          "$bin" --events jsonl --version | head -n1 | jq -e --arg v "$VERSION" '.type == "hello" and .protocol == 1 and .tool_version == $v'
+          # Read from a file: piping into `head` would break rust-mirror's later writes.
+          "$bin" --events jsonl --version > "$RUNNER_TEMP/version.jsonl"
+          head -n1 "$RUNNER_TEMP/version.jsonl" | jq -e --arg v "$VERSION" '.type == "hello" and .protocol == 1 and .tool_version == $v'
           cd "$RUNNER_TEMP/smoke"
           if "$bin" --events jsonl crates show --plan missing.json > refusal.jsonl; then exit 1; fi
           tail -n1 refusal.jsonl | jq -e '.ok == false and .error.kind == "io"'
@@ -378,4 +380,5 @@ jobs:
           root="$RUNNER_TEMP/published-install"
           cargo install rust-mirror --version "=$VERSION" --locked --root "$root"
           test "$("$root/bin/rust-mirror" --version)" = "rust-mirror $VERSION"
-          "$root/bin/rust-mirror" --events jsonl --version | head -n1 | jq -e --arg v "$VERSION" '.type == "hello" and .protocol == 1 and .tool_version == $v'
+          "$root/bin/rust-mirror" --events jsonl --version > "$RUNNER_TEMP/version.jsonl"
+          head -n1 "$RUNNER_TEMP/version.jsonl" | jq -e --arg v "$VERSION" '.type == "hello" and .protocol == 1 and .tool_version == $v'
