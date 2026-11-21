@@ -152,9 +152,11 @@ jobs:
       - name: Recheck after owner approval; refuse a concurrent publication
         id: registry
         run: python3 scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
-      # Package and compare before any token exists: `cargo package` builds the crate
-      # (build scripts and proc macros run here), so no credential is in scope.
-      - name: Package and compare release crates (no token)
+      # Nothing compiles in this job: it holds id-token: write and the crates-io
+      # environment, so no crate or dependency code (build scripts, proc macros) may
+      # run here. --no-verify packages without building; the build job already built
+      # the packaged source, and `cmp` checks the bytes against the attested file.
+      - name: Package and compare release crates (no build, no token)
         id: pending
         if: steps.registry.outputs.published == 'false'
         run: |
@@ -168,7 +170,7 @@ jobs:
               continue
             fi
             # Publish only bytes identical to the checksummed, attested file.
-            cargo package --locked -p "$crate"
+            cargo package --locked --no-verify -p "$crate"
             cmp "target/package/$crate-$VERSION.crate" "$RUNNER_TEMP/dist/$crate-$VERSION.crate"
             pending+=("$crate")
           done
@@ -176,8 +178,7 @@ jobs:
       - uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
         if: steps.registry.outputs.published == 'false' && steps.pending.outputs.crates != ''
         id: auth
-      # Only this step sees the token. --no-verify: the build job and the package step
-      # above already built the exact package, so nothing is compiled while it is set.
+      # Only this step sees the token; --no-verify, so nothing is compiled.
       - name: Publish release crates in dependency order
         if: steps.registry.outputs.published == 'false' && steps.pending.outputs.crates != ''
         env:

@@ -56,12 +56,13 @@ signs and publishes the crate and all binaries. The flow is:
    its signature proves the qualified build produced the bytes. PR and dispatch runs
    never sign. All of this finishes before approval; `publish` needs `gate` and `build`.
 6. **Owner approval, then publish.** The job rechecks any existing publication against
-   the exact tag payload and skips a version crates.io already has. With no token
-   present it runs `cargo package --locked` and `cmp`s the result with the attested
-   `.crate`. Only then does crates-io-auth-action mint the short-lived token, and only
-   the final step, `cargo publish --locked --no-verify`, receives it; nothing is
-   compiled while the token is set (the build job and the package step already built
-   the exact package).
+   the exact tag payload and skips a version crates.io already has. **Nothing compiles
+   in the publish job**: it holds `id-token: write` and the crates-io environment, so
+   no crate or dependency code (build scripts, proc macros) may run there. It runs
+   `cargo package --locked --no-verify` (packaging only; the build job already built
+   the packaged source) and `cmp`s the result with the attested `.crate`. Only then
+   does crates-io-auth-action mint the short-lived token, and only the final step,
+   `cargo publish --locked --no-verify`, receives it.
 7. **Automatic GitHub release.** `github-release` re-stages the bundle (subjects equal
    the eight signed files), requires every attached DSSE envelope to equal GitHub's
    stored attestation and the SBOM attestation of every archive and the crate to
