@@ -137,6 +137,30 @@ tar -xzf "$archive"
 ./rust-mirror-0.5.4-x86_64-unknown-linux-musl/rust-mirror --version
 ```
 
+### Offline verification with the attached provenance bundle (v0.5.5 and later)
+
+Releases after v0.5.4 also attach `rust-mirror-VERSION.intoto.jsonl`: JSON Lines,
+one Sigstore bundle per line, holding the signed SLSA v1 build-provenance DSSE
+envelope whose in-toto statement names every archive, the SBOM and SHA256SUMS.
+It is the same signed bundle that GitHub stores; pass it with `--bundle` so
+verification needs no attestation API lookup (the Sigstore trust root still comes
+from `gh`'s cache or TUF, see `gh attestation trusted-root`). Keep the policy flags:
+
+```sh
+gh release download "$tag" --repo rustcommons/rust-mirror --pattern "rust-mirror-${tag#v}.intoto.jsonl"
+gh attestation verify "$archive" --bundle "rust-mirror-${tag#v}.intoto.jsonl" \
+  --repo rustcommons/rust-mirror \
+  --signer-workflow rustcommons/rust-mirror/.github/workflows/build-binaries.yml \
+  --source-digest "$commit" --signer-digest "$commit" --deny-self-hosted-runners \
+  --predicate-type https://slsa.dev/provenance/v1
+```
+
+The bundle is deliberately absent from SHA256SUMS: SHA256SUMS is itself a subject
+of the provenance, and the bundle is created after it, so listing it would be
+circular. The bundle authenticates itself through its Sigstore signature; a
+checksum line would add nothing. The SBOM attestation is not in the attached file;
+verify it online as above. v0.5.4 and earlier keep their original assets.
+
 The read-only [public-download workflow](../.github/workflows/verify-release-binaries.yml),
 dispatched with tag v0.5.4 after publication, additionally compares the exact signed
 SBOM predicate with the downloaded document and the selected archive digest. It

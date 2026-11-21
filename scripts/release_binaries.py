@@ -6,6 +6,7 @@ may attest/upload. No API in this helper deletes, replaces, or creates a release
 """
 from __future__ import annotations
 import argparse
+import base64
 import hashlib
 import io
 import json
@@ -31,6 +32,9 @@ TARGETS = ('x86_64-pc-windows-msvc', 'x86_64-unknown-linux-gnu', 'x86_64-unknown
            'aarch64-apple-darwin', 'x86_64-apple-darwin')
 TAG = re.compile(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?')
 MAX_ARCHIVE = 128 * 1024 * 1024
+MAX_PROVENANCE = 4 * 1024 * 1024
+SLSA_PROVENANCE = 'https://slsa.dev/provenance/v1'
+FIRST_PROVENANCE_ASSET = (0, 5, 5)
 
 
 def require(ok, message):
@@ -53,6 +57,71 @@ def asset_name(version, target):
 
 def sbom_name(version):
     return f'rust-mirror-{version}.cdx.json'
+
+
+def provenance_name(version):
+    return f'rust-mirror-{version}.intoto.jsonl'
+
+
+def has_provenance_asset(version):
+    """Releases up to v0.5.4 are immutable and carry provenance only in GitHub's store."""
+    return tuple(int(n) for n in re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version).groups()) >= FIRST_PROVENANCE_ASSET
+
+
+def provenance_bundles(raw):
+    """Parse Sigstore bundles (one JSON document or JSON Lines) and their SLSA statements."""
+    require(0 < len(raw) <= MAX_PROVENANCE, 'empty or oversized provenance bundle')
+    text = raw.decode('utf-8')
+    try:
+        bundles = [json.loads(text)]
+    except json.JSONDecodeError:
+        bundles = [json.loads(line) for line in text.splitlines() if line.strip()]
+    result = []
+    for bundle in bundles:
+        require(isinstance(bundle, dict) and str(bundle.get('mediaType', '')).startswith('application/vnd.dev.sigstore.bundle'), 'not a Sigstore bundle')
+        require(isinstance(bundle.get('verificationMaterial'), dict), 'bundle lacks verification material')
+        envelope = bundle.get('dsseEnvelope') or {}
+        require(envelope.get('payloadType') == 'application/vnd.in-toto+json' and envelope.get('signatures'), 'bundle lacks a signed in-toto DSSE envelope')
+        statement = json.loads(base64.b64decode(envelope['payload'], validate=True))
+        require(statement.get('_type') == 'https://in-toto.io/Statement/v1' and statement.get('predicateType') == SLSA_PROVENANCE, 'bundle is not SLSA v1 provenance')
+        result.append((bundle, statement))
+    require(bool(result), 'no provenance bundles')
+    return result
+
+
+def envelope_key(bundle):
+    envelope = bundle['dsseEnvelope']
+    return envelope['payload'], tuple(sorted(s['sig'] for s in envelope['signatures']))
+
+
+def provenance_jsonl(raw, subjects):
+    """Return canonical JSON Lines whose provenance subjects are exactly the release assets."""
+    covered = {}
+    lines = []
+    for bundle, statement in provenance_bundles(raw):
+        for subject in statement['subject']:
+            sha = subject['digest']['sha256']
+            require(covered.setdefault(subject['name'], sha) == sha, 'conflicting provenance subject digests')
+        lines.append(json.dumps(bundle, separators=(',', ':')) + '\n')
+    require(covered == subjects, 'provenance subjects differ from the release assets')
+    return ''.join(lines)
+
+
+def verify_attached_provenance(assets, provenance, policy, scratch):
+    """Verify every asset with the attached bundle and match it to GitHub's stored attestations."""
+    attached = {envelope_key(bundle) for bundle, _ in provenance_bundles(provenance.read_bytes())}
+    matched = set()
+    for asset in sorted(assets):
+        subprocess.run(['gh', 'attestation', 'verify', str(asset), '--bundle', str(provenance), *policy, '--predicate-type', SLSA_PROVENANCE], check=True, stdout=subprocess.DEVNULL)
+        folder = scratch / asset.name; folder.mkdir(parents=True)
+        subprocess.run(['gh', 'attestation', 'download', str(asset.resolve()), '--repo', REPO, '--predicate-type', SLSA_PROVENANCE], check=True, cwd=folder, stdout=subprocess.DEVNULL)
+        # gh names the file sha256:DIGEST.jsonl, or sha256-DIGEST.jsonl on Windows (':' is an NTFS stream separator).
+        downloads = sorted(folder.glob('*.jsonl'))
+        require(bool(downloads), f'no GitHub-stored provenance downloaded for {asset.name}')
+        stored = {envelope_key(bundle) for path in downloads for bundle, _ in provenance_bundles(path.read_bytes())}
+        require(bool(attached & stored), f'attached provenance does not match GitHub-stored attestations for {asset.name}')
+        matched |= attached & stored
+    require(matched == attached, 'attached provenance contains bundles absent from GitHub attestation storage')
 
 
 def has_legacy_assets(version):
@@ -377,10 +446,32 @@ def collect(root, r, artifacts, output, sbom=None, artifact_prefix=""):
     return sums
 
 
+def staged_assets(r, output, provenance=None):
+    """Check the exact upload set; SHA256SUMS covers archives+SBOM, provenance covers those and SHA256SUMS."""
+    summed = sorted([asset_name(r['version'], t) for t in TARGETS] + [sbom_name(r['version'])])
+    signed = summed + ['SHA256SUMS']
+    bundle = provenance_name(r['version'])
+    if provenance is not None:
+        require(not (output / bundle).exists(), 'provenance asset already staged')
+        subjects = {n: digest((output / n).read_bytes()) for n in signed}
+        # Binary write: LF-only JSON Lines on every platform (no text-mode CRLF translation).
+        (output / bundle).write_bytes(provenance_jsonl(provenance.read_bytes(), subjects).encode('utf-8'))
+    expected = sorted(signed + [bundle])
+    require(sorted(p.name for p in output.iterdir()) == expected, 'unexpected or missing release asset')
+    sums = ''.join(f'{digest((output / n).read_bytes())}  {n}\n' for n in summed)
+    require((output / 'SHA256SUMS').read_text() == sums, 'checksum manifest mismatch')
+    provenance_jsonl((output / bundle).read_bytes(), {n: digest((output / n).read_bytes()) for n in signed})
+    return expected
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__); sub = p.add_subparsers(dest='command', required=True)
     resolve = sub.add_parser('resolve'); resolve.add_argument('--root', type=Path, required=True); resolve.add_argument('--tag', required=True); resolve.add_argument('--output', type=Path, required=True); resolve.add_argument('--candidate-commit', help='Read-only pre-tag qualification of this exact commit')
     build = sub.add_parser('package'); build.add_argument('--source', type=Path, required=True); build.add_argument('--tag', required=True); build.add_argument('--commit', required=True); build.add_argument('--target', choices=TARGETS, required=True); build.add_argument('--output', type=Path, required=True); build.add_argument('--glibc-report', type=Path); build.add_argument('--candidate', action='store_true', help='Package a frozen pre-tag candidate; cannot authorize upload')
+    stage = sub.add_parser('stage', help='Offline: add the provenance bundle and check the exact upload set')
+    stage.add_argument('--root', type=Path, required=True); stage.add_argument('--tag', required=True); stage.add_argument('--commit', required=True)
+    stage.add_argument('--output', type=Path, required=True); stage.add_argument('--provenance', type=Path, required=True)
+    stage.add_argument('--candidate', action='store_true', help='Read-only pre-tag candidate validation')
     for command in ('collect', 'preflight', 'upload'):
         parser = sub.add_parser(command); parser.add_argument('--root', type=Path, required=True); parser.add_argument('--tag', required=True); parser.add_argument('--commit', required=True)
         if command == 'collect':
@@ -394,7 +485,7 @@ def main():
             parser.add_argument('--allow-existing', action='store_true', help='Read-only dry-run only; upload always refuses existing assets')
     args = p.parse_args()
     if args.command == 'package': return package(args)
-    candidate_commit = args.candidate_commit if args.command == 'resolve' else args.commit if args.command == 'collect' and args.candidate else None
+    candidate_commit = args.candidate_commit if args.command == 'resolve' else args.commit if args.command in ('collect', 'stage') and args.candidate else None
     r = record(args.root, args.tag, candidate_commit)
     if args.command == 'resolve':
         if candidate_commit is None:
@@ -404,12 +495,10 @@ def main():
         print(json.dumps({k: r[k] for k in ('tag', 'version', 'commit')})); return
     require(r['commit'] == args.commit, 'tag changed since build preparation')
     if args.command == 'collect': print(collect(args.root, r, args.artifacts, args.output, args.sbom, args.artifact_prefix)); return
+    if args.command == 'stage': print('\n'.join(staged_assets(r, args.output, args.provenance))); return
     release = check_release(args.root, r, args.wait_seconds if args.command == 'preflight' else 0, args.allow_existing if args.command == 'preflight' else False)
     if args.command == 'preflight': print('Existing release/tag/body match; dry-run allows existing assets' if args.allow_existing else 'Existing release/tag/body match; no assets present'); return
-    expected = sorted([asset_name(r['version'], t) for t in TARGETS] + [sbom_name(r['version']), 'SHA256SUMS'])
-    require(sorted(p.name for p in args.output.iterdir()) == expected, 'unexpected or missing release asset')
-    sums = ''.join(f'{digest((args.output / n).read_bytes())}  {n}\n' for n in expected if n != 'SHA256SUMS')
-    require((args.output / 'SHA256SUMS').read_text() == sums, 'checksum manifest mismatch')
+    expected = staged_assets(r, args.output)
     # GitHub rejects duplicate names (422). No clobber, PATCH or DELETE path exists.
     for name in expected:
         raw = (args.output / name).read_bytes()

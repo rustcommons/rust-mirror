@@ -319,8 +319,32 @@ cannot change them. Live dispatch uses the exact immutable tag workflow ref with
 candidate=false; current main is allowed only when the tag and invocation SHA
 coincide. Alternate source refs cannot execute in main-scoped jobs. Tag-triggered publication always uses the immutable tag. Never
 create a public throwaway release to qualify a candidate.
-For the future SBOM profile, download all seven live assets after uploading, verify SHA256SUMS and attestations,
+For the future SBOM profile, download all seven live assets (eight from v0.5.5, including the provenance bundle) after uploading, verify SHA256SUMS and attestations,
 inspect archive layout/README/source, recheck release body/tag and record evidence.
+
+### Attached provenance bundle (Scorecard Signed-Releases)
+
+Scorecard reads release assets, not GitHub's attestation store. From v0.5.5 every
+release therefore also carries `rust-mirror-VERSION.intoto.jsonl` (eight assets).
+The signer job in build-binaries.yml (id-token/attestations write, no contents
+write) saves the `bundle-path` output of actions/attest-build-provenance as the
+`release-provenance` artifact. The publish job (contents write only) downloads it,
+runs `release_binaries.py stage`, which requires the bundle's SLSA v1 subjects to
+equal exactly the five archives, SBOM and SHA256SUMS, and then checks every asset with
+`gh attestation verify --bundle` under the same-commit signer policy. It also requires
+each attached DSSE envelope (payload and signatures) to equal one returned by
+`gh attestation download` from GitHub's store. Only then does upload run; upload
+rechecks the exact eight-name set. SHA256SUMS stays archives plus SBOM: it is a
+provenance subject, so listing the later bundle in it would be circular, and the
+bundle is self-authenticating through Sigstore.
+
+Dry runs and PR candidates cannot sign. The `provenance-dry-run` job stages an
+unsigned placeholder bundle built from the dry-run assets, which exercises the subject
+check and the exact upload set. It then downloads published v0.5.4 assets plus its stored
+provenance bundle and runs the same offline `--bundle` verification and store
+match (read-only, contents/attestations read). The read-only download verifier
+requires the bundle for v0.5.5 and later and repeats both checks; v0.5.4 and
+earlier are never modified.
 
 See [install verification and unsigned prompts](INSTALL.md). GitHub provenance is
 separate from Windows Authenticode/Apple Developer ID or notarization; no paid OS
