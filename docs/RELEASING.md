@@ -69,6 +69,16 @@ signs and publishes the crate and all binaries. The flow is:
    assets, checks all nine, then publishes. A published release is never modified: a
    complete one makes the re-run a no-op, an incomplete one is refused for a decision.
    Two releases for one tag are refused. Never delete or replace an asset to pass.
+
+   *Manual recovery, two cases.* (1) A killed upload can leave a half-uploaded asset
+   on the draft; the job then refuses it as differing. Delete only that asset from the
+   draft by hand (the release is still a draft, so nothing public changes), then re-run
+   only the failed `github-release` job. (2) Do not use **Re-run all jobs** after a
+   partial draft: that rebuilds and re-signs, and the archives are not bit-identical
+   across builds, so the new files would differ from those already on the draft and be
+   refused. Re-run only the failed jobs, which reuse this run's built and signed files.
+   If a full re-run is unavoidable, first delete the draft's assets by hand, then re-run.
+   Never delete or replace an asset of a published release.
 8. **Verify publication.** On Windows, musl and GNU runners it downloads every asset,
    checks digests, SHA256SUMS, every attestation (signer build-binaries.yml, source
    and signer digest = tag commit, no self-hosted runners), the bundle against the
