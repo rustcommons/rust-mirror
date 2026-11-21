@@ -17,6 +17,12 @@
   bundle. `release-binaries.yml` is retired; the late-approval wait is gone. See
   [the release flow](https://github.com/rustcommons/rust-mirror/blob/main/docs/RELEASING.md#standard-release-pipeline).
   No crate or behavior change.
+- Least-privilege hardening of the release pipeline: the crates.io token is minted
+  after packaging and the byte comparison and is visible only to
+  `cargo publish --no-verify`; SBOM and crate tooling run in their own job, apart
+  from the binary payload and SHA256SUMS; archive READMEs print the strict
+  `gh attestation verify` command with signer and digests; fork pull requests skip
+  the dry-run build; a release is marked latest only if it is the highest version.
 
 ## [0.6.0] - 2026-11-21
 

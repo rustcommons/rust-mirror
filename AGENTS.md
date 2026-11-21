@@ -450,7 +450,11 @@ tagged source, locked Rust 1.90 builds, native Windows/macOS and static Linux mu
 LICENSE/README.txt, SHA256SUMS and GitHub/Sigstore attestations. Under the newer
 security baseline the reusable signer alone holds OIDC/attestation writes and the
 separate asset publisher holds contents write; native jobs stay read-only. Never replace/delete
-existing release assets or change notes/tags to pass an upload check. Keep OS
+existing release assets or change notes/tags to pass an upload check. The one exception
+is a half-uploaded asset on a still-DRAFT release left by a killed upload: delete only
+that asset by hand, then re-run only `github-release`, as
+[RELEASING.md](docs/RELEASING.md#standard-release-pipeline) describes (or, before an
+unavoidable full re-run, the draft's assets). Never touch a published release's assets. Keep OS
 signing/notarization absent and user prompts explicit. Windows release builds use
 static CRT with DLL-import refusal; The Linux static variant uses x86_64-unknown-linux-musl with no
 dynamic interpreter/NEEDED libraries, empty-root and real DNS/TLS plan/sync proofs.

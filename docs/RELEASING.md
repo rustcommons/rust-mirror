@@ -28,7 +28,9 @@ signs and publishes the crate and all binaries. The flow is:
 1. **Release notes final before tagging.** The release PR moves the `Unreleased`
    CHANGELOG entries under a dated `## [X.Y.Z] - YYYY-MM-DD` heading and commits
    `docs/releases/vX.Y.Z.md` in final form. The GitHub Release body is that file.
-   The PR's dry run (gate plus the full build, publish=false) must be green.
+   The PR's dry run (gate plus the full build, publish=false) must be green. Fork PRs
+   skip the dry-run build (the reusable call requests id-token: write, which forks
+   cannot receive), so a release PR must come from a branch of this repository.
 2. **Tag.** After the coordinator's normal merge and green CI on that main commit,
    push an annotated `vX.Y.Z` tag on the merge.
 3. **Release gate.** Refuses the run unless the tag is annotated and names the
@@ -37,6 +39,10 @@ signs and publishes the crate and all binaries. The flow is:
    equals the commit, and the workspace is exactly the `rust-mirror` crate.
 4. **Build** ([isolated reusable builder/signer](../.github/workflows/build-binaries.yml),
    which runs the [read-only core](../.github/workflows/build-binaries-core.yml)).
+   The core's `crate-sbom` job runs every third-party tool (cargo-cyclonedx, cargo
+   package/install); the `verify` job that downloads the binaries and writes
+   SHA256SUMS runs only this repository's stdlib Python, and the signer re-checks
+   every hash.
    Five native builds with every qualification gate (below), the SBOM from the clean
    frozen source with pinned cargo-cyclonedx 0.5.9, `cargo package --locked` with a
    package audit (regular members equal to the commit, clean VCS record, no fuzz/CI
@@ -49,10 +55,13 @@ signs and publishes the crate and all binaries. The flow is:
    bundle `rust-mirror-X.Y.Z.intoto.jsonl`. Because the signer also ran the build,
    its signature proves the qualified build produced the bytes. PR and dispatch runs
    never sign. All of this finishes before approval; `publish` needs `gate` and `build`.
-6. **Owner approval, then publish.** The crates-io environment approval releases a
-   short-lived token. The job rechecks any existing publication against the exact
-   tag payload, skips a version crates.io already has, and publishes only bytes
-   identical (`cmp`) to the attested `.crate`.
+6. **Owner approval, then publish.** The job rechecks any existing publication against
+   the exact tag payload and skips a version crates.io already has. With no token
+   present it runs `cargo package --locked` and `cmp`s the result with the attested
+   `.crate`. Only then does crates-io-auth-action mint the short-lived token, and only
+   the final step, `cargo publish --locked --no-verify`, receives it; nothing is
+   compiled while the token is set (the build job and the package step already built
+   the exact package).
 7. **Automatic GitHub release.** `github-release` re-stages the bundle (subjects equal
    the eight signed files), requires every attached DSSE envelope to equal GitHub's
    stored attestation and the SBOM attestation of every archive and the crate to

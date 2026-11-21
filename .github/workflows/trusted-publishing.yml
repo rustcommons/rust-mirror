@@ -94,6 +94,10 @@ jobs:
   build:
     name: Build
     needs: gate
+    # A fork PR cannot be granted id-token: write, which the reusable call requests,
+    # so it would be rejected at startup; fork PRs skip the dry-run build. Same-repo
+    # PRs, dispatches and tags always run it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # The nested "Checksums and attestations" job signs only on a v* tag push and is
     # the only job that uses these two grants; every build job holds contents read.
     permissions:
@@ -148,15 +152,14 @@ jobs:
       - name: Recheck after owner approval; refuse a concurrent publication
         id: registry
         run: python3 scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
-      - uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
+      # Package and compare before any token exists: `cargo package` builds the crate
+      # (build scripts and proc macros run here), so no credential is in scope.
+      - name: Package and compare release crates (no token)
+        id: pending
         if: steps.registry.outputs.published == 'false'
-        id: auth
-      - name: Publish release crates in dependency order
-        if: steps.registry.outputs.published == 'false'
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
           set -euo pipefail
+          pending=()
           for crate in $(jq -r '.[]' <<<"$CRATES"); do
             status=$(curl -s -o /dev/null -w '%{http_code}' -A 'rustcommons-release' \
               "https://crates.io/api/v1/crates/$crate/$VERSION")
@@ -167,7 +170,23 @@ jobs:
             # Publish only bytes identical to the checksummed, attested file.
             cargo package --locked -p "$crate"
             cmp "target/package/$crate-$VERSION.crate" "$RUNNER_TEMP/dist/$crate-$VERSION.crate"
-            cargo publish --locked -p "$crate"
+            pending+=("$crate")
+          done
+          echo "crates=${pending[*]}" >> "$GITHUB_OUTPUT"
+      - uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
+        if: steps.registry.outputs.published == 'false' && steps.pending.outputs.crates != ''
+        id: auth
+      # Only this step sees the token. --no-verify: the build job and the package step
+      # above already built the exact package, so nothing is compiled while it is set.
+      - name: Publish release crates in dependency order
+        if: steps.registry.outputs.published == 'false' && steps.pending.outputs.crates != ''
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+          PENDING: ${{ steps.pending.outputs.crates }}
+        run: |
+          set -euo pipefail
+          for crate in $PENDING; do
+            cargo publish --locked --no-verify -p "$crate"
           done
 
   github-release:

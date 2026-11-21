@@ -109,7 +109,7 @@ provider observations and prior CI history, so no new SAST score is promised her
 | Native build, tests, SBOM generation, comparison | None | Frozen commit; no signing token or upload authority |
 | Build / Checksums and attestations (inside reusable build-binaries.yml) | id-token write, attestations write | Exact v* tag push; tag record, source and workflow SHA equal; exact file set and SHA256SUMS of the build it ran; no candidate signing. The calling `build` job grants these two only for this nested job; core build jobs hold contents read |
 | Release creation and upload (`github-release`) | contents write | Bundle equal to GitHub's stored attestations and SBOM bindings before upload; draft first; existing release must match tag/title/body/state; never replaces an existing asset |
-| crates.io publish | id-token write | v* tag, main ancestry, crates-io environment and owner review |
+| crates.io publish | id-token write | v* tag, main ancestry, crates-io environment and owner review; package and `cmp` run before the token is minted, which only `cargo publish --no-verify` receives |
 | Scorecard | id-token write, security-events write | Main push or schedule only; no PR code |
 
 Build execution is fixed to the invoking PR/branch/tag SHA, never an arbitrary

@@ -194,6 +194,33 @@ def attestation_policy(expected):
     return flags
 
 
+def verify_command(r, asset):
+    """The strict verify command from docs/INSTALL.md: exact signer, source and signer digests."""
+    c = r['commit']
+    lines = [f'  gh attestation verify {asset} --repo {REPO} \\',
+             f'    --signer-workflow {REPO}/.github/workflows/build-binaries.yml \\',
+             f'    --source-digest {c} --signer-digest {c} --deny-self-hosted-runners \\',
+             '    --predicate-type https://slsa.dev/provenance/v1']
+    text = '\n'.join(lines)
+    require(text.replace('\\', '').split()[4:-2] == attestation_policy(r), 'README verify command differs from the verifier policy')
+    return text + '\n  (Unix shell; on Windows join the lines and drop the backslashes.)'
+
+
+def release_version_key(tag):
+    match = re.fullmatch(r'v([0-9]+)\.([0-9]+)\.([0-9]+)(-.+)?', tag)
+    return None if match is None else tuple(int(n) for n in match.groups()[:3])
+
+
+def is_highest_release(tag, releases):
+    """Mark latest only a final version above every other published final release."""
+    key = release_version_key(tag)
+    if key is None or '-' in tag:
+        return False
+    others = [release_version_key(x['tag_name']) for x in releases
+              if x['tag_name'] != tag and not x['draft'] and not x['prerelease'] and '-' not in x['tag_name']]
+    return all(k is None or k < key for k in others)
+
+
 def record(root, tag, candidate_commit=None):
     require(TAG.fullmatch(tag), 'expected a v-prefixed semantic version tag')
     if candidate_commit is not None:
@@ -261,9 +288,10 @@ def publish_release(r, folder, call=None):
     files = {p.name: p for p in sorted(folder.iterdir())}
     want = {name: 'sha256:' + digest(path.read_bytes()) for name, path in files.items()}
     title = notes_title(r['notes'])
-    matches, page = [], 1
+    matches, everything, page = [], [], 1
     while True:
         batch = call(f'{base}/releases?per_page=100&page={page}')
+        everything += batch
         matches += [x for x in batch if x['tag_name'] == r['tag']]
         if len(batch) < 100:
             break
@@ -291,7 +319,9 @@ def publish_release(r, folder, call=None):
     release = call(f'{base}/releases/{release["id"]}')
     check_release_state(release, r, title, True)
     require({a['name']: a.get('digest') for a in release['assets']} == want and all(a['state'] == 'uploaded' for a in release['assets']), 'draft assets incomplete before publishing')
-    call(f'{base}/releases/{release["id"]}', 'PATCH', json.dumps({'draft': False, 'make_latest': 'true'}).encode())
+    latest = 'true' if is_highest_release(r['tag'], everything) else 'false'
+    call(f'{base}/releases/{release["id"]}', 'PATCH', json.dumps({'draft': False, 'make_latest': latest}).encode())
+    print('Latest release:', latest, flush=True)
     release = call(f'{base}/releases/tags/{r["tag"]}')
     check_release_state(release, r, title, False)
     require({a['name']: a.get('digest') for a in release['assets']} == want, 'published assets differ')
@@ -481,7 +511,7 @@ Source commit: {r['commit']}
 Built with Rust {TOOLCHAIN}; run ./{exe} --version (Windows: .\\{exe} --version).
 Put the executable in a folder on PATH; no Rust/Cargo installation is needed.
 Verify SHA256SUMS and provenance before running:
-  gh attestation verify {asset_name(r['version'], args.target)} --repo {REPO}
+{verify_command(r, asset_name(r['version'], args.target))}
 Instructions: https://github.com/{REPO}/blob/main/docs/INSTALL.md
 Unsigned executable: no Windows Authenticode or Apple Developer ID signing/notarization.
 Windows may show SmartScreen: verify first, then More info > Run anyway.
