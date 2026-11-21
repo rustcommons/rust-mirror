@@ -538,6 +538,32 @@ independent certification or a claim about older signers. The coordinator publis
 [GHSA-46c8-w6pp-97pw](https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw) at 2026-11-16T05:35:02Z. Preserve dated draft
 observations as history; current status is published.
 
+## 0.5.5 dependency patch release authorization
+
+Owner authorization, 2026-11-21: release 0.5.5 as a patch from existing main,
+including merged PR #72: sha2 0.11, toml 1.2, a direct webpki-roots 1.0
+requirement (ureq still pulls the 0.26 shim), serde 1.0.229, tempfile 3.27 and
+the matching fuzz workspace. rustls 0.23.46 and rustls-webpki 0.103.17 stay as
+locked in 0.5.4. No other application change and no new dependency. Follow
+[0.5.5 notes](docs/releases/v0.5.5.md) and
+[the release policy](docs/RELEASING.md#055-dependency-patch-release). The notes must
+state that `Error::report` now carries a `toml` 1.x value for library users.
+
+Require a clean package audit and an exact-head candidate dry run: five archives
+plus SBOM, one six-entry SHA256SUMS, all eight GNU userland gates and the
+provenance-bundle staging. 0.5.5 is the first release that attaches
+rust-mirror-VERSION.intoto.jsonl; dry runs cannot sign, so its bundle is verified
+only after the tag. Report the green PR and dry-run ID to the coordinator. Do not
+merge, tag or publish; never push to main or move v* tags.
+
+After the coordinator confirms crates.io publication: check the registry payload,
+docs.rs and a fresh install; create the exact committed GitHub Release; let the
+tag-bound workflow upload eight assets and verify every attestation, SBOM binding
+and the attached bundle against GitHub's store; run the public Windows/GNU/musl
+download verifier. Record publication in a PR, then tell the rust-mirror-gui
+maintainer that 0.5.5 is live. The same exact-tag-only recovery rule as 0.5.4
+applies to a collector timeout.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to

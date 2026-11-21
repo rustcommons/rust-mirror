@@ -149,6 +149,24 @@ asset changes or a source/signer exception. The coordinator published
 [GHSA-46c8-w6pp-97pw](https://github.com/rustcommons/rust-mirror/security/advisories/GHSA-46c8-w6pp-97pw) at 2026-11-16T05:35:02Z after verification.
 Keep earlier draft observations dated and older immutable profiles unchanged.
 
+## 0.5.5 dependency patch release
+
+Owner authorization, 2026-11-21: 0.5.5 ships existing main with the merged
+dependency batch (sha2 0.11, toml 1.2, webpki-roots 1.0 direct, serde 1.0.229,
+tempfile 3.27). Application source is byte-identical to 0.5.4. See
+[0.5.5 notes](releases/v0.5.5.md). Because `Error::report` exposes `toml::Value`,
+the notes tell library users that the type is now from `toml` 1.x.
+
+This is the first release with the attached provenance bundle (eight assets):
+five archives, the SBOM, SHA256SUMS and rust-mirror-0.5.5.intoto.jsonl. Qualify the
+exact clean PR head, the package and the candidate dry run with all eight GNU gates
+and the `provenance-dry-run` job. After the coordinator's normal merge, tag v0.5.5
+at that merge; Trusted Publishing waits for owner approval. Then create the exact
+notes and let the tag workflow upload. Verify the registry, docs.rs, a fresh install,
+all eight assets, the bundle's match with GitHub's attestation store, the SBOM
+bindings and public Windows/GNU/musl execution before recording completion. A
+collector timeout may use only the exact-tag dispatch with an empty release.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
@@ -191,7 +209,7 @@ Keep earlier draft observations dated and older immutable profiles unchanged.
   before Trusted Publishing, as described above. Historical owner-machine releases
   tagged after publication; preserve those records without treating that sequence
   as a current fallback. Publish the exact
-  committed [versioned notes](releases/v0.5.4.md) as the GitHub Release, latest and
+  committed [versioned notes](releases/v0.5.5.md) as the GitHub Release, latest and
   with binary archives/checksums attached only through the release workflow under
   the owner's 2026-11-15 authorization. Do not change historical note bodies.
 - Verify live tag/body, full `--published` documentation CI, registry/docs agreement
