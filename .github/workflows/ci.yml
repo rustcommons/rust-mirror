@@ -13,16 +13,16 @@ jobs:
   check:
     strategy:
       matrix:
-        os: ${{ fromJSON(github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && '["ubuntu-latest"]' || '["ubuntu-latest","windows-latest"]') }}
+        os: ${{ fromJSON(github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && '["ubuntu-24.04"]' || '["ubuntu-24.04","windows-2025"]') }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
         with:
           components: rustfmt, clippy
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
       - run: cargo fmt -- --check
@@ -36,14 +36,14 @@ jobs:
         if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
         run: cargo package --locked
       - name: Save verified Rust 1.90 package
-        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-24.04'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rust-mirror-package
           path: target/package/rust-mirror-*.crate
           if-no-files-found: error
       - name: Install verified package with a fresh Cargo home
-        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-24.04'
         shell: bash
         env:
           CARGO_BUILD_JOBS: '2'
@@ -58,13 +58,13 @@ jobs:
           CARGO_HOME="$RUNNER_TEMP/candidate-cargo" cargo install rust-mirror --path "$RUNNER_TEMP/candidate-source/rust-mirror-$candidate_version" --version "=$candidate_version" --locked --root "$RUNNER_TEMP/candidate-install" -j 2
           "$RUNNER_TEMP/candidate-install/bin/rust-mirror" --events jsonl --version > "$RUNNER_TEMP/candidate-version.jsonl"
       - name: Installed publisher in a loopback-only namespace
-        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest'
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-24.04'
         shell: bash
         run: |
           trap 'sudo rm -f -- "$RUNNER_TEMP/candidate-publisher/ca.key" "$RUNNER_TEMP/candidate-publisher/server.key"' EXIT
           sudo unshare --net sh -c 'ip link set lo up; exec python3 "$1/scripts/prove_rustup_lifecycle.py" --publisher-preflight --publisher-cli "$2/candidate-install/bin/rust-mirror" --host x86_64-unknown-linux-gnu --evidence "$2/candidate-publisher"' sh "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
       - name: Verify fixture key cleanup
-        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest' && always()
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-24.04' && always()
         shell: bash
         run: |
           python3 - <<'PYTHON'
@@ -75,8 +75,8 @@ jobs:
           (root/'candidate-cleanup.json').write_text(json.dumps({'private_keys_destroyed': True, 'fixture_created': proof.exists()})+'\n')
           PYTHON
       - name: Save installed package proof
-        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-latest' && always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && matrix.os == 'ubuntu-24.04' && always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: candidate-installed-publisher
           path: |

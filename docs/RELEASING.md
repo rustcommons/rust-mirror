@@ -254,7 +254,7 @@ backfills require separate approval.
 and workflow_dispatch with a tag and dry_run (default true). Each production build checks out
 the resolved immutable tag commit, uses Rust 1.90.0 and cargo build --release
 --locked --target TARGET. A changed MSRV needs an explicit workflow/helper review.
-From 0.5.2, five build targets are x86_64-pc-windows-msvc on windows-latest,
+From 0.5.2, five build targets are x86_64-pc-windows-msvc on windows-2025 (windows-latest until 2026-11-21; same image),
 x86_64-unknown-linux-gnu built with pinned cargo-libc 0.7.0 targeting glibc 2.17,
 x86_64-unknown-linux-musl on ubuntu-22.04, aarch64-apple-darwin on macos-15 and
 x86_64-apple-darwin on macos-15-intel. The CLI Linux static variant remains musl. The new dynamic GNU variant starts with 0.5.2;
