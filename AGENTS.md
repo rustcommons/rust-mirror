@@ -71,27 +71,35 @@ release mutation. Leave existing Dependabot/user branches untouched; use one PR.
 Standard release pipeline, owner-approved 2026-11-21: trusted-publishing.yml is the
 Rust Commons [standard pipeline](https://github.com/rustcommons/.github/blob/main/docs/TRUSTED-PUBLISHING.md),
 workflow `Trusted publishing` with jobs `gate` (Release gate), `build` (Build),
-`attest` (Checksums and attestations), `publish` (Publish to crates.io),
-`github-release` (GitHub release) and `verify` (Verify publication). Keep job ids,
+`publish` (Publish to crates.io), `github-release` (GitHub release) and `verify`
+(Verify publication). As a binary repository it has no top-level `attest`: signing
+is nested as Build / Checksums and attestations, and `publish` needs `gate` and
+`build`, as in the owner's reference pipeline. Keep job ids,
 display names, order, conditions and per-job permissions in step with the standard;
 never rename the file or the crates-io environment. An annotated `vX.Y.Z` tag on a
 main commit with green CI starts it. `gate` also keeps this repository's guards:
 tag source reachable from main and equal to the tag record, and exactly one
 `rust-mirror` crate. Phase 2 (owner-approved 2026-11-21) folds the binaries in, so
-one pipeline produces and publishes everything. `build` calls the read-only
-build-binaries-core.yml: crate package/audit/packaged install, the SBOM, all five
-native builds with every qualification gate (eight GNU userland launch and real
+one pipeline produces and publishes everything. `build` calls the isolated reusable
+builder/signer build-binaries.yml, which itself runs the read-only
+build-binaries-core.yml (crate package/audit/packaged install, the SBOM, all five
+native builds with every qualification gate: eight GNU userland launch and real
 HTTPS plan/sync gates, static musl DNS/TLS/resume, Windows static CRT) and ONE
-SHA256SUMS over the .crate, archives and SBOM. PR dry runs run `gate` and the full
-`build` with publish=false (skipped for dependabot[bot]). `attest` calls the isolated
-reusable signer build-binaries.yml, so the signer identity stays that reusable
-workflow; it signs every file and stages ONE bundle `rust-mirror-<version>.intoto.jsonl`.
+SHA256SUMS over the .crate, archives and SBOM. Only on a v* tag push, its own
+Checksums and attestations job re-verifies the tag and file set, signs every file
+and stages ONE bundle `rust-mirror-<version>.intoto.jsonl`; a build-binaries.yml
+signature therefore proves this qualified build produced the bytes (GitHub's SLSA
+Build L3 reusable-workflow pattern). PR and dispatch dry runs build everything with
+publish=false and never sign (skipped for dependabot[bot]).
 Building and signing finish BEFORE the owner's crates-io approval, so approval timing
 no longer matters and there is no release wait or recovery dispatch. Only that
 approval lets `publish` run (it `cmp`s the repackaged .crate with the attested one).
-`github-release` then creates the GitHub Release from the committed notes with all
-nine assets in one step and never replaces an existing asset, so write the notes in
-final form before tagging and never create the release by hand. `verify` checks
+`github-release` then checks the bundle against GitHub's store and the SBOM bindings,
+creates a DRAFT release from the committed notes (or resumes a draft left by a killed
+run, found through the releases list), refuses any existing release whose tag, title,
+body or draft/prerelease state is not exactly ours, uploads only missing assets,
+checks all nine and only then publishes it. It never replaces an existing asset.
+Write the notes in final form before tagging and never create the release by hand. `verify` checks
 crates.io, the exact tag payload, docs.rs and a clean install, verifies every asset's
 attestation against build-binaries.yml at the tag commit, and executes the public
 Windows/GNU/musl downloads. release-binaries.yml is retired (no release needs its

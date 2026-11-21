@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Package/validate tagged CLI binaries, the crate and the release profile.
 
-Standard library only and offline except read-only tag lookups. trusted-publishing.yml
-signs (build-binaries.yml) and uploads (github-release); no API in this helper
-writes to, deletes, replaces or creates a release.
+Standard library only. build-binaries.yml builds and signs; trusted-publishing.yml's
+`github-release` job uses `release` here, which creates a draft, checks its state,
+uploads only missing assets and then publishes. No path deletes or replaces an asset.
 """
 from __future__ import annotations
 import argparse
@@ -23,6 +23,7 @@ import tarfile
 import tempfile
 import time
 import tomllib
+import urllib.request
 import zipfile
 
 REPO = 'rustcommons/rust-mirror'
@@ -215,6 +216,94 @@ def remote_commit(root, tag):
     refs = run('git', 'ls-remote', 'origin', f'refs/tags/{tag}', f'refs/tags/{tag}^{{}}', cwd=root).splitlines()
     values = dict(line.split('\t')[::-1] for line in refs)
     return values.get(f'refs/tags/{tag}^{{}}', values.get(f'refs/tags/{tag}'))
+
+
+def api(url, method='GET', data=None, content_type='application/json'):
+    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'rust-mirror-release'}
+    token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
+    if token:
+        headers['Authorization'] = f'Bearer {token}'
+    if data is not None:
+        headers['Content-Type'] = content_type
+    request = urllib.request.Request(url, headers=headers, data=data, method=method)
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), type('NoRedirect', (urllib.request.HTTPRedirectHandler,), {'redirect_request': lambda *a, **kw: None})())
+    with opener.open(request, timeout=120) as response:
+        return json.load(response)
+
+
+def notes_title(notes):
+    title = next((line[2:].strip() for line in notes.splitlines() if line.startswith('# ')), '')
+    require(bool(title), 'release notes have no first-level heading')
+    return title
+
+
+def check_release_state(release, r, title, draft):
+    """Refuse a release that is not exactly ours: tag, title, body, draft and prerelease state."""
+    require(release['tag_name'] == r['tag'], 'release is on a different tag')
+    require(release['name'] == title, 'release title differs from the committed notes')
+    require((release.get('body') or '').replace('\r\n', '\n') == r['notes'].replace('\r\n', '\n'), 'release body differs from the committed notes')
+    require(release['draft'] is draft and release['prerelease'] is False, 'release draft/prerelease state is not as expected')
+    if not draft:
+        require(release['html_url'] == f'https://github.com/{REPO}/releases/tag/{r["tag"]}', 'release repository mismatch')
+
+
+def publish_release(r, folder, call=None):
+    """Create or resume the draft release, upload only missing assets, check them, then publish.
+
+    A killed run leaves a draft (the tags API returns 404 for drafts), so the draft is
+    found through the releases list. Existing assets must equal the local bytes; none is
+    ever replaced or deleted. A published release must already be complete and is not modified.
+    """
+    call = call or api
+    base = f'https://api.github.com/repos/{REPO}'
+    files = {p.name: p for p in sorted(folder.iterdir())}
+    want = {name: 'sha256:' + digest(path.read_bytes()) for name, path in files.items()}
+    title = notes_title(r['notes'])
+    matches, page = [], 1
+    while True:
+        batch = call(f'{base}/releases?per_page=100&page={page}')
+        matches += [x for x in batch if x['tag_name'] == r['tag']]
+        if len(batch) < 100:
+            break
+        page += 1
+    require(len(matches) <= 1, 'several releases exist for the tag')
+    if matches:
+        release = matches[0]
+    else:
+        release = call(f'{base}/releases', 'POST', json.dumps({'tag_name': r['tag'], 'name': title, 'body': r['notes'], 'draft': True, 'prerelease': False}).encode())
+        print('Created draft release', release['id'], flush=True)
+    check_release_state(release, r, title, release['draft'])
+    existing = {a['name']: a for a in release['assets']}
+    require(set(existing) <= set(want), 'release holds an unexpected asset')
+    for name, asset in existing.items():
+        require(asset.get('digest') == want[name] and asset['state'] == 'uploaded', f'existing asset {name} differs; never replacing it')
+    if not release['draft']:
+        require(set(existing) == set(want), 'published release is incomplete; refusing to modify a published release')
+        print('Release already published with every asset', flush=True)
+        return release
+    for name in sorted(set(want) - set(existing)):
+        raw = files[name].read_bytes()
+        result = call(f'https://uploads.github.com/repos/{REPO}/releases/{release["id"]}/assets?name={name}', 'POST', raw, 'application/octet-stream')
+        require(result['name'] == name and result['size'] == len(raw) and result.get('digest') == want[name], 'uploaded asset mismatch')
+        print('Uploaded:', name, want[name], flush=True)
+    release = call(f'{base}/releases/{release["id"]}')
+    check_release_state(release, r, title, True)
+    require({a['name']: a.get('digest') for a in release['assets']} == want and all(a['state'] == 'uploaded' for a in release['assets']), 'draft assets incomplete before publishing')
+    call(f'{base}/releases/{release["id"]}', 'PATCH', json.dumps({'draft': False, 'make_latest': 'true'}).encode())
+    release = call(f'{base}/releases/tags/{r["tag"]}')
+    check_release_state(release, r, title, False)
+    require({a['name']: a.get('digest') for a in release['assets']} == want, 'published assets differ')
+    print('Published', r['tag'], 'with', len(want), 'assets', flush=True)
+    return release
+
+
+def verify_sbom_bindings(paths, sbom, policy):
+    """Each archive and the crate carries an SBOM attestation whose predicate is this exact SBOM."""
+    from release_sbom import validate_binding
+    document = json.loads(sbom.read_text(encoding='utf-8'))
+    for path in paths:
+        proof = subprocess.check_output(['gh', 'attestation', 'verify', str(path), *policy, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'], text=True, encoding='utf-8')
+        validate_binding(json.loads(proof), document, digest(path.read_bytes()))
 
 
 def validate_release(release, release_record, live_commit):
@@ -500,6 +589,9 @@ def main():
     stage.add_argument('--candidate', action='store_true', help='Read-only pre-tag candidate validation')
     audit = sub.add_parser('audit-crate', help='Offline: compare the packaged crate with the clean frozen commit')
     audit.add_argument('--source', type=Path, required=True); audit.add_argument('--commit', required=True); audit.add_argument('--crate', type=Path, required=True)
+    publish_parser = sub.add_parser('release', help='Check provenance and SBOM bindings, then create/resume the draft release and publish it')
+    publish_parser.add_argument('--root', type=Path, required=True); publish_parser.add_argument('--tag', required=True); publish_parser.add_argument('--commit', required=True)
+    publish_parser.add_argument('--assets', type=Path, required=True)
     collect_parser = sub.add_parser('collect'); collect_parser.add_argument('--root', type=Path, required=True); collect_parser.add_argument('--tag', required=True); collect_parser.add_argument('--commit', required=True)
     collect_parser.add_argument('--artifacts', type=Path, required=True)
     collect_parser.add_argument('--candidate', action='store_true', help='Read-only pre-tag candidate validation')
@@ -519,6 +611,16 @@ def main():
             for key in ('tag', 'version', 'commit'): out.write(f'{key}={r[key]}\n')
         print(json.dumps({k: r[k] for k in ('tag', 'version', 'commit')})); return
     require(r['commit'] == args.commit, 'tag changed since build preparation')
+    if args.command == 'release':
+        require(remote_commit(args.root, args.tag) == r['commit'], 'live tag moved')
+        names = sorted(p.name for p in args.assets.iterdir())
+        require(names == sorted(build_summed_assets(r['version']) + ['SHA256SUMS', provenance_name(r['version'])]), 'unexpected or missing release asset')
+        policy = attestation_policy(r)
+        bundle = args.assets / provenance_name(r['version'])
+        verify_attached_provenance([args.assets / n for n in names if n != bundle.name], bundle, policy, Path(tempfile.mkdtemp(prefix='rust-mirror-store-')))
+        verify_sbom_bindings([args.assets / n for n in names if n.endswith(('.zip', '.tar.gz', '.crate'))], args.assets / sbom_name(r['version']), policy)
+        publish_release(r, args.assets)
+        return
     if args.command == 'collect': print(collect(args.root, r, args.artifacts, args.output, args.sbom, args.artifact_prefix, args.crate)); return
     print('\n'.join(staged_assets(r, args.output, args.provenance)))
 

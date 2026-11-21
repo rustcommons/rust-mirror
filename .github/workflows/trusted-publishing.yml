@@ -1,10 +1,10 @@
 # Rust Commons standard release pipeline (phase 2: crate and binaries); see
 # https://github.com/rustcommons/.github/blob/main/docs/TRUSTED-PUBLISHING.md
 # crates.io binds Trusted Publishing to this file name and the `crates-io`
-# environment; never rename either. `build` runs the read-only
-# build-binaries-core.yml (crate, five binaries, all qualification gates) and
-# `attest` the isolated reusable signer build-binaries.yml, both before the
-# owner's approval.
+# environment; never rename either. In this binary repository `build` calls the
+# isolated reusable builder/signer build-binaries.yml, which builds the crate and
+# five binaries (all qualification gates) and signs them as Build / Checksums and
+# attestations, all before the owner's approval. There is no top-level `attest`.
 name: Trusted publishing
 on:
   push:
@@ -94,36 +94,27 @@ jobs:
   build:
     name: Build
     needs: gate
-    permissions:
-      contents: read
-    # Crate package/audit/install, SBOM, all five native builds with their gates
-    # (eight GNU userlands, static musl DNS/TLS/resume, Windows static CRT) and
-    # one SHA256SUMS. Dry runs build a candidate of the checked-out commit.
-    uses: ./.github/workflows/build-binaries-core.yml # zizmor: ignore[self-repository] ./ also binds the caller commit; pinned actionlint 1.7.12 does not support $/ yet.
-    with:
-      tag: v${{ needs.gate.outputs.version }}
-      commit: ${{ github.event.pull_request.head.sha || github.sha }}
-      candidate: ${{ github.event_name != 'push' }}
-      attest: ${{ needs.gate.outputs.publish == 'true' }}
-
-  attest:
-    name: Checksums and attestations
-    # `gate` is listed only so the condition can read its output.
-    needs: [gate, build]
-    if: needs.gate.outputs.publish == 'true'
+    # The nested "Checksums and attestations" job signs only on a v* tag push and is
+    # the only job that uses these two grants; every build job holds contents read.
     permissions:
       contents: read
       id-token: write
       attestations: write
+    # build-binaries.yml builds the crate and all five binaries through the read-only
+    # core (every qualification gate, one SBOM, one SHA256SUMS) and, on a tag, signs
+    # them in its own job: Build / Checksums and attestations. Dry runs build a
+    # candidate of the checked-out commit and never sign.
     uses: ./.github/workflows/build-binaries.yml # zizmor: ignore[self-repository] ./ also binds the caller commit; pinned actionlint 1.7.12 does not support $/ yet.
     with:
       tag: v${{ needs.gate.outputs.version }}
-      commit: ${{ github.sha }}
-      artifact-name: ${{ needs.build.outputs.artifact-name }}
+      commit: ${{ github.event.pull_request.head.sha || github.sha }}
+      candidate: ${{ github.event_name != 'push' }}
+      sign: ${{ needs.gate.outputs.publish == 'true' }}
 
   publish:
     name: Publish to crates.io
-    needs: [gate, build, attest]
+    # `gate` is listed so the condition can read its output.
+    needs: [gate, build]
     if: needs.gate.outputs.publish == 'true' && github.repository == 'rustcommons/rust-mirror'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -208,50 +199,17 @@ jobs:
         with:
           name: release-provenance
           path: ${{ runner.temp }}/provenance
-      - name: Stage the exact asset set; match the bundle to GitHub's attestations
+      - name: Stage the exact asset set (bundle subjects equal the signed files)
         run: |
-          set -euo pipefail
           python3 scripts/release_binaries.py stage --root . --tag "$RELEASE_TAG" --commit "$GITHUB_SHA" \
             --output "$RUNNER_TEMP/dist" --provenance "$RUNNER_TEMP/provenance/rust-mirror-$VERSION.intoto.jsonl"
-          python3 - <<'PY'
-          import os, sys
-          from pathlib import Path
-          sys.path.insert(0, 'scripts')
-          import release_binaries as release
-          record = release.record(Path('.'), os.environ['RELEASE_TAG'])
-          dist = Path(os.environ['RUNNER_TEMP']) / 'dist'
-          bundle = dist / release.provenance_name(record['version'])
-          signed = [p for p in sorted(dist.iterdir()) if p != bundle]
-          release.verify_attached_provenance(signed, bundle, release.attestation_policy(record), Path(os.environ['RUNNER_TEMP']) / 'stored')
-          PY
-      - name: Create the release from the committed notes; add only missing files
-        run: |
-          set -euo pipefail
-          dist="$RUNNER_TEMP/dist"
-          (cd "$dist" && sha256sum -c SHA256SUMS)
-          notes="docs/releases/v$VERSION.md"
-          title=$(grep -m1 '^# ' "$notes" | sed 's/^# //')
-          test -n "$title"
-          files=("$dist"/*)
-          test "${#files[@]}" -eq 9
-          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            existing=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$VERSION" --jq '.assets[] | .name + " " + (.digest // "none")')
-            for f in "${files[@]}"; do
-              name=$(basename "$f")
-              have=$(awk -v n="$name" '$1 == n {print $2}' <<<"$existing")
-              if [ -z "$have" ]; then
-                gh release upload "v$VERSION" "$f" --repo "$GITHUB_REPOSITORY"
-              elif [ "$have" = "sha256:$(sha256sum "$f" | cut -d' ' -f1)" ]; then
-                echo "Keeping identical existing asset $name"
-              else
-                echo "::error::$name already exists with different content; never replacing it" >&2
-                exit 1
-              fi
-            done
-          else
-            gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag \
-              --title "$title" --notes-file "$notes" "${files[@]}"
-          fi
+      # Before any upload: the bundle equals GitHub's stored attestations and every
+      # archive and the crate carry this SBOM. Then a draft is created (or a draft left
+      # by a killed run is resumed) only if its tag, title, body and state are exactly
+      # ours; missing assets are uploaded, all are checked, and only then it is
+      # published. Existing assets are never replaced.
+      - name: Create the draft release from the committed notes, add only missing assets, publish
+        run: python3 scripts/release_binaries.py release --root . --tag "$RELEASE_TAG" --commit "$GITHUB_SHA" --assets "$RUNNER_TEMP/dist"
 
   verify:
     name: Verify publication

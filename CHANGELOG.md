@@ -7,9 +7,10 @@
 - Adopt the Rust Commons standard release pipeline, including phase 2: one
   `Trusted publishing` workflow now gates on an annotated tag, green CI on `main`, a
   dated changelog entry and release notes; builds the crate and all five binaries with
-  every existing qualification gate; signs SLSA provenance in the isolated reusable
-  signer before the owner's approval; publishes after approval; creates the GitHub
-  Release from the committed notes with all assets in one step; and verifies
+  every existing qualification gate and signs that build's output in the same isolated
+  reusable workflow before the owner's approval; publishes after approval; creates the
+  GitHub Release from the committed notes as a draft, uploads all assets and then
+  publishes it (a killed run resumes the draft; assets are never replaced); and verifies
   crates.io, every attestation, docs.rs, a clean install and the public Windows, GNU
   and musl downloads. Releases after 0.6.0 carry the `.crate`, five archives, one SBOM,
   one `SHA256SUMS` over all of them and one `rust-mirror-VERSION.intoto.jsonl`

@@ -66,6 +66,12 @@ def main():
         proof = command(['gh', 'attestation', 'verify', downloads / chosen, *policy, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'])
         validate_binding(json.loads(proof), document, release.digest((downloads / chosen).read_bytes()))
         (output / 'sbom-binding.json').write_text(proof, encoding='utf-8')
+        if release.has_single_profile(expected['version']):
+            # The same SBOM is bound to the published crate.
+            crate = downloads / release.crate_name(expected['version'])
+            proof = command(['gh', 'attestation', 'verify', crate, *policy, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'])
+            validate_binding(json.loads(proof), document, release.digest(crate.read_bytes()))
+            (output / 'sbom-binding-crate.json').write_text(proof, encoding='utf-8')
     exe = 'rust-mirror.exe' if 'windows' in args.target else 'rust-mirror'
     prefix = chosen.removesuffix('.zip').removesuffix('.tar.gz')
     contents = release.read_archive(downloads / chosen, prefix, exe)

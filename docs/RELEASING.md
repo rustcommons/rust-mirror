@@ -35,26 +35,40 @@ signs and publishes the crate and all binaries. The flow is:
    version, the commit is reachable from main with successful CI, the dated
    CHANGELOG entry, notes and release-documentation check pass, the tag record
    equals the commit, and the workspace is exactly the `rust-mirror` crate.
-4. **Build** ([read-only core](../.github/workflows/build-binaries-core.yml)). Five
-   native builds with every qualification gate (below), the SBOM from the clean
+4. **Build** ([isolated reusable builder/signer](../.github/workflows/build-binaries.yml),
+   which runs the [read-only core](../.github/workflows/build-binaries-core.yml)).
+   Five native builds with every qualification gate (below), the SBOM from the clean
    frozen source with pinned cargo-cyclonedx 0.5.9, `cargo package --locked` with a
    package audit (regular members equal to the commit, clean VCS record, no fuzz/CI
    content) and a packaged install (version, protocol 1, typed refusal), then one
    SHA256SUMS over the .crate, the five archives and the SBOM.
-5. **Checksums and attestations** ([reusable signer](../.github/workflows/build-binaries.yml)).
-   Requires the tag push, the tag record and the exact file set, signs SLSA
-   provenance for all eight files, binds the SBOM to each archive and the crate, and
-   stages one bundle `rust-mirror-X.Y.Z.intoto.jsonl`. This finishes before approval.
+5. **Build / Checksums and attestations** (nested in the same reusable workflow; there
+   is no top-level `attest` job here). Only on a v* tag push it re-verifies the tag
+   record, source and workflow commit and the exact file set, signs SLSA provenance
+   for all eight files, binds the SBOM to each archive and the crate, and stages one
+   bundle `rust-mirror-X.Y.Z.intoto.jsonl`. Because the signer also ran the build,
+   its signature proves the qualified build produced the bytes. PR and dispatch runs
+   never sign. All of this finishes before approval; `publish` needs `gate` and `build`.
 6. **Owner approval, then publish.** The crates-io environment approval releases a
    short-lived token. The job rechecks any existing publication against the exact
    tag payload, skips a version crates.io already has, and publishes only bytes
    identical (`cmp`) to the attested `.crate`.
 7. **Automatic GitHub release.** `github-release` re-stages the bundle (subjects equal
    the eight signed files), requires every attached DSSE envelope to equal GitHub's
-   stored attestation, then creates `vX.Y.Z` from the committed notes with
-   `--verify-tag` and all nine assets in one step. A re-run uploads only missing files
-   and fails if an existing asset differs; it never replaces one. **The maintainer
-   no longer creates the GitHub Release by hand.**
+   stored attestation and the SBOM attestation of every archive and the crate to
+   carry this exact SBOM. It then creates `vX.Y.Z` as a **draft** from the committed
+   notes, uploads all nine assets, re-reads and checks them, and only then publishes
+   the release (`draft: false`, latest). **The maintainer no longer creates the
+   GitHub Release by hand.**
+
+   *Recovery:* if the job is killed, re-run it. The tags API returns 404 for drafts,
+   so the job finds the draft through the releases list. Before adding anything to an
+   existing release (draft or published) it refuses unless the tag, title, body (equal
+   to the committed notes) and draft/prerelease state are exactly as expected and every
+   existing asset is one of the nine with identical bytes. It uploads only missing
+   assets, checks all nine, then publishes. A published release is never modified: a
+   complete one makes the re-run a no-op, an incomplete one is refused for a decision.
+   Two releases for one tag are refused. Never delete or replace an asset to pass.
 8. **Verify publication.** On Windows, musl and GNU runners it downloads every asset,
    checks digests, SHA256SUMS, every attestation (signer build-binaries.yml, source
    and signer digest = tag commit, no self-hosted runners), the bundle against the

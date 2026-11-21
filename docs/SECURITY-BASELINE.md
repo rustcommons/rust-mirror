@@ -107,8 +107,8 @@ provider observations and prior CI history, so no new SAST score is promised her
 | Job/path | Token permissions beyond contents read | Guard |
 | --- | --- | --- |
 | Native build, tests, SBOM generation, comparison | None | Frozen commit; no signing token or upload authority |
-| Reusable build-binaries.yml attestation (`attest`) | id-token write, attestations write | Exact v* tag push; tag record, source and workflow SHA equal; exact file set and SHA256SUMS; no candidate signing |
-| Release creation and upload (`github-release`) | contents write | Exact tag/notes, bundle equal to GitHub's stored attestations; never replaces an existing asset |
+| Build / Checksums and attestations (inside reusable build-binaries.yml) | id-token write, attestations write | Exact v* tag push; tag record, source and workflow SHA equal; exact file set and SHA256SUMS of the build it ran; no candidate signing. The calling `build` job grants these two only for this nested job; core build jobs hold contents read |
+| Release creation and upload (`github-release`) | contents write | Bundle equal to GitHub's stored attestations and SBOM bindings before upload; draft first; existing release must match tag/title/body/state; never replaces an existing asset |
 | crates.io publish | id-token write | v* tag, main ancestry, crates-io environment and owner review |
 | Scorecard | id-token write, security-events write | Main push or schedule only; no PR code |
 
@@ -116,12 +116,14 @@ Build execution is fixed to the invoking PR/branch/tag SHA, never an arbitrary
 input ref in a main-scoped job. Dispatch a future historical release against its
 exact immutable version tag; unrelated main revisions cannot build alternate refs.
 
-Since phase 2 (2026-11-21), trusted-publishing.yml's `build` job calls
+Since phase 2 (2026-11-21), trusted-publishing.yml's `build` job calls the isolated
+reusable [build-binaries.yml](../.github/workflows/build-binaries.yml), which runs
 [the shared read-only core](../.github/workflows/build-binaries-core.yml) for the
-crate and all binaries, and its `attest` job calls the isolated reusable signer
-[build-binaries.yml](../.github/workflows/build-binaries.yml), which signs only that
-same run's core output after checking the tag, commit, file set and SHA256SUMS. The
-signing identity is therefore the reusable signer, not the caller. Dry-run/repro
+crate and all binaries and, only on a v* tag push, signs that build's output in its
+own Checksums and attestations job after re-checking the tag, commit, file set and
+SHA256SUMS. The caller cannot hand the signer other bytes, so a build-binaries.yml
+signature proves the qualified build produced them; the signing identity is the
+reusable workflow, not the caller. Dry-run/repro
 callers use the same core with no signing-capable job; core jobs explicitly downgrade
 to contents read. The uploader has no OIDC permission. Reproducibility jobs never
 attest or upload release assets.

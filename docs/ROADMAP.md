@@ -78,16 +78,17 @@ existing v0.6.0 tag. Deferred, not lost:
 - **Phase 2 done (2026-11-21).** The owner approved folding the binaries in.
   trusted-publishing.yml now builds the crate and all five binaries through the
   read-only core with every qualification gate, writes one SHA256SUMS and one SBOM,
-  signs everything in the isolated reusable signer (build-binaries.yml) before the
-  owner's approval, creates the release with all nine assets and verifies the crate
+  signs it inside the same isolated reusable workflow that built it (build-binaries.yml,
+  Build / Checksums and attestations) before the owner's approval, creates the release
+  as a draft, uploads all nine assets and then publishes it and verifies the crate
   plus the public Windows/GNU/musl downloads. release-binaries.yml is retired, so the
   late-approval collector wait is gone. The PR dry run built every target and the
   crate with publish=false.
 
 Deferred, not lost:
 
-- **First tag run.** `attest`, `publish`, `github-release` and `verify` run only on a
-  tag; their first real use is the next authorized release. Record the signer
+- **First tag run.** Build / Checksums and attestations, `publish`, `github-release`
+  and `verify` run only on a tag; their first real use is the next authorized release. Record the signer
   identity and bundle subjects, the store match, the nine-asset upload, re-run
   behaviour, docs.rs and the three public-download legs in that release's record.
 - **rust-mirror-gui copies phase 2.** Its pipeline should follow this pilot after the

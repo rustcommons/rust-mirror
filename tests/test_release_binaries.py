@@ -57,7 +57,7 @@ class ReleaseBinariesTests(unittest.TestCase):
                 with patch.object(sys, 'argv', argv), self.assertRaises(SystemExit) as error:
                     release.main()
                 self.assertEqual(error.exception.code, 2)
-        self.assertFalse(hasattr(release, 'api') or hasattr(release, 'check_release'))
+        self.assertFalse(hasattr(release, 'check_release'))
 
     def test_downloaded_gnu_abi_gate_refuses_newer_symbols_and_wrong_linkage(self):
         good = ('INTERP', '(NEEDED) Shared library: [libc.so.6]\n(NEEDED) Shared library: [libgcc_s.so.1]', 'GLIBC_2.2.5 GLIBC_2.17', 'ELF x86-64 dynamically linked')
@@ -423,6 +423,110 @@ class ReleaseBinariesTests(unittest.TestCase):
                 bad = self.crate_fixture(self.root / message.replace(' ', '-'), commit=commit, **options)
                 with self.assertRaisesRegex(ValueError, message):
                     release.audit_crate(self.root, commit, bad)
+
+
+    class FakeGitHub:
+        """In-memory releases API: records every write so tests can prove none happened."""
+        def __init__(self, test, releases=()):
+            self.test, self.releases, self.writes, self.next_id = test, [dict(r) for r in releases], [], 100
+
+        def __call__(self, url, method='GET', data=None, content_type=None):
+            base = 'https://api.github.com/repos/rustcommons/rust-mirror'
+            if method == 'GET' and url.startswith(base + '/releases?'):
+                return [dict(r, assets=list(r['assets'])) for r in self.releases] if 'page=1' in url else []
+            if method == 'GET' and url.startswith(base + '/releases/tags/'):
+                tag = url.rsplit('/', 1)[1]
+                found = [r for r in self.releases if r['tag_name'] == tag and not r['draft']]
+                if not found: raise AssertionError('tags API returns 404 for drafts')
+                return found[0]
+            if method == 'GET':
+                return next(r for r in self.releases if url.endswith('/releases/%d' % r['id']))
+            self.writes.append((method, url))
+            if method == 'POST' and url == base + '/releases':
+                body = json.loads(data)
+                self.next_id += 1
+                created = dict(id=self.next_id, tag_name=body['tag_name'], name=body['name'], body=body['body'], draft=body['draft'], prerelease=body['prerelease'], html_url='https://github.com/rustcommons/rust-mirror/releases/tag/untagged-1', assets=[])
+                self.releases.append(created)
+                return created
+            if method == 'POST':
+                release_id = int(url.split('/releases/')[1].split('/')[0]); name = url.split('?name=')[1]
+                asset = dict(name=name, size=len(data), digest='sha256:' + release.digest(data), state='uploaded')
+                next(r for r in self.releases if r['id'] == release_id)['assets'].append(asset)
+                return asset
+            if method == 'PATCH':
+                target = next(r for r in self.releases if url.endswith('/releases/%d' % r['id']))
+                target.update(json.loads(data)); target.pop('make_latest', None)
+                target['html_url'] = 'https://github.com/rustcommons/rust-mirror/releases/tag/' + target['tag_name']
+                return target
+            raise AssertionError((method, url))
+
+    def release_folder(self):
+        folder = self.root / 'dist'; folder.mkdir()
+        for name in release.build_summed_assets('1.2.3') + ['SHA256SUMS', release.provenance_name('1.2.3')]:
+            (folder / name).write_bytes(name.encode())
+        return folder
+
+    def releasable(self):
+        return dict(self.record, notes='# rust-mirror 1.2.3\n\nReviewed notes\n')
+
+    def draft(self, folder, names, **changes):
+        assets = [dict(name=n, size=1, digest='sha256:' + release.digest((folder / n).read_bytes()), state='uploaded') for n in names]
+        return dict(dict(id=7, tag_name='v1.2.3', name='rust-mirror 1.2.3', body='# rust-mirror 1.2.3\r\n\r\nReviewed notes\r\n', draft=True, prerelease=False, html_url='https://github.com/rustcommons/rust-mirror/releases/tag/untagged-7', assets=assets), **changes)
+
+    def test_new_release_is_a_draft_until_every_asset_is_uploaded(self):
+        folder = self.release_folder(); fake = self.FakeGitHub(self)
+        published = release.publish_release(self.releasable(), folder, fake)
+        methods = [m for m, _ in fake.writes]
+        self.assertEqual(methods[0], 'POST'); self.assertEqual(methods[-1], 'PATCH')
+        self.assertEqual(methods.count('POST'), 1 + 9)
+        self.assertFalse(published['draft']); self.assertEqual(len(published['assets']), 9)
+
+    def test_killed_run_draft_is_resumed_with_only_missing_assets(self):
+        folder = self.release_folder(); names = sorted(p.name for p in folder.iterdir())
+        fake = self.FakeGitHub(self, [self.draft(folder, names[:4])])
+        release.publish_release(self.releasable(), folder, fake)
+        uploaded = sorted(url.split('?name=')[1] for m, url in fake.writes if '?name=' in url)
+        self.assertEqual(uploaded, names[4:])
+        self.assertFalse(any(url.endswith('/releases') for _, url in fake.writes), 'no second release')
+        self.assertEqual(fake.writes[-1][0], 'PATCH')
+
+    def test_existing_release_must_be_exactly_ours_before_any_upload(self):
+        folder = self.release_folder(); names = sorted(p.name for p in folder.iterdir())
+        changed = self.draft(folder, names[:1]); changed['assets'][0]['digest'] = 'sha256:' + '0' * 64
+        cases = {'release body differs': self.draft(folder, [], body='Other notes'),
+                 'title differs': self.draft(folder, [], name='other'),
+                 'draft/prerelease state': self.draft(folder, [], prerelease=True),
+                 'unexpected asset': self.draft(folder, []) | {'assets': [dict(name='extra.bin', digest='sha256:00', state='uploaded')]},
+                 'never replacing': changed,
+                 'refusing to modify a published release': self.draft(folder, names[:3], draft=False, html_url='https://github.com/rustcommons/rust-mirror/releases/tag/v1.2.3')}
+        for message, existing in cases.items():
+            with self.subTest(message=message):
+                fake = self.FakeGitHub(self, [existing])
+                with self.assertRaisesRegex(ValueError, message):
+                    release.publish_release(self.releasable(), folder, fake)
+                self.assertEqual(fake.writes, [], 'refused before any write')
+        fake = self.FakeGitHub(self, [self.draft(folder, []), self.draft(folder, [], id=8)])
+        with self.assertRaisesRegex(ValueError, 'several releases'):
+            release.publish_release(self.releasable(), folder, fake)
+
+    def test_complete_published_release_rerun_writes_nothing(self):
+        folder = self.release_folder(); names = sorted(p.name for p in folder.iterdir())
+        fake = self.FakeGitHub(self, [self.draft(folder, names, draft=False, html_url='https://github.com/rustcommons/rust-mirror/releases/tag/v1.2.3')])
+        release.publish_release(self.releasable(), folder, fake)
+        self.assertEqual(fake.writes, [])
+
+    def test_sbom_bindings_checked_for_archives_and_crate(self):
+        folder = self.release_folder(); sbom = folder / release.sbom_name('1.2.3')
+        sbom.write_text('{"bomFormat": "CycloneDX"}')
+        crate = folder / release.crate_name('1.2.3')
+        def proof(predicate_document, path):
+            return json.dumps([{'verificationResult': {'statement': {'predicateType': 'https://cyclonedx.org/bom', 'predicate': predicate_document,
+                                                                     'subject': [{'digest': {'sha256': release.digest(path.read_bytes())}}]}}}])
+        with patch.object(release.subprocess, 'check_output', side_effect=lambda args, **kw: proof({'bomFormat': 'CycloneDX'}, Path(args[3]))):
+            release.verify_sbom_bindings([crate], sbom, ['--repo', release.REPO])
+        with patch.object(release.subprocess, 'check_output', side_effect=lambda args, **kw: proof({'other': 1}, Path(args[3]))):
+            with self.assertRaisesRegex(ValueError, 'does not bind this exact SBOM'):
+                release.verify_sbom_bindings([crate], sbom, ['--repo', release.REPO])
 
 
 if __name__ == '__main__': unittest.main()
