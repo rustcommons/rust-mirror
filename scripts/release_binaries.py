@@ -219,6 +219,8 @@ def remote_commit(root, tag):
 
 
 def api(url, method='GET', data=None, content_type='application/json'):
+    # The token goes only to GitHub's API and upload hosts.
+    require(url.startswith('https://api.github.com/') or url.startswith('https://uploads.github.com/'), 'unexpected GitHub API origin')
     headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'rust-mirror-release'}
     token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
     if token:

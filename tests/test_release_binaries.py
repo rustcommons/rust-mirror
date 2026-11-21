@@ -509,6 +509,12 @@ class ReleaseBinariesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'several releases'):
             release.publish_release(self.releasable(), folder, fake)
 
+    def test_api_refuses_foreign_origins_before_any_request(self):
+        with patch.object(release.urllib.request, 'build_opener', side_effect=AssertionError('no request may be made')):
+            for url in ('http://api.github.com/repos/x', 'https://api.github.com.evil.test/x', 'https://example.com/https://api.github.com/', 'https://github.com/repos/x'):
+                with self.subTest(url=url), self.assertRaisesRegex(ValueError, 'unexpected GitHub API origin'):
+                    release.api(url)
+
     def test_complete_published_release_rerun_writes_nothing(self):
         folder = self.release_folder(); names = sorted(p.name for p in folder.iterdir())
         fake = self.FakeGitHub(self, [self.draft(folder, names, draft=False, html_url='https://github.com/rustcommons/rust-mirror/releases/tag/v1.2.3')])
