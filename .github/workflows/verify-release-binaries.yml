@@ -11,6 +11,9 @@ on:
     paths:
       - '.github/workflows/verify-release-binaries.yml'
       - 'scripts/verify_release_binaries.py'
+      # The real bundle/SBOM verification lives here; exercise it against a live release.
+      - 'scripts/release_binaries.py'
+      - 'scripts/release_sbom.py'
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}

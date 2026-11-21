@@ -139,6 +139,11 @@ tar -xzf "$archive"
 ./rust-mirror-0.6.0-x86_64-unknown-linux-musl/rust-mirror --version
 ```
 
+From the next release after 0.6.0, the release also attaches the crate
+(`rust-mirror-VERSION.crate`), and SHA256SUMS has seven entries: the crate, the five
+archives and the SBOM. The steps below are unchanged; the crate verifies like any
+other file.
+
 ### Offline verification with the attached provenance bundle (v0.6.0 and later)
 
 Releases from v0.6.0 (the first) also attach `rust-mirror-VERSION.intoto.jsonl`: JSON Lines,

@@ -165,7 +165,7 @@ class SecurityReleaseTests(unittest.TestCase):
                 with tarfile.open(folder/name,'w:gz') as t:
                     for n,b in files.items():
                         m=tarfile.TarInfo(prefix+'/'+n);m.size=len(b);m.mode=0o755 if n==exe else 0o644;t.addfile(m,io.BytesIO(b))
-        (folder/release.sbom_name('1.2.3')).write_text('{}')
+        (folder/release.sbom_name('1.2.3')).write_text('{}');(folder/release.crate_name('1.2.3')).write_bytes(b'crate')
 
     def test_reproducibility_does_not_silently_accept_different_executables(self):
         self.write_archives(self.root/'a',b'first executable');shutil.copytree(self.root/'a',self.root/'b')

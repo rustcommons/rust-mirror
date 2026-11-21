@@ -4,15 +4,17 @@
 
 ### Repository
 
-- Adopt the Rust Commons standard release pipeline: `Trusted publishing` now gates
-  on an annotated tag, green CI on `main`, a dated changelog entry with release
-  notes and the existing source/one-crate guards; builds, audits and installs the
-  package with an SBOM and `SHA256SUMS-crates`; signs SLSA provenance; publishes
-  after owner approval; creates the GitHub Release from the committed notes with the
-  `.crate`, crate SBOM, `SHA256SUMS-crates` and `rust-mirror-VERSION.crates.intoto.jsonl`
-  attached; and verifies crates.io, attestations, docs.rs and a clean install.
-  Binaries stay in `release-binaries.yml`, whose uploader now accepts exactly those
-  crate files on the release. See
+- Adopt the Rust Commons standard release pipeline, including phase 2: one
+  `Trusted publishing` workflow now gates on an annotated tag, green CI on `main`, a
+  dated changelog entry and release notes; builds the crate and all five binaries with
+  every existing qualification gate and signs that build's output in the same isolated
+  reusable workflow before the owner's approval; publishes after approval; creates the
+  GitHub Release from the committed notes as a draft, uploads all assets and then
+  publishes it (a killed run resumes the draft; assets are never replaced); and verifies
+  crates.io, every attestation, docs.rs, a clean install and the public Windows, GNU
+  and musl downloads. Releases after 0.6.0 carry the `.crate`, five archives, one SBOM,
+  one `SHA256SUMS` over all of them and one `rust-mirror-VERSION.intoto.jsonl`
+  bundle. `release-binaries.yml` is retired; the late-approval wait is gone. See
   [the release flow](https://github.com/rustcommons/rust-mirror/blob/main/docs/RELEASING.md#standard-release-pipeline).
   No crate or behavior change.
 

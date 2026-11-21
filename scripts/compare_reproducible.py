@@ -66,8 +66,11 @@ def compare(a, b, version):
                      'archive_sha256': [digest(first), digest(second)], 'differing_members': [n for n in files_a if files_a[n] != files_b[n]],
                      'diagnostics': [diagnostic_a, diagnostic_b], 'reason': reason})
     sbom = release.sbom_name(version)
+    crate = release.crate_name(version)
+    crate_sha256 = [digest((a / crate).read_bytes()), digest((b / crate).read_bytes())]
     return {'version': version, 'rows': rows, 'all_bit_identical': all(r['executable_identical'] and r['archive_identical'] for r in rows),
             'sbom_sha256': [digest((a / sbom).read_bytes()), digest((b / sbom).read_bytes())],
+            'crate_sha256': crate_sha256, 'crate_identical': crate_sha256[0] == crate_sha256[1],
             'scope': 'Two fresh hosted jobs per target, no target cache; not a universal reproducibility guarantee. Differences are observations, never silently normalized away.'}
 
 
@@ -83,6 +86,7 @@ def main():
     table = '| Target | Executable identical | Archive identical | Observation |\n| --- | --- | --- | --- |\n'
     for r in result['rows']:
         table += f"| {r['target']} | {r['executable_identical']} | {r['archive_identical']} | {r['reason']} |\n"
+    table += f"| crate | {result['crate_identical']} | {result['crate_identical']} | Packaged .crate bytes from the same frozen source |\n"
     (a.output / 'reproducibility.md').write_text(table)
     print(table)
     if not result['all_bit_identical']:

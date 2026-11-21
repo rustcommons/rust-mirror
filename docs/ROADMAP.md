@@ -75,27 +75,33 @@ on 2026-11-21, following the cargo-libc pilot (cargo-libc#43); see
 `gate` and `build` with publish=false, and the gate passed locally against the
 existing v0.6.0 tag. Deferred, not lost:
 
-- **First tag run.** `attest`, `publish`, `github-release` and `verify` run only on a
-  tag; their first real use is the next authorized release. Record attestation
-  signing, bundle naming, `gh attestation verify --bundle`, the docs.rs wait and
-  re-run uploads, and how release-binaries.yml attaches to the release it finds.
-- **Phase 2: binaries in this pipeline** (planned, not approved). Move the five
-  binary builds, the GNU userland gates and their attestation into `build`/`attest`,
-  with one SHA256SUMS and one SBOM, keeping every qualification gate. Until then the
-  crate SBOM (`.crates.cdx.json`) and the binaries' SBOM (`.cdx.json`) are separate
-  files generated the same way from the same lock.
-- **Binary collector wait.** release-binaries.yml still waits only 600 s for the
-  GitHub Release, which now appears after owner approval. A later approval still
-  needs the exact-tag dispatch, as for 0.6.0. Phase 2 removes the wait; changing it
-  earlier needs approval because build-binaries*.yml is frozen for this adoption.
-- **Gate CI query.** GitHub's `status=success` run filter omitted v0.6.0's
-  successful CI run, so the gate filters `conclusion` itself. cargo-libc's gate
-  and the standard should take the same fix.
-- **Spec clarification.** As cargo-libc noted, `attest`, `github-release` and
-  `verify` also list `gate` in `needs` to read its output.
+- **Phase 2 done (2026-11-21).** The owner approved folding the binaries in.
+  trusted-publishing.yml now builds the crate and all five binaries through the
+  read-only core with every qualification gate, writes one SHA256SUMS and one SBOM,
+  signs it inside the same isolated reusable workflow that built it (build-binaries.yml,
+  Build / Checksums and attestations) before the owner's approval, creates the release
+  as a draft, uploads all nine assets and then publishes it and verifies the crate
+  plus the public Windows/GNU/musl downloads. release-binaries.yml is retired, so the
+  late-approval collector wait is gone. The PR dry run built every target and the
+  crate with publish=false.
+
+Deferred, not lost:
+
+- **First tag run.** Build / Checksums and attestations, `publish`, `github-release`
+  and `verify` run only on a tag; their first real use is the next authorized release. Record the signer
+  identity and bundle subjects, the store match, the nine-asset upload, re-run
+  behaviour, docs.rs and the three public-download legs in that release's record.
+- **rust-mirror-gui copies phase 2.** Its pipeline should follow this pilot after the
+  first real rust-mirror tag run confirms it.
+- **One SBOM for crate and binaries.** The SBOM is the locked all-target Cargo graph,
+  identical for the crate and every archive, and is bound to each archive and the
+  crate. Per-target SBOMs are not planned.
 - **Release-PR audit overlap.** `build` repeats the package audit and packaged
   install at the tag. The manual release-PR checks stay until a release proves the
   pipeline; then the release PR can cite the dry run instead.
+- **Reviving release-binaries.yml.** GitHub dispatches only workflows that exist on
+  the default branch. If a release up to 0.6.0 ever needs exact-tag recovery, a
+  reviewed PR must restore the file first; none is needed today.
 - **Already-published versions.** 0.6.0 and earlier keep their hand-created
   releases and assets; none is re-tagged or re-released.
 

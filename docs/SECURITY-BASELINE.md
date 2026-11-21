@@ -107,8 +107,8 @@ provider observations and prior CI history, so no new SAST score is promised her
 | Job/path | Token permissions beyond contents read | Guard |
 | --- | --- | --- |
 | Native build, tests, SBOM generation, comparison | None | Frozen commit; no signing token or upload authority |
-| Reusable build-binaries.yml attestation | id-token write, attestations write | Completed reviewed-source build; main-reachable immutable tag; execution SHA equals invocation SHA; no candidate signing |
-| Release asset upload | contents write | Exact tag/notes, all attestations verified; refuses any existing asset |
+| Build / Checksums and attestations (inside reusable build-binaries.yml) | id-token write, attestations write | Exact v* tag push; tag record, source and workflow SHA equal; exact file set and SHA256SUMS of the build it ran; no candidate signing. The calling `build` job grants these two only for this nested job; core build jobs hold contents read |
+| Release creation and upload (`github-release`) | contents write | Bundle equal to GitHub's stored attestations and SBOM bindings before upload; draft first; existing release must match tag/title/body/state; never replaces an existing asset |
 | crates.io publish | id-token write | v* tag, main ancestry, crates-io environment and owner review |
 | Scorecard | id-token write, security-events write | Main push or schedule only; no PR code |
 
@@ -116,12 +116,17 @@ Build execution is fixed to the invoking PR/branch/tag SHA, never an arbitrary
 input ref in a main-scoped job. Dispatch a future historical release against its
 exact immutable version tag; unrelated main revisions cannot build alternate refs.
 
-The reusable [build-binaries.yml](../.github/workflows/build-binaries.yml) calls
-[the shared read-only core](../.github/workflows/build-binaries-core.yml), then
-attests inside the reusable boundary. Dry-run/repro callers use the same core with
-no signing-capable job; native/core jobs explicitly downgrade to contents read.
-Only the isolated attestation job can mint a signing identity; the outer uploader
-has no OIDC permission. Reproducibility jobs never attest or upload release assets.
+Since phase 2 (2026-11-21), trusted-publishing.yml's `build` job calls the isolated
+reusable [build-binaries.yml](../.github/workflows/build-binaries.yml), which runs
+[the shared read-only core](../.github/workflows/build-binaries-core.yml) for the
+crate and all binaries and, only on a v* tag push, signs that build's output in its
+own Checksums and attestations job after re-checking the tag, commit, file set and
+SHA256SUMS. The caller cannot hand the signer other bytes, so a build-binaries.yml
+signature proves the qualified build produced them; the signing identity is the
+reusable workflow, not the caller. Dry-run/repro
+callers use the same core with no signing-capable job; core jobs explicitly downgrade
+to contents read. The uploader has no OIDC permission. Reproducibility jobs never
+attest or upload release assets.
 
 This follows [GitHub's reusable-workflow SLSA Build L3 design](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/increase-security-rating).
 It does not upgrade existing v0.5.1/v0.5.2 provenance. There is no SLSA3 badge until
@@ -225,7 +230,8 @@ Owner-approved production publications are verified in the
 PR's no-publication observations remain historical. Do not create a test v* tag,
 weaken protected tags or remove owner review to exercise this route. For each
 separately authorized release, tag the reviewed merge and obtain owner environment
-approval; create exact GitHub Release notes after registry confirmation. Binary
-automation waits ten minutes for that release and otherwise stops without upload.
-A later approved live dispatch at the exact immutable tag can retry with no assets.
+approval. Since phase 2 the pipeline builds and signs before that approval and then
+creates the release with all assets itself; there is no release wait or recovery
+dispatch. (Up to 0.6.0 binary automation waited ten minutes for a hand-created
+release; 0.6.0 needed an exact-tag dispatch after that wait expired.)
 The former manual publish-then-tag process is not an available fallback.

@@ -1,4 +1,10 @@
-name: Build and attest release binaries
+name: Build and sign release assets
+# Isolated reusable builder and signer (GitHub's SLSA Build L3 reusable-workflow
+# pattern): this workflow builds the crate and all binaries through the read-only
+# build-binaries-core.yml and, only on a v* tag push, signs those same bytes in its
+# own job. A build-binaries.yml signature therefore proves this qualified build
+# produced the files. trusted-publishing.yml's `build` job is the only caller that
+# signs; PR and dispatch runs build everything and never sign.
 on:
   workflow_call:
     inputs:
@@ -8,50 +14,98 @@ on:
       commit:
         type: string
         required: true
+      candidate:
+        type: boolean
+        default: false
+      sign:
+        type: boolean
+        default: false
     outputs:
       artifact-name:
-        value: ${{ jobs.build.outputs.artifact-name }}
+        value: ${{ jobs.binaries.outputs.artifact-name }}
+      provenance-artifact:
+        value: ${{ jobs.attest.outputs.provenance-artifact }}
 permissions:
   contents: read
 jobs:
-  build:
+  binaries:
     permissions:
       contents: read
+    # Crate package/audit/install, SBOM, five native builds with every qualification
+    # gate and the single SHA256SUMS. Core jobs hold contents read only.
     uses: ./.github/workflows/build-binaries-core.yml # zizmor: ignore[self-repository] ./ is same-commit and supported by pinned actionlint 1.7.12; $/ is not yet supported there.
     with:
       tag: ${{ inputs.tag }}
       commit: ${{ inputs.commit }}
-      candidate: false
-      attest: true
+      candidate: ${{ inputs.candidate }}
+      attest: ${{ inputs.sign }}
   attest:
-    needs: build
+    name: Checksums and attestations
+    needs: binaries
+    if: inputs.sign && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     permissions:
       contents: read
       id-token: write
       attestations: write
+    outputs:
+      provenance-artifact: release-provenance
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_COMMIT: ${{ inputs.commit }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: ${{ needs.build.outputs.artifact-name }}
+          name: ${{ needs.binaries.outputs.artifact-name }}
           path: release-assets
-      - name: Attest archives, SBOM and manifest inside the isolated reusable workflow
+      - name: Re-verify the exact tag build and release profile before signing
+        run: |
+          python - <<'PY'
+          import os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          import release_binaries as release
+          tag, commit = os.environ['RELEASE_TAG'], os.environ['RELEASE_COMMIT']
+          release.require(os.environ['GITHUB_EVENT_NAME'] == 'push' and os.environ['GITHUB_REF'] == 'refs/tags/' + tag, 'signing needs the exact v* tag push')
+          record = release.record(Path('.'), tag)
+          release.require(record['commit'] == commit == os.environ['GITHUB_SHA'], 'tag, source and workflow commits differ')
+          release.require(release.remote_commit(Path('.'), tag) == commit, 'live tag moved')
+          assets = Path('release-assets')
+          summed = release.build_summed_assets(record['version'])
+          release.require(sorted(p.name for p in assets.iterdir()) == sorted(summed + ['SHA256SUMS']), 'unexpected or missing build file')
+          release.require((assets / 'SHA256SUMS').read_text() == ''.join(f'{release.digest((assets / n).read_bytes())}  {n}\n' for n in summed), 'SHA256SUMS differs from the files')
+          release.require(release.crate_vcs_commit(assets / release.crate_name(record['version'])) == (commit, False), 'crate VCS record differs')
+          print('Signing', len(summed) + 1, 'files for', tag, commit)
+          PY
+      - name: Attest the crate, archives, SBOM and SHA256SUMS
         id: provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: release-assets/*
-      - name: Keep the signed provenance bundle for the release-asset uploader
+      - name: Stage the single provenance bundle for the release
         env:
           BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
         run: |
+          set -euo pipefail
           test -f "$BUNDLE" && test ! -L "$BUNDLE"
+          staged="$RUNNER_TEMP/staged"
+          cp -r release-assets "$staged"
+          python scripts/release_binaries.py stage --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --output "$staged" --provenance "$BUNDLE"
           mkdir "$RUNNER_TEMP/release-provenance"
-          cp "$BUNDLE" "$RUNNER_TEMP/release-provenance/attestation.jsonl"
+          cp "$staged/rust-mirror-${RELEASE_TAG#v}.intoto.jsonl" "$RUNNER_TEMP/release-provenance/"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-provenance
-          path: ${{ runner.temp }}/release-provenance/attestation.jsonl
+          path: ${{ runner.temp }}/release-provenance
           if-no-files-found: error
           retention-days: 14
       - name: Resolve the single SBOM path
@@ -62,10 +116,11 @@ jobs:
           files=(release-assets/*.cdx.json)
           test "${#files[@]}" -eq 1
           echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
-      - name: Bind the Cargo dependency SBOM to each archive
+      - name: Bind the Cargo dependency SBOM to each archive and the crate
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: |
             release-assets/*.zip
             release-assets/*.tar.gz
+            release-assets/*.crate
           sbom-path: ${{ steps.sbom.outputs.path }}
