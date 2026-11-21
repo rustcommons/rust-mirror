@@ -28,7 +28,9 @@ def main():
     names = sorted([release.asset_name(expected['version'], target) for target in targets] + ([] if release.has_legacy_assets(expected['version']) else [release.sbom_name(expected['version'])]))
     policy = release.attestation_policy(expected)
     assets = {a['name']: a for a in live['assets']}
-    release.require(len(live['assets']) == len(names) + 1 and set(assets) == set(names + ['SHA256SUMS']), 'expected exact release archive profile and SHA256SUMS')
+    bundle = release.provenance_name(expected['version']) if release.has_provenance_asset(expected['version']) else None
+    signed = names + ['SHA256SUMS']
+    release.require(len(live['assets']) == len(signed) + bool(bundle) and set(assets) == set(signed + ([bundle] if bundle else [])), 'expected exact release archive profile, SHA256SUMS and provenance bundle')
     release.require(all(a['state'] == 'uploaded' and a['size'] <= release.MAX_ARCHIVE for a in assets.values()), 'asset incomplete or oversized')
     output = args.output.resolve(); output.mkdir(parents=True, exist_ok=False)
     downloads = output / 'downloads'
@@ -41,11 +43,17 @@ def main():
     for name in sorted(assets):
         path = downloads / name; actual = release.digest(path.read_bytes())
         release.require(assets[name]['digest'] == 'sha256:' + actual, 'GitHub asset digest mismatch')
+        if name == bundle: continue
         if name != 'SHA256SUMS': release.require(checksums[name] == actual, 'archive checksum mismatch')
         proof = command(['gh', 'attestation', 'verify', path, *policy, '--predicate-type', 'https://slsa.dev/provenance/v1', '--format', 'json'])
         result = json.loads(proof); release.require(bool(result), 'empty attestation verification')
         (output / ('attestation-' + name + '.json')).write_text(proof, encoding='utf-8')
         attestations[name] = dict(sha256=actual, verified=True)
+    if bundle:
+        # The attached Sigstore bundle must verify every signed asset offline and equal GitHub's stored attestations.
+        release.provenance_jsonl((downloads / bundle).read_bytes(), {n: attestations[n]['sha256'] for n in signed})
+        release.verify_attached_provenance([downloads / n for n in signed], downloads / bundle, policy, output / 'stored-attestations')
+        attestations[bundle] = dict(sha256=release.digest((downloads / bundle).read_bytes()), matches_github_store=True)
     chosen = release.asset_name(expected['version'], args.target)
     if not release.has_legacy_assets(expected['version']):
         from release_sbom import validate, validate_binding

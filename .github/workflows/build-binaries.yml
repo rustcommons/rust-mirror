@@ -37,9 +37,23 @@ jobs:
           name: ${{ needs.build.outputs.artifact-name }}
           path: release-assets
       - name: Attest archives, SBOM and manifest inside the isolated reusable workflow
+        id: provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: release-assets/*
+      - name: Keep the signed provenance bundle for the release-asset uploader
+        env:
+          BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          test -f "$BUNDLE" && test ! -L "$BUNDLE"
+          mkdir "$RUNNER_TEMP/release-provenance"
+          cp "$BUNDLE" "$RUNNER_TEMP/release-provenance/attestation.jsonl"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-provenance
+          path: ${{ runner.temp }}/release-provenance/attestation.jsonl
+          if-no-files-found: error
+          retention-days: 14
       - name: Resolve the single SBOM path
         id: sbom
         shell: bash

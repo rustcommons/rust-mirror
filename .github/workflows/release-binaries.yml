@@ -128,6 +128,10 @@ jobs:
         with:
           name: verified-release-assets
           path: release-assets
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: release-provenance
+          path: release-provenance
       - name: Refuse mismatched release or any existing assets before upload
         run: python scripts/release_binaries.py preflight --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT"
       - name: Verify attestations before any release upload
@@ -148,5 +152,80 @@ jobs:
                   proof=subprocess.check_output(['gh', 'attestation', 'verify', str(asset), *policy, '--predicate-type', 'https://cyclonedx.org/bom', '--format', 'json'],text=True)
                   validate_binding(json.loads(proof),document,hashlib.sha256(asset.read_bytes()).hexdigest())
           PY
+      - name: Stage the signed provenance bundle and match it to GitHub's attestation store
+        run: |
+          python scripts/release_binaries.py stage --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --output release-assets --provenance release-provenance/attestation.jsonl
+          python - <<'PY'
+          from pathlib import Path
+          import os,sys
+          sys.path.insert(0,'scripts')
+          import release_binaries as release
+          version=os.environ['RELEASE_TAG'][1:]
+          policy=release.attestation_policy({'version':version,'commit':os.environ['RELEASE_COMMIT']})
+          bundle=Path('release-assets')/release.provenance_name(version)
+          signed=[p for p in sorted(Path('release-assets').iterdir()) if p!=bundle]
+          release.verify_attached_provenance(signed,bundle,policy,Path(os.environ['RUNNER_TEMP'])/'stored-attestations')
+          PY
       - name: Recheck release and append assets without replacement
         run: python scripts/release_binaries.py upload --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --output release-assets
+  provenance-dry-run:
+    needs: [prepare, dry-build]
+    if: (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      attestations: read
+    env:
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
+      CANDIDATE: ${{ needs.prepare.outputs.candidate }}
+      GH_TOKEN: ${{ github.token }}
+      PUBLISHED_TAG: v0.5.4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: ${{ needs.dry-build.outputs.artifact-name }}
+          path: release-assets
+      - name: Stage an unsigned placeholder bundle to exercise the exact upload set (no upload)
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64,hashlib,json
+          subjects=[{'name':p.name,'digest':{'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}} for p in sorted(Path('release-assets').iterdir())]
+          statement={'_type':'https://in-toto.io/Statement/v1','predicateType':'https://slsa.dev/provenance/v1','subject':subjects,'predicate':{}}
+          bundle={'mediaType':'application/vnd.dev.sigstore.bundle.v0.3+json','verificationMaterial':{'placeholder':'dry run, not signed'},
+                  'dsseEnvelope':{'payload':base64.b64encode(json.dumps(statement).encode()).decode(),'payloadType':'application/vnd.in-toto+json','signatures':[{'sig':'dW5zaWduZWQ='}]}}
+          Path('placeholder.jsonl').write_text(json.dumps(bundle)+'\n')
+          PY
+          extra=()
+          if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
+          python scripts/release_binaries.py stage --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --output release-assets --provenance placeholder.jsonl "${extra[@]}"
+      - name: Verify a real stored provenance bundle offline against published assets (read-only)
+        run: |
+          gh release download "$PUBLISHED_TAG" --repo rustcommons/rust-mirror --dir published
+          python - <<'PY'
+          from pathlib import Path
+          import os,subprocess,sys
+          sys.path.insert(0,'scripts')
+          import release_binaries as release
+          r=release.record(Path('.'),os.environ['PUBLISHED_TAG'])
+          policy=release.attestation_policy(r)
+          assets=sorted(Path('published').iterdir())
+          scratch=Path(os.environ['RUNNER_TEMP'])/'published-bundle'; scratch.mkdir()
+          subprocess.run(['gh','attestation','download',str(assets[0].resolve()),'--repo',release.REPO,'--predicate-type',release.SLSA_PROVENANCE],check=True,cwd=scratch)
+          downloaded=[bundle for path in scratch.glob('*.jsonl') for bundle,statement in release.provenance_bundles(path.read_bytes()) if {s['name'] for s in statement['subject']}=={p.name for p in assets}]
+          release.require(len(downloaded)>=1,'no stored provenance covers every published asset')
+          raw=(__import__('json').dumps(downloaded[0])+'\n').encode()
+          bundle=Path('published.intoto.jsonl'); bundle.write_text(release.provenance_jsonl(raw,{p.name:release.digest(p.read_bytes()) for p in assets}))
+          release.verify_attached_provenance(assets,bundle,policy,Path(os.environ['RUNNER_TEMP'])/'stored-attestations')
+          print('Offline --bundle verification and attestation-store match passed for',len(assets),'published assets')
+          PY
