@@ -24,15 +24,12 @@ def main():
     expected = release.record(root, args.tag)
     live = json.loads(command(['gh', 'api', f'repos/{release.REPO}/releases/tags/{args.tag}']))
     release.validate_release(live, expected, release.remote_commit(root, args.tag))
-    targets = release.legacy_or_current_targets(expected['version'], [a['name'] for a in live['assets']])
-    names = sorted([release.asset_name(expected['version'], target) for target in targets] + ([] if release.has_legacy_assets(expected['version']) else [release.sbom_name(expected['version'])]))
+    # v0.5.1 to v0.6.0 keep their original profiles; later releases add the .crate to SHA256SUMS.
+    profile = release.published_profile(expected['version'], [a['name'] for a in live['assets']])
+    names, signed, bundle = profile['summed'], profile['signed'], profile['bundle']
     policy = release.attestation_policy(expected)
     assets = {a['name']: a for a in live['assets']}
-    bundle = release.provenance_name(expected['version']) if release.has_provenance_asset(expected['version']) else None
-    signed = names + ['SHA256SUMS']
-    # Crate files from trusted-publishing.yml are verified by its own `verify` job.
-    crates = release.crate_pipeline_assets(expected['version']) if release.has_crate_pipeline_assets(expected['version']) else set()
-    release.require(len(live['assets']) == len(signed) + bool(bundle) + len(crates) and set(assets) == set(signed + ([bundle] if bundle else [])) | crates, 'expected exact release archive profile, SHA256SUMS, provenance bundle and crate files')
+    release.require(len(live['assets']) == len(profile['assets']) and set(assets) == profile['assets'], 'expected exact release asset profile')
     release.require(all(a['state'] == 'uploaded' and a['size'] <= release.MAX_ARCHIVE for a in assets.values()), 'asset incomplete or oversized')
     output = args.output.resolve(); output.mkdir(parents=True, exist_ok=False)
     downloads = output / 'downloads'
@@ -45,7 +42,7 @@ def main():
     for name in sorted(assets):
         path = downloads / name; actual = release.digest(path.read_bytes())
         release.require(assets[name]['digest'] == 'sha256:' + actual, 'GitHub asset digest mismatch')
-        if name == bundle or name in crates: continue
+        if name == bundle: continue
         if name != 'SHA256SUMS': release.require(checksums[name] == actual, 'archive checksum mismatch')
         proof = command(['gh', 'attestation', 'verify', path, *policy, '--predicate-type', 'https://slsa.dev/provenance/v1', '--format', 'json'])
         result = json.loads(proof); release.require(bool(result), 'empty attestation verification')
@@ -56,6 +53,9 @@ def main():
         release.provenance_jsonl((downloads / bundle).read_bytes(), {n: attestations[n]['sha256'] for n in signed})
         release.verify_attached_provenance([downloads / n for n in signed], downloads / bundle, policy, output / 'stored-attestations')
         attestations[bundle] = dict(sha256=release.digest((downloads / bundle).read_bytes()), matches_github_store=True)
+    if release.has_single_profile(expected['version']):
+        crate = downloads / release.crate_name(expected['version'])
+        release.require(release.crate_vcs_commit(crate) == (expected['commit'], False), 'published crate VCS record differs from the tag')
     chosen = release.asset_name(expected['version'], args.target)
     if not release.has_legacy_assets(expected['version']):
         from release_sbom import validate, validate_binding

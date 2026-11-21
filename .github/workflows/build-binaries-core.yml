@@ -57,8 +57,8 @@ jobs:
           record=release.record(Path('.'),os.environ['RELEASE_TAG'],commit if candidate else None)
           assert record['commit']==commit
           if os.environ['ATTEST']=='true':
-              event=__import__('json').load(open(os.environ['GITHUB_EVENT_PATH']))
-              allowed=(os.environ['GITHUB_EVENT_NAME']=='push' and os.environ['GITHUB_REF']=='refs/tags/'+record['tag']) or (os.environ['GITHUB_EVENT_NAME']=='workflow_dispatch' and os.environ['GITHUB_REF'] in ('refs/heads/main','refs/tags/'+record['tag']) and str(event['inputs'].get('dry_run')).lower()=='false')
+              # Signed builds come only from the exact v* tag push of trusted-publishing.yml.
+              allowed=os.environ['GITHUB_EVENT_NAME']=='push' and os.environ['GITHUB_REF']=='refs/tags/'+record['tag']
               assert allowed and not candidate
               assert release.remote_commit(Path('.'),record['tag'])==commit
               subprocess.run(['git','merge-base','--is-ancestor',commit,'origin/main'],check=True)
@@ -256,17 +256,53 @@ jobs:
         run: |
           cargo install cargo-cyclonedx --version =0.5.9 --locked --root "$RUNNER_TEMP/sbom-tool" -j 2
           python scripts/release_sbom.py --source frozen-source --commit "$SOURCE_COMMIT" --tool "$RUNNER_TEMP/sbom-tool/bin/cargo-cyclonedx" --output "$RUNNER_TEMP/release.cdx.json"
-      - name: Validate archives and SBOM; generate SHA256SUMS
+      # After the SBOM: the generator requires the clean frozen checkout.
+      - name: Package the crate from the frozen source; audit it
+        working-directory: frozen-source
+        run: |
+          set -euo pipefail
+          cargo package --locked -p rust-mirror
+          mkdir "$RUNNER_TEMP/crate"
+          cp "target/package/rust-mirror-${RELEASE_TAG#v}.crate" "$RUNNER_TEMP/crate/"
+          python ../scripts/release_binaries.py audit-crate --source . --commit "$RELEASE_COMMIT" --crate "$RUNNER_TEMP/crate/rust-mirror-${RELEASE_TAG#v}.crate"
+      - name: Clean locked install of the packaged crate
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          unpacked="$RUNNER_TEMP/unpacked"
+          mkdir -p "$unpacked" "$RUNNER_TEMP/smoke"
+          tar -xzf "$RUNNER_TEMP/crate/rust-mirror-$version.crate" -C "$unpacked"
+          export CARGO_HOME="$RUNNER_TEMP/package-cargo-home"
+          cargo install --path "$unpacked/rust-mirror-$version" --locked --root "$RUNNER_TEMP/package-install" -j 2
+          bin="$RUNNER_TEMP/package-install/bin/rust-mirror"
+          test "$("$bin" --version)" = "rust-mirror $version"
+          # Read from a file: piping into `head` would break rust-mirror's later writes.
+          "$bin" --events jsonl --version > "$RUNNER_TEMP/version.jsonl"
+          head -n1 "$RUNNER_TEMP/version.jsonl" | jq -e --arg v "$version" '.type == "hello" and .protocol == 1 and .tool_version == $v'
+          cd "$RUNNER_TEMP/smoke"
+          if "$bin" --events jsonl crates show --plan missing.json > refusal.jsonl; then exit 1; fi
+          tail -n1 refusal.jsonl | jq -e '.ok == false and .error.kind == "io"'
+      - name: Validate crate, archives and SBOM; generate the single SHA256SUMS
         run: |
           extra=()
           if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
-          python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets --artifact-prefix "$ARTIFACT_PREFIX" --sbom "$RUNNER_TEMP/release.cdx.json" "${extra[@]}"
-      - name: Check existing release body and live tag without writing
-        if: ${{ !inputs.candidate }}
+          python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets --artifact-prefix "$ARTIFACT_PREFIX" --sbom "$RUNNER_TEMP/release.cdx.json" --crate "$RUNNER_TEMP/crate/rust-mirror-${RELEASE_TAG#v}.crate" "${extra[@]}"
+      - name: Stage an unsigned placeholder bundle on a copy (dry-run check of the exact upload set)
+        if: ${{ !inputs.attest }}
         run: |
+          set -euo pipefail
+          cp -r release-assets "$RUNNER_TEMP/staged"
+          python - "$RUNNER_TEMP/staged" > "$RUNNER_TEMP/placeholder.jsonl" <<'PY'
+          import base64, hashlib, json, sys
+          from pathlib import Path
+          subjects = [{'name': p.name, 'digest': {'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}} for p in sorted(Path(sys.argv[1]).iterdir())]
+          statement = {'_type': 'https://in-toto.io/Statement/v1', 'predicateType': 'https://slsa.dev/provenance/v1', 'subject': subjects, 'predicate': {}}
+          print(json.dumps({'mediaType': 'application/vnd.dev.sigstore.bundle.v0.3+json', 'verificationMaterial': {'placeholder': 'dry run, not signed'},
+                            'dsseEnvelope': {'payload': base64.b64encode(json.dumps(statement).encode()).decode(), 'payloadType': 'application/vnd.in-toto+json', 'signatures': [{'sig': 'dW5zaWduZWQ='}]}}))
+          PY
           extra=()
-          if [[ "$ATTEST" != true ]]; then extra+=(--allow-existing); fi
-          python scripts/release_binaries.py preflight --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --wait-seconds 600 "${extra[@]}"
+          if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
+          python scripts/release_binaries.py stage --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --output "$RUNNER_TEMP/staged" --provenance "$RUNNER_TEMP/placeholder.jsonl" "${extra[@]}"
       - name: Verify sorted checksum manifest
         working-directory: release-assets
         run: sha256sum --check SHA256SUMS

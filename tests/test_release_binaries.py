@@ -49,15 +49,15 @@ class ReleaseBinariesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'version disagree'):
             release.record(self.root, 'v1.2.4', commit)
 
-    def test_candidate_flags_are_never_accepted_by_upload_or_preflight(self):
+    def test_retired_release_write_commands_no_longer_exist(self):
+        # trusted-publishing.yml uploads; this helper has no release write path.
         for verb in ('upload', 'preflight'):
-            for flag in ('--candidate', '--candidate-commit'):
-                with self.subTest(verb=verb, flag=flag), patch.object(release, 'api', side_effect=AssertionError('must never reach API')), patch('sys.stderr', new=io.StringIO()):
-                    argv = ['helper', verb, '--root', str(self.root), '--tag', 'v1.2.3', '--commit', 'a'*40, flag]
-                    if verb == 'upload': argv += ['--output', str(self.root)]
-                    with patch.object(sys, 'argv', argv), self.assertRaises(SystemExit) as error:
-                        release.main()
-                    self.assertEqual(error.exception.code, 2)
+            with self.subTest(verb=verb), patch('sys.stderr', new=io.StringIO()):
+                argv = ['helper', verb, '--root', str(self.root), '--tag', 'v1.2.3', '--commit', 'a'*40, '--output', str(self.root)]
+                with patch.object(sys, 'argv', argv), self.assertRaises(SystemExit) as error:
+                    release.main()
+                self.assertEqual(error.exception.code, 2)
+        self.assertFalse(hasattr(release, 'api') or hasattr(release, 'check_release'))
 
     def test_downloaded_gnu_abi_gate_refuses_newer_symbols_and_wrong_linkage(self):
         good = ('INTERP', '(NEEDED) Shared library: [libc.so.6]\n(NEEDED) Shared library: [libgcc_s.so.1]', 'GLIBC_2.2.5 GLIBC_2.17', 'ELF x86-64 dynamically linked')
@@ -113,29 +113,6 @@ class ReleaseBinariesTests(unittest.TestCase):
                 release.validate_release(dict(self.live, **changed), self.record, self.record['commit'])
         with self.assertRaisesRegex(ValueError, 'tag moved'):
             release.validate_release(self.live, self.record, 'b' * 40)
-
-    def test_existing_assets_refuse_live_but_allow_read_only_preflight(self):
-        with patch.object(release, 'api', return_value=dict(self.live, assets=[{'name': 'unrelated.txt'}])), patch.object(release, 'remote_commit', return_value=self.record['commit']):
-            with self.assertRaisesRegex(ValueError, 'already has assets'):
-                release.check_release(self.root, self.record)
-            release.check_release(self.root, self.record, allow_existing=True)
-
-    def test_existing_crate_pipeline_files_are_the_only_allowed_assets(self):
-        crates = sorted(release.crate_pipeline_assets('1.2.3'))
-        self.assertEqual(crates, ['SHA256SUMS-crates', 'rust-mirror-1.2.3.crate', 'rust-mirror-1.2.3.crates.cdx.json', 'rust-mirror-1.2.3.crates.intoto.jsonl'])
-        with patch.object(release, 'remote_commit', return_value=self.record['commit']):
-            for allowed in ([], crates[:1], crates):
-                with self.subTest(allowed=allowed), patch.object(release, 'api', return_value=dict(self.live, assets=[{'name': n} for n in allowed])):
-                    release.check_release(self.root, self.record)
-            for extra in ('SHA256SUMS', 'rust-mirror-1.2.3.cdx.json', 'rust-mirror-1.2.3.intoto.jsonl', 'rust-mirror-1.2.4.crate'):
-                with self.subTest(extra=extra), patch.object(release, 'api', return_value=dict(self.live, assets=[{'name': n} for n in crates + [extra]])):
-                    with self.assertRaisesRegex(ValueError, 'already has assets'):
-                        release.check_release(self.root, self.record)
-
-    def test_crate_pipeline_files_start_after_v060(self):
-        self.assertFalse(release.has_crate_pipeline_assets('0.6.0'))
-        self.assertTrue(release.has_crate_pipeline_assets('0.6.1'))
-        self.assertTrue(release.has_crate_pipeline_assets('0.7.0'))
 
     def archive(self, suffix, bad=None):
         prefix = 'rust-mirror-1.2.3-x86_64-unknown-linux-gnu'
@@ -222,38 +199,22 @@ class ReleaseBinariesTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         release.read_archive(path, prefix, 'rust-mirror')
 
-    def test_upload_refuses_preexisting_before_any_post(self):
-        def api(url, method='GET', *args):
-            self.assertEqual(method, 'GET', 'must refuse before any write')
-            return dict(self.live, assets=[{'name': 'SHA256SUMS'}])
-        with patch.object(release, 'record', return_value=self.record), patch.object(release, 'remote_commit', return_value=self.record['commit']), patch.object(release, 'api', side_effect=api), patch.object(sys, 'argv', ['helper', 'upload', '--root', str(self.root), '--tag', 'v1.2.3', '--commit', self.record['commit'], '--output', str(self.root)]):
-            with self.assertRaisesRegex(ValueError, 'already has assets'):
-                release.main()
-
-    def test_upload_validates_manifest_before_post_and_never_deletes(self):
+    def test_stage_validates_the_single_manifest(self):
         manifest = self.write_assets()
         with self.assertRaisesRegex(ValueError, 'unexpected or missing'):
             release.staged_assets(self.record, self.root)
         (self.root / release.provenance_name('1.2.3')).write_text(self.bundle_line(self.subjects()))
-        methods = []
-        def api(url, method='GET', data=None, content_type=None):
-            methods.append(method)
-            if method == 'GET': return self.live
-            self.assertEqual(method, 'POST')
-            name = url.split('?name=')[1]
-            return dict(name=name, size=len(data), digest='sha256:' + release.digest(data))
-        argv = ['helper', 'upload', '--root', str(self.root), '--tag', 'v1.2.3', '--commit', self.record['commit'], '--output', str(self.root)]
-        with patch.object(release, 'record', return_value=self.record), patch.object(release, 'remote_commit', return_value=self.record['commit']), patch.object(release, 'api', side_effect=api), patch.object(sys, 'argv', argv):
-            (self.root / 'SHA256SUMS').write_text('corrupt')
-            with self.assertRaisesRegex(ValueError, 'manifest mismatch'):
-                release.main()
-            self.assertEqual(methods, ['GET'])
-            methods.clear(); (self.root / 'SHA256SUMS').write_text(manifest)
-            release.main()
-        self.assertEqual(methods, ['GET'] + ['POST'] * (len(release.TARGETS) + 3))
+        (self.root / 'SHA256SUMS').write_text('corrupt')
+        with self.assertRaisesRegex(ValueError, 'manifest mismatch'):
+            release.staged_assets(self.record, self.root)
+        (self.root / 'SHA256SUMS').write_text(manifest)
+        names = release.staged_assets(self.record, self.root)
+        self.assertEqual(len(names), len(release.TARGETS) + 4)
+        self.assertIn('rust-mirror-1.2.3.crate', names)
+        self.assertIn('rust-mirror-1.2.3.crate', manifest)
 
     def write_assets(self):
-        names = sorted([release.asset_name('1.2.3', target) for target in release.TARGETS] + [release.sbom_name('1.2.3')])
+        names = release.build_summed_assets('1.2.3')
         for name in names:
             (self.root / name).write_bytes(name.encode())
         manifest = ''.join(f'{release.digest(name.encode())}  {name}\n' for name in names)
@@ -375,20 +336,93 @@ class ReleaseBinariesTests(unittest.TestCase):
         output = self.root / 'output'
         sbom = self.root / 'source.cdx.json'
         self.write_sbom(sbom)
-        sums = release.collect(self.root, self.record, artifacts, output, sbom)
-        self.assertEqual(len(sums.splitlines()), len(release.TARGETS) + 1)
+        crate = self.crate_fixture(self.root / 'crates')
+        with self.assertRaisesRegex(ValueError, 'missing, misnamed'):
+            release.collect(self.root, self.record, artifacts, self.root / 'no-crate', sbom)
+        for bad, message in ((self.crate_fixture(self.root / 'dirty', dirty=True), 'crate VCS'), (self.crate_fixture(self.root / 'other', commit='b' * 40), 'crate VCS')):
+            with self.assertRaisesRegex(ValueError, message):
+                release.collect(self.root, self.record, artifacts, self.root / ('bad-' + bad.parent.name), sbom, crate=bad)
+        sums = release.collect(self.root, self.record, artifacts, output, sbom, crate=crate)
+        self.assertEqual(len(sums.splitlines()), len(release.TARGETS) + 2)
+        self.assertEqual([line.split('  ')[1] for line in sums.splitlines()], release.build_summed_assets('1.2.3'))
         self.assertEqual(sums.splitlines(), sorted(sums.splitlines(), key=lambda line: line.split('  ')[1]))
         self.write_sbom(sbom, commit='b'*40)
         with self.assertRaisesRegex(ValueError, 'SBOM source/lock'):
-            release.collect(self.root, self.record, artifacts, self.root / 'wrong-source', sbom)
+            release.collect(self.root, self.record, artifacts, self.root / 'wrong-source', sbom, crate=crate)
         self.write_sbom(sbom)
         document=json.loads(sbom.read_text());document['metadata']['properties'][1]['value']='0'*64;sbom.write_text(json.dumps(document))
         with self.assertRaisesRegex(ValueError, 'SBOM source/lock'):
-            release.collect(self.root, self.record, artifacts, self.root / 'wrong-lock', sbom)
+            release.collect(self.root, self.record, artifacts, self.root / 'wrong-lock', sbom, crate=crate)
         self.write_sbom(sbom)
         (artifacts / ('binary-' + release.TARGETS[0]) / 'build-report.json').write_text('{}')
         with self.assertRaises((KeyError, ValueError)):
-            release.collect(self.root, self.record, artifacts, self.root / 'bad-output', sbom)
+            release.collect(self.root, self.record, artifacts, self.root / 'bad-output', sbom, crate=crate)
+
+
+    def crate_fixture(self, folder, commit=None, dirty=False, extra=None):
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / release.crate_name('1.2.3')
+        vcs = {'git': {'sha1': commit or self.record['commit']}, 'path_in_vcs': ''}
+        if dirty: vcs['git']['dirty'] = True
+        files = {'.cargo_vcs_info.json': json.dumps(vcs).encode(), 'Cargo.toml': b'normalized', 'Cargo.toml.orig': b'[package]\n', 'src/lib.rs': b'// lib\n'}
+        files.update(extra or {})
+        with tarfile.open(path, 'w:gz') as archive:
+            for name, data in files.items():
+                info = tarfile.TarInfo('rust-mirror-1.2.3/' + name); info.size = len(data)
+                archive.addfile(info, io.BytesIO(data))
+        return path
+
+    def test_published_profiles_keep_v051_to_v060_and_add_crate_after(self):
+        archives = lambda v, targets=release.TARGETS: [release.asset_name(v, t) for t in targets]
+        no_gnu = [t for t in release.TARGETS if t != 'x86_64-unknown-linux-gnu']
+        expected = {
+            '0.5.1': archives('0.5.1', no_gnu),
+            '0.5.2': archives('0.5.2'),
+            '0.5.4': archives('0.5.4') + ['rust-mirror-0.5.4.cdx.json'],
+            '0.6.0': archives('0.6.0') + ['rust-mirror-0.6.0.cdx.json'],
+            '0.6.1': archives('0.6.1') + ['rust-mirror-0.6.1.cdx.json', 'rust-mirror-0.6.1.crate'],
+            '0.7.0': archives('0.7.0') + ['rust-mirror-0.7.0.cdx.json', 'rust-mirror-0.7.0.crate'],
+        }
+        for version, summed in expected.items():
+            with self.subTest(version=version):
+                profile = release.published_profile(version, [])
+                self.assertEqual(profile['summed'], sorted(summed))
+                self.assertEqual(profile['signed'], sorted(summed) + ['SHA256SUMS'])
+                bundle = {'0.6.0', '0.6.1', '0.7.0'} >= {version} and f'rust-mirror-{version}.intoto.jsonl'
+                self.assertEqual(profile['bundle'], bundle or None)
+                self.assertEqual(profile['assets'], set(summed) | {'SHA256SUMS'} | ({bundle} if bundle else set()))
+        self.assertEqual(release.published_profile('0.6.1', [])['summed'], release.build_summed_assets('0.6.1'))
+        self.assertEqual(len(release.published_profile('0.6.1', [])['assets']), 9)
+        self.assertFalse(release.has_single_profile('0.6.0'))
+        self.assertTrue(release.has_single_profile('0.6.1'))
+
+    def test_recorded_live_releases_match_their_published_profiles(self):
+        evals = Path(__file__).resolve().parents[1] / 'docs/evals'
+        v054 = json.loads((evals / 'publication-0.5.4.json').read_text())
+        v060 = json.loads((evals / 'publication-0.6.0.json').read_text())
+        live = {tag: set(v054['previous_releases_unchanged'][tag]['assets']) for tag in ('v0.5.1', 'v0.5.2')}
+        live['v0.5.4'] = set(v054['release']['assets'])
+        live['v0.6.0'] = set(v060['assets'])
+        for tag, names in live.items():
+            with self.subTest(tag=tag):
+                self.assertEqual(release.published_profile(tag[1:], names)['assets'], names)
+
+    def test_crate_audit_refuses_changed_ci_dirty_or_foreign_content(self):
+        def git(*args):
+            return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()
+        git('init', '-q'); git('config', 'user.name', 'Fixture'); git('config', 'user.email', 'fixture@example.invalid')
+        (self.root / 'src').mkdir(); (self.root / 'src/lib.rs').write_bytes(b'// lib\n'); (self.root / 'Cargo.toml').write_bytes(b'[package]\n')
+        git('add', '.'); git('commit', '-qm', 'source'); commit = git('rev-parse', 'HEAD')
+        good = self.crate_fixture(self.root / 'good', commit=commit)
+        self.assertEqual(release.audit_crate(self.root, commit, good), 4)
+        cases = {'differs from the frozen commit': dict(extra={'src/lib.rs': b'// changed\n'}),
+                 'fuzz or CI content': dict(extra={'fuzz/Cargo.toml': b'x'}),
+                 'clean frozen commit': dict(dirty=True)}
+        for message, options in cases.items():
+            with self.subTest(message=message):
+                bad = self.crate_fixture(self.root / message.replace(' ', '-'), commit=commit, **options)
+                with self.assertRaisesRegex(ValueError, message):
+                    release.audit_crate(self.root, commit, bad)
 
 
 if __name__ == '__main__': unittest.main()
