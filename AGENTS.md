@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3/0.5.4 are published;
-see docs/evals/2026-11-16-publication-0.5.4.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3/0.5.4/0.6.0 are published;
+see docs/evals/2026-11-21-publication-0.6.0.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -567,6 +567,15 @@ and the attached bundle against GitHub's store; run the public Windows/GNU/musl
 download verifier. Record publication in a PR, then tell the rust-mirror-gui
 maintainer that 0.6.0 is live. The same exact-tag-only recovery rule as 0.5.4
 applies to a collector timeout.
+
+Published 2026-11-21. The tag run's collector timed out (HTTP 404) because owner
+publishing approval came after its bounded wait; it skipped attest/publish and
+uploaded nothing. After the exact notes were released, exact-tag dispatch 44913249402
+attached all eight assets. The [publication record](docs/evals/2026-11-21-publication-0.6.0.md)
+verifies registry payload, docs.rs, fresh install, all seven provenances, five SBOM
+bindings, the attached bundle's offline verification and store match, and public
+Windows/GNU/musl execution. Keep the failed run as history; never treat a collector
+timeout as permission to change source, signer or tag.
 
 ## User-facing documentation
 
