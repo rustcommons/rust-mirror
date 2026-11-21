@@ -115,7 +115,10 @@ def verify_attached_provenance(assets, provenance, policy, scratch):
         subprocess.run(['gh', 'attestation', 'verify', str(asset), '--bundle', str(provenance), *policy, '--predicate-type', SLSA_PROVENANCE], check=True, stdout=subprocess.DEVNULL)
         folder = scratch / asset.name; folder.mkdir(parents=True)
         subprocess.run(['gh', 'attestation', 'download', str(asset.resolve()), '--repo', REPO, '--predicate-type', SLSA_PROVENANCE], check=True, cwd=folder, stdout=subprocess.DEVNULL)
-        stored = {envelope_key(bundle) for path in folder.glob('*.jsonl') for bundle, _ in provenance_bundles(path.read_bytes())}
+        # gh names the file sha256:DIGEST.jsonl, or sha256-DIGEST.jsonl on Windows (':' is an NTFS stream separator).
+        downloads = sorted(folder.glob('*.jsonl'))
+        require(bool(downloads), f'no GitHub-stored provenance downloaded for {asset.name}')
+        stored = {envelope_key(bundle) for path in downloads for bundle, _ in provenance_bundles(path.read_bytes())}
         require(bool(attached & stored), f'attached provenance does not match GitHub-stored attestations for {asset.name}')
         matched |= attached & stored
     require(matched == attached, 'attached provenance contains bundles absent from GitHub attestation storage')
@@ -451,7 +454,8 @@ def staged_assets(r, output, provenance=None):
     if provenance is not None:
         require(not (output / bundle).exists(), 'provenance asset already staged')
         subjects = {n: digest((output / n).read_bytes()) for n in signed}
-        (output / bundle).write_text(provenance_jsonl(provenance.read_bytes(), subjects), encoding='utf-8')
+        # Binary write: LF-only JSON Lines on every platform (no text-mode CRLF translation).
+        (output / bundle).write_bytes(provenance_jsonl(provenance.read_bytes(), subjects).encode('utf-8'))
     expected = sorted(signed + [bundle])
     require(sorted(p.name for p in output.iterdir()) == expected, 'unexpected or missing release asset')
     sums = ''.join(f'{digest((output / n).read_bytes())}  {n}\n' for n in summed)

@@ -276,8 +276,25 @@ class ReleaseBinariesTests(unittest.TestCase):
         lines = (self.root / name).read_text().splitlines()
         self.assertEqual(len(lines), 1)
         self.assertEqual(json.loads(lines[0]), self.bundle(subjects))
+        self.assertNotIn(b'\r', (self.root / name).read_bytes())
         with self.assertRaisesRegex(ValueError, 'already staged'):
             release.staged_assets(self.record, self.root, bundle)
+
+    def test_staged_provenance_is_lf_only_bytes_from_crlf_input(self):
+        self.write_assets()
+        subjects = self.subjects()
+        bundle = self.root.parent / 'attestation.jsonl'
+        lines = [self.bundle_line(subjects).rstrip('\n')] * 2
+        bundle.write_bytes(('\r\n'.join(lines) + '\r\n').encode())
+        release.staged_assets(self.record, self.root, bundle)
+        raw = (self.root / release.provenance_name('1.2.3')).read_bytes()
+        self.assertEqual(raw, (json.dumps(self.bundle(subjects), separators=(',', ':')) + '\n').encode() * 2)
+
+    def test_store_match_refuses_when_nothing_was_downloaded(self):
+        self.write_assets()
+        bundle = self.root.parent / 'attached.jsonl'; bundle.write_bytes(self.bundle_line(self.subjects()).encode())
+        with patch.object(release.subprocess, 'run'), self.assertRaisesRegex(ValueError, 'no GitHub-stored provenance'):
+            release.verify_attached_provenance(sorted(self.root.iterdir()), bundle, ['--repo', release.REPO], Path(tempfile.mkdtemp(dir=self.temp.name)))
 
     def test_stage_refuses_incomplete_foreign_or_unsigned_provenance(self):
         self.write_assets()
@@ -306,7 +323,8 @@ class ReleaseBinariesTests(unittest.TestCase):
             def run(args, check, cwd=None, stdout=None):
                 calls.append(args[:3])
                 if args[2] == 'download':
-                    (Path(cwd) / 'sha256:x.jsonl').write_text(self.bundle_line(subjects, sig=stored_sig))
+                    # gh's Windows-safe name; 'sha256:x' would be an NTFS alternate data stream invisible to glob.
+                    (Path(cwd) / 'sha256-x.jsonl').write_bytes(self.bundle_line(subjects, sig=stored_sig).encode())
             scratch = Path(tempfile.mkdtemp(dir=self.temp.name))
             with self.subTest(ok=ok), patch.object(release.subprocess, 'run', side_effect=run):
                 if ok:
