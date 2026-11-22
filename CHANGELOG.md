@@ -4,6 +4,8 @@
 
 ### Repository
 
+- Record the completed 0.6.1 publication and first real phase 2 pipeline run,
+  including its initial CI gate refusal and public artifact verification.
 - Use the unified `actions/attest` action for release provenance and SBOM
   attestations, preserving the existing signer identity and verification policy.
 - Update the root and fuzz lockfiles to `url` 2.5.9 and companion

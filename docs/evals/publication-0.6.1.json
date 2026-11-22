@@ -1,0 +1,576 @@
+{
+  "version": "0.6.1",
+  "tag": "v0.6.1",
+  "source": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+  "qualified_pr_head": "641242b7f878deb1665215cfbee0a19055b76bb7",
+  "merge_tree_equals_qualified_head": true,
+  "tag_object": "f49831939f907a9854ce7087571e5cc8550c08fa",
+  "trusted_publishing": {
+    "run": 44992707987,
+    "successful_attempt": 2,
+    "conclusion": "success",
+    "initial_attempt": {
+      "attempt": 1,
+      "conclusion": "failure",
+      "refused_at": "2026-11-22T06:13:12Z",
+      "reason": "no successful CI run for merge commit; tag pushed before main CI completed",
+      "downstream_jobs": "skipped",
+      "rerun_source_unchanged": true
+    },
+    "jobs": [
+      {
+        "name": "Release gate",
+        "databaseId": 137118126123,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118126123",
+        "startedAt": "2026-11-22T06:17:32Z",
+        "completedAt": "2026-11-22T06:17:48Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / validate",
+        "databaseId": 137118196925,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118196925",
+        "startedAt": "2026-11-22T06:17:50Z",
+        "completedAt": "2026-11-22T06:17:55Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / crate-sbom",
+        "databaseId": 137118223376,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118223376",
+        "startedAt": "2026-11-22T06:17:57Z",
+        "completedAt": "2026-11-22T06:21:20Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / build (ubuntu-24.04, x86_64-unknown-linux-gnu)",
+        "databaseId": 137118223402,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118223402",
+        "startedAt": "2026-11-22T06:17:57Z",
+        "completedAt": "2026-11-22T06:20:33Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / build (windows-2025, x86_64-pc-windows-msvc)",
+        "databaseId": 137118223439,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118223439",
+        "startedAt": "2026-11-22T06:17:57Z",
+        "completedAt": "2026-11-22T06:20:46Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / build (macos-15, aarch64-apple-darwin)",
+        "databaseId": 137118223454,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118223454",
+        "startedAt": "2026-11-22T06:17:58Z",
+        "completedAt": "2026-11-22T06:20:12Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / build (ubuntu-22.04, x86_64-unknown-linux-musl)",
+        "databaseId": 137118223503,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118223503",
+        "startedAt": "2026-11-22T06:17:57Z",
+        "completedAt": "2026-11-22T06:20:31Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / build (macos-15-intel, x86_64-apple-darwin)",
+        "databaseId": 137118223528,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137118223528",
+        "startedAt": "2026-11-22T06:18:02Z",
+        "completedAt": "2026-11-22T06:22:32Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / binaries / verify",
+        "databaseId": 137119284725,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137119284725",
+        "startedAt": "2026-11-22T06:22:35Z",
+        "completedAt": "2026-11-22T06:22:48Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build / Checksums and attestations",
+        "databaseId": 137119342136,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137119342136",
+        "startedAt": "2026-11-22T06:22:50Z",
+        "completedAt": "2026-11-22T06:23:02Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Publish to crates.io",
+        "databaseId": 137119392668,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137119392668",
+        "startedAt": "2026-11-22T13:46:53Z",
+        "completedAt": "2026-11-22T13:47:12Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "GitHub release",
+        "databaseId": 137229136668,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137229136668",
+        "startedAt": "2026-11-22T13:47:15Z",
+        "completedAt": "2026-11-22T13:48:44Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify publication (ubuntu-22.04, x86_64-unknown-linux-gnu)",
+        "databaseId": 137229532458,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137229532458",
+        "startedAt": "2026-11-22T13:48:46Z",
+        "completedAt": "2026-11-22T13:51:31Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify publication (ubuntu-22.04, x86_64-unknown-linux-musl)",
+        "databaseId": 137229532463,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137229532463",
+        "startedAt": "2026-11-22T13:48:47Z",
+        "completedAt": "2026-11-22T13:50:10Z",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify publication (windows-2025, x86_64-pc-windows-msvc)",
+        "databaseId": 137229532485,
+        "url": "https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/job/137229532485",
+        "startedAt": "2026-11-22T13:48:46Z",
+        "completedAt": "2026-11-22T13:50:15Z",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "registry": {
+    "checksum": "6a658865f500d18ca6e41c244425c09008c03025a6ac5a90db7622d3c20f6d70",
+    "created_at": "2026-11-22T13:47:08.586852Z",
+    "rust_version": "1.90",
+    "yanked": false,
+    "trustpub_data": {
+      "provider": "github",
+      "repository": "rustcommons/rust-mirror",
+      "run_id": "44992707987",
+      "sha": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0"
+    }
+  },
+  "registry_payload_verification": {
+    "version": "0.6.1",
+    "source": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+    "published": true,
+    "archive_sha256": "6a658865f500d18ca6e41c244425c09008c03025a6ac5a90db7622d3c20f6d70",
+    "vcs": {
+      "git": {
+        "sha1": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0"
+      },
+      "path_in_vcs": ""
+    }
+  },
+  "release": {
+    "tagName": "v0.6.1",
+    "name": "rust-mirror 0.6.1",
+    "isDraft": false,
+    "isPrerelease": false,
+    "publishedAt": "2026-11-22T13:48:40Z",
+    "url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.6.1"
+  },
+  "public_native_reports": [
+    {
+      "tag": "v0.6.1",
+      "source": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.6.1",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "78dbb0ea9f80f0d0cbfaef2a06baa60c96fc401c067ca80aab8b253624dff294",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-aarch64-apple-darwin.tar.gz": {
+          "sha256": "6371f76baa02a0ee2dc54dcb5453b69a05d87b8e5447a443d89b8f29c989da44",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-apple-darwin.tar.gz": {
+          "sha256": "d12d7648c8d7dff15bbb37de130733e6d4c3ef633ccca667f93d6f59e631b237",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-pc-windows-msvc.zip": {
+          "sha256": "9cbba7a524f754b89b466d2871511028e1e15084c5c36397831c1750d0b0de35",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "2ab3827678ec89d4a8ca93d1d4ca90491c781f71342bc9b6aadb9a3854daf902",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "57a9c16025d855a1073aa862f97ec398f56735544442880c1abb6cfacb583e53",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.cdx.json": {
+          "sha256": "16e45db7e54f1651116ea24d53b4e67c2a48c58c9fb9e035f8e9f36a663e15db",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.crate": {
+          "sha256": "6a658865f500d18ca6e41c244425c09008c03025a6ac5a90db7622d3c20f6d70",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.intoto.jsonl": {
+          "sha256": "2919261a6c80cb489c81983e6b18d6aeb508c2da590b0f7cbbfa6e3ab8bcb8b4",
+          "matches_github_store": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-pc-windows-msvc",
+      "downloaded_archive": "rust-mirror-0.6.1-x86_64-pc-windows-msvc.zip",
+      "binary_sha256": "af9997d1de95675def39c86c1fc5582bf388e227ff3034bc7ff6ebc2ba3fc6be",
+      "human_version": "rust-mirror 0.6.1",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.6.1",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.6.1"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "imports": [
+          "KERNEL32.dll",
+          "bcryptprimitives.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "ws2_32.dll",
+          "kernel32.dll",
+          "bcrypt.dll",
+          "advapi32.dll",
+          "ntdll.dll"
+        ],
+        "external_crt_imports": false
+      },
+      "read_only": true
+    },
+    {
+      "tag": "v0.6.1",
+      "source": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.6.1",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "78dbb0ea9f80f0d0cbfaef2a06baa60c96fc401c067ca80aab8b253624dff294",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-aarch64-apple-darwin.tar.gz": {
+          "sha256": "6371f76baa02a0ee2dc54dcb5453b69a05d87b8e5447a443d89b8f29c989da44",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-apple-darwin.tar.gz": {
+          "sha256": "d12d7648c8d7dff15bbb37de130733e6d4c3ef633ccca667f93d6f59e631b237",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-pc-windows-msvc.zip": {
+          "sha256": "9cbba7a524f754b89b466d2871511028e1e15084c5c36397831c1750d0b0de35",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "2ab3827678ec89d4a8ca93d1d4ca90491c781f71342bc9b6aadb9a3854daf902",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "57a9c16025d855a1073aa862f97ec398f56735544442880c1abb6cfacb583e53",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.cdx.json": {
+          "sha256": "16e45db7e54f1651116ea24d53b4e67c2a48c58c9fb9e035f8e9f36a663e15db",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.crate": {
+          "sha256": "6a658865f500d18ca6e41c244425c09008c03025a6ac5a90db7622d3c20f6d70",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.intoto.jsonl": {
+          "sha256": "2919261a6c80cb489c81983e6b18d6aeb508c2da590b0f7cbbfa6e3ab8bcb8b4",
+          "matches_github_store": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-unknown-linux-gnu",
+      "downloaded_archive": "rust-mirror-0.6.1-x86_64-unknown-linux-gnu.tar.gz",
+      "binary_sha256": "a8d62f1469bc3c6679ed487bc88ee2e74b23fbd4fe0019bbbb610c29e7127d6a",
+      "human_version": "rust-mirror 0.6.1",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.6.1",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.6.1"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "maximum_required_glibc": "2.17",
+        "required_glibc_versions": [
+          "2.2.5",
+          "2.3",
+          "2.3.4",
+          "2.4",
+          "2.10",
+          "2.12",
+          "2.14",
+          "2.16",
+          "2.17"
+        ],
+        "needed": [
+          "libc.so.6",
+          "libm.so.6",
+          "libpthread.so.0",
+          "libgcc_s.so.1",
+          "libdl.so.2"
+        ],
+        "file": "/home/runner/work/_temp/verification/rust-mirror-0.6.1-x86_64-unknown-linux-gnu/rust-mirror: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=6063e60dfb2f6b5d9e8051916e7657c2095763a3, for GNU/Linux 2.6.32, not stripped",
+        "ldd": "linux-vdso.so.1 (0x00007ffe28bb2000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f7abde00000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f7abdd19000)\n\tlibpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f7abe041000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f7abdcf9000)\n\tlibdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f7abe03c000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f7abe054000)"
+      },
+      "read_only": true
+    },
+    {
+      "tag": "v0.6.1",
+      "source": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+      "release_url": "https://github.com/rustcommons/rust-mirror/releases/tag/v0.6.1",
+      "assets": {
+        "SHA256SUMS": {
+          "sha256": "78dbb0ea9f80f0d0cbfaef2a06baa60c96fc401c067ca80aab8b253624dff294",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-aarch64-apple-darwin.tar.gz": {
+          "sha256": "6371f76baa02a0ee2dc54dcb5453b69a05d87b8e5447a443d89b8f29c989da44",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-apple-darwin.tar.gz": {
+          "sha256": "d12d7648c8d7dff15bbb37de130733e6d4c3ef633ccca667f93d6f59e631b237",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-pc-windows-msvc.zip": {
+          "sha256": "9cbba7a524f754b89b466d2871511028e1e15084c5c36397831c1750d0b0de35",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-unknown-linux-gnu.tar.gz": {
+          "sha256": "2ab3827678ec89d4a8ca93d1d4ca90491c781f71342bc9b6aadb9a3854daf902",
+          "verified": true
+        },
+        "rust-mirror-0.6.1-x86_64-unknown-linux-musl.tar.gz": {
+          "sha256": "57a9c16025d855a1073aa862f97ec398f56735544442880c1abb6cfacb583e53",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.cdx.json": {
+          "sha256": "16e45db7e54f1651116ea24d53b4e67c2a48c58c9fb9e035f8e9f36a663e15db",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.crate": {
+          "sha256": "6a658865f500d18ca6e41c244425c09008c03025a6ac5a90db7622d3c20f6d70",
+          "verified": true
+        },
+        "rust-mirror-0.6.1.intoto.jsonl": {
+          "sha256": "2919261a6c80cb489c81983e6b18d6aeb508c2da590b0f7cbbfa6e3ab8bcb8b4",
+          "matches_github_store": true
+        }
+      },
+      "checksums_match": true,
+      "notes_unchanged": true,
+      "target": "x86_64-unknown-linux-musl",
+      "downloaded_archive": "rust-mirror-0.6.1-x86_64-unknown-linux-musl.tar.gz",
+      "binary_sha256": "5fd92438e450bce13f864a9097ea1cf57e0340e6bf2bee18c5df85401ff2c35d",
+      "human_version": "rust-mirror 0.6.1",
+      "events": [
+        {
+          "command": "--version",
+          "elapsed_ms": 0,
+          "protocol": 1,
+          "seq": 0,
+          "tool_version": "0.6.1",
+          "type": "hello"
+        },
+        {
+          "elapsed_ms": 0,
+          "index": 1,
+          "name": "--version",
+          "seq": 1,
+          "total": null,
+          "type": "stage"
+        },
+        {
+          "elapsed_ms": 0,
+          "error": null,
+          "ok": true,
+          "report": {
+            "protocol": 1,
+            "tool_version": "0.6.1"
+          },
+          "seq": 2,
+          "type": "result"
+        }
+      ],
+      "linkage": {
+        "file": "/home/runner/work/_temp/verification/rust-mirror-0.6.1-x86_64-unknown-linux-musl/rust-mirror: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, BuildID[sha1]=413f50618f5d2611ab3e095f45571de3470b55f7, not stripped",
+        "ldd": "statically linked",
+        "no_interpreter_or_needed": true
+      },
+      "read_only": true
+    }
+  ],
+  "docs_rs": {
+    "build_success_in_tag_verifier": true,
+    "later_api_http_status": 200,
+    "later_crates_api_http_status": 200
+  },
+  "fresh_registry_install": {
+    "job": 137229532458,
+    "cargo_home": "new isolated home",
+    "version": "0.6.1",
+    "protocol": 1,
+    "result": "success"
+  },
+  "later_security_finding": {
+    "advisory": "RUSTSEC-2026-0592",
+    "dependency": "url 2.5.7",
+    "seen_in_pr": 80,
+    "not_waived": true,
+    "maintenance_resolution": {
+      "pr": 80,
+      "main_merge": "fe5e7df16c8d6ab1309a070648534b01dd86aa2b",
+      "url": "2.5.9",
+      "form_urlencoded": "1.2.3",
+      "both_lockfiles_updated": true,
+      "published_0_6_1_affected_in_practice": false,
+      "assessment": "Neither released rust-mirror src nor ureq 2.12.1 calls Url::origin or url::quirks::origin",
+      "repository_advisory_or_patch_release": false
+    }
+  },
+  "independent_audit": {
+    "source": "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+    "tag_object": "f49831939f907a9854ce7087571e5cc8550c08fa",
+    "assets": [
+      {
+        "name": "SHA256SUMS",
+        "id": 779213954,
+        "size": 750,
+        "digest": "sha256:78dbb0ea9f80f0d0cbfaef2a06baa60c96fc401c067ca80aab8b253624dff294",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1-aarch64-apple-darwin.tar.gz",
+        "id": 779213987,
+        "size": 3507600,
+        "digest": "sha256:6371f76baa02a0ee2dc54dcb5453b69a05d87b8e5447a443d89b8f29c989da44",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1-x86_64-apple-darwin.tar.gz",
+        "id": 779214050,
+        "size": 3747049,
+        "digest": "sha256:d12d7648c8d7dff15bbb37de130733e6d4c3ef633ccca667f93d6f59e631b237",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1-x86_64-pc-windows-msvc.zip",
+        "id": 779214103,
+        "size": 3467527,
+        "digest": "sha256:9cbba7a524f754b89b466d2871511028e1e15084c5c36397831c1750d0b0de35",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1-x86_64-unknown-linux-gnu.tar.gz",
+        "id": 779214183,
+        "size": 3871173,
+        "digest": "sha256:2ab3827678ec89d4a8ca93d1d4ca90491c781f71342bc9b6aadb9a3854daf902",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1-x86_64-unknown-linux-musl.tar.gz",
+        "id": 779214250,
+        "size": 3980406,
+        "digest": "sha256:57a9c16025d855a1073aa862f97ec398f56735544442880c1abb6cfacb583e53",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1.cdx.json",
+        "id": 779214314,
+        "size": 147368,
+        "digest": "sha256:16e45db7e54f1651116ea24d53b4e67c2a48c58c9fb9e035f8e9f36a663e15db",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1.crate",
+        "id": 779214365,
+        "size": 178826,
+        "digest": "sha256:6a658865f500d18ca6e41c244425c09008c03025a6ac5a90db7622d3c20f6d70",
+        "state": "uploaded"
+      },
+      {
+        "name": "rust-mirror-0.6.1.intoto.jsonl",
+        "id": 779214451,
+        "size": 12263,
+        "digest": "sha256:2919261a6c80cb489c81983e6b18d6aeb508c2da590b0f7cbbfa6e3ab8bcb8b4",
+        "state": "uploaded"
+      }
+    ],
+    "seven_checksums": true,
+    "eight_provenance_subjects": true,
+    "attached_bundle_matches_store": true,
+    "six_sbom_bindings": [
+      "rust-mirror-0.6.1-aarch64-apple-darwin.tar.gz",
+      "rust-mirror-0.6.1-x86_64-apple-darwin.tar.gz",
+      "rust-mirror-0.6.1-x86_64-pc-windows-msvc.zip",
+      "rust-mirror-0.6.1-x86_64-unknown-linux-gnu.tar.gz",
+      "rust-mirror-0.6.1-x86_64-unknown-linux-musl.tar.gz",
+      "rust-mirror-0.6.1.crate"
+    ],
+    "registry_crate_equals_release_crate": true,
+    "notes_equal_tag": true,
+    "policy": [
+      "--repo",
+      "rustcommons/rust-mirror",
+      "--signer-workflow",
+      "rustcommons/rust-mirror/.github/workflows/build-binaries.yml",
+      "--source-digest",
+      "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+      "--signer-digest",
+      "3c11d914bce9a06cb92ef7f39179e3a42f98cab0",
+      "--deny-self-hosted-runners"
+    ]
+  }
+}

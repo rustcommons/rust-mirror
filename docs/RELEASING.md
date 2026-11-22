@@ -301,6 +301,15 @@ a publication record PR that records how each new job behaved on its first real
 run, preserving failures/recovery if any. Notify the GUI maintainer only after
 0.6.1 is confirmed live. Signing/approval/publication cannot be proved by a PR dry run.
 
+Published 2026-11-22 through [run 44992707987, attempt 2](https://github.com/rustcommons/rust-mirror/actions/runs/44992707987/attempts/2).
+The [publication record](evals/2026-11-22-publication-0.6.1.md) verifies the complete
+first real phase 2 chain and public nine-asset release. Attempt 1 correctly refused
+the tag while CI on the merge commit was unfinished; no downstream signing or
+publication ran. Wait for green main CI before tagging, then rerun the unchanged
+tag/run if this refusal occurs. Signing completed before the owner-approval wait;
+no collector recovery or manual release creation was needed. Historical 0.6.0
+ordering/recovery evidence above remains unchanged.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
