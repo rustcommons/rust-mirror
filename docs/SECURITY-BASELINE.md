@@ -68,6 +68,31 @@ SARIF. Its badge is not a promised score; main activation was observed in run437
 CodeQL default setup and organization security features remain provider-managed.
 OpenSSF Best Practices registration is handled by the owner; no badge is fabricated.
 
+## URL origin advisory assessment — 2026-11-22
+
+[RUSTSEC-2026-0592](https://rustsec.org/advisories/RUSTSEC-2026-0592)
+([upstream fix](https://github.com/servo/rust-url/pull/1186)) affects `url` through
+2.5.8: calling `Url::origin` or `url::quirks::origin` on sufficiently nested
+`blob:` URLs can overflow the stack and abort the process. Parsing a URL alone
+is not the affected operation.
+
+Published rust-mirror 0.6.1 locks `url` 2.5.7 through ureq 2.12.1, so cargo-deny
+correctly refuses that dependency graph. Source inspection of rust-mirror's
+`src/` at release commit `3c11d914bce9a06cb92ef7f39179e3a42f98cab0` and the registry
+source of ureq 2.12.1 found no calls to either affected function. The local
+`origin` helper in `src/crates/lockfile/parse.rs` formats scheme, host and port;
+it does not call the `url` origin API. On that inspected call graph, published
+0.6.1 is not affected in practice by this advisory. This assessment is specific
+to these versions and functions, not a claim that all dependency code is safe.
+
+Owner-authorized maintenance updates both `Cargo.lock` and `fuzz/Cargo.lock`
+to `url` 2.5.9, with required companion `form_urlencoded` 1.2.3. No crate names,
+manifest requirements, application source or version change. Cargo-deny remains
+enforced with no advisory ignore or policy exception. Per the owner's decision,
+no repository advisory or patch release is created for this finding; published
+0.6.1 and its immutable lockfile/assets remain unchanged. Future origin-API use
+requires a fresh exposure assessment.
+
 ## Pinned installs and SAST
 
 The owner extended the baseline on 2026-11-17. Never use `[skip ci]` or `[ci skip]`

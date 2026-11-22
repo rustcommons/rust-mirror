@@ -88,7 +88,7 @@ jobs:
           PY
       - name: Attest the crate, archives, SBOM and SHA256SUMS
         id: provenance
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: release-assets/*
       - name: Stage the single provenance bundle for the release
@@ -117,7 +117,7 @@ jobs:
           test "${#files[@]}" -eq 1
           echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
       - name: Bind the Cargo dependency SBOM to each archive and the crate
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: |
             release-assets/*.zip
