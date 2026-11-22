@@ -285,6 +285,12 @@ all five targets, the crate, SBOM and single seven-entry SHA256SUMS successfully
 The owner reviews, merges and tags. Do not merge, tag, push to main or poll CI in a
 loop. No new dependency is authorized.
 
+Keep this patch additive: existing public structs and strict frozen-plan JSON/IDs
+must remain compatible for the same inputs. Compute metadata diagnostics through
+an accessor and display them only in CLI/event reports. Run an exact-version,
+`--locked` local cargo-semver-checks installation against published 0.6.0 and
+require no major changes; no new project dependency or CI job is authorized.
+
 This is the first real release through phase 2. The tag run must build and sign
 before the owner's crates-io approval, publish after approval, create and finish the
 draft-first nine-asset GitHub Release, then verify publication. No manual release

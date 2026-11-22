@@ -236,9 +236,6 @@ pub struct FrozenPlan {
     /// Typed historical index collisions; empty is omitted to preserve legacy identities.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub index_warnings: Vec<super::IndexWarning>,
-    /// Nonidentity upstream field changes relative to historical cohort proofs.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub metadata_warnings: Vec<MetadataWarning>,
     /// Flat, independently validated historical selection proofs; empty for a first generation.
     #[serde(default)]
     pub cohorts: Vec<Cohort>,
@@ -467,6 +464,14 @@ fn native_bounds(catalog: &Catalog) -> Bounds {
     }
 }
 impl FrozenPlan {
+    /// Compute typed nonidentity field drift against this plan's historical proofs.
+    ///
+    /// These presentation diagnostics are not serialized into the frozen plan and
+    /// do not alter its identity. Call [`Self::validate`] before trusting a plan;
+    /// this accessor skips malformed record pairs rather than validating them.
+    pub fn metadata_warnings(&self) -> Vec<MetadataWarning> {
+        retained::metadata_warnings(self)
+    }
     fn computed_id(&self) -> Result<String> {
         let mut value = self.clone();
         value.plan_id.clear();
@@ -515,7 +520,7 @@ impl FrozenPlan {
         if !self.cohorts.is_empty() {
             return retained::validate(self, replay);
         }
-        if !self.retention_observations.is_empty() || !self.metadata_warnings.is_empty() {
+        if !self.retention_observations.is_empty() {
             return Err(invalid("retention observations require historical proofs"));
         }
         if self.catalog.crate_policy.hosts.is_empty()
@@ -992,7 +997,6 @@ pub fn plan(
         previous_inventory_sha256: None,
         cohorts: Vec::new(),
         index_warnings,
-        metadata_warnings: Vec::new(),
         retention_observations: Vec::new(),
         warnings: vec![
             "Declared features with all-platform normal/build lock coverage; build success is not implied.".into(),

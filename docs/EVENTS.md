@@ -286,10 +286,16 @@ throughout such a plan's lifecycle. The framing/protocol version remains 1.
 
 ### Nonidentity crate metadata warnings (0.6.1)
 
-Crate frozen previews (including `needs_approval.preview`) add optional
-`metadata_warnings`: `{kind: "upstream_metadata_drift", identity: {name, version},
-fields: ["rust_version", ...]}`. Missing means empty. This reports field drift
-against historical cohort proofs without merging checksums; the successor serves
-the new upstream record. See [crate semantics](CRATES.md). Protocol remains 1;
-clients displaying frozen previews should display these typed warnings as well as
-`index_warnings`. Old strict frozen-plan readers can refuse the additive field.
+CLI plan/show/explain result reports and sync `needs_approval` reports may add
+optional `metadata_warnings`: `{kind: "upstream_metadata_drift", identity:
+{name, version}, fields: ["rust_version", ...]}` records. Missing means empty.
+These diagnostics come from `FrozenPlan::metadata_warnings()` and are presentation
+fields only: saved frozen-plan JSON and its `plan_id` are unchanged. In a sync
+result, the field is beside `preview`; the `preview` itself stays unchanged.
+Explanation diagnostics are limited to the requested package/version.
+
+Protocol 1's existing rule requires consumers to ignore unknown additive fields,
+including these command-report fields. This rule does not relax the strict saved
+plan schema. Persist the plan file produced by the command, not an enriched CLI
+report. Library callers obtain typed warnings through the method; `FrozenPlan`,
+`ExplainReport` and `SyncReport` gain no fields. See [crate semantics](CRATES.md).

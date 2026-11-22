@@ -231,13 +231,19 @@ identity-field changes are refused. The combined served index is replayed across
 historical and current root profiles too; if mixing cohorts would require an
 unmirrored edge, planning refuses rather than offering an incomplete registry.
 Nonidentity field backfills (for example `rust_version`, `pubtime`, or other
-upstream annotations) are allowed. `FrozenPlan.metadata_warnings` is an optional
-array of typed `{kind: "upstream_metadata_drift", identity: {name, version}, fields}`
-records; field names are sorted, warnings are reconstructed from historical proofs
-and bound into plan approval. Absent/empty means no drift. The successor serves the
-NEW original upstream line bytes, while each historical cohort and generation
-retains its original index bytes and independent proofs. Old strict readers may
-refuse plans/inventories containing the new warning field; use 0.6.1 to read them.
+upstream annotations) are allowed. `FrozenPlan::metadata_warnings()` computes a
+vector of non-exhaustive `MetadataWarning` values by comparing current version
+lines with historical cohort proofs. Each has `kind: "upstream_metadata_drift"`,
+`identity: {name, version}` and sorted `fields`. Validate a plan before using this
+accessor; it is a diagnostic view, not a validation substitute. The inputs that
+determine warnings are bound into plan approval; diagnostics are never persisted
+in the frozen plan or added to its existing `warnings` array. Existing public
+struct literals, frozen JSON field order/bytes and plan IDs are unchanged for the
+same inputs. The CLI displays warnings in plan/show/sync preview and explain;
+event result reports add an optional presentation-only `metadata_warnings` field
+(see [events](EVENTS.md)). A sync report puts it beside `preview`, not inside it.
+The successor serves the NEW original upstream line bytes, while each historical
+cohort and generation retains its original index bytes and independent proofs.
 Identity comparison covers `name`, `vers`, `cksum`, `deps`, `features`, `features2`
 and `links`: any change is a hard refusal, and checksums are never merged.
 Yank-only changes keep the separate observation behavior and preserve served

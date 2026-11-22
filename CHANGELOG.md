@@ -14,10 +14,13 @@
   chunk. Resume discards bytes beyond the saved durable offset, revalidates prefixes
   and checks the final checksum. Existing private receipts migrate on resume.
 - Incremental crate plans tolerate upstream nonidentity metadata backfills such as
-  `rust_version`, report typed `metadata_warnings`, and serve the new upstream line
+  `rust_version`, report computed typed diagnostics through
+  `FrozenPlan::metadata_warnings()` and CLI preview/explain, and serve the new upstream line
   in the successor. Historical cohort proofs keep their original bytes; changes to
   name, version, checksum, dependencies, features, features2 or links still refuse.
   Yank-only observations retain their existing handling. Checksums are never merged.
+  Existing public struct fields, saved-plan JSON and IDs stay unchanged for the
+  same inputs; only CLI/event reports add presentation diagnostics.
 - Toolchain sync `--resume` and `--force`, and selected fetch resume, accept the
   persistent empty prune lock left by a successful prune.
 

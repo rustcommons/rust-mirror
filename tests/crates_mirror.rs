@@ -1190,17 +1190,104 @@ fn upstream_backfill_warns_and_serves_new_bytes_without_rewriting_proofs() {
     let plan = mirror::plan(&catalog, &source, Some(&previous), false).unwrap();
     assert_eq!(plan.cohorts[0].versions[0].index_line.as_bytes(), original);
     assert_eq!(plan.versions[0].index_line.as_bytes(), source.metadata);
-    let preview = serde_json::to_value(&plan).unwrap();
+    let before = serde_json::to_vec(&plan).unwrap();
+    let id = plan.plan_id.clone();
+    let warnings = serde_json::to_value(plan.metadata_warnings()).unwrap();
+    assert_eq!(warnings[0]["kind"], "upstream_metadata_drift");
     assert_eq!(
-        preview["metadata_warnings"][0]["kind"],
-        "upstream_metadata_drift"
-    );
-    assert_eq!(
-        preview["metadata_warnings"][0]["fields"],
+        warnings[0]["fields"],
         json!(["future_metadata", "rust_version"])
     );
+    let mut future_diagnostics = warnings.clone();
+    future_diagnostics[0]["future_display_field"] = json!(true);
+    let decoded: Vec<mirror::MetadataWarning> = serde_json::from_value(future_diagnostics).unwrap();
+    assert_eq!(serde_json::to_value(decoded).unwrap(), warnings);
+    assert_eq!(serde_json::to_vec(&plan).unwrap(), before);
+    assert_eq!(plan.plan_id, id);
+    assert!(serde_json::to_value(&plan)
+        .unwrap()
+        .get("metadata_warnings")
+        .is_none());
     let saved = dir.path().join("plan.json");
     plan.save_new(&saved).unwrap();
+    // CLI presentation diagnostics are additive; neither human/events output
+    // changes the saved strict-schema plan or its approval identity.
+    let saved_bytes = std::fs::read(&saved).unwrap();
+    for command in ["show", "explain"] {
+        for events in [false, true] {
+            let mut cli = std::process::Command::new(env!("CARGO_BIN_EXE_rust-mirror"));
+            if events {
+                cli.args(["--events", "jsonl"]);
+            }
+            cli.args(["crates", command, "--plan"]).arg(&saved);
+            if command == "explain" {
+                cli.args(["--crate", "x"]);
+            }
+            let output = cli.output().unwrap();
+            assert!(
+                output.status.success(),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let text = String::from_utf8(output.stdout).unwrap();
+            if events {
+                let final_event: serde_json::Value =
+                    serde_json::from_str(text.lines().last().unwrap()).unwrap();
+                assert_eq!(final_event["report"]["metadata_warnings"], warnings);
+                if command == "show" {
+                    assert_eq!(final_event["report"]["plan_id"], id);
+                }
+            } else {
+                assert!(text.contains("Metadata warning for x 1.0.0"));
+            }
+            assert_eq!(std::fs::read(&saved).unwrap(), saved_bytes);
+        }
+    }
+    let pending = dir.path().join("pending");
+    std::fs::create_dir(&pending).unwrap();
+    plan.save_new(&pending.join("plan.json")).unwrap();
+    let config_path = dir.path().join("catalog.toml");
+    std::fs::write(&config_path, catalog.to_toml().unwrap()).unwrap();
+    for events in [false, true] {
+        let mut cli = std::process::Command::new(env!("CARGO_BIN_EXE_rust-mirror"));
+        if events {
+            cli.args(["--events", "jsonl"]);
+        }
+        let output = cli
+            .args(["crates", "sync", "--config"])
+            .arg(&config_path)
+            .arg("--output")
+            .arg(&pending)
+            .arg("--previous")
+            .arg(&previous)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let text = String::from_utf8(output.stdout).unwrap();
+        if events {
+            let event: serde_json::Value =
+                serde_json::from_str(text.lines().last().unwrap()).unwrap();
+            assert_eq!(event["report"]["metadata_warnings"], warnings);
+            assert!(event["report"]["preview"]
+                .get("metadata_warnings")
+                .is_none());
+            // Event reports use the existing TOML bridge, which omits some
+            // nullable fields. Reconstructing the frozen model preserves its bytes.
+            let preview: FrozenPlan =
+                serde_json::from_value(event["report"]["preview"].clone()).unwrap();
+            assert_eq!(serde_json::to_vec(&preview).unwrap(), before);
+        } else {
+            assert!(text.contains("Metadata warning for x 1.0.0"));
+        }
+        assert_eq!(
+            std::fs::read(pending.join("plan.json")).unwrap(),
+            saved_bytes
+        );
+    }
     let plan = FrozenPlan::load(&saved).unwrap();
     let report = mirror::fetch(
         &plan,
@@ -1533,4 +1620,64 @@ fn cancelled_crate_transfer_checkpoints_before_returning_and_resumes() {
     let report = mirror::fetch(&plan, &source, &options, &approval).unwrap();
     assert_eq!(report.reused_bytes, 3);
     assert_eq!(report.total_transferred_bytes, 7);
+}
+
+#[test]
+fn frozen_plan_060_literals_bytes_and_ids_remain_compatible() {
+    for original in [
+        include_str!("fixtures/crates-plan-v1.json"),
+        include_str!("fixtures/crates-retained-plan-v1.json"),
+    ] {
+        let plan: FrozenPlan = serde_json::from_str(original).unwrap();
+        plan.validate().unwrap();
+        // Exhaustive public destructuring/construction is valid downstream 0.6.0
+        // code. Any added FrozenPlan field makes this regression fail to compile.
+        let FrozenPlan {
+            schema,
+            plan_id,
+            catalog,
+            observed_at,
+            roots,
+            versions,
+            witnesses,
+            observations,
+            counts,
+            size_estimate,
+            budgets,
+            changes,
+            previous_inventory_sha256,
+            warnings,
+            index_warnings,
+            cohorts,
+            retention_observations,
+        } = plan;
+        let literal = FrozenPlan {
+            schema,
+            plan_id,
+            catalog,
+            observed_at,
+            roots,
+            versions,
+            witnesses,
+            observations,
+            counts,
+            size_estimate,
+            budgets,
+            changes,
+            previous_inventory_sha256,
+            warnings,
+            index_warnings,
+            cohorts,
+            retention_observations,
+        };
+        literal.validate().unwrap();
+        assert_eq!(serde_json::to_string_pretty(&literal).unwrap(), original);
+        let mut unsigned = literal.clone();
+        unsigned.plan_id.clear();
+        use sha2::{Digest, Sha256};
+        assert_eq!(
+            literal.plan_id,
+            hex::encode(Sha256::digest(serde_json::to_vec(&unsigned).unwrap()))
+        );
+    }
 }

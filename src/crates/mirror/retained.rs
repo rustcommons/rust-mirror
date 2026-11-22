@@ -4,13 +4,14 @@ use super::*;
 /// Typed category for tolerated upstream metadata evolution.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum MetadataWarningKind {
     /// Fields outside immutable crate identity differ from a historical proof.
     UpstreamMetadataDrift,
 }
 /// Preview evidence of nonidentity drift; original cohort records remain intact.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-#[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct MetadataWarning {
     /// Stable machine-readable category.
     pub kind: MetadataWarningKind,
@@ -55,6 +56,33 @@ fn drift(old: &str, current: &str, identity: Identity) -> Result<Option<Metadata
         identity,
         fields,
     }))
+}
+
+pub(super) fn metadata_warnings(plan: &FrozenPlan) -> Vec<MetadataWarning> {
+    let current: BTreeMap<_, _> = plan
+        .versions
+        .iter()
+        .map(|row| ((row.name.as_str(), row.version.as_str()), row))
+        .collect();
+    let mut fields: BTreeMap<Identity, BTreeSet<String>> = BTreeMap::new();
+    for old in plan.cohorts.iter().flat_map(|cohort| &cohort.versions) {
+        if let Some(row) = current.get(&(old.name.as_str(), old.version.as_str())) {
+            if let Ok(Some(warning)) = drift(&old.index_line, &row.index_line, row.identity()) {
+                fields
+                    .entry(warning.identity)
+                    .or_default()
+                    .extend(warning.fields);
+            }
+        }
+    }
+    fields
+        .into_iter()
+        .map(|(identity, fields)| MetadataWarning {
+            kind: MetadataWarningKind::UpstreamMetadataDrift,
+            identity,
+            fields: fields.into_iter().collect(),
+        })
+        .collect()
 }
 
 /// One independently checked selection observation, with no recursive predecessor.
@@ -139,7 +167,6 @@ impl Cohort {
             previous_inventory_sha256: None,
             warnings: self.warnings.clone(),
             index_warnings: self.index_warnings.clone(),
-            metadata_warnings: Vec::new(),
             cohorts: Vec::new(),
             retention_observations: Vec::new(),
         };
@@ -185,7 +212,6 @@ fn merge(
     let mut prior = BTreeSet::new();
     let active: BTreeSet<_> = last.versions.iter().map(VersionRow::identity).collect();
     let mut metadata = BTreeMap::new();
-    let mut metadata_warnings = BTreeSet::new();
     for (position, cohort) in cohorts.iter().enumerate() {
         events::check()?;
         let offset = value.roots.len();
@@ -219,9 +245,6 @@ fn merge(
                         "retained crate metadata changed beyond its yank observation",
                     )
                     .into());
-                }
-                if let Some(warning) = drift(&old.index_line, &row.index_line, id.clone())? {
-                    metadata_warnings.insert(warning);
                 }
                 old.reasons.extend(row.reasons);
                 old.root_aliases.extend(row.root_aliases);
@@ -266,13 +289,6 @@ fn merge(
                 "retained upstream record conflicts with its immutable original",
             )
             .into());
-        }
-        if let Some(warning) = drift(
-            &row.index_line,
-            &observation.index_line,
-            observation.identity.clone(),
-        )? {
-            metadata_warnings.insert(warning);
         }
         if !observation.previously_yanked && parsed[0].1.yanked {
             value
@@ -360,7 +376,6 @@ fn merge(
             .iter()
             .map(|r| (r.name.clone(), r.version.clone())),
     )?;
-    value.metadata_warnings = metadata_warnings.into_iter().collect();
     value.retention_observations = observations;
     value.cohorts = cohorts;
     let (counts, sizes, budgets) = summaries(&value)?;

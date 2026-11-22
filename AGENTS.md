@@ -641,6 +641,14 @@ the draft-first release with nine assets and verifies. After publication, verify
 the entire chain and open the publication record PR, recording each new job's
 first real behavior. Then notify GUI thread `thr_rwjt5zrr54` that 0.6.1 is live.
 
+Owner amendment, 2026-11-22: keep 0.6.1 patch-compatible. No added `FrozenPlan`
+field or serialized diagnostic field; preserve frozen JSON and IDs for the same
+inputs. Expose computed warnings through an additive method and non-exhaustive new
+types. Show them in CLI/event presentation under protocol 1's unknown-field rule.
+Check the complete public diff against published 0.6.0 using a locally installed,
+exact-version, `--locked` cargo-semver-checks tool; require no major changes. Do not
+add this tool to project dependencies or CI.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to

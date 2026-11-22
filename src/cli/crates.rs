@@ -36,6 +36,33 @@ pub(super) fn output<T: serde::Serialize>(report: &T, text: String) -> Result<()
     super::REPORT.with(|slot| *slot.borrow_mut() = Some(value));
     super::emit_output(text)
 }
+// Enrich only the command report. Never add presentation diagnostics to the
+// persisted FrozenPlan or existing public report structs.
+fn metadata_output<T: serde::Serialize>(
+    report: &T,
+    mut text: String,
+    warnings: Vec<mirror::MetadataWarning>,
+) -> Result<()> {
+    let mut value = toml::Value::try_from(report)?;
+    if !warnings.is_empty() {
+        value
+            .as_table_mut()
+            .ok_or_else(|| invalid("expected a command report"))?
+            .insert(
+                "metadata_warnings".into(),
+                toml::Value::try_from(&warnings)?,
+            );
+        for warning in warnings {
+            text.push_str(&format!(
+                "\nMetadata warning for {} {}: upstream fields changed: {}",
+                warning.identity.name,
+                warning.identity.version,
+                warning.fields.join(", ")
+            ));
+        }
+    }
+    output(&value, text)
+}
 fn take(values: &mut BTreeMap<String, OsString>, key: &str) -> Result<OsString> {
     values
         .remove(key)
@@ -222,7 +249,7 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
                 super::network_options::estimate(),
             )?;
             plan.save_new(&destination)?;
-            output(&plan,format!("Frozen preview: {} crates, {} versions, {} files\nPlan: {}\nApprove the complete preview with --approve-plan {}\n",plan.counts.crates,plan.counts.versions,plan.counts.files,destination.display(),plan.plan_id))
+            metadata_output(&plan,format!("Frozen preview: {} crates, {} versions, {} files\nPlan: {}\nApprove the complete preview with --approve-plan {}\n",plan.counts.crates,plan.counts.versions,plan.counts.files,destination.display(),plan.plan_id), plan.metadata_warnings())
         }
         "sync" => {
             let config = path(&mut values, "--config")?;
@@ -260,7 +287,11 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
                 mirror::SyncReport::NeedsApproval { plan_path, preview, .. } => format!("Preview saved to {}. Review with crates show, then approve with --approve-plan {}", plan_path.display(), preview.plan_id),
                 mirror::SyncReport::Completed { report, .. } => format!("Verified crate mirror: {}", report.mirror.display()),
             };
-            output(&report, human)
+            let warnings = match &report {
+                mirror::SyncReport::NeedsApproval { preview, .. } => preview.metadata_warnings(),
+                mirror::SyncReport::Completed { .. } => Vec::new(),
+            };
+            metadata_output(&report, human, warnings)
         }
         "show" => {
             if resume {
@@ -270,7 +301,7 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             ensure_empty(&values)?;
             let plan = FrozenPlan::load(&input)?;
             let human = serde_json::to_string_pretty(&plan)?;
-            output(&plan, human)
+            metadata_output(&plan, human, plan.metadata_warnings())
         }
         "explain" => {
             if resume {
@@ -299,7 +330,17 @@ pub(super) fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
             let plan = FrozenPlan::load(&input)?;
             let report = mirror::explain(&plan, &name, version.as_deref(), limit)?;
             let human = serde_json::to_string_pretty(&report)?;
-            output(&report, human)
+            let warnings = plan
+                .metadata_warnings()
+                .into_iter()
+                .filter(|warning| {
+                    warning.identity.name == name
+                        && version
+                            .as_deref()
+                            .is_none_or(|v| v == warning.identity.version)
+                })
+                .collect();
+            metadata_output(&report, human, warnings)
         }
         "fetch" => {
             let input = path(&mut values, "--plan")?;
