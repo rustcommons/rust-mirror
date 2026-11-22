@@ -107,6 +107,7 @@ def invoke(binary, args, evidence, name, env=None, success=True, kill=False):
         reader.start()
         events = []
         stopped = False
+        transfer_starts = {}
         deadline = time.monotonic() + 180
         try:
             while time.monotonic() < deadline:
@@ -115,7 +116,14 @@ def invoke(binary, args, evidence, name, env=None, success=True, kill=False):
                     break
                 event = json.loads(line)
                 events.append(event)
-                if not stopped and event["type"] == "bytes" and event["path"].endswith(".crate") and event["count"] >= 65536:
+                if event["type"] == "artifact" and event.get("action") in ("download", "resume"):
+                    transfer_starts[event["path"]] = event["elapsed_ms"]
+                # Allow the 2-second durable checkpoint before the hard kill.
+                # Read its actual receipt only after termination, never while a
+                # Windows writer is atomically replacing that file.
+                if (not stopped and event["type"] == "bytes"
+                        and event["path"].endswith(".crate") and event["count"] >= 65536
+                        and event["elapsed_ms"] - transfer_starts.get(event["path"], event["elapsed_ms"]) >= 3000):
                     process.kill()  # TerminateProcess on Windows, no graceful-cancel substitute.
                     stopped = True
             assert stopped and process.wait(timeout=15) != 0, "hard kill not exercised"
@@ -197,16 +205,23 @@ def prove(root, evidence, binary, request, repo, port, ca, requests, result, wit
         partials = [p for p in (run/".download/files").glob("*.part") if p.stat().st_size > 0]
         assert partials and not (run/"mirror").exists()
         partial_bytes = [p.stat().st_size for p in partials]
+        receipt = json.loads((run/".download/state.json").read_text(encoding="utf-8"))
+        offsets = receipt["offsets"]
+        assert any(0 < offsets.get(p.stem, 0) <= p.stat().st_size for p in partials), "kill must follow a durable partial checkpoint"
         resumed = invoke(binary, [*args, "--resume"], evidence, "sync-resumed")
     assert resumed[-1]["report"]["status"] == "completed" and resumed[-1]["report"]["plan_id"] == plan_id
-    assert any(e["type"] == "artifact" and e.get("action") == "resume" and e.get("offset", 0) > 0 for e in resumed)
+    resume_events = [e for e in resumed if e["type"] == "artifact" and e.get("action") == "resume"]
+    assert resume_events, "must exercise a nonzero durable range"
+    tokens = {"cargo/crates/"+v["name"]+"/"+v["name"]+"-"+v["version"]+".crate":
+              hashlib.sha256((v["name"]+"\0"+v["version"]).encode()).hexdigest() for v in shown["versions"]}
+    assert all(0 < e["offset"] == offsets[tokens[e["path"]]] for e in resume_events), "resume must use the exact durable offset"
     mirror = run / "mirror"
     inventory = tomllib.loads((mirror/"snapshot.toml").read_text())
     assert inventory["schema"] == 5
     for file in inventory["files"]:
         b = (mirror/file["path"]).read_bytes()
         assert len(b)==file["bytes"] and hashlib.sha256(b).hexdigest()==file["sha256"]
-    case("actual_windows_hard_kill_mid_archive_and_frozen_resume", partial_bytes=partial_bytes, files=len(inventory["files"]))
+    case("actual_windows_hard_kill_mid_archive_and_frozen_resume", partial_bytes=partial_bytes, durable_offsets=offsets, files=len(inventory["files"]))
     publish = ["publish", "--source", mirror, "--base-url", base, "--ca-file", ca_file]
     puts = lambda: sum(r["method"] in ("PUT","POST","DELETE","PATCH") and r["path"].startswith('/repository/') for r in requests)
     before = puts()
