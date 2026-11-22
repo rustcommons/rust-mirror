@@ -214,22 +214,19 @@ jobs:
           path: ${{ runner.temp }}/binary-artifact
           if-no-files-found: error
           retention-days: 14
-  verify:
-    outputs:
-      artifact-name: ${{ steps.artifact.outputs.name }}
-    needs: [validate, build]
+  # Every third-party tool (cargo-cyclonedx, the crate's build scripts and proc macros
+  # through cargo package/install) runs here, in a job that never holds the binary
+  # payload or writes the SHA256SUMS the signer trusts.
+  crate-sbom:
+    needs: validate
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
     env:
       RELEASE_TAG: ${{ inputs.tag }}
       RELEASE_COMMIT: ${{ inputs.commit }}
-      CANDIDATE: ${{ inputs.candidate }}
-      ARTIFACT_PREFIX: ${{ inputs.artifact-prefix }}
       CARGO_BUILD_JOBS: '2'
-      ATTEST: ${{ inputs.attest }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -246,32 +243,28 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          pattern: ${{ inputs.artifact-prefix }}binary-*
-          path: binary-artifacts
       - name: Generate the exact-lockfile all-target Cargo SBOM
         env:
           SOURCE_COMMIT: ${{ inputs.commit }}
         run: |
+          mkdir "$RUNNER_TEMP/crate-sbom"
           cargo install cargo-cyclonedx --version =0.5.9 --locked --root "$RUNNER_TEMP/sbom-tool" -j 2
-          python scripts/release_sbom.py --source frozen-source --commit "$SOURCE_COMMIT" --tool "$RUNNER_TEMP/sbom-tool/bin/cargo-cyclonedx" --output "$RUNNER_TEMP/release.cdx.json"
+          python scripts/release_sbom.py --source frozen-source --commit "$SOURCE_COMMIT" --tool "$RUNNER_TEMP/sbom-tool/bin/cargo-cyclonedx" --output "$RUNNER_TEMP/crate-sbom/release.cdx.json"
       # After the SBOM: the generator requires the clean frozen checkout.
       - name: Package the crate from the frozen source; audit it
         working-directory: frozen-source
         run: |
           set -euo pipefail
           cargo package --locked -p rust-mirror
-          mkdir "$RUNNER_TEMP/crate"
-          cp "target/package/rust-mirror-${RELEASE_TAG#v}.crate" "$RUNNER_TEMP/crate/"
-          python ../scripts/release_binaries.py audit-crate --source . --commit "$RELEASE_COMMIT" --crate "$RUNNER_TEMP/crate/rust-mirror-${RELEASE_TAG#v}.crate"
+          cp "target/package/rust-mirror-${RELEASE_TAG#v}.crate" "$RUNNER_TEMP/crate-sbom/"
+          python ../scripts/release_binaries.py audit-crate --source . --commit "$RELEASE_COMMIT" --crate "$RUNNER_TEMP/crate-sbom/rust-mirror-${RELEASE_TAG#v}.crate"
       - name: Clean locked install of the packaged crate
         run: |
           set -euo pipefail
           version="${RELEASE_TAG#v}"
           unpacked="$RUNNER_TEMP/unpacked"
           mkdir -p "$unpacked" "$RUNNER_TEMP/smoke"
-          tar -xzf "$RUNNER_TEMP/crate/rust-mirror-$version.crate" -C "$unpacked"
+          tar -xzf "$RUNNER_TEMP/crate-sbom/rust-mirror-$version.crate" -C "$unpacked"
           export CARGO_HOME="$RUNNER_TEMP/package-cargo-home"
           cargo install --path "$unpacked/rust-mirror-$version" --locked --root "$RUNNER_TEMP/package-install" -j 2
           bin="$RUNNER_TEMP/package-install/bin/rust-mirror"
@@ -282,11 +275,52 @@ jobs:
           cd "$RUNNER_TEMP/smoke"
           if "$bin" --events jsonl crates show --plan missing.json > refusal.jsonl; then exit 1; fi
           tail -n1 refusal.jsonl | jq -e '.ok == false and .error.kind == "io"'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}crate-sbom
+          path: |
+            ${{ runner.temp }}/crate-sbom/release.cdx.json
+            ${{ runner.temp }}/crate-sbom/*.crate
+          if-no-files-found: error
+          retention-days: 14
+  verify:
+    outputs:
+      artifact-name: ${{ steps.artifact.outputs.name }}
+    # Only this repository's stdlib-only Python runs here: no Rust toolchain or
+    # third-party tool touches the payload before the SHA256SUMS is written.
+    needs: [validate, build, crate-sbom]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_COMMIT: ${{ inputs.commit }}
+      CANDIDATE: ${{ inputs.candidate }}
+      ARTIFACT_PREFIX: ${{ inputs.artifact-prefix }}
+      ATTEST: ${{ inputs.attest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}crate-sbom
+          path: ${{ runner.temp }}/crate-sbom
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ${{ inputs.artifact-prefix }}binary-*
+          path: binary-artifacts
       - name: Validate crate, archives and SBOM; generate the single SHA256SUMS
         run: |
           extra=()
           if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
-          python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets --artifact-prefix "$ARTIFACT_PREFIX" --sbom "$RUNNER_TEMP/release.cdx.json" --crate "$RUNNER_TEMP/crate/rust-mirror-${RELEASE_TAG#v}.crate" "${extra[@]}"
+          python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets --artifact-prefix "$ARTIFACT_PREFIX" --sbom "$RUNNER_TEMP/crate-sbom/release.cdx.json" --crate "$RUNNER_TEMP/crate-sbom/rust-mirror-${RELEASE_TAG#v}.crate" "${extra[@]}"
       - name: Stage an unsigned placeholder bundle on a copy (dry-run check of the exact upload set)
         if: ${{ !inputs.attest }}
         run: |

@@ -455,7 +455,8 @@ class ReleaseBinariesTests(unittest.TestCase):
                 return asset
             if method == 'PATCH':
                 target = next(r for r in self.releases if url.endswith('/releases/%d' % r['id']))
-                target.update(json.loads(data)); target.pop('make_latest', None)
+                self.patch = json.loads(data)
+                target.update(self.patch); target.pop('make_latest', None)
                 target['html_url'] = 'https://github.com/rustcommons/rust-mirror/releases/tag/' + target['tag_name']
                 return target
             raise AssertionError((method, url))
@@ -533,6 +534,42 @@ class ReleaseBinariesTests(unittest.TestCase):
         with patch.object(release.subprocess, 'check_output', side_effect=lambda args, **kw: proof({'other': 1}, Path(args[3]))):
             with self.assertRaisesRegex(ValueError, 'does not bind this exact SBOM'):
                 release.verify_sbom_bindings([crate], sbom, ['--repo', release.REPO])
+
+
+    def test_archive_readme_prints_the_strict_install_guide_command(self):
+        record = dict(self.record, tag='v1.2.3', version='1.2.3')
+        text = release.verify_command(record, 'rust-mirror-1.2.3-x86_64-unknown-linux-musl.tar.gz')
+        for flag in ('--repo rustcommons/rust-mirror', '--signer-workflow rustcommons/rust-mirror/.github/workflows/build-binaries.yml',
+                     '--source-digest ' + 'a' * 40, '--signer-digest ' + 'a' * 40, '--deny-self-hosted-runners',
+                     '--predicate-type https://slsa.dev/provenance/v1'):
+            self.assertIn(flag, text)
+        install = (Path(__file__).resolve().parents[1] / 'docs/INSTALL.md').read_text()
+        for flag in ('--signer-workflow rustcommons/rust-mirror/.github/workflows/build-binaries.yml',
+                     '--source-digest "$commit" --signer-digest "$commit" --deny-self-hosted-runners'):
+            self.assertIn(flag, install)
+        source = (Path(__file__).resolve().parents[1] / 'scripts/release_binaries.py').read_text()
+        self.assertIn("{verify_command(r, asset_name(r['version'], args.target))}", source)
+        self.assertNotIn("--repo {REPO}\nInstructions", source)
+
+    def test_latest_only_for_the_highest_final_release(self):
+        published = lambda tag, **kw: dict(dict(tag_name=tag, draft=False, prerelease=False), **kw)
+        self.assertTrue(release.is_highest_release('v1.2.3', [published('v1.2.2'), published('v0.9.0')]))
+        self.assertTrue(release.is_highest_release('v1.2.3', [published('v1.2.3', draft=True), published('v2.0.0', draft=True)]))
+        self.assertFalse(release.is_highest_release('v1.2.3', [published('v1.3.0')]))
+        self.assertFalse(release.is_highest_release('v1.2.3', [published('v1.10.0')]), 'numeric, not lexical')
+        self.assertTrue(release.is_highest_release('v1.10.0', [published('v1.9.0')]))
+        self.assertFalse(release.is_highest_release('v1.3.0-rc.1', []))
+        self.assertTrue(release.is_highest_release('v1.2.3', [published('v9.0.0-rc.1'), published('v9.0.0', prerelease=True)]))
+
+    def test_publish_marks_latest_only_when_highest(self):
+        for others, latest in (([], 'true'), ([dict(id=50, tag_name='v2.0.0', name='x', body='', draft=False, prerelease=False, html_url='', assets=[])], 'false')):
+            with self.subTest(latest=latest):
+                folder = self.root / ('dist-' + latest); folder.mkdir()
+                for name in release.build_summed_assets('1.2.3') + ['SHA256SUMS', release.provenance_name('1.2.3')]:
+                    (folder / name).write_bytes(name.encode())
+                fake = self.FakeGitHub(self, others)
+                release.publish_release(self.releasable(), folder, fake)
+                self.assertEqual(fake.patch, {'draft': False, 'make_latest': latest})
 
 
 if __name__ == '__main__': unittest.main()
