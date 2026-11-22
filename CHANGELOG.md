@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-22
+
+### Fixed
+
+- Publication uses bounded connection and per-read/write idle timeouts on both
+  default and explicit-network paths. Transfers that keep making progress no
+  longer fail at a whole-request deadline after the server stores an upload.
+- Crate downloads checkpoint progress after 8 MiB or 2 seconds of progress and on
+  completion, error or cancellation, instead of fsyncing a shared receipt for every
+  chunk. Resume discards bytes beyond the saved durable offset, revalidates prefixes
+  and checks the final checksum. Existing private receipts migrate on resume.
+- Incremental crate plans tolerate upstream nonidentity metadata backfills such as
+  `rust_version`, report typed `metadata_warnings`, and serve the new upstream line
+  in the successor. Historical cohort proofs keep their original bytes; changes to
+  name, version, checksum, dependencies, features, features2 or links still refuse.
+  Yank-only observations retain their existing handling. Checksums are never merged.
+- Toolchain sync `--resume` and `--force`, and selected fetch resume, accept the
+  persistent empty prune lock left by a successful prune.
+
 ### Repository
 
 - Adopt the Rust Commons standard release pipeline, including phase 2: one

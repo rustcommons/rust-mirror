@@ -372,11 +372,16 @@ impl Read for Upload {
     }
 }
 fn client(options: &Options) -> Result<Client> {
+    client_with_timeouts(options, Duration::from_secs(180))
+}
+fn client_with_timeouts(options: &Options, idle: Duration) -> Result<Client> {
     let base = base_url(options)?;
     let mut builder = ureq::AgentBuilder::new()
         .redirects(0)
         .try_proxy_from_env(false)
-        .timeout(Duration::from_secs(180));
+        .timeout_connect(Duration::from_secs(180))
+        .timeout_read(idle)
+        .timeout_write(idle);
     if let Some(path) = &options.ca_file {
         let mut roots = ureq::rustls::RootCertStore::empty();
         for cert in crate::network::ca_certificates(path)? {
@@ -535,6 +540,105 @@ pub fn publish_with_network(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // A scaled local upload/readback: progress lasts several idle windows.
+    // No 180-second wall-clock wait is needed to exercise the production builder.
+    #[test]
+    fn publishing_progress_outlives_idle_window_on_both_client_paths() {
+        use std::{
+            io::{BufRead, Write},
+            net::TcpListener,
+            thread,
+        };
+        for explicit in [false, true] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let options = Options {
+                base_url: format!("http://{}/mirror", listener.local_addr().unwrap()),
+                ca_file: None,
+                credentials: None,
+                allow_loopback_http: true,
+            };
+            let server = thread::spawn(move || {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(3)))
+                    .unwrap();
+                let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
+                loop {
+                    let mut line = String::new();
+                    if reader.read_line(&mut line).unwrap_or(0) == 0 {
+                        return false;
+                    }
+                    if line == "\r\n" {
+                        break;
+                    }
+                }
+                let mut body = vec![0; 8 * 4096];
+                if reader.read_exact(&mut body).is_err() {
+                    return false;
+                }
+                assert!(body.iter().all(|b| *b == 42));
+                if write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Length: 4096\r\nConnection: close\r\n\r\n"
+                )
+                .is_err()
+                {
+                    return false;
+                }
+                for _ in 0..8 {
+                    thread::sleep(Duration::from_millis(80));
+                    if stream.write_all(&[42; 512]).is_err() {
+                        return false;
+                    }
+                }
+                true
+            });
+            struct Slow {
+                chunks: usize,
+            }
+            impl Read for Slow {
+                fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                    if self.chunks == 0 {
+                        return Ok(0);
+                    }
+                    thread::sleep(Duration::from_millis(80));
+                    let n = buf.len().min(4096);
+                    buf[..n].fill(42);
+                    self.chunks -= 1;
+                    Ok(n)
+                }
+            }
+            let idle = Duration::from_millis(300);
+            let client = if explicit {
+                configured_client(
+                    &options,
+                    &crate::NetworkOptions {
+                        read_timeout: idle,
+                        connect_timeout: Duration::from_secs(2),
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+            } else {
+                client_with_timeouts(&options, idle).unwrap()
+            };
+            let result = client
+                .agent
+                .put(&format!("{}/file", client.base))
+                .set("Content-Length", "32768")
+                .send(Slow { chunks: 8 })
+                .map(|response| {
+                    let mut body = Vec::new();
+                    response.into_reader().read_to_end(&mut body).unwrap();
+                    assert_eq!(body, vec![42; 4096]);
+                });
+            let stored = server.join().unwrap();
+            assert!(result.is_ok(), "explicit={explicit}: {result:?}");
+            assert!(stored);
+        }
+    }
+
     #[test]
     fn basic_auth_known_vectors() {
         assert_eq!(

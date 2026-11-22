@@ -240,12 +240,20 @@ impl Session {
         directory(output)?;
         for e in fs::read_dir(output)? {
             let e = e?;
-            if ![".fetch.lock", ".download", "mirror"]
-                .iter()
-                .any(|n| e.file_name() == *n)
+            if ![
+                ".fetch.lock",
+                ".download",
+                "mirror",
+                ".rust-mirror-prune.lock",
+            ]
+            .iter()
+            .any(|n| e.file_name() == *n)
             {
                 return Err("output contains unrelated files".into());
             }
+        }
+        if regular(&output.join(".rust-mirror-prune.lock"))?.is_some_and(|n| n != 0) {
+            return Err("invalid shared prune lock".into());
         }
         let lock = output.join(".fetch.lock");
         if regular(&lock)?.is_some_and(|n| n != 0) {

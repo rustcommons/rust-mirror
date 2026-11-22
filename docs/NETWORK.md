@@ -12,8 +12,10 @@ Public `network::{NetworkOptions, ProxyMode, ProxyCredentials, NetworkConfig}` a
 metadata, artifacts, ranges, HEAD estimates, Rustup bootstrap and release discovery.
 `NetworkOptions` has `proxy`, optional in-memory `proxy_credentials`, `no_proxy`,
 `extra_ca_file`, `connect_timeout` and `read_timeout`. `ProxyMode` is `Direct`,
-`Environment` or `Manual(String)`. Default is direct, with 180-second connect/read
-timeouts; positive explicit timeouts are required. Network options are supplied
+`Environment` or `Manual(String)`. Default is direct, with a 180-second connect timeout and 180-second
+per-socket-read/write idle timeouts. There is no whole-transfer deadline: a slow
+transfer can continue while each read/write makes progress within the idle window.
+Positive explicit timeouts are required. Network options are supplied
 separately from cancellation/progress `events::Control`.
 
 `ProxyCredentials` contains programmatic username/password, has redacted debug output
@@ -70,6 +72,12 @@ Publishing keeps its current independent no-proxy behavior. New explicit
 options, `NetworkOptions` and `Control`; publication CLI network flags opt in to
 that separate configuration. Upstream `[network]` is not silently inherited by
 publishing. Explicit target-host NO_PROXY matching applies to that destination.
+Both the default publisher and explicit-network publisher use per-read/write idle
+limits, with no total request deadline. The independent default is 180 seconds for
+connect and each socket read/write; explicit `NetworkOptions`/network flags select
+those limits separately. A server that stops responding can still time out after
+storing an upload, so inspect an incomplete prefix before retrying. These are
+socket limits; OS DNS resolution may take longer than the connect timeout.
 Existing publication `Options.ca_file`/`--ca-file` retains its private-bundle base
 trust policy; network extra CAs add to that selected base. Without a private base,
 Mozilla roots remain the base. CA paths are relative to the process working

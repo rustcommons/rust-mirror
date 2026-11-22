@@ -1161,3 +1161,376 @@ fn exact_repeated_version_checksum_conflicts_also_have_contextual_selection_scop
     assert_eq!(report["kind"].as_str(), Some("index_version_collision"));
     assert_eq!(report["versions"].as_array().unwrap().len(), 2);
 }
+
+#[test]
+fn upstream_backfill_warns_and_serves_new_bytes_without_rewriting_proofs() {
+    use mirror::{Approval, FetchOptions, Inventory};
+    let (catalog, mut source) = payload_fixture();
+    let dir = tempfile::tempdir().unwrap();
+    let original = source.metadata.clone();
+    let first = mirror::plan(&catalog, &source, None, false).unwrap();
+    let previous = mirror::fetch(
+        &first,
+        &source,
+        &FetchOptions {
+            output: dir.path().join("first"),
+            resume: false,
+            previous: None,
+        },
+        &Approval {
+            plan_id: first.plan_id.clone(),
+        },
+    )
+    .unwrap()
+    .mirror;
+    let mut record: serde_json::Value = serde_json::from_slice(&original).unwrap();
+    record["rust_version"] = json!("1.56");
+    record["future_metadata"] = json!({"example": true});
+    source.metadata = [serde_json::to_vec(&record).unwrap(), vec![b'\n']].concat();
+    let plan = mirror::plan(&catalog, &source, Some(&previous), false).unwrap();
+    assert_eq!(plan.cohorts[0].versions[0].index_line.as_bytes(), original);
+    assert_eq!(plan.versions[0].index_line.as_bytes(), source.metadata);
+    let preview = serde_json::to_value(&plan).unwrap();
+    assert_eq!(
+        preview["metadata_warnings"][0]["kind"],
+        "upstream_metadata_drift"
+    );
+    assert_eq!(
+        preview["metadata_warnings"][0]["fields"],
+        json!(["future_metadata", "rust_version"])
+    );
+    let saved = dir.path().join("plan.json");
+    plan.save_new(&saved).unwrap();
+    let plan = FrozenPlan::load(&saved).unwrap();
+    let report = mirror::fetch(
+        &plan,
+        &source,
+        &FetchOptions {
+            output: dir.path().join("second"),
+            resume: false,
+            previous: Some(previous.clone()),
+        },
+        &Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+    )
+    .unwrap();
+    Inventory::load(&report.mirror).unwrap();
+    assert_eq!(
+        std::fs::read(report.mirror.join("cargo/index/1/x")).unwrap(),
+        source.metadata
+    );
+    assert_eq!(
+        std::fs::read(previous.join("cargo/index/1/x")).unwrap(),
+        original
+    );
+    // Identity drift still refuses, including fields the solver may not currently use.
+    for (field, value) in [
+        ("cksum", json!("1".repeat(64))),
+        (
+            "deps",
+            json!([{"name":"x","req":"*","features":[],"optional":true,"default_features":true,"target":null,"kind":"normal"}]),
+        ),
+        ("features", json!({"extra":[]})),
+        ("features2", json!({"extra":[]})),
+        ("links", json!("native")),
+    ] {
+        let mut changed = record.clone();
+        changed[field] = value;
+        source.metadata = [serde_json::to_vec(&changed).unwrap(), vec![b'\n']].concat();
+        assert!(
+            mirror::plan(&catalog, &source, Some(&previous), false).is_err(),
+            "{field}"
+        );
+    }
+    // A later generation no longer selects 1.0.0, but still serves its NEW
+    // upstream annotations and keeps the first cohort's proof unchanged.
+    let mut next_catalog = catalog.clone();
+    next_catalog.crates.get_mut("x").unwrap().version = "=2.0.0".into();
+    record["rust_version"] = json!("1.60");
+    record.as_object_mut().unwrap().remove("future_metadata");
+    let retained_line = [serde_json::to_vec(&record).unwrap(), vec![b'\n']].concat();
+    let mut next_record = record.clone();
+    next_record["vers"] = json!("2.0.0");
+    source.metadata = [
+        retained_line.clone(),
+        serde_json::to_vec(&next_record).unwrap(),
+        vec![b'\n'],
+    ]
+    .concat();
+    let third = mirror::plan(&next_catalog, &source, Some(&report.mirror), false).unwrap();
+    assert_eq!(third.versions[0].index_line.as_bytes(), retained_line);
+    assert_eq!(third.cohorts[0].versions[0].index_line.as_bytes(), original);
+    assert_eq!(third.changes.no_longer_selected_retained.len(), 1);
+}
+
+const CHECKPOINT: usize = 8 * 1024 * 1024;
+struct ChunkedSource {
+    source: PayloadSource,
+    root: std::path::PathBuf,
+    block: bool,
+    inspect: bool,
+    offsets: std::sync::Mutex<Vec<u64>>,
+}
+fn chunked_fixture(root: &std::path::Path, block: bool, inspect: bool) -> (Catalog, ChunkedSource) {
+    use sha2::{Digest, Sha256};
+    let (catalog, mut source) = payload_fixture();
+    source.payload = vec![42; CHECKPOINT + 128 * 1024];
+    let mut record: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    record["cksum"] = json!(hex::encode(Sha256::digest(&source.payload)));
+    source.metadata = [serde_json::to_vec(&record).unwrap(), vec![b'\n']].concat();
+    (
+        catalog,
+        ChunkedSource {
+            source,
+            root: root.into(),
+            block,
+            inspect,
+            offsets: Default::default(),
+        },
+    )
+}
+impl CrateSource for ChunkedSource {
+    fn index(&self, name: &str, limit: usize) -> Result<Vec<u8>> {
+        self.source.index(name, limit)
+    }
+    fn archive(
+        &self,
+        _: &str,
+        _: &str,
+        out: &mut dyn Write,
+        offset: u64,
+        _: u64,
+    ) -> Result<Transfer> {
+        self.offsets.lock().unwrap().push(offset);
+        let mut position = offset as usize;
+        for bytes in self.source.payload[position..].chunks(64 * 1024) {
+            out.write_all(bytes)?;
+            position += bytes.len();
+            if self.inspect {
+                let state: serde_json::Value = serde_json::from_slice(&std::fs::read(
+                    self.root.join("run/.download/state.json"),
+                )?)
+                .unwrap();
+                let durable = if position < CHECKPOINT { 0 } else { CHECKPOINT };
+                assert_eq!(
+                    state["transferred_bytes"], durable,
+                    "per-chunk state write at {position}"
+                );
+            }
+            if self.block && position == CHECKPOINT + 64 * 1024 {
+                std::fs::write(self.root.join("ready"), b"partial")?;
+                loop {
+                    std::thread::park();
+                }
+            }
+        }
+        Ok(Transfer::Complete)
+    }
+}
+#[test]
+fn progress_receipts_are_batched_and_final_bytes_are_persisted() {
+    let dir = tempfile::tempdir().unwrap();
+    let (catalog, source) = chunked_fixture(dir.path(), false, true);
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    let report = mirror::fetch(
+        &plan,
+        &source,
+        &mirror::FetchOptions {
+            output: dir.path().join("run"),
+            resume: false,
+            previous: None,
+        },
+        &mirror::Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+    )
+    .unwrap();
+    assert_eq!(
+        report.total_transferred_bytes,
+        source.source.payload.len() as u64
+    );
+    let state: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(dir.path().join("run/.download/state.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(state["transferred_bytes"], report.total_transferred_bytes);
+}
+#[test]
+fn crate_checkpoint_crash_child() {
+    let Some(root) = std::env::var_os("RUST_MIRROR_CRATE_CHECKPOINT_CHILD") else {
+        return;
+    };
+    let root = std::path::PathBuf::from(root);
+    let (catalog, source) = chunked_fixture(&root, true, false);
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    let _ = mirror::fetch(
+        &plan,
+        &source,
+        &mirror::FetchOptions {
+            output: root.join("run"),
+            resume: false,
+            previous: None,
+        },
+        &mirror::Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+    );
+    panic!("expected parent termination");
+}
+#[test]
+fn killed_crate_transfer_resumes_exactly_from_last_durable_checkpoint() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut child = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", "crate_checkpoint_crash_child", "--nocapture"])
+        .env("RUST_MIRROR_CRATE_CHECKPOINT_CHILD", dir.path())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while !dir.path().join("ready").exists() && std::time::Instant::now() < deadline {
+        if child.try_wait().unwrap().is_some() {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    }
+    let ready = dir.path().join("ready").exists();
+    let _ = child.kill();
+    child.wait().unwrap();
+    assert!(ready);
+    let (_, source) = chunked_fixture(dir.path(), false, false);
+    let plan = FrozenPlan::load(&dir.path().join("run/plan.json")).unwrap();
+    let report = mirror::fetch(
+        &plan,
+        &source,
+        &mirror::FetchOptions {
+            output: dir.path().join("run"),
+            resume: true,
+            previous: None,
+        },
+        &mirror::Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+    )
+    .unwrap();
+    assert_eq!(*source.offsets.lock().unwrap(), vec![CHECKPOINT as u64]);
+    assert_eq!(report.reused_bytes, CHECKPOINT as u64);
+    assert_eq!(
+        report.total_transferred_bytes,
+        source.source.payload.len() as u64
+    );
+    mirror::Inventory::load(&report.mirror).unwrap();
+}
+
+#[test]
+fn legacy_crate_receipt_migrates_without_losing_a_verified_resume_prefix() {
+    use mirror::{Approval, FetchOptions};
+    use sha2::{Digest, Sha256};
+    let (catalog, source) = payload_fixture();
+    source.fail.store(true, Ordering::SeqCst);
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let mut options = FetchOptions {
+        output: dir.path().join("run"),
+        resume: false,
+        previous: None,
+    };
+    let approval = Approval {
+        plan_id: plan.plan_id.clone(),
+    };
+    assert!(mirror::fetch(&plan, &source, &options, &approval).is_err());
+    let path = options.output.join(".download/state.json");
+    let mut state: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    // Recreate the original schema-1 serializer and its checksum exactly.
+    let canonical = format!(
+        r#"{{"schema":1,"plan_id":{},"approved_id":{},"phase":{},"transferred_bytes":{},"state_sha256":""}}"#,
+        state["plan_id"], state["approved_id"], state["phase"], state["transferred_bytes"]
+    );
+    state["schema"] = json!(1);
+    state.as_object_mut().unwrap().remove("offsets");
+    state["state_sha256"] = json!(hex::encode(Sha256::digest(canonical.as_bytes())));
+    std::fs::write(&path, serde_json::to_vec(&state).unwrap()).unwrap();
+    options.resume = true;
+    let report = mirror::fetch(&plan, &source, &options, &approval).unwrap();
+    assert_eq!(report.reused_bytes, 3);
+    assert_eq!(report.total_transferred_bytes, 7);
+    let state: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    assert_eq!(state["schema"], 2);
+}
+
+#[test]
+fn cancelled_crate_transfer_checkpoints_before_returning_and_resumes() {
+    use rust_mirror::events::{CancelToken, Control, JsonLines};
+    let (catalog, source) = payload_fixture();
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let mut options = mirror::FetchOptions {
+        output: dir.path().join("run"),
+        resume: false,
+        previous: None,
+    };
+    let approval = mirror::Approval {
+        plan_id: plan.plan_id.clone(),
+    };
+    struct CancelSource<'a> {
+        source: &'a PayloadSource,
+        token: CancelToken,
+    }
+    impl CrateSource for CancelSource<'_> {
+        fn index(&self, name: &str, limit: usize) -> Result<Vec<u8>> {
+            self.source.index(name, limit)
+        }
+        fn archive(
+            &self,
+            _: &str,
+            _: &str,
+            out: &mut dyn Write,
+            _: u64,
+            _: u64,
+        ) -> Result<Transfer> {
+            out.write_all(&self.source.payload[..3])?;
+            self.token.cancel();
+            out.write_all(&self.source.payload[3..])?;
+            Ok(Transfer::Complete)
+        }
+    }
+    let token = CancelToken::new();
+    let control = Control::new(
+        std::sync::Arc::new(JsonLines::new(std::io::sink())),
+        token.clone(),
+    );
+    let error = mirror::fetch_with_control(
+        &plan,
+        &CancelSource {
+            source: &source,
+            token,
+        },
+        &options,
+        &approval,
+        &control,
+    )
+    .unwrap_err();
+    assert_eq!(
+        rust_mirror::error_kind(error.as_ref()),
+        rust_mirror::ErrorKind::Cancelled
+    );
+    let state: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(options.output.join(".download/state.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(state["transferred_bytes"], 3);
+    assert_eq!(
+        state["offsets"]
+            .as_object()
+            .unwrap()
+            .values()
+            .collect::<Vec<_>>(),
+        vec![&json!(3)]
+    );
+    options.resume = true;
+    let report = mirror::fetch(&plan, &source, &options, &approval).unwrap();
+    assert_eq!(report.reused_bytes, 3);
+    assert_eq!(report.total_transferred_bytes, 7);
+}

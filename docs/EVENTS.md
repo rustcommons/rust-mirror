@@ -283,3 +283,13 @@ Public library types are `crates::{IndexWarning, IndexWarningKind, CollisionVers
 unchanged. Rust callers constructing these structs must initialize the new fields.
 An older 0.5.0 strict reader refuses a new plan containing these fields; use 0.5.1
 throughout such a plan's lifecycle. The framing/protocol version remains 1.
+
+### Nonidentity crate metadata warnings (0.6.1)
+
+Crate frozen previews (including `needs_approval.preview`) add optional
+`metadata_warnings`: `{kind: "upstream_metadata_drift", identity: {name, version},
+fields: ["rust_version", ...]}`. Missing means empty. This reports field drift
+against historical cohort proofs without merging checksums; the successor serves
+the new upstream record. See [crate semantics](CRATES.md). Protocol remains 1;
+clients displaying frozen previews should display these typed warnings as well as
+`index_warnings`. Old strict frozen-plan readers can refuse the additive field.

@@ -474,14 +474,20 @@ pub fn run_forced(
     config.validate()?;
     if exists(output)? {
         real_dir(output)?;
-        children(output, &named(&[".sync.lock", ".sync", "mirror"]))?;
+        children(
+            output,
+            &named(&[".sync.lock", ".sync", "mirror", ".rust-mirror-prune.lock"]),
+        )?;
         if exists(&output.join(".sync"))? {
             real_dir(&output.join(".sync"))?;
         } else {
             // A failed fresh resolution after force leaves only this lock marker.
-            children(output, &named(&[".sync.lock"]))?;
+            children(output, &named(&[".sync.lock", ".rust-mirror-prune.lock"]))?;
         }
         regular(&output.join(".sync.lock"), 0)?;
+        if exists(&output.join(".rust-mirror-prune.lock"))? {
+            regular(&output.join(".rust-mirror-prune.lock"), 0)?;
+        }
         let target = output.canonicalize()?;
         if let Some(previous) = previous {
             let prior = previous.canonicalize()?;
@@ -624,11 +630,17 @@ fn run_inner(
     let mut guard = forced_guard;
     let resolved = if resume {
         real_dir(output)?;
-        children(output, &named(&[".sync.lock", ".sync", "mirror"]))?;
+        children(
+            output,
+            &named(&[".sync.lock", ".sync", "mirror", ".rust-mirror-prune.lock"]),
+        )?;
         // Resume never initializes an unrelated directory, even an empty one.
         real_dir(&root)?;
         regular(&root.join("state.toml"), 64 * 1024)?;
         regular(&output.join(".sync.lock"), 0)?;
+        if exists(&output.join(".rust-mirror-prune.lock"))? {
+            regular(&output.join(".rust-mirror-prune.lock"), 0)?;
+        }
         let lock = lock(output)?;
         guard = Some(lock);
         children(
@@ -713,7 +725,7 @@ fn run_inner(
             fs::create_dir(output)?;
             guard = Some(lock(output)?);
         } else {
-            children(output, &named(&[".sync.lock"]))?;
+            children(output, &named(&[".sync.lock", ".rust-mirror-prune.lock"]))?;
         }
         fs::create_dir(&root)?;
         fs::create_dir(&plan_root)?;

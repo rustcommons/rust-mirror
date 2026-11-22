@@ -1,6 +1,62 @@
 //! Flat historical closure proofs prevent recursive growth and silent version removal.
 use super::*;
 
+/// Typed category for tolerated upstream metadata evolution.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(rename_all = "snake_case")]
+pub enum MetadataWarningKind {
+    /// Fields outside immutable crate identity differ from a historical proof.
+    UpstreamMetadataDrift,
+}
+/// Preview evidence of nonidentity drift; original cohort records remain intact.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(deny_unknown_fields)]
+pub struct MetadataWarning {
+    /// Stable machine-readable category.
+    pub kind: MetadataWarningKind,
+    /// Exact previously mirrored name/version.
+    pub identity: Identity,
+    /// Sorted field names whose values/presence differ, excluding yank state.
+    pub fields: Vec<String>,
+}
+const IDENTITY_FIELDS: &[&str] = &[
+    "name",
+    "vers",
+    "cksum",
+    "deps",
+    "features",
+    "features2",
+    "links",
+];
+fn nonidentity_fields(line: &str) -> Result<serde_json::Map<String, serde_json::Value>> {
+    let value: serde_json::Value = serde_json::from_str(line)?;
+    let mut fields = value
+        .as_object()
+        .ok_or_else(|| invalid("index record must be an object"))?
+        .clone();
+    for field in IDENTITY_FIELDS.iter().copied().chain(["yanked"]) {
+        fields.remove(field);
+    }
+    Ok(fields)
+}
+fn drift(old: &str, current: &str, identity: Identity) -> Result<Option<MetadataWarning>> {
+    let old = nonidentity_fields(old)?;
+    let current = nonidentity_fields(current)?;
+    let fields: Vec<_> = old
+        .keys()
+        .chain(current.keys())
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .filter(|key| old.get(key) != current.get(key))
+        .collect();
+    Ok((!fields.is_empty()).then_some(MetadataWarning {
+        kind: MetadataWarningKind::UpstreamMetadataDrift,
+        identity,
+        fields,
+    }))
+}
+
 /// One independently checked selection observation, with no recursive predecessor.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -83,6 +139,7 @@ impl Cohort {
             previous_inventory_sha256: None,
             warnings: self.warnings.clone(),
             index_warnings: self.index_warnings.clone(),
+            metadata_warnings: Vec::new(),
             cohorts: Vec::new(),
             retention_observations: Vec::new(),
         };
@@ -97,16 +154,19 @@ impl Cohort {
     }
 }
 fn same_immutable(old: &str, current: &str) -> Result<bool> {
-    let mut old: serde_json::Value = serde_json::from_str(old)?;
-    let mut current: serde_json::Value = serde_json::from_str(current)?;
-    for value in [&mut old, &mut current] {
-        value
-            .as_object_mut()
-            .ok_or_else(|| invalid("index record must be an object"))?
-            .remove("yanked");
-    }
-    Ok(old == current)
+    let old: serde_json::Value = serde_json::from_str(old)?;
+    let current: serde_json::Value = serde_json::from_str(current)?;
+    let old = old
+        .as_object()
+        .ok_or_else(|| invalid("index record must be an object"))?;
+    let current = current
+        .as_object()
+        .ok_or_else(|| invalid("index record must be an object"))?;
+    Ok(IDENTITY_FIELDS
+        .iter()
+        .all(|field| old.get(*field) == current.get(*field)))
 }
+
 fn merge(
     cohorts: Vec<Cohort>,
     observations: Vec<RetentionObservation>,
@@ -125,6 +185,7 @@ fn merge(
     let mut prior = BTreeSet::new();
     let active: BTreeSet<_> = last.versions.iter().map(VersionRow::identity).collect();
     let mut metadata = BTreeMap::new();
+    let mut metadata_warnings = BTreeSet::new();
     for (position, cohort) in cohorts.iter().enumerate() {
         events::check()?;
         let offset = value.roots.len();
@@ -158,6 +219,9 @@ fn merge(
                         "retained crate metadata changed beyond its yank observation",
                     )
                     .into());
+                }
+                if let Some(warning) = drift(&old.index_line, &row.index_line, id.clone())? {
+                    metadata_warnings.insert(warning);
                 }
                 old.reasons.extend(row.reasons);
                 old.root_aliases.extend(row.root_aliases);
@@ -203,6 +267,13 @@ fn merge(
             )
             .into());
         }
+        if let Some(warning) = drift(
+            &row.index_line,
+            &observation.index_line,
+            observation.identity.clone(),
+        )? {
+            metadata_warnings.insert(warning);
+        }
         if !observation.previously_yanked && parsed[0].1.yanked {
             value
                 .changes
@@ -226,7 +297,11 @@ fn merge(
         row.retained_from_previous = prior.contains(&id);
         if row.retained_from_previous {
             row.expected_bytes = Some(observed[&id].bytes);
-            // UI state follows the current observation; served historical bytes stay immutable.
+            // Serve the new upstream bytes when nonidentity metadata evolved.
+            // Yank-only changes keep their separate historical observation semantics.
+            if drift(&row.index_line, &observed[&id].index_line, id.clone())?.is_some() {
+                row.index_line = observed[&id].index_line.clone();
+            }
             row.yanked = records(observed[&id].index_line.as_bytes())?[0].1.yanked;
             value.changes.retained.push(id.clone());
             if !active.contains(&id) {
@@ -285,6 +360,7 @@ fn merge(
             .iter()
             .map(|r| (r.name.clone(), r.version.clone())),
     )?;
+    value.metadata_warnings = metadata_warnings.into_iter().collect();
     value.retention_observations = observations;
     value.cohorts = cohorts;
     let (counts, sizes, budgets) = summaries(&value)?;

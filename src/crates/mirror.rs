@@ -13,7 +13,7 @@ use super::{
 use crate::{events, Error, ErrorKind, Result};
 pub(crate) use fetch::inspect_run_metadata;
 pub use fetch::{fetch, fetch_with_control, FetchOptions, FetchReport, Inventory};
-pub use retained::{Cohort, RetentionObservation};
+pub use retained::{Cohort, MetadataWarning, MetadataWarningKind, RetentionObservation};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -236,6 +236,9 @@ pub struct FrozenPlan {
     /// Typed historical index collisions; empty is omitted to preserve legacy identities.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub index_warnings: Vec<super::IndexWarning>,
+    /// Nonidentity upstream field changes relative to historical cohort proofs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub metadata_warnings: Vec<MetadataWarning>,
     /// Flat, independently validated historical selection proofs; empty for a first generation.
     #[serde(default)]
     pub cohorts: Vec<Cohort>,
@@ -512,7 +515,7 @@ impl FrozenPlan {
         if !self.cohorts.is_empty() {
             return retained::validate(self, replay);
         }
-        if !self.retention_observations.is_empty() {
+        if !self.retention_observations.is_empty() || !self.metadata_warnings.is_empty() {
             return Err(invalid("retention observations require historical proofs"));
         }
         if self.catalog.crate_policy.hosts.is_empty()
@@ -989,6 +992,7 @@ pub fn plan(
         previous_inventory_sha256: None,
         cohorts: Vec::new(),
         index_warnings,
+        metadata_warnings: Vec::new(),
         retention_observations: Vec::new(),
         warnings: vec![
             "Declared features with all-platform normal/build lock coverage; build success is not implied.".into(),

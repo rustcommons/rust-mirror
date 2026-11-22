@@ -211,16 +211,38 @@ transfer budgets apply across all workers and retained copies. Transfer bytes co
 accepted archive bytes across retries/resumes, not TCP/TLS headers or discarded
 socket buffers; reused copies count toward final size, not network transfer. Failed
 work before the first complete managed preview/receipt may require a new workspace.
-Private state is never published. Disk/controller power-loss durability is not proven.
+Progress receipts are checkpointed per archive after 8 MiB or 2 seconds of progress
+(whichever comes first), and on completion, error or cancellation. The time check
+runs when accepting bytes, not on a background timer. Each checkpoint fsyncs the
+archive prefix before atomically replacing/fsyncing its receipt; workers share a
+short in-memory budget counter between checkpoints. A kill can leave an uncommitted
+tail: resume truncates it to the last persisted offset, rehashes/revalidates as
+before and verifies the complete archive against the frozen checksum. Uncommitted
+bytes discarded after a kill are not included in the persisted transfer counter.
+Private receipt schema 1 is accepted and migrated to schema 2 (durable offsets);
+older binaries cannot resume schema 2 work. Private state is never published.
+Disk/controller power-loss durability is not proven.
 
 Historical selection cohorts are stored flat, with independent native proofs, rather
 than recursively embedding predecessor inventories. Current bounds are 128 cohorts,
 4,096 total root profiles and 64 MiB serialized frozen metadata; exceeding a bound
 refuses planning instead of silently dropping history. Retained index reordering or
-immutable field changes are refused. The combined served index is replayed across
+identity-field changes are refused. The combined served index is replayed across
 historical and current root profiles too; if mixing cohorts would require an
 unmirrored edge, planning refuses rather than offering an incomplete registry.
-New yank observations preserve historical bytes.
+Nonidentity field backfills (for example `rust_version`, `pubtime`, or other
+upstream annotations) are allowed. `FrozenPlan.metadata_warnings` is an optional
+array of typed `{kind: "upstream_metadata_drift", identity: {name, version}, fields}`
+records; field names are sorted, warnings are reconstructed from historical proofs
+and bound into plan approval. Absent/empty means no drift. The successor serves the
+NEW original upstream line bytes, while each historical cohort and generation
+retains its original index bytes and independent proofs. Old strict readers may
+refuse plans/inventories containing the new warning field; use 0.6.1 to read them.
+Identity comparison covers `name`, `vers`, `cksum`, `deps`, `features`, `features2`
+and `links`: any change is a hard refusal, and checksums are never merged.
+Yank-only changes keep the separate observation behavior and preserve served
+historical bytes. Combined-index replay across all historical/current profiles
+remains mandatory before exposing a generation.
 
 Pruning is disabled without an explicit `[crate-retention]` table. Its optional
 `keep-newest` (0–32), `previous-generations` (0–31) and `pinned-generations` fields
@@ -235,7 +257,7 @@ rather than applying a toolchain-only policy. The generic lower-level deletion
 engine does not infer catalog crate pins; library consumers use `crates::retention`.
 
 A successor retains previous versions and their recorded closure even when latest-N
-selects newer ones. Conflicting immutable checksums/metadata fail; a new yank state
+selects newer ones. Conflicting identity fields fail; a new yank state
 is a separate observation and does not rewrite history. New yanked selections are
 refused; already verified retained yanked versions remain available for old locks.
 Crate pins protect a generation containing their complete closure. Current,

@@ -49,7 +49,14 @@ For private TLS, pass a PEM CA bundle (at most 4 MiB / 256 certificates). This
 configures the publisher's connection, not Rustup's client trust. No verification
 bypass, credential-bearing URL, HTTP redirect or automatic proxy discovery is used.
 Literal loopback HTTP requires the test-only `--allow-loopback-http`, and can never
-carry credentials or a CA option. Each request has a 180-second deadline.
+carry credentials or a CA option. The default publisher has a 180-second connect
+limit and a 180-second idle limit for each socket read/write, with no whole-request
+deadline. Both default and explicit-network paths allow slow transfers to continue
+while making progress within each idle window. Explicit network flags override
+these limits (see [network settings](NETWORK.md)); OS DNS can exceed the connect
+limit. If the server stores a PUT but then stalls without a response, it can still
+time out: inspect the prefix before retrying, because preflight refuses existing
+objects.
 
 Stdout is a TOML report with `files`, `remote_bytes_verified`, `inventory_sha256`
 and `schema`. Success is 0; failures return 1. Credentials are not printed.
