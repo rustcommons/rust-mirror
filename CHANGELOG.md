@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Repository
+
+- Use the unified `actions/attest` action for release provenance and SBOM
+  attestations, preserving the existing signer identity and verification policy.
+
 ## [0.6.1] - 2026-11-22
 
 ### Fixed
