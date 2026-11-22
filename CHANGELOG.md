@@ -6,6 +6,13 @@
 
 - Record the completed 0.6.1 publication and first real phase 2 pipeline run,
   including its initial CI gate refusal and public artifact verification.
+- Use the unified `actions/attest` action for release provenance and SBOM
+  attestations, preserving the existing signer identity and verification policy.
+- Update the root and fuzz lockfiles to `url` 2.5.9 and companion
+  `form_urlencoded` 1.2.3 for RUSTSEC-2026-0592, keeping cargo-deny enforced.
+  Published 0.6.1 is not affected in practice: neither its source nor ureq 2.12.1
+  calls the affected `Url::origin` or `url::quirks::origin` functions. This is
+  dependency maintenance; no advisory or patch release is planned.
 
 ## [0.6.1] - 2026-11-22
 

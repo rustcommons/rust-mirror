@@ -169,9 +169,14 @@ network limits from the candidate evaluation still apply.
 The release-time checks passed. Subsequent maintenance PR #80 exposed an inherited
 `url` 2.5.7 advisory (RUSTSEC-2026-0592); the release retains its immutable lockfile.
 Recording successful publication does not waive that later cargo-deny failure or
-claim the release is free of advisories. Attestation-action maintenance and any
-security dependency update remain separate work.
+claim the release is free of advisories. Merged [PR #80](https://github.com/rustcommons/rust-mirror/pull/80)
+updates main to `url` 2.5.9 and companion `form_urlencoded` 1.2.3 in both lockfiles
+and replaces the deprecated attestation actions. The [exposure assessment](../SECURITY-BASELINE.md#url-origin-advisory-assessment--2026-11-22)
+confirms that neither released rust-mirror source nor ureq 2.12.1 calls the affected
+origin functions, so published 0.6.1 is not affected in practice. No repository
+advisory or patch release is planned; the published lockfile/assets remain unchanged.
+This documentation PR incorporates that main update without changing its policies.
 
 See the [machine-readable record](publication-0.6.1.json) for source, run/job,
 registry, asset and platform identities. The GUI maintainer is notified after this
-publication record PR is opened.
+publication record PR was opened; Cloudroom accepted and queued the notification.
