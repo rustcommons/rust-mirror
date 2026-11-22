@@ -378,6 +378,7 @@ def main():
             return str(roots[parts[1]].joinpath(*parts[2:]))
         def log_request(self,code="-",size="-"): requests.append({"method":self.command,"path":self.path,"status":str(code)})
     context,ca_file,cleanup=fixture_tls(args.evidence,native_trust=not args.publisher_preflight)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     server=None;thread=None
     try:
         server=http.server.ThreadingHTTPServer(("127.0.0.1",0),Handler)
