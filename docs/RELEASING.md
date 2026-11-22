@@ -272,6 +272,35 @@ the eight assets. Expect this whenever crates.io approval takes longer than the
 collector's 600 s wait: create the release only after confirmed publication, then
 dispatch on the tag ref with dry_run=false and candidate=false.
 
+## 0.6.1 product patch release
+
+The owner authorized 0.6.1 on 2026-11-22 for four product fixes: publisher idle
+limits, batched durable crate progress, nonidentity upstream index drift and
+post-prune toolchain reuse. Follow [the authorization](../AGENTS.md#061-product-patch-release-authorization),
+[notes](releases/v0.6.1.md) and [candidate evidence](evals/2026-11-22-release-0.6.1.md).
+Prepare one code/version PR with a dated changelog entry, both lock root entries,
+regressions demonstrating failure before/pass after, requirements and a clean
+package audit. Report only after the exact-head Trusted publishing dry run builds
+all five targets, the crate, SBOM and single seven-entry SHA256SUMS successfully.
+The owner reviews, merges and tags. Do not merge, tag, push to main or poll CI in a
+loop. No new dependency is authorized.
+
+Keep this patch additive: existing public structs and strict frozen-plan JSON/IDs
+must remain compatible for the same inputs. Compute metadata diagnostics through
+an accessor and display them only in CLI/event reports. Run an exact-version,
+`--locked` local cargo-semver-checks installation against published 0.6.0 and
+require no major changes; no new project dependency or CI job is authorized.
+
+This is the first real release through phase 2. The tag run must build and sign
+before the owner's crates-io approval, publish after approval, create and finish the
+draft-first nine-asset GitHub Release, then verify publication. No manual release
+creation or notes edits are needed. After publication, verify the registry payload,
+docs.rs, fresh installation, all nine assets, all eight provenance subjects, SBOM
+bindings, attached bundle/store match and public Windows/GNU/musl downloads. Open
+a publication record PR that records how each new job behaved on its first real
+run, preserving failures/recovery if any. Notify the GUI maintainer only after
+0.6.1 is confirmed live. Signing/approval/publication cannot be proved by a PR dry run.
+
 ## Before merge and publication
 
 1. Update the changelog, versioned notes, user guide, complete CLI reference and

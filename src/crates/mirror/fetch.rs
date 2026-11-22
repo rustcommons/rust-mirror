@@ -4,11 +4,13 @@ use crate::{resume, SnapshotFile, Transfer};
 use sha2::{Digest, Sha256};
 use std::{
     fs::{File, OpenOptions},
+    io::{Seek, SeekFrom},
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
         Mutex,
     },
+    time::{Duration, Instant},
 };
 
 /// Options for a new or explicitly resumed managed crate workspace.
@@ -63,6 +65,8 @@ struct State {
     phase: String,
     transferred_bytes: u64,
     state_sha256: String,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    offsets: BTreeMap<String, u64>,
 }
 struct Session {
     root: PathBuf,
@@ -177,8 +181,8 @@ impl Session {
         }
         real_directory(&private)?;
         let state_path = private.join("state.json");
-        let state = if regular(&state_path)?.is_some() {
-            let state: State = serde_json::from_slice(&bounded_read(&state_path, 16384)?)
+        let mut state = if regular(&state_path)?.is_some() {
+            let state: State = serde_json::from_slice(&bounded_read(&state_path, PLAN_LIMIT)?)
                 .map_err(|_| invalid("invalid crate resume receipt"))?;
             if state_hash(&state)? != state.state_sha256 {
                 return Err(Error::new(
@@ -187,7 +191,7 @@ impl Session {
                 )
                 .into());
             }
-            if state.schema != 1
+            if !matches!(state.schema, 1 | 2)
                 || state.plan_id != plan.plan_id
                 || state.approved_id != approval.plan_id
                 || !matches!(
@@ -211,7 +215,8 @@ impl Session {
                 .into());
             }
             State {
-                schema: 1,
+                schema: 2,
+                offsets: BTreeMap::new(),
                 plan_id: plan.plan_id.clone(),
                 approved_id: approval.plan_id.clone(),
                 phase: "fetching".into(),
@@ -229,6 +234,28 @@ impl Session {
             fs::create_dir(&files)?;
         }
         real_directory(&files)?;
+        // Legacy receipts used the partial's length. Make those prefixes durable
+        // once before migrating; new receipts always name exact committed offsets.
+        if state.schema == 1 {
+            for row in &plan.versions {
+                let id = token(row);
+                let partial = files.join(format!("{id}.part"));
+                if let Some(bytes) = regular(&partial)? {
+                    if bytes > plan.catalog.crate_policy.max_file_bytes {
+                        return Err(budget("legacy partial crate exceeds budget"));
+                    }
+                    File::options().write(true).open(&partial)?.sync_all()?;
+                    state.offsets.insert(id, bytes);
+                }
+            }
+            state.schema = 2;
+        }
+        let ids: BTreeSet<_> = plan.versions.iter().map(token).collect();
+        if state.offsets.iter().any(|(id, bytes)| {
+            !ids.contains(id) || *bytes > plan.catalog.crate_policy.max_file_bytes
+        }) {
+            return Err(invalid("invalid durable crate offset"));
+        }
         let session = Self {
             root: options.output.clone(),
             state: Mutex::new(state),
@@ -257,16 +284,12 @@ struct Shared<'a> {
     stop: AtomicBool,
     completed: AtomicUsize,
     reused: Mutex<u64>,
+    transferred: Mutex<u64>,
 }
 impl Shared<'_> {
     fn summary(&self) -> Result<()> {
         if let Some(control) = events::current() {
-            let transferred = self
-                .session
-                .state
-                .lock()
-                .unwrap_or_else(|p| p.into_inner())
-                .transferred_bytes;
+            let transferred = *self.transferred.lock().unwrap_or_else(|p| p.into_inner());
             let reused = *self.reused.lock().unwrap_or_else(|p| p.into_inner());
             control.emit(events::EventKind::CrateSummary {
                 files_completed: self.completed.load(Ordering::SeqCst) as u64,
@@ -282,17 +305,21 @@ impl Shared<'_> {
         if self.stop.load(Ordering::SeqCst) {
             return Err(Error::new(ErrorKind::Cancelled, "another crate operation failed").into());
         }
-        let mut state = self.session.state.lock().unwrap_or_else(|p| p.into_inner());
-        let total = state
-            .transferred_bytes
+        let mut transferred = self.transferred.lock().unwrap_or_else(|p| p.into_inner());
+        let total = (*transferred)
             .checked_add(count)
             .ok_or_else(|| budget("transfer counter overflow"))?;
         if total > self.plan.catalog.crate_policy.max_transfer_bytes {
             return Err(budget("crate transfer budget exceeded"));
         }
-        state.transferred_bytes = total;
-        atomic_state(&self.session.root, &state)
+        *transferred = total;
+        Ok(())
     }
+}
+const CHECKPOINT_BYTES: u64 = 8 * 1024 * 1024;
+const CHECKPOINT_INTERVAL: Duration = Duration::from_secs(2);
+fn checkpoint_due(bytes: u64, elapsed: Duration) -> bool {
+    bytes > 0 && (bytes >= CHECKPOINT_BYTES || elapsed >= CHECKPOINT_INTERVAL)
 }
 struct Charged<'a> {
     file: File,
@@ -301,9 +328,39 @@ struct Charged<'a> {
     path: String,
     offset: u64,
     limit: u64,
+    id: String,
+    persisted: u64,
+    checkpoint_at: Instant,
+}
+impl Charged<'_> {
+    fn checkpoint(&mut self) -> Result<()> {
+        let end = self.offset + self.count;
+        // Do not advertise an offset/counter until these exact bytes are durable.
+        // Trim a possible partially failed write_all before recording its prefix.
+        self.file.set_len(end)?;
+        self.file.sync_all()?;
+        let mut state = self
+            .shared
+            .session
+            .state
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        let mut next = state.clone();
+        next.transferred_bytes = next
+            .transferred_bytes
+            .checked_add(self.count - self.persisted)
+            .ok_or_else(|| budget("transfer counter overflow"))?;
+        next.offsets.insert(self.id.clone(), end);
+        atomic_state(&self.shared.session.root, &next)?;
+        *state = next;
+        self.persisted = self.count;
+        self.checkpoint_at = Instant::now();
+        Ok(())
+    }
 }
 impl Write for Charged<'_> {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        let bytes = &bytes[..bytes.len().min(64 * 1024)];
         if self
             .offset
             .checked_add(self.count)
@@ -320,6 +377,9 @@ impl Write for Charged<'_> {
             .map_err(std::io::Error::other)?;
         self.file.write_all(bytes)?;
         self.count += bytes.len() as u64;
+        if checkpoint_due(self.count - self.persisted, self.checkpoint_at.elapsed()) {
+            self.checkpoint().map_err(std::io::Error::other)?;
+        }
         events::bytes(&self.path, self.offset + self.count).map_err(std::io::Error::other)?;
         Ok(bytes.len())
     }
@@ -351,11 +411,17 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
     let partial = dir.join(format!("{id}.part"));
     let limit = shared.plan.catalog.crate_policy.max_file_bytes;
     if let Some(bytes) = verified(&final_path, row, limit, &path)? {
+        reset_saved_offset(shared.session, &id)?;
         events::artifact(&path, "reuse", 0, Some(bytes))?;
         events::complete(&path, "reuse", Some(bytes), true)?;
         return Ok((bytes, bytes));
     }
     if regular(&final_path)?.is_some() {
+        // Older receipts may still name the completed file's full offset.
+        // Commit zero BEFORE deleting it, so a kill cannot strand resume with
+        // a nonzero receipt and neither a usable final file nor a partial.
+        reset_saved_offset(shared.session, &id)?;
+        events::artifact(&path, "restart", 0, row.expected_bytes)?;
         fs::remove_file(&final_path)?;
     }
     if row.retained_from_previous {
@@ -370,8 +436,28 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
         events::complete(&path, "reuse", Some(bytes), true)?;
         return Ok((bytes, bytes));
     }
+    let durable = shared
+        .session
+        .state
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .offsets
+        .get(&id)
+        .copied()
+        .unwrap_or(0);
+    match regular(&partial)? {
+        Some(bytes) if bytes >= durable => {
+            File::options()
+                .write(true)
+                .open(&partial)?
+                .set_len(durable)?;
+        }
+        None if durable == 0 => (),
+        _ => return Err(invalid("partial crate is shorter than its durable receipt")),
+    }
     if let Some(bytes) = verified(&partial, row, limit, &path)? {
         fs::rename(&partial, &final_path)?;
+        reset_saved_offset(shared.session, &id)?;
         return Ok((bytes, bytes));
     }
     let mut repaired = false;
@@ -388,20 +474,30 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
         }
         let operation = if offset > 0 { "resume" } else { "download" };
         events::artifact(&path, operation, offset, row.expected_bytes)?;
+        // Windows append-only handles cannot set_len during checkpointing.
+        // The workspace lock gives this worker exclusive ownership of the file.
+        let mut file = OpenOptions::new()
+            .create(true)
+            .truncate(false)
+            .write(true)
+            .open(&partial)?;
+        file.seek(SeekFrom::Start(offset))?;
         let mut output = Charged {
-            file: OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(&partial)?,
+            file,
             shared,
             count: 0,
             path: path.clone(),
             offset,
             limit,
+            id: id.clone(),
+            persisted: 0,
+            checkpoint_at: Instant::now(),
         };
         attempt += 1;
         let result = source.archive(&row.name, &row.version, &mut output, offset, limit - offset);
-        output.file.sync_all()?;
+        // Includes errors and cancellation: persist the last accepted prefix
+        // without consulting the cancellation token again.
+        output.checkpoint()?;
         drop(output);
         match result {
             Ok(Transfer::Restart) => {
@@ -414,10 +510,7 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
                     .into());
                 }
                 events::artifact(&path, "restart", 0, row.expected_bytes)?;
-                OpenOptions::new()
-                    .write(true)
-                    .truncate(true)
-                    .open(&partial)?;
+                reset_partial(shared.session, &partial, &id)?;
                 repaired = true;
             }
             Ok(Transfer::Complete) => {
@@ -425,14 +518,12 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
                 events::complete(&path, operation, Some(bytes), false)?;
                 if let Some(bytes) = verified(&partial, row, limit, &path)? {
                     fs::rename(&partial, &final_path)?;
+                    reset_saved_offset(shared.session, &id)?;
                     return Ok((bytes, offset));
                 }
                 if offset > 0 && !repaired {
                     events::artifact(&path, "restart", 0, row.expected_bytes)?;
-                    OpenOptions::new()
-                        .write(true)
-                        .truncate(true)
-                        .open(&partial)?;
+                    reset_partial(shared.session, &partial, &id)?;
                     repaired = true;
                     if attempt >= attempts {
                         return Err(Error::new(
@@ -459,6 +550,28 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
             return Err(Error::new(ErrorKind::Network, "crate attempts exhausted").into());
         }
     }
+}
+fn reset_saved_offset(session: &Session, id: &str) -> Result<()> {
+    let mut state = session.state.lock().unwrap_or_else(|p| p.into_inner());
+    if state.offsets.get(id).copied().unwrap_or(0) == 0 {
+        return Ok(());
+    }
+    let mut next = state.clone();
+    next.offsets.insert(id.into(), 0);
+    atomic_state(&session.root, &next)?;
+    *state = next;
+    Ok(())
+}
+fn reset_partial(session: &Session, partial: &Path, id: &str) -> Result<()> {
+    // Commit zero first: a kill before truncation can only leave extra bytes,
+    // which resume discards. Never leave a receipt longer than the file.
+    reset_saved_offset(session, id)?;
+    File::options()
+        .write(true)
+        .truncate(true)
+        .open(partial)?
+        .sync_all()?;
+    Ok(())
 }
 fn copy_checked(
     source: &Path,
@@ -708,6 +821,7 @@ pub fn fetch(
         stop: AtomicBool::new(false),
         completed: AtomicUsize::new(0),
         reused: Mutex::new(0),
+        transferred: Mutex::new(initial),
     };
     let next = AtomicUsize::new(0);
     let error: Mutex<Option<Box<dyn std::error::Error + Send + Sync>>> = Mutex::new(None);
@@ -909,10 +1023,12 @@ pub(crate) fn inspect_run_metadata(root: &Path, plan: &FrozenPlan) -> Result<boo
     let mut completed = false;
     validate_paths(root, plan)?;
     if root.join(".download").try_exists()? {
-        let state: State =
-            serde_json::from_slice(&bounded_read(&root.join(".download/state.json"), 16384)?)
-                .map_err(|_| invalid("invalid crate run receipt"))?;
-        if state.schema != 1
+        let state: State = serde_json::from_slice(&bounded_read(
+            &root.join(".download/state.json"),
+            PLAN_LIMIT,
+        )?)
+        .map_err(|_| invalid("invalid crate run receipt"))?;
+        if !matches!(state.schema, 1 | 2)
             || state.plan_id != plan.plan_id
             || state.approved_id != plan.plan_id
             || state.state_sha256 != state_hash(&state)?
@@ -932,4 +1048,19 @@ pub(crate) fn inspect_run_metadata(root: &Path, plan: &FrozenPlan) -> Result<boo
         return Err(invalid("crate run mirror disagrees with its preview"));
     }
     Ok(completed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn checkpoint_interval_has_exact_byte_and_time_boundaries() {
+        assert!(!checkpoint_due(0, CHECKPOINT_INTERVAL));
+        assert!(!checkpoint_due(
+            CHECKPOINT_BYTES - 1,
+            CHECKPOINT_INTERVAL - Duration::from_nanos(1)
+        ));
+        assert!(checkpoint_due(CHECKPOINT_BYTES, Duration::ZERO));
+        assert!(checkpoint_due(1, CHECKPOINT_INTERVAL));
+    }
 }

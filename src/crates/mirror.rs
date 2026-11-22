@@ -13,7 +13,7 @@ use super::{
 use crate::{events, Error, ErrorKind, Result};
 pub(crate) use fetch::inspect_run_metadata;
 pub use fetch::{fetch, fetch_with_control, FetchOptions, FetchReport, Inventory};
-pub use retained::{Cohort, RetentionObservation};
+pub use retained::{Cohort, MetadataWarning, MetadataWarningKind, RetentionObservation};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -464,6 +464,14 @@ fn native_bounds(catalog: &Catalog) -> Bounds {
     }
 }
 impl FrozenPlan {
+    /// Compute typed nonidentity field drift against this plan's historical proofs.
+    ///
+    /// These presentation diagnostics are not serialized into the frozen plan and
+    /// do not alter its identity. Call [`Self::validate`] before trusting a plan;
+    /// this accessor skips malformed record pairs rather than validating them.
+    pub fn metadata_warnings(&self) -> Vec<MetadataWarning> {
+        retained::metadata_warnings(self)
+    }
     fn computed_id(&self) -> Result<String> {
         let mut value = self.clone();
         value.plan_id.clear();

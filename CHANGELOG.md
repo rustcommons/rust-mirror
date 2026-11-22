@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-22
+
+### Fixed
+
+- The default publisher now uses bounded connect and per-read/write idle timeouts,
+  matching the existing explicit-network path. Progressing transfers no longer hit
+  the old whole-request deadline after an upload is stored. A peer trickling bytes
+  can keep a request alive: only each read or write is time-bounded, with no overall
+  time cap or minimum transfer rate.
+- Crate downloads checkpoint progress after 8 MiB or 2 seconds of progress and on
+  completion, error or cancellation, instead of fsyncing a shared receipt for every
+  chunk. Resume discards bytes beyond the saved durable offset, revalidates prefixes
+  and checks the final checksum. Corrupt staged crates are re-downloaded after a
+  durable offset reset, including receipts left by earlier attempts; staged
+  completion clears the partial offset without resetting the transfer counter.
+  Existing private receipts migrate on resume.
+- Incremental crate plans tolerate upstream nonidentity metadata backfills such as
+  `rust_version`, report computed typed diagnostics through
+  `FrozenPlan::metadata_warnings()` and CLI preview/explain, and serve the new upstream line
+  in the successor. Historical cohort proofs keep their original bytes; changes to
+  name, version, checksum, dependencies, features, features2 or links still refuse.
+  Yank-only observations retain their existing handling. Checksums are never merged.
+  Existing public struct fields, saved-plan JSON and IDs stay unchanged for the
+  same inputs; only CLI/event reports add presentation diagnostics.
+- Toolchain sync `--resume` and `--force`, and selected fetch resume, accept the
+  persistent empty prune lock left by a successful prune.
+
 ### Repository
 
 - Adopt the Rust Commons standard release pipeline, including phase 2: one

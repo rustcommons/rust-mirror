@@ -687,3 +687,34 @@ fn force_refuses_windows_junctions_before_deleting_either_tree() {
     // Remove this test's junction itself, never its target.
     std::fs::remove_dir(&linked).unwrap();
 }
+
+#[test]
+fn prune_lock_allows_toolchain_sync_resume_force_and_selected_fetch_resume() {
+    use rust_mirror::selection::{retention, sync::run_forced};
+    let t = tempfile::tempdir().unwrap();
+    let cfg = config();
+    let out = t.path().join("run");
+    let result = run(&cfg, None, &out, false, &source(0, true)).unwrap();
+    let policy = retention::Policy {
+        pinned_releases: vec![],
+        latest_stable: 0,
+        nightly_days: 0,
+        previous_generations: 0,
+        keep_newest: 0,
+        pinned_generations: vec![],
+    };
+    let preview = retention::preview(&policy, &[result.mirror], "2026-11-22").unwrap();
+    assert!(retention::apply(&preview, true).unwrap().failure.is_none());
+    assert!(out.join(".rust-mirror-prune.lock").is_file());
+    run(&cfg, None, &out, true, &source(0, false)).unwrap();
+    run_forced(&cfg, None, &out, &source(0, true)).unwrap();
+
+    let plan = rust_mirror::selection::resolve(&cfg, "project-a", &Fixture::new()).unwrap();
+    let plan_root = t.path().join("selected-plan");
+    plan.save(&plan_root).unwrap();
+    let selected = t.path().join("selected");
+    let mirror = rust_mirror::selection::fetch(&plan_root, &selected, &Fixture::new()).unwrap();
+    let preview = retention::preview(&policy, &[mirror], "2026-11-22").unwrap();
+    retention::apply(&preview, true).unwrap();
+    rust_mirror::selection::fetch_resuming(&plan_root, &selected, &Fixture::new()).unwrap();
+}

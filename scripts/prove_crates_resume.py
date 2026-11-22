@@ -174,11 +174,19 @@ def main():
                 assert not (output / "mirror").exists()
                 partials = list((output / ".download/files").glob("*.part"))
                 assert len(partials) == 1 and 0 < partials[0].stat().st_size < len(payload)
+                receipt = json.loads((output / ".download/state.json").read_text(encoding="utf-8"))
+                token = hashlib.sha256(b"x\x001.0.0").hexdigest()
+                durable = receipt["offsets"].get(token, 0)
+                assert 0 <= durable <= partials[0].stat().st_size
                 resumed = run(mode + "-resume", [*command, "--resume"])
+                transfer = next(e for e in resumed if e["type"] == "artifact"
+                                and e.get("path", "").endswith(".crate")
+                                and e.get("action") in ("download", "resume"))
+                assert transfer["offset"] == durable, "resume must discard any uncommitted tail"
                 archive = output / "mirror/cargo/crates/x/x-1.0.0.crate"
                 assert hashlib.sha256(archive.read_bytes()).hexdigest() == digest
                 assert any(r["type"] == "heartbeat" and (r.get("path") or "").endswith(".crate") for r in stopped + resumed)
-                report[mode] = dict(partial_preserved=True, resumed=True, final=resumed[-1]["report"])
+                report[mode] = dict(partial_preserved=True, durable_offset=durable, resumed=True, final=resumed[-1]["report"])
             assert any(r.get("offset", 0) > 0 for r in requests)
             first = [json.loads(line) for line in (evidence / "kill.jsonl").read_text().splitlines()]
             assert any(r["type"] == "retry" and r["kind"] == "rate_limited" and r["wait_seconds"] == 1 for r in first)

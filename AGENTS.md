@@ -620,6 +620,35 @@ timeout as permission to change source, signer or tag.
 Since phase 2 (2026-11-21) that timeout cannot recur: the pipeline builds and signs
 before approval and creates the release itself. The 0.6.0 recovery stays a record.
 
+## 0.6.1 product patch release authorization
+
+Owner authorization, 2026-11-22: implement and release 0.6.1 for the four product
+findings from the owner-directed review of main `0e649ca`: publication idle
+timeouts, bounded durable crate progress checkpoints, tolerated nonidentity index
+backfills with typed warnings/new successor bytes, and toolchain reuse after prune.
+Historical cohort proofs keep their original bytes; checksum/dependency/feature
+identity changes remain hard refusals. Add a regression for each finding that fails
+before the fix and passes after. No new dependencies or tool attribution.
+
+Use one code/version release PR, with both lock root entries, dated changelog,
+[0.6.1 notes](docs/releases/v0.6.1.md), requirements and clean package audit.
+Require the exact-head Trusted publishing dry run green: all five targets, crate,
+SBOM and one seven-entry SHA256SUMS. Report the green PR and run ID, then stop.
+The owner merges and tags; never push to main, merge or tag, and do not poll CI
+in a loop. This is the first real phase 2 release: after the owner merges/tags,
+the pipeline signs before the crates-io approval, publishes after approval, creates
+the draft-first release with nine assets and verifies. After publication, verify
+the entire chain and open the publication record PR, recording each new job's
+first real behavior. Then notify GUI thread `thr_rwjt5zrr54` that 0.6.1 is live.
+
+Owner amendment, 2026-11-22: keep 0.6.1 patch-compatible. No added `FrozenPlan`
+field or serialized diagnostic field; preserve frozen JSON and IDs for the same
+inputs. Expose computed warnings through an additive method and non-exhaustive new
+types. Show them in CLI/event presentation under protocol 1's unknown-field rule.
+Check the complete public diff against published 0.6.0 using a locally installed,
+exact-version, `--locked` cargo-semver-checks tool; require no major changes. Do not
+add this tool to project dependencies or CI.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
