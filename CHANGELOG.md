@@ -4,6 +4,8 @@
 
 ### Repository
 
+- Contain offline-proof uploads within the served directory and reject symlinked
+  parents, with regression tests; require TLS 1.2 or newer in the test servers.
 - Record the completed 0.6.1 publication and first real phase 2 pipeline run,
   including its initial CI gate refusal and public artifact verification.
 - Use the unified `actions/attest` action for release provenance and SBOM

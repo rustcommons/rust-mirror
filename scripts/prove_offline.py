@@ -22,6 +22,51 @@ import publish_raw
 PREFIX = "/repository/rust-offline/proof"
 
 
+def upload_handler(served, request_log):
+    """Build the loopback upload fixture independently of namespace setup."""
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def log_request(self, code="-", size="-"):
+            request_log.append({"method": self.command, "path": self.path, "status": str(code)})
+
+        def log_message(self, *args):
+            pass
+
+        def do_PUT(self):
+            path = urlsplit(self.path).path
+            if not path.startswith(PREFIX + "/") or any(p in (".", "..") for p in path.split("/")):
+                self.send_error(400)
+                return
+            length = int(self.headers.get("Content-Length", "-1"))
+            if not 0 <= length <= 512 * 1024 * 1024:
+                self.send_error(413)
+                return
+            dest = served / path.lstrip("/")
+            if any(parent.is_symlink() for parent in dest.parents if parent.is_relative_to(served)):
+                self.send_error(400)
+                return
+            dest = dest.resolve()
+            if not dest.is_relative_to(served.resolve()):
+                self.send_error(400)
+                return
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                with dest.open("xb") as output:
+                    while length:
+                        chunk = self.rfile.read(min(length, 1024 * 1024))
+                        if not chunk:
+                            raise RuntimeError("incomplete PUT")
+                        output.write(chunk)
+                        length -= len(chunk)
+            except FileExistsError:
+                self.send_error(412)
+                return
+            self.send_response(201)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+
+    return Handler
+
+
 def prove(snapshot, evidence, selected_host=None, selection_name=None, additional_selections=None):
     snapshot = snapshot.resolve()
     evidence.mkdir(parents=True, exist_ok=False)
@@ -81,38 +126,7 @@ def prove(snapshot, evidence, selected_host=None, selection_name=None, additiona
         os.environ.pop("NEXUS_PASSWORD", None)
         served = Path(tempfile.mkdtemp(prefix="rust-mirror-raw-fixture-"))
 
-        class Handler(http.server.SimpleHTTPRequestHandler):
-            def log_request(self, code="-", size="-"):
-                request_log.append({"method": self.command, "path": self.path, "status": str(code)})
-
-            def log_message(self, *args):
-                pass
-
-            def do_PUT(self):
-                path = urlsplit(self.path).path
-                if not path.startswith(PREFIX + "/") or any(p in (".", "..") for p in path.split("/")):
-                    self.send_error(400)
-                    return
-                length = int(self.headers.get("Content-Length", "-1"))
-                if not 0 <= length <= 512 * 1024 * 1024:
-                    self.send_error(413)
-                    return
-                dest = served / path.lstrip("/")
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                try:
-                    with dest.open("xb") as output:
-                        while length:
-                            chunk = self.rfile.read(min(length, 1024 * 1024))
-                            if not chunk:
-                                raise RuntimeError("incomplete PUT")
-                            output.write(chunk)
-                            length -= len(chunk)
-                except FileExistsError:
-                    self.send_error(412)
-                    return
-                self.send_response(201)
-                self.send_header("Content-Length", "0")
-                self.end_headers()
+        Handler = upload_handler(served, request_log)
 
         server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Handler, directory=str(served)))
         server.daemon_threads = True

@@ -23,6 +23,7 @@ class RustupTLSFixture(unittest.TestCase):
             # Unit tests never import temporary roots into a workstation trust store.
             with patch.object(prove_rustup_lifecycle.platform, "system", return_value="Linux"):
                 server_context, ca, cleanup = prove_rustup_lifecycle.fixture_tls(Path(root))
+            server_context.minimum_version = ssl.TLSVersion.TLSv1_2
             class Handler(http.server.BaseHTTPRequestHandler):
                 def do_GET(self):
                     self.send_response(200); self.end_headers(); self.wfile.write(b"verified")
