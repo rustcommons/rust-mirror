@@ -72,10 +72,12 @@ Publishing keeps its current independent no-proxy behavior. New explicit
 options, `NetworkOptions` and `Control`; publication CLI network flags opt in to
 that separate configuration. Upstream `[network]` is not silently inherited by
 publishing. Explicit target-host NO_PROXY matching applies to that destination.
-Both the default publisher and explicit-network publisher use per-read/write idle
-limits, with no total request deadline. The independent default is 180 seconds for
+The default publisher now matches the existing explicit-network publisher's
+per-read/write idle limits, with no total request deadline. The independent default is 180 seconds for
 connect and each socket read/write; explicit `NetworkOptions`/network flags select
-those limits separately. A server that stops responding can still time out after
+those limits separately. A peer trickling bytes can keep a request alive
+indefinitely: only individual reads/writes are time-bounded, with no overall cap or
+minimum transfer rate. A server that stops responding can still time out after
 storing an upload, so inspect an incomplete prefix before retrying. These are
 socket limits; OS DNS resolution may take longer than the connect timeout.
 Existing publication `Options.ca_file`/`--ca-file` retains its private-bundle base

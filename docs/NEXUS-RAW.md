@@ -51,8 +51,9 @@ bypass, credential-bearing URL, HTTP redirect or automatic proxy discovery is us
 Literal loopback HTTP requires the test-only `--allow-loopback-http`, and can never
 carry credentials or a CA option. The default publisher has a 180-second connect
 limit and a 180-second idle limit for each socket read/write, with no whole-request
-deadline. Both default and explicit-network paths allow slow transfers to continue
-while making progress within each idle window. Explicit network flags override
+deadline. The default path now matches the existing explicit-network path. A peer
+trickling bytes within each per-read/write window can keep a request alive
+indefinitely; there is no overall time cap or minimum transfer rate. Explicit network flags override
 these limits (see [network settings](NETWORK.md)); OS DNS can exceed the connect
 limit. If the server stores a PUT but then stalls without a response, it can still
 time out: inspect the prefix before retrying, because preflight refuses existing

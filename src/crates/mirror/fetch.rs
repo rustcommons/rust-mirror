@@ -411,11 +411,17 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
     let partial = dir.join(format!("{id}.part"));
     let limit = shared.plan.catalog.crate_policy.max_file_bytes;
     if let Some(bytes) = verified(&final_path, row, limit, &path)? {
+        reset_saved_offset(shared.session, &id)?;
         events::artifact(&path, "reuse", 0, Some(bytes))?;
         events::complete(&path, "reuse", Some(bytes), true)?;
         return Ok((bytes, bytes));
     }
     if regular(&final_path)?.is_some() {
+        // Older receipts may still name the completed file's full offset.
+        // Commit zero BEFORE deleting it, so a kill cannot strand resume with
+        // a nonzero receipt and neither a usable final file nor a partial.
+        reset_saved_offset(shared.session, &id)?;
+        events::artifact(&path, "restart", 0, row.expected_bytes)?;
         fs::remove_file(&final_path)?;
     }
     if row.retained_from_previous {
@@ -451,6 +457,7 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
     }
     if let Some(bytes) = verified(&partial, row, limit, &path)? {
         fs::rename(&partial, &final_path)?;
+        reset_saved_offset(shared.session, &id)?;
         return Ok((bytes, bytes));
     }
     let mut repaired = false;
@@ -511,6 +518,7 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
                 events::complete(&path, operation, Some(bytes), false)?;
                 if let Some(bytes) = verified(&partial, row, limit, &path)? {
                     fs::rename(&partial, &final_path)?;
+                    reset_saved_offset(shared.session, &id)?;
                     return Ok((bytes, offset));
                 }
                 if offset > 0 && !repaired {
@@ -543,14 +551,21 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
         }
     }
 }
-fn reset_partial(session: &Session, partial: &Path, id: &str) -> Result<()> {
-    // Commit zero first: a kill before truncation can only leave extra bytes,
-    // which resume discards. Never leave a receipt longer than the file.
+fn reset_saved_offset(session: &Session, id: &str) -> Result<()> {
     let mut state = session.state.lock().unwrap_or_else(|p| p.into_inner());
+    if state.offsets.get(id).copied().unwrap_or(0) == 0 {
+        return Ok(());
+    }
     let mut next = state.clone();
     next.offsets.insert(id.into(), 0);
     atomic_state(&session.root, &next)?;
     *state = next;
+    Ok(())
+}
+fn reset_partial(session: &Session, partial: &Path, id: &str) -> Result<()> {
+    // Commit zero first: a kill before truncation can only leave extra bytes,
+    // which resume discards. Never leave a receipt longer than the file.
+    reset_saved_offset(session, id)?;
     File::options()
         .write(true)
         .truncate(true)

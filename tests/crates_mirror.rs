@@ -1681,3 +1681,213 @@ fn frozen_plan_060_literals_bytes_and_ids_remain_compatible() {
         );
     }
 }
+
+fn paused_after_staging(
+    root: &std::path::Path,
+) -> (
+    FrozenPlan,
+    PayloadSource,
+    mirror::FetchOptions,
+    mirror::Approval,
+    std::path::PathBuf,
+) {
+    use rust_mirror::events::{CancelToken, Control, Event, EventKind, Observer};
+    struct StopAfterDownload(CancelToken);
+    impl Observer for StopAfterDownload {
+        fn observe(&self, event: &Event) -> std::io::Result<()> {
+            if matches!(
+                event.kind,
+                EventKind::CrateSummary {
+                    files_completed: 1,
+                    ..
+                }
+            ) {
+                self.0.cancel();
+            }
+            Ok(())
+        }
+    }
+    let (catalog, source) = payload_fixture();
+    let plan = mirror::plan(&catalog, &source, None, false).unwrap();
+    let options = mirror::FetchOptions {
+        output: root.join("run"),
+        resume: false,
+        previous: None,
+    };
+    let approval = mirror::Approval {
+        plan_id: plan.plan_id.clone(),
+    };
+    let token = CancelToken::new();
+    let control = Control::new(std::sync::Arc::new(StopAfterDownload(token.clone())), token);
+    let error =
+        mirror::fetch_with_control(&plan, &source, &options, &approval, &control).unwrap_err();
+    assert_eq!(
+        rust_mirror::error_kind(error.as_ref()),
+        rust_mirror::ErrorKind::Cancelled
+    );
+    assert!(!options.output.join("mirror").exists());
+    let staged = std::fs::read_dir(options.output.join(".download/files"))
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.extension().is_some_and(|e| e == "crate"))
+        .unwrap();
+    assert_eq!(std::fs::read(&staged).unwrap(), source.payload);
+    (plan, source, options, approval, staged)
+}
+// Recreate the full-length receipt left by 3951688 after a successful rename.
+// This keeps recovery from existing workspaces covered even after new completions
+// start clearing their offsets.
+fn stale_staged_receipt(output: &std::path::Path, staged: &std::path::Path, bytes: u64) {
+    use sha2::{Digest, Sha256};
+    let path = output.join(".download/state.json");
+    let mut state: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    state["offsets"][staged.file_stem().unwrap().to_str().unwrap()] = json!(bytes);
+    let canonical = format!(
+        r#"{{"schema":{},"plan_id":{},"approved_id":{},"phase":{},"transferred_bytes":{},"state_sha256":"","offsets":{}}}"#,
+        state["schema"],
+        state["plan_id"],
+        state["approved_id"],
+        state["phase"],
+        state["transferred_bytes"],
+        state["offsets"]
+    );
+    state["state_sha256"] = json!(hex::encode(Sha256::digest(canonical.as_bytes())));
+    std::fs::write(path, serde_json::to_vec(&state).unwrap()).unwrap();
+}
+fn durable_staged_offset(output: &std::path::Path, staged: &std::path::Path) -> u64 {
+    let state: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(output.join(".download/state.json")).unwrap())
+            .unwrap();
+    state["offsets"][staged.file_stem().unwrap().to_str().unwrap()]
+        .as_u64()
+        .unwrap_or(0)
+}
+#[test]
+fn corrupt_staged_crate_redownloads_on_resume() {
+    let dir = tempfile::tempdir().unwrap();
+    let (plan, source, mut options, approval, staged) = paused_after_staging(dir.path());
+    std::fs::write(&staged, b"corrupt").unwrap();
+    options.resume = true;
+    let report = mirror::fetch(&plan, &source, &options, &approval).unwrap();
+    assert_eq!(source.calls.load(Ordering::SeqCst), 2);
+    assert_eq!(report.transferred_bytes, 7);
+    assert_eq!(report.total_transferred_bytes, 14);
+    assert_eq!(report.reused_bytes, 0);
+    assert_eq!(durable_staged_offset(&options.output, &staged), 0);
+    mirror::Inventory::load(&report.mirror).unwrap();
+    assert_eq!(
+        std::fs::read(report.mirror.join("cargo/crates/x/x-1.0.0.crate")).unwrap(),
+        source.payload
+    );
+}
+#[test]
+fn staged_reset_crash_child() {
+    use rust_mirror::events::{Control, Event, EventKind, Observer};
+    let Some(root) = std::env::var_os("RUST_MIRROR_STAGED_RESET_CHILD") else {
+        return;
+    };
+    let root = std::path::PathBuf::from(root);
+    struct BlockAfterReset(std::path::PathBuf);
+    impl Observer for BlockAfterReset {
+        fn observe(&self, event: &Event) -> std::io::Result<()> {
+            if matches!(&event.kind, EventKind::Artifact { action, .. } if action == "restart") {
+                std::fs::write(&self.0, b"reset-before-delete")?;
+                loop {
+                    std::thread::park();
+                }
+            }
+            Ok(())
+        }
+    }
+    let plan = FrozenPlan::load(&root.join("run/plan.json")).unwrap();
+    let (_, source) = payload_fixture();
+    let control = Control::new(
+        std::sync::Arc::new(BlockAfterReset(root.join("ready"))),
+        Default::default(),
+    );
+    let _ = mirror::fetch_with_control(
+        &plan,
+        &source,
+        &mirror::FetchOptions {
+            output: root.join("run"),
+            resume: true,
+            previous: None,
+        },
+        &mirror::Approval {
+            plan_id: plan.plan_id.clone(),
+        },
+        &control,
+    );
+    panic!("expected parent termination after durable reset");
+}
+#[test]
+fn killed_after_staged_offset_reset_before_delete_recovers() {
+    let dir = tempfile::tempdir().unwrap();
+    let (plan, source, mut options, approval, staged) = paused_after_staging(dir.path());
+    stale_staged_receipt(&options.output, &staged, source.payload.len() as u64);
+    std::fs::write(&staged, b"corrupt").unwrap();
+    let mut child = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", "staged_reset_crash_child", "--nocapture"])
+        .env("RUST_MIRROR_STAGED_RESET_CHILD", dir.path())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while !dir.path().join("ready").exists() && std::time::Instant::now() < deadline {
+        if child.try_wait().unwrap().is_some() {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    }
+    let ready = dir.path().join("ready").exists();
+    let _ = child.kill();
+    child.wait().unwrap();
+    assert!(
+        ready,
+        "child never reached the reset-before-delete boundary"
+    );
+    assert_eq!(std::fs::read(&staged).unwrap(), b"corrupt");
+    assert_eq!(durable_staged_offset(&options.output, &staged), 0);
+    options.resume = true;
+    let report = mirror::fetch(&plan, &source, &options, &approval).unwrap();
+    assert_eq!(source.calls.load(Ordering::SeqCst), 2);
+    assert_eq!(report.total_transferred_bytes, 14);
+    mirror::Inventory::load(&report.mirror).unwrap();
+}
+
+#[test]
+fn retained_features2_drift_is_an_identity_refusal_for_valid_v2_records() {
+    let (catalog, mut source) = payload_fixture();
+    let mut record: serde_json::Value = serde_json::from_slice(&source.metadata).unwrap();
+    record["v"] = json!(2);
+    record["features2"] = json!({"unused": []});
+    source.metadata = [serde_json::to_vec(&record).unwrap(), vec![b'\n']].concat();
+    let first = mirror::plan(&catalog, &source, None, false).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let previous = mirror::fetch(
+        &first,
+        &source,
+        &mirror::FetchOptions {
+            output: dir.path().join("first"),
+            resume: false,
+            previous: None,
+        },
+        &mirror::Approval {
+            plan_id: first.plan_id.clone(),
+        },
+    )
+    .unwrap()
+    .mirror;
+    record["features2"] = json!({"unused": [], "another_unused": []});
+    source.metadata = [serde_json::to_vec(&record).unwrap(), vec![b'\n']].concat();
+    // Both observations are valid independently, with no activated feature change:
+    // only the retained immutable-identity check may refuse this backfill.
+    mirror::plan(&catalog, &source, None, false).unwrap();
+    let error = mirror::plan(&catalog, &source, Some(&previous), false).unwrap_err();
+    assert_eq!(
+        rust_mirror::error_kind(error.as_ref()),
+        rust_mirror::ErrorKind::Integrity
+    );
+}

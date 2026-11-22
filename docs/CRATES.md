@@ -219,6 +219,13 @@ short in-memory budget counter between checkpoints. A kill can leave an uncommit
 tail: resume truncates it to the last persisted offset, rehashes/revalidates as
 before and verifies the complete archive against the frozen checksum. Uncommitted
 bytes discarded after a kill are not included in the persisted transfer counter.
+After a partial is verified and renamed to a staged `.crate`, its partial offset
+is cleared durably. A staged file that later fails verification is re-downloaded:
+reset its receipt to zero durably before deletion, so a kill between reset and
+delete can safely retry. Full-length offsets left by earlier attempts are accepted
+and repaired through this same path. Transfer counters retain already spent bytes
+and charge the replacement download as well. Completed served mirrors remain
+immutable; their corruption is still refused rather than repaired in place.
 Private receipt schema 1 is accepted and migrated to schema 2 (durable offsets);
 older binaries cannot resume schema 2 work. Private state is never published.
 Disk/controller power-loss durability is not proven.
