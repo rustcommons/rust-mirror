@@ -4,6 +4,7 @@ use crate::{resume, SnapshotFile, Transfer};
 use sha2::{Digest, Sha256};
 use std::{
     fs::{File, OpenOptions},
+    io::{Seek, SeekFrom},
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -466,11 +467,16 @@ fn download(row: &VersionRow, source: &dyn CrateSource, shared: &Shared<'_>) -> 
         }
         let operation = if offset > 0 { "resume" } else { "download" };
         events::artifact(&path, operation, offset, row.expected_bytes)?;
+        // Windows append-only handles cannot set_len during checkpointing.
+        // The workspace lock gives this worker exclusive ownership of the file.
+        let mut file = OpenOptions::new()
+            .create(true)
+            .truncate(false)
+            .write(true)
+            .open(&partial)?;
+        file.seek(SeekFrom::Start(offset))?;
         let mut output = Charged {
-            file: OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(&partial)?,
+            file,
             shared,
             count: 0,
             path: path.clone(),
