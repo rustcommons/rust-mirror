@@ -5,8 +5,8 @@
 The owner selected `rust-mirror` for the core tool/CLI and `rust-mirror-gui` for a
 future graphical interface on 2026-11-09. Planned scope is Rust toolchain and crate
 mirroring for offline development, inspired by Panamax. This repository now has an experimental pinned-toolchain CLI/library and a static-host
-publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3/0.5.4/0.6.0 are published;
-see docs/evals/2026-11-21-publication-0.6.0.md.
+publication helper. Versions 0.1.0, documentation-only 0.1.1 and feature releases 0.2.0/0.3.0/0.4.0/0.5.0/0.5.1/0.5.2/0.5.3/0.5.4/0.6.0/0.6.1 are published;
+see docs/evals/2026-11-22-publication-0.6.1.md.
 Describe only demonstrated functionality
 as implemented. Crate mirroring shipped in experimental 0.4.0 with bounded qualification;
 its postpublication record identifies registry, documentation and installed proofs. Other work
@@ -648,6 +648,16 @@ types. Show them in CLI/event presentation under protocol 1's unknown-field rule
 Check the complete public diff against published 0.6.0 using a locally installed,
 exact-version, `--locked` cargo-semver-checks tool; require no major changes. Do not
 add this tool to project dependencies or CI.
+
+Published 2026-11-22. [Trusted publishing 44992707987](https://github.com/rustcommons/rust-mirror/actions/runs/44992707987)
+first refused the premature tag because main CI was unfinished; the unchanged-tag
+second attempt passed. The [publication record](docs/evals/2026-11-22-publication-0.6.1.md)
+records every phase 2 job's first real behavior: build/sign before owner approval,
+compile-free publish after approval, draft-first nine-asset release, registry/docs.rs/
+fresh installation and GNU/musl/Windows public verification. The independent audit
+checked eight provenance subjects, all six SBOM bindings and bundle/store equality.
+Preserve the gate refusal and immutable source/assets; the later inherited `url`
+advisory seen in maintenance is not waived by successful publication.
 
 ## User-facing documentation
 

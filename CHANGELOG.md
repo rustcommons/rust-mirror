@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Repository
+
+- Record the completed 0.6.1 publication and first real phase 2 pipeline run,
+  including its initial CI gate refusal and public artifact verification.
+
 ## [0.6.1] - 2026-11-22
 
 ### Fixed
