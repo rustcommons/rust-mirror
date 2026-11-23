@@ -4,6 +4,10 @@
 
 ### Repository
 
+- Include results and scenario context in sync test assertion failures to help
+  diagnose the intermittent incomplete-assembly resume failure tracked in
+  [#85](https://github.com/rustcommons/rust-mirror/issues/85); behavior is unchanged.
+
 - Track versioned top-crate, tricky and real-lock regression corpora with frozen
   replay, explicit upstream/regression classification, CI-only Cargo conformance,
   weekly reports and a corpus release gate; refreshes require reviewed PRs.
