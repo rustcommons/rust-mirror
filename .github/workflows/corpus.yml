@@ -1,0 +1,94 @@
+name: Tracked crate corpus
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'scripts/corpus.py'
+      - 'scripts/corpus_transport.py'
+      - 'scripts/check_crates_phase0.py'
+      - 'scripts/crates_phase0_fixtures.py'
+      - 'scripts/prove_crates_https.py'
+      - 'tests/crates_mirror.rs'
+      - 'tests/corpus/**'
+      - 'tests/test_corpus.py'
+      - '.github/workflows/corpus.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  corpus:
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Build checkout CLI and test guards
+        run: |
+          cargo build --locked --bin rust-mirror
+          cargo test --locked --test crates_mirror --no-run
+          python3 -m unittest discover -s tests -p test_corpus.py
+      - name: Plan corpus and compare with real Cargo (PR subset; full weekly/dispatch)
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          args=()
+          if [ "$EVENT" = pull_request ]; then args+=(--fast); fi
+          python3 scripts/corpus.py run --binary target/debug/rust-mirror --output "$RUNNER_TEMP/corpus" --oracle "${args[@]}"
+      - name: Save JSON, summary, metadata deltas, Cargo locks/logs and proposed baseline PR
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: crate-corpus-report
+          path: |
+            ${{ runner.temp }}/corpus/report.json
+            ${{ runner.temp }}/corpus/summary.md
+            ${{ runner.temp }}/corpus/baseline-update.md
+            ${{ runner.temp }}/corpus/baseline.patch
+            ${{ runner.temp }}/corpus/proposed-baseline
+            ${{ runner.temp }}/corpus/**/*.log
+            ${{ runner.temp }}/corpus/**/cargo-*/Cargo.lock
+          if-no-files-found: warn
+          retention-days: 30
+  tracking-issue:
+    needs: corpus
+    if: always() && github.event_name == 'schedule' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: crate-corpus-tracking-issue
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          name: crate-corpus-report
+          path: ${{ runner.temp }}/report
+      - name: Maintain one weekly tracking issue; close when clean
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/corpus.py track --repository "$REPOSITORY" --report "$RUNNER_TEMP/report/report.json" --summary "$RUNNER_TEMP/report/summary.md"

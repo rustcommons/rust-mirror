@@ -1,0 +1,406 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_line_sha256": {
+      "root@1.0.0": "44ea2c6b2465fe21783331271d4de34862cf65136591ce1ba28de02b430111b1",
+      "sys-new@1.0.0": "6e14bd7ea777b9c227be93ccd5ba551c443a4c7e837b69ed1113c6e3920c4560",
+      "sys-old@1.0.0": "423bc3efeb56740de6c35c42e17ba88a4a20a33e2963e97b0546197536ac3ac7",
+      "wrapper@1.0.0": "a1c583a55abd6be7faeac2ce5c92422d9011bc0f6553249381ad66e09a8b65d5",
+      "wrapper@1.1.0": "546d5a45cf9b56a7f60a1030699672f8e0d8a4a4e8428f3d51aebe7274c31768"
+    },
+    "index_warnings": [],
+    "known_archive_bytes": 0,
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    ],
+    "roots": [
+      {
+        "profile": {
+          "default_features": true,
+          "features": [],
+          "name": "root",
+          "version": "1.0.0"
+        },
+        "resolved_versions": [
+          "root@1.0.0",
+          "sys-new@1.0.0",
+          "sys-old@1.0.0",
+          "wrapper@1.0.0",
+          "wrapper@1.1.0"
+        ]
+      }
+    ],
+    "selected_rows": {
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "wrapper",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "sys-old",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "root",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "sys-new@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {},
+        "links": "native",
+        "name": "sys-new",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "sys-old@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {},
+        "links": "native",
+        "name": "sys-old",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "wrapper@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "sys-old",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "wrapper",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "wrapper@1.1.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "sys-new",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "wrapper",
+        "vers": "1.1.0",
+        "yanked": false
+      }
+    },
+    "status": "ok",
+    "unknown_archives": 5,
+    "version_details": {
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "root",
+        "primary_reason": {
+          "alias": "root",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": null,
+          "requirement": "=1.0.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "root",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "root",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [
+          "r0000"
+        ],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "sys-new@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "sys-new",
+        "primary_reason": {
+          "alias": "sys-new",
+          "conservative": true,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "wrapper@1.1.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "sys-new",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "wrapper@1.1.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "sys-old@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "sys-old",
+        "primary_reason": {
+          "alias": "sys-old",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "sys-old",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "sys-old",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "wrapper@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "wrapper",
+        "primary_reason": {
+          "alias": "wrapper",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "wrapper",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 1,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "wrapper@1.1.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "wrapper",
+        "primary_reason": {
+          "alias": "wrapper",
+          "conservative": true,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "wrapper",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.1.0",
+        "yanked": false
+      }
+    },
+    "version_union": [
+      "root@1.0.0",
+      "sys-new@1.0.0",
+      "sys-old@1.0.0",
+      "wrapper@1.0.0",
+      "wrapper@1.1.0"
+    ],
+    "warnings": [
+      "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+      "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+    ]
+  },
+  "oracle_native_only": [
+    {
+      "cargo_versions": [
+        "root@1.0.0",
+        "sys-old@1.0.0",
+        "wrapper@1.0.0"
+      ],
+      "filtered_versions": [
+        "root@1.0.0",
+        "sys-old@1.0.0",
+        "wrapper@1.0.0"
+      ],
+      "native_only": [
+        "sys-new@1.0.0",
+        "wrapper@1.1.0"
+      ],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "schema": 1,
+  "source": {
+    "cargo_baseline_run": 45112301249,
+    "case": "synthetic-links-backtrack",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}

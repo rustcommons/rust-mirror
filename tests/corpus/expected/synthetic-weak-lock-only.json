@@ -1,0 +1,309 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_line_sha256": {
+      "actual@1.0.0": "f930152c0f956376f33058935dab74599b04fb31b43e305ae9c7315449c1c050",
+      "leaf@1.0.0": "377b22114867dd8e25e7b0f6f8bcf6e9e9d0113b458c238d48015575d92409e8",
+      "root@1.0.0": "9e6b3e4fc043e3047dea27359256eeb1377d3fb84b3b3a823f3daaf1ed47d689"
+    },
+    "index_warnings": [],
+    "known_archive_bytes": 0,
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    ],
+    "roots": [
+      {
+        "profile": {
+          "default_features": true,
+          "features": [],
+          "name": "root",
+          "version": "1.0.0"
+        },
+        "resolved_versions": [
+          "actual@1.0.0",
+          "leaf@1.0.0",
+          "root@1.0.0"
+        ]
+      }
+    ],
+    "selected_rows": {
+      "actual@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "leaf",
+            "optional": true,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {
+          "forward": [
+            "dep:leaf"
+          ]
+        },
+        "name": "actual",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "leaf@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {},
+        "name": "leaf",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "alias",
+            "optional": true,
+            "package": "actual",
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "weak"
+          ],
+          "weak": [
+            "alias?/forward"
+          ]
+        },
+        "features2": {
+          "activate": [
+            "dep:alias"
+          ]
+        },
+        "name": "root",
+        "v": 2,
+        "vers": "1.0.0",
+        "yanked": false
+      }
+    },
+    "status": "ok",
+    "unknown_archives": 3,
+    "version_details": {
+      "actual@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "actual",
+        "primary_reason": {
+          "alias": "alias",
+          "conservative": false,
+          "default_features": false,
+          "features": [
+            "forward"
+          ],
+          "lock_only": true,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "alias",
+            "conservative": false,
+            "default_features": false,
+            "features": [
+              "forward"
+            ],
+            "lock_only": true,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "alias",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "forward"
+            ],
+            "lock_only": true,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "leaf@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "leaf",
+        "primary_reason": {
+          "alias": "leaf",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": true,
+          "parent": "actual@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "leaf",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": true,
+            "parent": "actual@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "leaf",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": true,
+            "parent": "actual@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "root",
+        "primary_reason": {
+          "alias": "root",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": null,
+          "requirement": "=1.0.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "root",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "root",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [
+          "r0000"
+        ],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      }
+    },
+    "version_union": [
+      "actual@1.0.0",
+      "leaf@1.0.0",
+      "root@1.0.0"
+    ],
+    "warnings": [
+      "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+      "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+    ]
+  },
+  "oracle_native_only": [
+    {
+      "cargo_versions": [
+        "actual@1.0.0",
+        "leaf@1.0.0",
+        "root@1.0.0"
+      ],
+      "filtered_versions": [
+        "actual@1.0.0",
+        "leaf@1.0.0",
+        "root@1.0.0"
+      ],
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "schema": 1,
+  "source": {
+    "cargo_baseline_run": 45112301249,
+    "case": "synthetic-weak-lock-only",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}

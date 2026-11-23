@@ -1,0 +1,615 @@
+{
+  "schema": 1,
+  "created_at": "2026-11-23",
+  "source": {
+    "fixture": "tests/fixtures/crates-top100-20261113.json",
+    "fixture_sha256": "48a5615472301b546df3d874881161adca369f7cc55b37e9e17eb5954d4486b1",
+    "run": 43380261336,
+    "native_versions": 186,
+    "cargo_roots": 100,
+    "measured_archive_bytes": 45125358,
+    "index_bundle_sha256": "b4dd4feac68b02e4e36c35d12fdc6696f4a33242005ae34d47de643ab1713107"
+  },
+  "roots": [
+    {
+      "name": "hashbrown",
+      "version": "0.17.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "syn",
+      "version": "3.0.10",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "getrandom",
+      "version": "0.4.3",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "bitflags",
+      "version": "2.13.2",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "rand_core",
+      "version": "0.10.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "rand",
+      "version": "0.10.3",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "libc",
+      "version": "0.2.191",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "base64",
+      "version": "0.23.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "quote",
+      "version": "1.0.47",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "proc-macro2",
+      "version": "1.0.107",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows-sys",
+      "version": "0.61.2",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "indexmap",
+      "version": "2.14.2",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "thiserror-impl",
+      "version": "2.0.21",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "thiserror",
+      "version": "2.0.21",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "itertools",
+      "version": "0.15.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "cfg-if",
+      "version": "1.0.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "memchr",
+      "version": "2.8.3",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "regex-syntax",
+      "version": "0.8.11",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "serde",
+      "version": "1.0.229",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "unicode-ident",
+      "version": "1.0.27",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "rand_chacha",
+      "version": "0.10.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "itoa",
+      "version": "1.0.19",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "serde_derive",
+      "version": "1.0.229",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "serde_json",
+      "version": "1.0.154",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "heck",
+      "version": "0.5.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "log",
+      "version": "0.4.35",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "once_cell",
+      "version": "1.21.4",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "cc",
+      "version": "1.11.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "regex-automata",
+      "version": "0.4.18",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "socket2",
+      "version": "0.6.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "smallvec",
+      "version": "1.16.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "rustix",
+      "version": "1.1.6",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "regex",
+      "version": "1.13.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "aho-corasick",
+      "version": "1.1.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "digest",
+      "version": "0.11.3",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "block-buffer",
+      "version": "0.12.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "ryu",
+      "version": "1.0.23",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "clap",
+      "version": "4.6.7",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "linux-raw-sys",
+      "version": "0.12.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "parking_lot_core",
+      "version": "0.10.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_x86_64_msvc",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "cpufeatures",
+      "version": "0.3.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "parking_lot",
+      "version": "0.13.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "bytes",
+      "version": "1.12.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "strsim",
+      "version": "0.11.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "mio",
+      "version": "1.2.4",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "pin-project-lite",
+      "version": "0.2.17",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "http",
+      "version": "1.5.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_x86_64_gnu",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_aarch64_msvc",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows-targets",
+      "version": "0.53.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_i686_msvc",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_i686_gnu",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "version_check",
+      "version": "0.9.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.19",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "either",
+      "version": "1.19.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "sha2",
+      "version": "0.11.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "semver",
+      "version": "1.0.28",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "tokio",
+      "version": "1.54.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_aarch64_gnullvm",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "windows_x86_64_gnullvm",
+      "version": "0.53.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "lock_api",
+      "version": "0.5.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "lazy_static",
+      "version": "1.5.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "winnow",
+      "version": "1.0.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "anyhow",
+      "version": "1.0.104",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "crypto-common",
+      "version": "0.2.2",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "idna",
+      "version": "1.1.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "futures-core",
+      "version": "0.3.34",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "zerocopy",
+      "version": "0.8.63",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "scopeguard",
+      "version": "1.2.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "toml",
+      "version": "1.2.1+spec-1.1.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "slab",
+      "version": "0.4.12",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "futures-util",
+      "version": "0.3.34",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "futures-task",
+      "version": "0.3.34",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "hyper",
+      "version": "1.12.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "fastrand",
+      "version": "2.5.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "rustls",
+      "version": "0.23.46",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "typenum",
+      "version": "1.20.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "miniz_oxide",
+      "version": "0.9.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "crossbeam-utils",
+      "version": "0.8.23",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "percent-encoding",
+      "version": "2.3.2",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "generic-array",
+      "version": "1.4.5",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "shlex",
+      "version": "2.0.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "http-body",
+      "version": "1.1.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "time",
+      "version": "0.3.55",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "futures-sink",
+      "version": "0.3.34",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "futures-channel",
+      "version": "0.3.34",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "ppv-lite86",
+      "version": "0.2.21",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "url",
+      "version": "2.5.8",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "tracing-core",
+      "version": "0.1.36",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "equivalent",
+      "version": "1.0.3",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "clap_lex",
+      "version": "1.1.1",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "errno",
+      "version": "0.3.15",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "tracing",
+      "version": "0.1.44",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "toml_datetime",
+      "version": "1.1.3+spec-1.1.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "toml_edit",
+      "version": "0.25.19+spec-1.1.0",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "futures-io",
+      "version": "0.3.34",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "rustc-hash",
+      "version": "2.1.3",
+      "features": [],
+      "default_features": true
+    },
+    {
+      "name": "tempfile",
+      "version": "3.27.0",
+      "features": [],
+      "default_features": true
+    }
+  ]
+}

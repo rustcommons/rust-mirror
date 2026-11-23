@@ -1,0 +1,39 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_warnings": [],
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    ],
+    "refusal_kind": "invalid",
+    "roots": [],
+    "selected_rows": {},
+    "status": "refused",
+    "version_union": []
+  },
+  "oracle_native_only": [
+    {
+      "cargo_versions": [],
+      "filtered_versions": [],
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "schema": 1,
+  "source": {
+    "cargo_baseline_run": 45112301249,
+    "case": "synthetic-yanked-pin",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}

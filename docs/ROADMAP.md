@@ -31,6 +31,17 @@ the RSA advisory. No upstream issue or PR was opened. See the
 The preserved branch has no feature PR; 0.7.0 preparation remains separate after
 feature review and merge.
 
+## Maintained crate corpus
+
+Owner-authorized 2026-11-23: [tracked corpora](CORPUS.md) replace one-time-only
+qualification as the regression workflow. Versioned top roots, named tricky cases
+and pinned real project locks have reviewed expected results and frozen sparse
+replay; live metadata differences are classified explicitly and checked against
+CI-only Cargo oracles. Weekly/dispatch runs are full, PRs sample Cargo roots, and
+only the weekly job maintains the single tracking issue. Refreshes/baselines need
+reviewed PRs and release heads require a passing corpus gate. No arbitrary-project,
+all-feature or universal upstream-compatibility guarantee is implied.
+
 ## Curated crate mirroring: proposed phases
 
 The coordinator accepted Phase 0 and normal-merged PRs #30/#31. The owner approved

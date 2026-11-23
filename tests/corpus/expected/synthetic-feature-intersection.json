@@ -1,0 +1,495 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_line_sha256": {
+      "left@1.0.0": "831e24c3994843067908a0ac3be67456fcdfe691e2e5eaeb32191564edfbece1",
+      "right@1.0.0": "d98dce0e4ce1344972220e0624bf1dd6642a6662a0ad49bda9bc69a28bd45af8",
+      "root@1.0.0": "2b37bc9ce4c76195a9da036f2b6c79801208322f8a9c3a2761ea2022469a3b19",
+      "x@1.1.0": "f0aaf9d528454abde5a6e006713ab75e1eaf4052063eecb42b051dd5c0632287",
+      "x@1.2.0": "0363ce9cf19f50f5a07106cf612d51cac9ae2b1ced2647e9ea5b5a3b5d19dda4",
+      "x@1.3.0": "6c2b18ce64d88f5fbdb40a379a5efcaf3937f54283afe38b8518430787b4b6b4"
+    },
+    "index_warnings": [],
+    "known_archive_bytes": 0,
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    ],
+    "roots": [
+      {
+        "profile": {
+          "default_features": true,
+          "features": [],
+          "name": "root",
+          "version": "1.0.0"
+        },
+        "resolved_versions": [
+          "left@1.0.0",
+          "right@1.0.0",
+          "root@1.0.0",
+          "x@1.1.0",
+          "x@1.2.0",
+          "x@1.3.0"
+        ]
+      }
+    ],
+    "selected_rows": {
+      "left@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "a"
+            ],
+            "kind": "normal",
+            "name": "x",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "left",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "right@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "b"
+            ],
+            "kind": "normal",
+            "name": "x",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "right",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "left",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "right",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "root",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "x@1.1.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {
+          "a": [],
+          "b": []
+        },
+        "name": "x",
+        "vers": "1.1.0",
+        "yanked": false
+      },
+      "x@1.2.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {
+          "b": []
+        },
+        "name": "x",
+        "vers": "1.2.0",
+        "yanked": false
+      },
+      "x@1.3.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {
+          "a": []
+        },
+        "name": "x",
+        "vers": "1.3.0",
+        "yanked": false
+      }
+    },
+    "status": "ok",
+    "unknown_archives": 6,
+    "version_details": {
+      "left@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "left",
+        "primary_reason": {
+          "alias": "left",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "left",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "left",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "right@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "right",
+        "primary_reason": {
+          "alias": "right",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "right",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "right",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "root",
+        "primary_reason": {
+          "alias": "root",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": null,
+          "requirement": "=1.0.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "root",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "root",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [
+          "r0000"
+        ],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "x@1.1.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "x",
+        "primary_reason": {
+          "alias": "x",
+          "conservative": false,
+          "default_features": true,
+          "features": [
+            "a",
+            "b"
+          ],
+          "lock_only": false,
+          "parent": "left@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "x",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "a",
+              "b"
+            ],
+            "lock_only": false,
+            "parent": "left@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 2,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.1.0",
+        "yanked": false
+      },
+      "x@1.2.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "x",
+        "primary_reason": {
+          "alias": "x",
+          "conservative": true,
+          "default_features": true,
+          "features": [
+            "b"
+          ],
+          "lock_only": false,
+          "parent": "right@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "x",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "b"
+            ],
+            "lock_only": false,
+            "parent": "right@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 1,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.2.0",
+        "yanked": false
+      },
+      "x@1.3.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "x",
+        "primary_reason": {
+          "alias": "x",
+          "conservative": true,
+          "default_features": true,
+          "features": [
+            "a"
+          ],
+          "lock_only": false,
+          "parent": "left@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "x",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "a"
+            ],
+            "lock_only": false,
+            "parent": "left@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.3.0",
+        "yanked": false
+      }
+    },
+    "version_union": [
+      "left@1.0.0",
+      "right@1.0.0",
+      "root@1.0.0",
+      "x@1.1.0",
+      "x@1.2.0",
+      "x@1.3.0"
+    ],
+    "warnings": [
+      "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+      "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+    ]
+  },
+  "oracle_native_only": [
+    {
+      "cargo_versions": [
+        "left@1.0.0",
+        "right@1.0.0",
+        "root@1.0.0",
+        "x@1.1.0"
+      ],
+      "filtered_versions": [
+        "left@1.0.0",
+        "right@1.0.0",
+        "root@1.0.0",
+        "x@1.1.0"
+      ],
+      "native_only": [
+        "x@1.2.0",
+        "x@1.3.0"
+      ],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "schema": 1,
+  "source": {
+    "cargo_baseline_run": 45112301249,
+    "case": "synthetic-feature-intersection",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}
