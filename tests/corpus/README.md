@@ -37,3 +37,8 @@ Both bundles use deterministic gzip framing. They contain metadata only, never
 crate archives, credentials, Cargo homes or certificates. Expected-file metadata
 names the product source commit used to build the binary. Corpus refresh and
 baseline proposals require reviewed PRs and full CI oracle proof; never auto-merge.
+
+Expected documents also retain reviewed per-root native-only allowances and actual
+full/filtered Cargo selections from run 45112301249. A changed root needs exact
+before/after Cargo equality to earn an upstream exemption; local/unsampled likely
+upstream changes fail as `upstream_needs_review` pending a full run.

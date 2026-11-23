@@ -24,6 +24,8 @@ all synthetic cases, selected live cases and one lock project; CI samples eight
 Cargo root profiles per top-100 plan. Full weekly/manual CI checks all roots and
 all lock projects. CI adds `--oracle`, which refuses outside GitHub Actions.
 Local reports qualify planning only; they do not substitute for CI conformance.
+A likely upstream resolver change without Cargo proof fails as
+`upstream_needs_review`; unchanged local cases can still be clean.
 Python uses only its standard library. The loopback TLS fixture uses the existing
 OpenSSL certificate helper without installing roots into the machine trust store.
 
@@ -78,24 +80,35 @@ metadata changed concurrently.
 - **Our regression:** current output differs on frozen inputs, output changes with
   unchanged inputs, a named edge-case expectation breaks, or an unexplained refusal
   appears. Missing expected cases fail rather than teaching the runner new behavior.
-- **Upstream (report, not fail):** the frozen control and Cargo conformance pass,
-  and the input diff explains the output. Every added, removed or changed selected
-  version (including per-root membership, features and reasons) must belong to a
-  crate with a new version, yank or identity change in its own index. A change to
-  another crate, formatting, or nonidentity backfill cannot excuse resolver changes.
-  Exact new line bytes/nonidentity provenance can be reported separately when they
-  match upstream; they never excuse selection changes or invented output. Existing
-  identity mutation/removal remains a conservative hard failure. A new refusal
-  still requires a demonstrably yanked declared root as well as explained selections.
+- **Upstream (report, not fail):** frozen replay passes, and for every root whose
+  resolved output changes, Cargo's selections equal the native selection exactly
+  both before (recorded in the expected baseline) and after (this run). At least
+  one crate in that root's old/new resolved closure must have a real index change:
+  a new version, yank or identity-field change. The per-root over-selection guard
+  must also pass. This permits transitive shifts: a new serde can pin a different
+  existing syn even when syn's own index is unchanged. Changes outside the root's
+  resolved closure and formatting-only changes cannot excuse resolver differences.
+  Direct existing identity mutation/removal still fails conservatively. Exact
+  nonidentity line provenance is reported separately; it never excuses a resolver
+  change or invented output. A new refusal additionally needs a declared-root yank.
+- **Upstream needs review (fail):** `upstream_needs_review` means **likely upstream;
+  confirm with a full run**. A changed root has a meaningful closure change but
+  lacks before/after Cargo proof, as on local runs or outside the PR fast subset.
+  Missing proof cannot be inferred from native versions. This is distinct from a
+  demonstrated regression, fails the workflow/release gate, creates/updates the
+  weekly tracking issue, and does not produce an accepted baseline proposal.
 - **Over-selection regression:** each CI root's native-only version set is compared
   with its committed `oracle_native_only` allowance. Any new extra version fails,
   even when Cargo remains a subset and upstream metadata changed. Allowances come
   from the reviewed full run 45112301249, not the current live output; proposals
-  preserve them. All live cases have zero extras. Four synthetic cases intentionally
+  preserve the allowances. Each baseline row also stores actual full/filtered
+  `cargo_versions`/`filtered_versions` from that run. Proven upstream proposals
+  update Cargo selections while preserving reviewed native-only allowances. All live cases have zero extras. Four synthetic cases intentionally
   retain finite alternate-version coverage (2/2/2/1 extras), recorded explicitly.
   Missing allowances fail CI. Local runs without Cargo cannot qualify this guard.
-- **Conformance mismatch:** Cargo/full/filtered coverage, refusal or locked checksum
-  results disagree, regardless of concurrent upstream changes. Always fail.
+- **Cargo disagreement (regression):** Cargo/full/filtered coverage, refusal or
+  locked checksum results disagree, or a changed root lacks exact before/after
+  equality despite available proof. Fail even with concurrent upstream changes.
 - **Infrastructure failure:** a timeout, missing output or transport/format error
   prevents qualification. Fail and report it; never propose it as an upstream update.
 
@@ -145,6 +158,8 @@ and closure additionally require the exact bot author, label and managed marker,
 and exclude PRs. Human-created lookalikes, including the same title/marker, are
 never edited or closed. Multiple owned matches refuse rather than creating another
 issue; title alone is never ownership.
+The issue distinguishes `upstream_needs_review` (likely upstream; confirm with a
+full run, still failing) from confirmed upstream changes and regressions.
 Manual dispatch and PR jobs never write issues. There is no automatic baseline PR
 or merge; the tracking issue points to report/proposal artifacts.
 
@@ -153,7 +168,11 @@ clean or classified upstream, or a full dispatch on the exact release commit mus
 pass. A weekly qualifies only on the release commit itself or when no watched
 path changed from its ancestor commit to the release commit. The gate reads the
 actual PR path filters in `corpus.yml` and uses local Git ancestry/path comparison,
-without the API changed-file limit. Relevant changes, absent history or an
+without the API changed-file limit. The shared list covers all `src/**`, root
+Cargo files, the corpus runner/transport and imported Python helpers, the native
+guard test, corpus data, corpus unit tests and the workflow itself. In particular,
+a `src/cli/crates.rs`-only or fixture-helper-only change invalidates an old weekly.
+Relevant changes, absent history or an
 unsupported filter spelling require an exact-head dispatch. The tag gate uses:
 
 ```sh

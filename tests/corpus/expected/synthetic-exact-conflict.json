@@ -19,6 +19,8 @@
   },
   "oracle_native_only": [
     {
+      "cargo_versions": [],
+      "filtered_versions": [],
       "native_only": [],
       "profile": {
         "default_features": true,

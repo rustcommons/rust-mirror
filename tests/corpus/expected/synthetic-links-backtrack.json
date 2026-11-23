@@ -375,6 +375,16 @@
   },
   "oracle_native_only": [
     {
+      "cargo_versions": [
+        "root@1.0.0",
+        "sys-old@1.0.0",
+        "wrapper@1.0.0"
+      ],
+      "filtered_versions": [
+        "root@1.0.0",
+        "sys-old@1.0.0",
+        "wrapper@1.0.0"
+      ],
       "native_only": [
         "sys-new@1.0.0",
         "wrapper@1.1.0"

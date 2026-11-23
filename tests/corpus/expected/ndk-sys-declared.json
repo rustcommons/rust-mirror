@@ -1041,6 +1041,26 @@
   },
   "oracle_native_only": [
     {
+      "cargo_versions": [
+        "jni-sys-macros@0.4.1",
+        "jni-sys@0.3.1",
+        "jni-sys@0.4.1",
+        "ndk-sys@0.6.0+11769913",
+        "proc-macro2@1.0.107",
+        "quote@1.0.47",
+        "syn@2.0.119",
+        "unicode-ident@1.0.27"
+      ],
+      "filtered_versions": [
+        "jni-sys-macros@0.4.1",
+        "jni-sys@0.3.1",
+        "jni-sys@0.4.1",
+        "ndk-sys@0.6.0+11769913",
+        "proc-macro2@1.0.107",
+        "quote@1.0.47",
+        "syn@2.0.119",
+        "unicode-ident@1.0.27"
+      ],
       "native_only": [],
       "profile": {
         "default_features": true,

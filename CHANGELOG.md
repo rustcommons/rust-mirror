@@ -7,8 +7,9 @@
 - Track versioned top-crate, tricky and real-lock regression corpora with frozen
   replay, explicit upstream/regression classification, CI-only Cargo conformance,
   weekly reports and a corpus release gate; refreshes require reviewed PRs.
-  Tie upstream exemptions to the affected selections, reject per-root Cargo
-  over-selection growth, require weekly qualification to cover release changes,
+  Require exact before/after Cargo agreement for transitive upstream exemptions,
+  fail unconfirmed roots as upstream-needs-review, reject per-root over-selection
+  growth, require weekly qualification to cover all executed source/helpers,
   and restrict tracking-issue updates to labeled, marked bot-owned issues.
 
 - Record the OpenPGP dependency/key approvals and preserved prototype; integration

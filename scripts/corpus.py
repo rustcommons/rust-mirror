@@ -164,9 +164,66 @@ def over_selection_growth(expected, observed):
     return failures
 
 
+def proposal_oracle(document, current):
+    result = []
+    for baseline in document.get("oracle_native_only", []) if document else []:
+        row = dict(baseline)
+        match = matching_oracle(current, baseline["profile"])
+        if match is not None:
+            for key in ("cargo_versions", "filtered_versions"):
+                row[key] = match[key]
+        result.append(row)
+    return result
+
+
+def root_selections(value):
+    if value.get("roots"):
+        return value["roots"]
+    # Refused plans have profiles but no selected roots. Single-profile minimal
+    # summaries use their union; multi-profile successful plans must have roots.
+    return [dict(profile=p, resolved_versions=value.get("version_union", []) if value["status"] == "ok" else [])
+            for p in value.get("profiles", [])]
+
+
+def matching_oracle(rows, profile):
+    matches = [r for r in rows or [] if all(r["profile"].get(k) == profile.get(k)
+               for k in r["profile"])]
+    return matches[0] if len(matches) == 1 else None
+
+
+def root_upstream_evidence(expected, observed, changed, meaningful, before_oracle, after_oracle):
+    before, after = root_selections(expected), root_selections(observed)
+    if [r["profile"] for r in before] != [r["profile"] for r in after]:
+        return "regression", ["root profiles changed"]
+    missing = []
+    covered = set()
+    for a, b in zip(before, after, strict=True):
+        old, new = set(a["resolved_versions"]), set(b["resolved_versions"])
+        closure = old | new
+        if not changed & closure and expected["status"] == observed["status"]:
+            continue
+        covered |= changed & closure
+        if not {v.split("@", 1)[0] for v in closure} & meaningful:
+            return "regression", [dict(profile=a["profile"], reason="no real index change in this root's resolved closure")]
+        prior = matching_oracle(before_oracle, a["profile"])
+        current = matching_oracle(after_oracle, b["profile"])
+        for row, ids in ((prior, old), (current, new)):
+            if row is not None and "cargo_versions" in row:
+                if (row.get("ok") is False or set(row["cargo_versions"]) != ids or
+                        ("filtered_versions" in row and set(row["filtered_versions"]) != ids)):
+                    return "regression", [dict(profile=a["profile"], reason="Cargo selection does not equal native selection before/after")]
+        if any(row is None or "cargo_versions" not in row for row in (prior, current)):
+            missing.append(a["profile"])
+    if changed - covered:
+        return "regression", ["changed selection is outside all resolved root closures"]
+    if missing:
+        return "upstream_needs_review", ["likely upstream; confirm with a full run", dict(profiles=missing)]
+    return "upstream", []
+
+
 def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True, expected_oracle=None, observed_oracle=None):
     if not oracle_ok:
-        return "conformance_mismatch", ["Cargo/native coverage, refusal or filtered-index check differs"]
+        return "regression", ["Cargo/native coverage, refusal or filtered-index check differs"]
     if observed_oracle is not None:
         growth = over_selection_growth(expected_oracle, observed_oracle)
         if growth:
@@ -187,9 +244,9 @@ def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True,
         return "regression", ["invalid selected-version union or root membership"]
     changed = selection_changes(expected, observed)
     meaningful = meaningful_crates(old_inputs, new_inputs)
-    unexplained = sorted(i for i in changed if i.split("@", 1)[0] not in meaningful)
-    if unexplained:
-        return "regression", [dict(unexplained_selected_versions=unexplained), *details]
+    upstream_label, evidence = root_upstream_evidence(expected, observed, changed, meaningful, expected_oracle, observed_oracle)
+    if upstream_label == "regression":
+        return upstream_label, [*evidence, *details]
     if observed.get("profiles") != expected.get("profiles"):
         return "regression", ["declared profiles changed"]
     if (observed.get("selected_rows") != expected.get("selected_rows") or
@@ -203,7 +260,7 @@ def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True,
         if not roots & yanked:
             return "regression", ["new refusal is not explained by a declared-root yank", *details]
     if expected["status"] == "ok" and observed["status"] != "ok":
-        return "upstream", details
+        return upstream_label, [*evidence, *details]
     # Account for non-selection output too. Only exact provenance and named
     # metadata warnings may vary without a meaningful selection change.
     handled = {"version_union", "roots", "version_details", "selected_rows", "index_line_sha256"}
@@ -223,7 +280,7 @@ def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True,
         handled.add(key)
     if {k:v for k,v in expected.items() if k not in handled} != {k:v for k,v in observed.items() if k not in handled}:
         return "regression", ["output change is not explained by selected versions or exact metadata provenance"]
-    return "upstream", details
+    return upstream_label, [*evidence, *details]
 
 
 def invoke(binary, args, work, label, network=()):
@@ -488,7 +545,7 @@ def run_suite(args):
                     raise ValueError("metadata-only transport violation: " + repr(fixture.archive_requests + fixture.errors))
                 if args.record:
                     expected = observed
-                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed, oracle_native_only=expected_document.get("oracle_native_only") if expected_document else None))
+                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed, oracle_native_only=proposal_oracle(expected_document, cargo if args.oracle else None)))
                     label, difference = "recorded", []
                 else:
                     label, difference = classify(expected, observed, replay, prior_inputs, current_inputs, ok,
@@ -498,7 +555,7 @@ def run_suite(args):
                     if growth:
                         label, difference = "regression", ["per-root Cargo over-selection grew", *growth]
                 if not ok:
-                    label, difference = "conformance_mismatch", ["Cargo oracle differs from native output"]
+                    label, difference = "regression", ["Cargo oracle differs from native output"]
                 if case.get("expected_status") and observed["status"] != case["expected_status"]:
                     label, difference = "regression", ["declared edge-case success/refusal expectation changed"]
                 if case.get("frozen"):
@@ -514,7 +571,7 @@ def run_suite(args):
                 if override is None:
                     observed_live.update(cache.files)
                 if label == "upstream":
-                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed, oracle_native_only=expected_document.get("oracle_native_only") if expected_document else None))
+                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed, oracle_native_only=proposal_oracle(expected_document, cargo if args.oracle else None)))
             except Exception as error:
                 rows.append(dict(id=case["id"], corpus=case["corpus"], classification="infrastructure_failure", error=str(error)))
     guards = []
@@ -529,6 +586,7 @@ def run_suite(args):
             guards.append(dict(test=test, reason=guard["reason"], ok=p.returncode == 0 and "1 passed" in p.stdout))
     failed = any(r["classification"] not in ("clean", "upstream", "recorded") for r in rows) or any(not g["ok"] for g in guards)
     changed = any(r["classification"] == "upstream" for r in rows)
+    needs_review = any(r["classification"] == "upstream_needs_review" for r in rows)
     if observed_live and (changed or args.record):
         save_bundle(work / "proposed-baseline/inputs/baseline.json.gz", baseline_inputs | observed_live)
     report = dict(schema=1, created_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -536,7 +594,7 @@ def run_suite(args):
                   run_id=os.environ.get("GITHUB_RUN_ID"), event=os.environ.get("GITHUB_EVENT_NAME"),
                   corpus_sha256={str(p.relative_to(CORPUS)):digest(p.read_bytes()) for p in sorted(CORPUS.rglob("*")) if p.is_file()},
                   binary_sha256=digest(binary.read_bytes()), fast=args.fast, cargo_oracle=args.oracle,
-                  failed=failed, changed=changed, cases=rows, guards=guards,
+                  failed=failed, changed=changed, upstream_needs_review=needs_review, cases=rows, guards=guards,
                   registry_requests=cache.requests, archive_requests=fixture.archive_requests,
                   frozen_historical_measured_archive_bytes=45125358,
                   limits="Archive sizes are unknown without archive HEAD/GET; sparse-only planning does not measure payload bytes.")
@@ -547,10 +605,11 @@ def run_suite(args):
     for r in rows:
         text.append(f"| {r['id']} | {r['classification']} | {len(r.get('native',{}).get('version_union',[]))} |")
     text += ["", report["limits"], "", "Frozen 2026-11-13 control requires 100 roots and 186 versions.",
+             "", "upstream_needs_review: likely upstream; confirm with a full run. This label fails qualification.",
              "", "Upstream differences have a proposed-baseline artifact; refreshes require a reviewed PR, never auto-merge."]
     (work / "summary.md").write_text("\n".join(text) + "\n")
     (work / "baseline-update.md").write_text("# Proposed baseline-update PR\n\n" +
-        ("Do not update baselines: resolve regression/conformance failures first.\n" if failed else
+        ("Do not update baselines: resolve regressions or unconfirmed upstream differences first; likely upstream changes need a full run.\n" if failed else
          "No baseline update is needed.\n" if not changed and not args.record else
          "Review every metadata delta in report.json. Require a FULL CI validation (without --record) before copying proposed-baseline into tests/corpus and opening a reviewed PR. Fast proposals are incomplete. Never auto-merge.\n"))
     patches=[]
@@ -664,7 +723,8 @@ def track_report(repository, report, summary, api=github_api):
             api("PATCH", repository, "issues/" + str(issue["number"]), {"state": "closed"})
             return "closed"
         return "clean"
-    body = ISSUE_MARKER + "\n" + summary[:55000] + "\n\nFull JSON, Cargo logs and baseline-update proposal are in the workflow artifacts. No automatic baseline merge."
+    review = "likely upstream; confirm with a full run. Unconfirmed roots fail qualification.\n\n" if report.get("upstream_needs_review") else ""
+    body = ISSUE_MARKER + "\n" + review + summary[:55000] + "\n\nFull JSON, Cargo logs and baseline-update proposal are in the workflow artifacts. upstream_needs_review means likely upstream; confirm with a full run, and remains a failing result. No automatic baseline merge."
     if issue:
         prefix = (issue.get("body") or "").split(ISSUE_MARKER, 1)[0]
         api("PATCH", repository, "issues/" + str(issue["number"]), {"state": "open", "body": prefix + body})

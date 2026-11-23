@@ -291,6 +291,16 @@
   },
   "oracle_native_only": [
     {
+      "cargo_versions": [
+        "actual@1.0.0",
+        "leaf@1.0.0",
+        "root@1.0.0"
+      ],
+      "filtered_versions": [
+        "actual@1.0.0",
+        "leaf@1.0.0",
+        "root@1.0.0"
+      ],
       "native_only": [],
       "profile": {
         "default_features": true,

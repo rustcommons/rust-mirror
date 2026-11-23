@@ -52,11 +52,11 @@ class Classification(unittest.TestCase):
                                       inputs={"1/x": encoded() + encoded(vers="1.1.0")}), "regression")
 
     def test_oracle_mismatch_always_fails_even_with_upstream_changes(self):
-        self.assertEqual(self.classify(inputs={"1/x": encoded(rust_version="1.70")}, oracle=False), "conformance_mismatch")
+        self.assertEqual(self.classify(inputs={"1/x": encoded(rust_version="1.70")}, oracle=False), "regression")
 
     def test_declared_root_yank_explains_refusal(self):
-        self.assertEqual(self.classify(observed=dict(self.expected, status="refused"),
-                                      inputs={"1/x": encoded(yanked=True)}), "upstream")
+        self.assertEqual(self.classify(observed=dict(self.expected, status="refused",version_union=[]),
+                                      inputs={"1/x": encoded(yanked=True)}), "upstream_needs_review")
 
     def test_unrelated_new_version_does_not_excuse_refusal(self):
         self.assertEqual(self.classify(observed=dict(self.expected, status="refused"),
@@ -73,7 +73,7 @@ class Classification(unittest.TestCase):
 
     def test_real_new_version_explains_same_crate_selection_change(self):
         observed = dict(self.expected, version_union=["x@1.1.0"])
-        self.assertEqual(self.classify(observed=observed, inputs={"1/x": encoded() + encoded(vers="1.1.0")}), "upstream")
+        self.assertEqual(self.classify(observed=observed, inputs={"1/x": encoded() + encoded(vers="1.1.0")}), "upstream_needs_review")
 
     def test_overselection_growth_is_a_regression_despite_upstream_updates(self):
         new = {"1/x": encoded() + encoded(vers="1.1.0")}
@@ -84,7 +84,7 @@ class Classification(unittest.TestCase):
 
     def test_real_yank_explains_selection_change(self):
         observed=dict(self.expected,version_union=[])
-        self.assertEqual(self.classify(observed=observed,inputs={"1/x":encoded(yanked=True)}),"upstream")
+        self.assertEqual(self.classify(observed=observed,inputs={"1/x":encoded(yanked=True)}),"upstream_needs_review")
 
     def test_backfill_cannot_excuse_resolver_state_change(self):
         self.expected["version_details"]={"x@1.0.0":{"features":[]}}
@@ -112,6 +112,74 @@ class Classification(unittest.TestCase):
     def test_protocol_null_normalization_preserves_false_zero_and_empty(self):
         self.assertEqual(corpus.protocol_value(dict(a=None, b=False, c=0, d=[], e={"x": None})),
                          dict(b=False, c=0, d=[], e={}))
+
+
+class TransitiveUpstream(unittest.TestCase):
+    def setUp(self):
+        self.profile=dict(name="app",version="1.0.0",features=[],default_features=True)
+        before=["app@1.0.0","serde@1.0.0","syn@1.0.7"]
+        after=["app@1.0.0","serde@1.0.1","syn@1.0.8"]
+        def output(ids):
+            return dict(status="ok",profiles=[self.profile],version_union=ids,
+                        roots=[dict(profile=self.profile,resolved_versions=ids)])
+        self.before,self.after=output(before),output(after)
+        serde=encoded(name="serde",deps=[dict(name="syn",req="=1.0.7")])
+        syn=encoded(name="syn",vers="1.0.7")+encoded(name="syn",vers="1.0.8")
+        self.old={"3/a/app":encoded(name="app",deps=[dict(name="serde",req="^1.0")]),"se/rd/serde":serde,"3/s/syn":syn}
+        self.new=dict(self.old,**{"se/rd/serde":serde+encoded(name="serde",vers="1.0.1",deps=[dict(name="syn",req="=1.0.8")])})
+        self.baseline=[dict(profile=self.profile,cargo_versions=before,filtered_versions=before,native_only=[])]
+        self.cargo=[dict(profile=self.profile,cargo_versions=after,filtered_versions=after,native_only=[],ok=True)]
+
+    def classify(self,cargo=True):
+        return corpus.classify(self.before,self.after,self.before,self.old,self.new,True,
+                               self.baseline,self.cargo if cargo else None)
+
+    def test_new_serde_changes_syn_without_syn_index_change_with_exact_cargo(self):
+        self.assertEqual(self.old["3/s/syn"],self.new["3/s/syn"])
+        self.assertEqual(self.classify()[0],"upstream")
+
+    def test_without_cargo_requires_review_and_full_run(self):
+        label,reasons=self.classify(False)
+        self.assertEqual(label,"upstream_needs_review")
+        self.assertIn("likely upstream; confirm with a full run",str(reasons))
+
+    def test_root_outside_fast_subset_requires_review(self):
+        self.cargo=[]
+        self.assertEqual(self.classify()[0],"upstream_needs_review")
+
+    def test_cargo_disagreement_is_regression(self):
+        self.cargo[0]["cargo_versions"]=["app@1.0.0","serde@1.0.1","syn@1.0.7"]
+        self.assertEqual(self.classify()[0],"regression")
+
+    def test_before_cargo_disagreement_is_regression(self):
+        self.baseline[0]["cargo_versions"]=["app@1.0.0"]
+        self.assertEqual(self.classify()[0],"regression")
+
+    def test_filtered_cargo_disagreement_is_regression(self):
+        self.cargo[0]["filtered_versions"]=["app@1.0.0"]
+        self.assertEqual(self.classify()[0],"regression")
+
+    def test_missing_expected_cargo_selection_requires_review(self):
+        del self.baseline[0]["cargo_versions"]
+        self.assertEqual(self.classify()[0],"upstream_needs_review")
+
+    def test_identity_mutation_stays_regression_even_with_exact_cargo(self):
+        self.new["3/s/syn"]=encoded(name="syn",vers="1.0.7",cksum="1"*64)+encoded(name="syn",vers="1.0.8")
+        self.assertEqual(self.classify()[0],"regression")
+
+    def test_proposal_updates_cargo_proof_and_preserves_allowance(self):
+        doc={"oracle_native_only":self.baseline}
+        proposed=corpus.proposal_oracle(doc,self.cargo)
+        self.assertEqual(proposed[0]["cargo_versions"],self.after["version_union"])
+        self.assertEqual(proposed[0]["native_only"],self.baseline[0]["native_only"])
+        self.assertEqual(doc["oracle_native_only"][0]["cargo_versions"],self.before["version_union"])
+
+    def test_unrelated_or_format_only_change_cannot_excuse_transitive_change(self):
+        for new in [dict(self.old,**{"1/y":encoded(name="y")}),
+                    dict(self.old,**{"se/rd/serde":self.old["se/rd/serde"].replace(b": ",b":")})]:
+            self.assertEqual(corpus.classify(self.before,self.after,self.before,self.old,new,True,
+                                           self.baseline,self.cargo)[0],"regression")
+
 
 
 class MetadataCache(unittest.TestCase):
@@ -221,6 +289,12 @@ class TrackingIssue(unittest.TestCase):
         self.assertIn("page=12",api.call_args_list[-2].args[2])
         self.assertEqual(api.call_args.args[2],"issues/99")
 
+    def test_needs_review_issue_wording_remains_failing_and_distinct(self):
+        api=Mock(side_effect=[{},[],{}])
+        corpus.track_report("owner/repo",dict(failed=True,upstream_needs_review=True),"review",api)
+        self.assertIn("likely upstream; confirm with a full run",api.call_args.args[3]["body"])
+        self.assertIn("fail qualification",api.call_args.args[3]["body"])
+
     def test_label_creation_race_rechecks_exact_label(self):
         api=Mock(side_effect=[urllib.error.HTTPError("url",404,"missing",{},None),
             urllib.error.HTTPError("url",422,"exists",{},None),{},[]])
@@ -281,7 +355,8 @@ class ReleaseGate(unittest.TestCase):
             with patch.object(corpus,"REPO",repo):
                 self.assertTrue(corpus.weekly_unchanged(base,docs))
                 self.assertEqual(corpus.watched_paths(),original_paths)
-                for path in ["src/crates/new.rs","tests/corpus/new.json","scripts/corpus_new.py","tests/test_corpus.py","Cargo.lock"]:
+                for path in ["src/cli/crates.rs","src/crates/new.rs","tests/corpus/new.json","scripts/corpus.py","scripts/check_crates_phase0.py","scripts/crates_phase0_fixtures.py",
+                             "scripts/prove_crates_https.py","tests/crates_mirror.rs","tests/test_corpus.py","Cargo.lock"]:
                     previous=git("rev-parse","HEAD")
                     f=repo/path;f.parent.mkdir(parents=True,exist_ok=True);f.write_text("changed")
                     git("add",".");git("commit","-m","relevant")
