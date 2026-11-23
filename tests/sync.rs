@@ -96,7 +96,8 @@ fn interrupted_sync_resumes_saved_cohort_without_live_metadata() {
     let t = tempfile::tempdir().unwrap();
     let out = t.path().join("run");
     let cfg = config();
-    assert!(run(&cfg, None, &out, false, &source(2, true)).is_err());
+    run(&cfg, None, &out, false, &source(2, true))
+        .expect_err("setup sync should fail at the simulated interrupted transfer");
     assert!(!out.join("mirror").exists());
     let resumed = source(0, false);
     let result = run(&cfg, None, &out, true, &resumed).unwrap();
@@ -113,11 +114,13 @@ fn changed_config_previous_or_plan_refuse_resume_before_payloads() {
     let t = tempfile::tempdir().unwrap();
     let out = t.path().join("run");
     let cfg = config();
-    assert!(run(&cfg, None, &out, false, &source(2, true)).is_err());
+    run(&cfg, None, &out, false, &source(2, true))
+        .expect_err("setup sync should fail at the simulated interrupted transfer");
     let blocked = source(1, false);
     let mut changed = config();
     changed.max_download_bytes += 1;
-    assert!(run(&changed, None, &out, true, &blocked).is_err());
+    run(&changed, None, &out, true, &blocked)
+        .expect_err("resume should refuse a changed byte budget");
     let previous = run(
         &cfg,
         None,
@@ -126,9 +129,10 @@ fn changed_config_previous_or_plan_refuse_resume_before_payloads() {
         &source(0, true),
     )
     .unwrap();
-    assert!(run(&cfg, Some(&previous.mirror), &out, true, &blocked).is_err());
+    run(&cfg, Some(&previous.mirror), &out, true, &blocked)
+        .expect_err("resume should refuse a different previous generation");
     std::fs::write(out.join(".sync/plans/0/manifest.asc"), b"changed").unwrap();
-    assert!(run(&cfg, None, &out, true, &blocked).is_err());
+    run(&cfg, None, &out, true, &blocked).expect_err("resume should refuse a modified saved plan");
     assert!(blocked.payloads.lock().unwrap().is_empty());
 }
 #[test]
@@ -147,18 +151,19 @@ fn budgets_hold_across_selected_working_copies_and_previous_retention() {
     let mut small = config();
     small.max_download_bytes = baseline.report.recorded_bytes + baseline.report.recorded_bytes / 2;
     let out = t.path().join("limited");
-    assert!(run(&small, None, &out, false, &source(0, true)).is_err());
+    run(&small, None, &out, false, &source(0, true))
+        .expect_err("sync should refuse working copies exceeding the byte budget");
     assert!(!out.join("mirror").exists());
     small.max_download_bytes = 1;
     let none = t.path().join("previous-too-big");
-    assert!(run(
+    run(
         &small,
         Some(&baseline.mirror),
         &none,
         false,
-        &source(0, true)
+        &source(0, true),
     )
-    .is_err());
+    .expect_err("sync should refuse a previous generation exceeding the byte budget");
     assert!(!none.exists());
 }
 #[test]
@@ -166,9 +171,11 @@ fn unknown_entries_locks_and_nested_outputs_refuse_without_touching_user_files()
     let t = tempfile::tempdir().unwrap();
     let cfg = config();
     let out = t.path().join("run");
-    assert!(run(&cfg, None, &out, false, &source(2, true)).is_err());
+    run(&cfg, None, &out, false, &source(2, true))
+        .expect_err("setup sync should fail at the simulated interrupted transfer");
     std::fs::write(out.join("keep"), b"mine").unwrap();
-    assert!(run(&cfg, None, &out, true, &source(0, false)).is_err());
+    run(&cfg, None, &out, true, &source(0, false))
+        .expect_err("resume should refuse an unknown output entry");
     assert_eq!(std::fs::read(out.join("keep")).unwrap(), b"mine");
     std::fs::remove_file(out.join("keep")).unwrap();
     let f = std::fs::File::options()
@@ -192,14 +199,14 @@ fn unknown_entries_locks_and_nested_outputs_refuse_without_touching_user_files()
     #[cfg(target_os = "linux")]
     drop(inherited_description);
     let nested = completed.mirror.join("new-run");
-    assert!(run(
+    run(
         &cfg,
         Some(&completed.mirror),
         &nested,
         false,
-        &source(0, true)
+        &source(0, true),
     )
-    .is_err());
+    .expect_err("sync should refuse an output nested in the previous mirror");
     assert!(!nested.exists());
 }
 #[test]
@@ -211,16 +218,17 @@ fn corrupt_previous_and_completed_generations_cannot_certify_noop_or_be_overwrit
     let file = done.mirror.join("dist/2025-09-18/cargo.tar.gz");
     std::fs::write(&file, b"damage").unwrap();
     let blocked = source(1, false);
-    assert!(run(
+    run(
         &cfg,
         Some(&done.mirror),
         &t.path().join("next"),
         false,
-        &blocked
+        &blocked,
     )
-    .is_err());
+    .expect_err("sync should refuse a corrupt previous generation");
     assert_eq!(*blocked.metadata.lock().unwrap(), 0);
-    assert!(run(&cfg, None, &out, true, &blocked).is_err());
+    run(&cfg, None, &out, true, &blocked)
+        .expect_err("resume should refuse a corrupt completed generation");
     assert_eq!(std::fs::read(file).unwrap(), b"damage");
 }
 fn stable_fixture(version: &str, date: &str) -> Fixture {
@@ -285,13 +293,16 @@ fn incomplete_assembly_is_rebuilt_but_a_foreign_staging_file_is_preserved() {
     let done = run(&cfg, None, &out, false, &source(0, true)).unwrap();
     std::fs::rename(&done.mirror, out.join(".sync/tree")).unwrap();
     std::fs::write(out.join(".sync/tree/foreign"), b"keep").unwrap();
-    assert!(run(&cfg, None, &out, true, &source(0, false)).is_err());
+    run(&cfg, None, &out, true, &source(0, false))
+        .expect_err("resume should preserve and refuse a foreign staging file");
     assert_eq!(
         std::fs::read(out.join(".sync/tree/foreign")).unwrap(),
         b"keep"
     );
     std::fs::remove_file(out.join(".sync/tree/foreign")).unwrap();
-    assert!(run(&cfg, None, &out, true, &source(0, false)).is_ok());
+    run(&cfg, None, &out, true, &source(0, false)).expect(
+        "resume should rebuild the incomplete assembly after the foreign staging file is removed",
+    );
 }
 #[cfg(unix)]
 #[test]
@@ -299,19 +310,22 @@ fn workspace_links_and_fifos_refuse_before_opening() {
     let t = tempfile::tempdir().unwrap();
     let cfg = config();
     let out = t.path().join("run");
-    assert!(run(&cfg, None, &out, false, &source(2, true)).is_err());
+    run(&cfg, None, &out, false, &source(2, true))
+        .expect_err("setup sync should fail at the simulated interrupted transfer");
     let state = out.join(".sync/state.toml");
     let saved = t.path().join("saved");
     std::fs::rename(&state, &saved).unwrap();
     std::os::unix::fs::symlink(&saved, &state).unwrap();
-    assert!(run(&cfg, None, &out, true, &source(0, false)).is_err());
+    run(&cfg, None, &out, true, &source(0, false))
+        .expect_err("resume should refuse a symlinked state file");
     std::fs::remove_file(&state).unwrap();
     assert!(std::process::Command::new("mkfifo")
         .arg(&state)
         .status()
         .unwrap()
         .success());
-    assert!(run(&cfg, None, &out, true, &source(0, false)).is_err());
+    run(&cfg, None, &out, true, &source(0, false))
+        .expect_err("resume should refuse a FIFO state file");
 }
 #[test]
 fn demo_tiny_sync() {
@@ -326,14 +340,14 @@ fn demo_tiny_sync() {
         "FIRST RUN\n{}",
         toml::to_string_pretty(&first.report).unwrap()
     );
-    assert!(run(
+    run(
         &cfg,
         None,
         &root.join("interrupted"),
         false,
-        &source(2, true)
+        &source(2, true),
     )
-    .is_err());
+    .expect_err("demo sync should fail at the simulated interrupted transfer");
     println!("INTERRUPTED: no completed mirror exposed");
     let refused = run(
         &cfg,
@@ -424,7 +438,8 @@ fn incoherent_channel_resolutions_refuse_before_payloads_or_output_creation() {
         selection.toolchain = "stable".into();
     }
     let out = t.path().join("run");
-    assert!(run(&cfg, None, &out, false, &s).is_err());
+    run(&cfg, None, &out, false, &s)
+        .expect_err("sync should refuse incoherent channel resolutions before fetching payloads");
     assert_eq!(*s.payload.lock().unwrap(), 0);
     assert!(!out.exists());
 }
@@ -449,7 +464,8 @@ fn resume_does_not_initialize_an_empty_unrelated_directory() {
     let t = tempfile::tempdir().unwrap();
     let empty = t.path().join("empty");
     std::fs::create_dir(&empty).unwrap();
-    assert!(run(&config(), None, &empty, true, &source(0, false)).is_err());
+    run(&config(), None, &empty, true, &source(0, false))
+        .expect_err("resume should refuse an unrelated empty directory");
     assert!(std::fs::read_dir(empty).unwrap().next().is_none());
 }
 #[test]
@@ -527,7 +543,8 @@ fn force_discards_interrupted_and_completed_runs_and_resolves_fresh() {
     let t = tempfile::tempdir().unwrap();
     let out = t.path().join("run");
     let cfg = config();
-    assert!(run(&cfg, None, &out, false, &source(2, true)).is_err());
+    run(&cfg, None, &out, false, &source(2, true))
+        .expect_err("setup sync should fail at the simulated interrupted transfer");
     let forbidden = source(0, false);
     let err = run(&cfg, None, &out, false, &forbidden)
         .unwrap_err()
@@ -559,18 +576,21 @@ fn force_refuses_active_unmanaged_or_overlapping_runs_without_changes() {
         .open(out.join(".sync.lock"))
         .unwrap();
     lock.try_lock().unwrap();
-    assert!(run_forced(&cfg, None, &out, &source(0, false)).is_err());
+    run_forced(&cfg, None, &out, &source(0, false))
+        .expect_err("force should refuse an actively locked run");
     drop(lock);
-    assert!(run_forced(&cfg, Some(&done.mirror), &out, &source(0, false)).is_err());
-    assert!(run_forced(
+    run_forced(&cfg, Some(&done.mirror), &out, &source(0, false))
+        .expect_err("force should refuse reusing its own mirror as the previous generation");
+    run_forced(
         &cfg,
         Some(&done.mirror),
         &done.mirror.join("nested"),
-        &source(0, false)
+        &source(0, false),
     )
-    .is_err());
+    .expect_err("force should refuse an output nested in the previous mirror");
     std::fs::write(out.join("mine"), b"keep").unwrap();
-    assert!(run_forced(&cfg, None, &out, &source(0, false)).is_err());
+    run_forced(&cfg, None, &out, &source(0, false))
+        .expect_err("force should preserve and refuse an unmanaged output entry");
     assert_eq!(std::fs::read(out.join("mine")).unwrap(), b"keep");
     assert_eq!(
         std::fs::read(done.mirror.join("snapshot.toml")).unwrap(),
@@ -578,7 +598,8 @@ fn force_refuses_active_unmanaged_or_overlapping_runs_without_changes() {
     );
     let empty = t.path().join("empty");
     std::fs::create_dir(&empty).unwrap();
-    assert!(run_forced(&cfg, None, &empty, &source(0, false)).is_err());
+    run_forced(&cfg, None, &empty, &source(0, false))
+        .expect_err("force should refuse an unrelated empty directory");
     assert_eq!(std::fs::read_dir(&empty).unwrap().count(), 0);
 }
 #[test]
@@ -588,7 +609,8 @@ fn force_failure_leaves_no_old_mirror_and_can_restart_lock_only_shell() {
     let out = t.path().join("run");
     let cfg = config();
     run_forced(&cfg, None, &out, &source(0, true)).unwrap();
-    assert!(run_forced(&cfg, None, &out, &source(0, false)).is_err());
+    run_forced(&cfg, None, &out, &source(0, false))
+        .expect_err("force should fail when fresh metadata is unavailable");
     assert!(!out.join("mirror").exists());
     assert!(!out.join(".sync").exists());
     assert_eq!(std::fs::read_dir(&out).unwrap().count(), 1);
@@ -626,12 +648,14 @@ fn force_refuses_outer_and_inner_links_or_special_files_before_deleting() {
     run(&config(), None, &out, false, &source(0, true)).unwrap();
     let link = t.path().join("link");
     std::os::unix::fs::symlink(&out, &link).unwrap();
-    assert!(run_forced(&config(), None, &link, &source(0, false)).is_err());
+    run_forced(&config(), None, &link, &source(0, false))
+        .expect_err("force should refuse a symlinked outer run directory");
     let protected = t.path().join("protected");
     std::fs::create_dir(&protected).unwrap();
     std::fs::write(protected.join("mine"), b"safe").unwrap();
     std::os::unix::fs::symlink(&protected, out.join(".sync/escape")).unwrap();
-    assert!(run_forced(&config(), None, &out, &source(0, false)).is_err());
+    run_forced(&config(), None, &out, &source(0, false))
+        .expect_err("force should refuse an inner symlink before deleting either tree");
     assert!(out.join("mirror/snapshot.toml").exists());
     assert_eq!(std::fs::read(protected.join("mine")).unwrap(), b"safe");
     std::fs::remove_file(out.join(".sync/escape")).unwrap();
@@ -641,7 +665,8 @@ fn force_refuses_outer_and_inner_links_or_special_files_before_deleting() {
         .status()
         .unwrap()
         .success());
-    assert!(run_forced(&config(), None, &out, &source(0, false)).is_err());
+    run_forced(&config(), None, &out, &source(0, false))
+        .expect_err("force should refuse an inner FIFO before deleting the mirror");
     assert!(out.join("mirror/snapshot.toml").exists());
 }
 
@@ -667,7 +692,8 @@ fn force_refuses_windows_junctions_before_deleting_either_tree() {
         "{}",
         String::from_utf8_lossy(&created.stderr)
     );
-    assert!(run_forced(&config(), None, &outer, &source(0, false)).is_err());
+    run_forced(&config(), None, &outer, &source(0, false))
+        .expect_err("force should refuse a junction as the outer run directory");
     std::fs::remove_dir(&outer).unwrap();
     let linked = out.join(".sync").join("junction");
     let created = std::process::Command::new("cmd")
@@ -681,7 +707,8 @@ fn force_refuses_windows_junctions_before_deleting_either_tree() {
         "{}",
         String::from_utf8_lossy(&created.stderr)
     );
-    assert!(run_forced(&config(), None, &out, &source(0, false)).is_err());
+    run_forced(&config(), None, &out, &source(0, false))
+        .expect_err("force should refuse an inner junction before deleting either tree");
     assert!(out.join("mirror/snapshot.toml").exists());
     assert_eq!(std::fs::read(protected.join("mine")).unwrap(), b"safe");
     // Remove this test's junction itself, never its target.
