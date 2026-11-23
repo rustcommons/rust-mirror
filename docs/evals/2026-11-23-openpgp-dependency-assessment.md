@@ -7,7 +7,9 @@ The owner authorized rPGP (`pgp`) and the pinned Rust release-key policy on
 qualification or claim that existing mirror operations authenticate manifests.
 The prototype compiles on Rust 1.90 and verifies four real manifests, but the
 required cargo-deny gate is blocked. No ignore, license exception, version bump,
-PR, merge, tag or publication has been made for this feature.
+feature PR, merge, tag or publication has been made for this feature.
+The work is preserved on [feat/openpgp-manifests](https://github.com/rustcommons/rust-mirror/tree/feat/openpgp-manifests)
+without a PR; the branch remains blocked and is not ready to merge.
 
 ## Official key cross-check
 
@@ -47,9 +49,19 @@ Pinned cargo-deny 0.20.2, with the repository's unchanged deny.toml, reports
 The experimental verifier only uses public certificates and public signature
 verification; it loads no secret keys and performs no signing/decryption. That
 bounded exposure assessment does not override the dependency-based audit gate.
-No advisory has been ignored. Choosing a narrow owner-approved policy exception
-or waiting for an upstream rPGP dependency migration requires an owner decision
-before integration and a green feature PR can be completed.
+No advisory has been ignored. Owner decision, 2026-11-22, **option B**: grant
+NO advisory exceptions and wait for a released rPGP dependency graph that clears
+both findings. The owner's approval of `pgp` and the pinned-key trust policy
+still stands. Updating `pgp` and obtaining a clean cargo-deny result with no
+exceptions is mandatory before resuming the feature PR; also recheck MSRV 1.90,
+licenses and the newly resolved transitive graph. A patched numeric range alone
+is insufficient if the resolved version is yanked or another advisory remains.
+
+Existing upstream tracking, checked 2026-11-23: [rPGP PR #573, Adopt RustCrypto
+new releases](https://github.com/rpgp/rpgp/pull/573), is open; its inspected diff
+proposes `rsa` 0.10 and `crypto-bigint` 0.7.11. [Issue #257](https://github.com/rpgp/rpgp/issues/257)
+tracks RUSTSEC-2023-0071. These are monitoring references, not evidence that a
+published rPGP version is already qualified. No upstream issue or PR was opened.
 
 ## Preliminary real-data verification
 
