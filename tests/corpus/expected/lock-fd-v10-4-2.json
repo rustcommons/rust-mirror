@@ -13925,8 +13925,18 @@
       "Git/path/workspace sources require independent client provisioning; they are not mirrored."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "name": "lock-fd-v10-4-2",
+        "version": "7027d45303b412be6fa9c09d689cc6276748fb38"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "lock-fd-v10-4-2",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

@@ -38768,8 +38768,911 @@
       "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "hashbrown",
+        "version": "0.17.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "syn",
+        "version": "3.0.10"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "getrandom",
+        "version": "0.4.3"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "bitflags",
+        "version": "2.13.2"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "rand_core",
+        "version": "0.10.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "rand",
+        "version": "0.10.3"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "libc",
+        "version": "0.2.191"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "base64",
+        "version": "0.23.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "quote",
+        "version": "1.0.47"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "proc-macro2",
+        "version": "1.0.107"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows-sys",
+        "version": "0.61.2"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "indexmap",
+        "version": "2.14.2"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "thiserror-impl",
+        "version": "2.0.21"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "thiserror",
+        "version": "2.0.21"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "itertools",
+        "version": "0.15.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "cfg-if",
+        "version": "1.0.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "memchr",
+        "version": "2.8.3"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "regex-syntax",
+        "version": "0.8.11"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "serde",
+        "version": "1.0.229"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "unicode-ident",
+        "version": "1.0.27"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "rand_chacha",
+        "version": "0.10.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "itoa",
+        "version": "1.0.19"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "serde_derive",
+        "version": "1.0.229"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "serde_json",
+        "version": "1.0.154"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "heck",
+        "version": "0.5.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "autocfg",
+        "version": "1.5.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "log",
+        "version": "0.4.35"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "once_cell",
+        "version": "1.21.4"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "cc",
+        "version": "1.11.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "regex-automata",
+        "version": "0.4.18"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "socket2",
+        "version": "0.6.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "smallvec",
+        "version": "1.16.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "rustix",
+        "version": "1.1.6"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "regex",
+        "version": "1.13.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "aho-corasick",
+        "version": "1.1.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "digest",
+        "version": "0.11.3"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "block-buffer",
+        "version": "0.12.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "ryu",
+        "version": "1.0.23"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "clap",
+        "version": "4.6.7"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "linux-raw-sys",
+        "version": "0.12.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "parking_lot_core",
+        "version": "0.10.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_x86_64_msvc",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "cpufeatures",
+        "version": "0.3.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "parking_lot",
+        "version": "0.13.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "bytes",
+        "version": "1.12.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "strsim",
+        "version": "0.11.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "mio",
+        "version": "1.2.4"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "pin-project-lite",
+        "version": "0.2.17"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "http",
+        "version": "1.5.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_x86_64_gnu",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_aarch64_msvc",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows-targets",
+        "version": "0.53.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_i686_msvc",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_i686_gnu",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "version_check",
+        "version": "0.9.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "num-traits",
+        "version": "0.2.19"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "either",
+        "version": "1.19.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "sha2",
+        "version": "0.11.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "semver",
+        "version": "1.0.28"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "tokio",
+        "version": "1.54.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_aarch64_gnullvm",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "windows_x86_64_gnullvm",
+        "version": "0.53.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "lock_api",
+        "version": "0.5.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "lazy_static",
+        "version": "1.5.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "winnow",
+        "version": "1.0.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "anyhow",
+        "version": "1.0.104"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "crypto-common",
+        "version": "0.2.2"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "idna",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "futures-core",
+        "version": "0.3.34"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "zerocopy",
+        "version": "0.8.63"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "scopeguard",
+        "version": "1.2.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "toml",
+        "version": "1.2.1+spec-1.1.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "slab",
+        "version": "0.4.12"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "futures-util",
+        "version": "0.3.34"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "futures-task",
+        "version": "0.3.34"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "hyper",
+        "version": "1.12.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "fastrand",
+        "version": "2.5.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "rustls",
+        "version": "0.23.46"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "typenum",
+        "version": "1.20.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "miniz_oxide",
+        "version": "0.9.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "crossbeam-utils",
+        "version": "0.8.23"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "percent-encoding",
+        "version": "2.3.2"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "generic-array",
+        "version": "1.4.5"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "shlex",
+        "version": "2.0.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "http-body",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "time",
+        "version": "0.3.55"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "futures-sink",
+        "version": "0.3.34"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "futures-channel",
+        "version": "0.3.34"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "ppv-lite86",
+        "version": "0.2.21"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "url",
+        "version": "2.5.8"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "tracing-core",
+        "version": "0.1.36"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "equivalent",
+        "version": "1.0.3"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "clap_lex",
+        "version": "1.1.1"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "errno",
+        "version": "0.3.15"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "tracing",
+        "version": "0.1.44"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "toml_datetime",
+        "version": "1.1.3+spec-1.1.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "toml_edit",
+        "version": "0.25.19+spec-1.1.0"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "futures-io",
+        "version": "0.3.34"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "rustc-hash",
+        "version": "2.1.3"
+      }
+    },
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "tempfile",
+        "version": "3.27.0"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "frozen-top100",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

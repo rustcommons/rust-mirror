@@ -11684,8 +11684,18 @@
       "Git/path/workspace sources require independent client provisioning; they are not mirrored."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "name": "lock-rust-analyzer-2020-06-01",
+        "version": "7ae247f03c639d6e704159df7f0120466afc3c30"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "lock-rust-analyzer-2020-06-01",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

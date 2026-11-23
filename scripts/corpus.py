@@ -15,6 +15,7 @@ import sys
 import time
 import tomllib
 import urllib.request
+import urllib.error
 
 from corpus_transport import CONTACT, IndexCache, MetadataFixture, NoRedirect, shard
 from check_crates_phase0 import cargo_environment, project, lock_ids
@@ -107,9 +108,69 @@ def upstream_delta(old, new):
     return True, details
 
 
-def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True):
+def selection_changes(before, after):
+    """Track identity, resolver state and per-root membership for every selection.
+
+    Raw line hashes/nonidentity fields are provenance, checked separately below;
+    they cannot explain a different resolver selection.
+    """
+    def states(value):
+        result = {}
+        identities = set(value.get("version_union", [])) | set(value.get("selected_rows", {})) | set(value.get("version_details", {}))
+        identities.update(i for root in value.get("roots", []) for i in root["resolved_versions"])
+        for identity in identities:
+            row = value.get("selected_rows", {}).get(identity, {})
+            result[identity] = dict(selected=identity in value.get("version_union", []), identity={k: row.get(k) for k in (*IDENTITY, "yanked")},
+                detail=value.get("version_details", {}).get(identity),
+                roots=[n for n, root in enumerate(value.get("roots", [])) if identity in root["resolved_versions"]])
+        return result
+    old, new = states(before), states(after)
+    return {i for i in old.keys() | new.keys() if old.get(i) != new.get(i)}
+
+
+def meaningful_crates(old, new):
+    names = set()
+    for path in old.keys() | new.keys():
+        before, after = semantic_rows(old.get(path, b"")), semantic_rows(new.get(path, b""))
+        for identity in before.keys() | after.keys():
+            a, b = before.get(identity), after.get(identity)
+            if a is None or b is None or any(a.get(k) != b.get(k) for k in (*IDENTITY, "yanked")):
+                names.add(identity[0])
+    return names
+
+
+def provenance_matches(value, inputs):
+    """Changed line bytes must be exact upstream provenance, never invented output."""
+    for identity, row in value.get("selected_rows", {}).items():
+        lines = inputs.get(shard(row["name"]), b"").splitlines(keepends=True)
+        matching = [line for line in lines if json.loads(line).get("vers") == row["vers"]]
+        if not any(json.loads(line) == row and digest(line) == value.get("index_line_sha256", {}).get(identity) for line in matching):
+            return False
+    return True
+
+
+def over_selection_growth(expected, observed):
+    if expected is None:
+        return ["missing reviewed per-root Cargo over-selection baseline"]
+    key = lambda p: json.dumps(p, sort_keys=True)
+    allowed = {key(r["profile"]): set(r["native_only"]) for r in expected}
+    failures = []
+    for row in observed:
+        profile = key(row["profile"])
+        if profile not in allowed:
+            failures.append("missing Cargo baseline for " + profile)
+        elif set(row["native_only"]) - allowed[profile]:
+            failures.append(dict(profile=row["profile"], new_native_only=sorted(set(row["native_only"]) - allowed[profile])))
+    return failures
+
+
+def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True, expected_oracle=None, observed_oracle=None):
     if not oracle_ok:
         return "conformance_mismatch", ["Cargo/native coverage, refusal or filtered-index check differs"]
+    if observed_oracle is not None:
+        growth = over_selection_growth(expected_oracle, observed_oracle)
+        if growth:
+            return "regression", ["per-root Cargo over-selection grew", *growth]
     if expected is None:
         return "regression", ["missing reviewed expected result"]
     if replay != expected:
@@ -121,6 +182,19 @@ def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True)
         return "regression", details
     if not details:
         return "regression", ["output changed without an upstream input change"]
+    ids = observed.get("version_union", [])
+    if len(ids) != len(set(ids)) or any(not set(r["resolved_versions"]) <= set(ids) for r in observed.get("roots", [])):
+        return "regression", ["invalid selected-version union or root membership"]
+    changed = selection_changes(expected, observed)
+    meaningful = meaningful_crates(old_inputs, new_inputs)
+    unexplained = sorted(i for i in changed if i.split("@", 1)[0] not in meaningful)
+    if unexplained:
+        return "regression", [dict(unexplained_selected_versions=unexplained), *details]
+    if observed.get("profiles") != expected.get("profiles"):
+        return "regression", ["declared profiles changed"]
+    if (observed.get("selected_rows") != expected.get("selected_rows") or
+            observed.get("index_line_sha256") != expected.get("index_line_sha256")) and not provenance_matches(observed, new_inputs):
+        return "regression", ["selected index provenance does not match upstream bytes"]
     # Newly refused resolution is not excused by an unrelated version/backfill.
     # Only a demonstrably yanked declared root receives the documented refusal exemption.
     if expected["status"] == "ok" and observed["status"] != "ok":
@@ -128,6 +202,27 @@ def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True)
         yanked = {tuple(i) for d in details for i in d.get("yanks", [])}
         if not roots & yanked:
             return "regression", ["new refusal is not explained by a declared-root yank", *details]
+    if expected["status"] == "ok" and observed["status"] != "ok":
+        return "upstream", details
+    # Account for non-selection output too. Only exact provenance and named
+    # metadata warnings may vary without a meaningful selection change.
+    handled = {"version_union", "roots", "version_details", "selected_rows", "index_line_sha256"}
+    if changed:
+        handled |= {"known_archive_bytes", "unknown_archives"}
+    if [r["profile"] for r in expected.get("roots", [])] != [r["profile"] for r in observed.get("roots", [])]:
+        return "regression", ["root profiles changed"]
+    semantic_names = set()
+    for path in old_inputs.keys() | new_inputs.keys():
+        before, after = semantic_rows(old_inputs.get(path, b"")), semantic_rows(new_inputs.get(path, b""))
+        semantic_names.update(i[0] for i in before.keys() | after.keys() if before.get(i) != after.get(i))
+    for key in ("warnings", "index_warnings", "metadata_warnings"):
+        a = {json.dumps(w, sort_keys=True) for w in expected.get(key, [])}
+        b = {json.dumps(w, sort_keys=True) for w in observed.get(key, [])}
+        if any(not isinstance(json.loads(w), dict) or json.loads(w).get("name") not in semantic_names for w in a ^ b):
+            return "regression", ["warning change is not tied to semantic upstream metadata"]
+        handled.add(key)
+    if {k:v for k,v in expected.items() if k not in handled} != {k:v for k,v in observed.items() if k not in handled}:
+        return "regression", ["output change is not explained by selected versions or exact metadata provenance"]
     return "upstream", details
 
 
@@ -393,10 +488,15 @@ def run_suite(args):
                     raise ValueError("metadata-only transport violation: " + repr(fixture.archive_requests + fixture.errors))
                 if args.record:
                     expected = observed
-                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed))
+                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed, oracle_native_only=expected_document.get("oracle_native_only") if expected_document else None))
                     label, difference = "recorded", []
                 else:
-                    label, difference = classify(expected, observed, replay, prior_inputs, current_inputs, ok)
+                    label, difference = classify(expected, observed, replay, prior_inputs, current_inputs, ok,
+                        expected_document.get("oracle_native_only") if expected_document else None, cargo if args.oracle else None)
+                if args.oracle:
+                    growth = over_selection_growth(expected_document.get("oracle_native_only") if expected_document else None, cargo)
+                    if growth:
+                        label, difference = "regression", ["per-root Cargo over-selection grew", *growth]
                 if not ok:
                     label, difference = "conformance_mismatch", ["Cargo oracle differs from native output"]
                 if case.get("expected_status") and observed["status"] != case["expected_status"]:
@@ -414,7 +514,7 @@ def run_suite(args):
                 if override is None:
                     observed_live.update(cache.files)
                 if label == "upstream":
-                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed))
+                    dump(work / "proposed-baseline" / "expected" / expected_file.name, dict(schema=1, created_at=datetime.date.today().isoformat(), source={"product_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO,text=True).strip(), "case":case["id"]}, expected=observed, oracle_native_only=expected_document.get("oracle_native_only") if expected_document else None))
             except Exception as error:
                 rows.append(dict(id=case["id"], corpus=case["corpus"], classification="infrastructure_failure", error=str(error)))
     guards = []
@@ -437,7 +537,7 @@ def run_suite(args):
                   corpus_sha256={str(p.relative_to(CORPUS)):digest(p.read_bytes()) for p in sorted(CORPUS.rglob("*")) if p.is_file()},
                   binary_sha256=digest(binary.read_bytes()), fast=args.fast, cargo_oracle=args.oracle,
                   failed=failed, changed=changed, cases=rows, guards=guards,
-                  registry_requests=cache.requests, archive_requests=[],
+                  registry_requests=cache.requests, archive_requests=fixture.archive_requests,
                   frozen_historical_measured_archive_bytes=45125358,
                   limits="Archive sizes are unknown without archive HEAD/GET; sparse-only planning does not measure payload bytes.")
     dump(work / "report.json", report)
@@ -520,47 +620,99 @@ def github_api(method, repository, endpoint, body=None):
     return json.loads(raw) if raw else None
 
 
+ISSUE_LABEL = "rust-mirror-corpus"
+ISSUE_CREATOR = "github-actions[bot]"
+
+
+def ensure_issue_label(repository, api):
+    try:
+        api("GET", repository, "labels/" + ISSUE_LABEL)
+    except urllib.error.HTTPError as error:
+        if error.code != 404:
+            raise
+        try:
+            api("POST", repository, "labels", dict(name=ISSUE_LABEL, color="1d76db", description="Managed crate corpus reports"))
+        except urllib.error.HTTPError as race:
+            if race.code != 422:
+                raise
+            # Concurrent creation is safe only if the exact label now exists.
+            api("GET", repository, "labels/" + ISSUE_LABEL)
+
+
+def owned_issue(issue):
+    labels = [v["name"] if isinstance(v, dict) else v for v in issue.get("labels", [])]
+    return ("pull_request" not in issue and issue.get("user", {}).get("login") == ISSUE_CREATOR
+            and ISSUE_MARKER in (issue.get("body") or "") and ISSUE_LABEL in labels)
+
+
 def track_report(repository, report, summary, api=github_api):
-    matches=[]
-    for page in range(1,11):
-        items=api("GET",repository,f"issues?state=all&per_page=100&page={page}")
-        matches.extend(i for i in items if i.get("title")==ISSUE_TITLE and "pull_request" not in i)
-        if len(items)<100:
+    ensure_issue_label(repository, api)
+    matches = []
+    page = 1
+    while True:
+        items = api("GET", repository, f"issues?state=all&labels={ISSUE_LABEL}&creator=github-actions%5Bbot%5D&per_page=100&page={page}")
+        matches.extend(i for i in items if owned_issue(i))
+        if len(items) < 100:
             break
-    else:
-        raise ValueError("issue pagination bound reached; refuse to create a possible duplicate")
-    if len(matches)>1:
-        raise ValueError("multiple corpus tracking issues exist; owner must reconcile them")
-    issue=matches[0] if matches else None
-    changed=bool(report.get("failed") or report.get("changed"))
+        page += 1
+    if len(matches) > 1:
+        raise ValueError("multiple owned corpus tracking issues exist; owner must reconcile them")
+    issue = matches[0] if matches else None
+    changed = bool(report.get("failed") or report.get("changed"))
     if not changed:
-        if issue and issue["state"]=="open":
-            api("PATCH",repository,"issues/"+str(issue["number"]),{"state":"closed"})
+        if issue and issue["state"] == "open":
+            api("PATCH", repository, "issues/" + str(issue["number"]), {"state": "closed"})
             return "closed"
         return "clean"
-    body=ISSUE_MARKER+"\n"+summary[:55000]+"\n\nFull JSON, Cargo logs and baseline-update proposal are in the workflow artifacts. No automatic baseline merge."
+    body = ISSUE_MARKER + "\n" + summary[:55000] + "\n\nFull JSON, Cargo logs and baseline-update proposal are in the workflow artifacts. No automatic baseline merge."
     if issue:
-        # Preserve human context outside our explicitly managed block.
-        old=issue.get("body") or ""
-        prefix=old.split(ISSUE_MARKER,1)[0] if ISSUE_MARKER in old else old+"\n\n"
-        api("PATCH",repository,"issues/"+str(issue["number"]),{"state":"open","body":prefix+body})
+        prefix = (issue.get("body") or "").split(ISSUE_MARKER, 1)[0]
+        api("PATCH", repository, "issues/" + str(issue["number"]), {"state": "open", "body": prefix + body})
         return "updated"
-    api("POST",repository,"issues",{"title":ISSUE_TITLE,"body":body})
+    api("POST", repository, "issues", {"title": ISSUE_TITLE, "body": body, "labels": [ISSUE_LABEL]})
     return "opened"
 
 
-def release_check(repository, sha, api=github_api):
+def watched_paths():
+    # Read the actual workflow filter rather than maintaining a second path list.
+    # Refuse an unsupported YAML spelling instead of silently missing new paths.
+    workflow = (REPO / ".github/workflows/corpus.yml").read_text()
+    match = re.search(r"  pull_request:\n    paths:\n((?:      - '[^'\n]+'\n)+)(?=\S)", workflow)
+    if not match:
+        raise ValueError("unsupported corpus watched-path declaration")
+    return re.findall(r"      - '([^']+)'", match[1])
+
+
+def weekly_unchanged(previous, sha):
+    if not re.fullmatch(r"[0-9a-f]{40}", previous or ""):
+        return False
+    if previous == sha:
+        return True
+    ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", previous, sha], cwd=REPO, capture_output=True)
+    if ancestor.returncode != 0:
+        return False
+    try:
+        paths = watched_paths()
+    except ValueError:
+        return False
+    result = subprocess.run(["git", "diff", "--quiet", previous, sha, "--", *[":(glob)" + p for p in paths]],
+                            cwd=REPO, capture_output=True)
+    return result.returncode == 0
+
+
+def release_check(repository, sha, api=github_api, unchanged=weekly_unchanged):
     if not re.fullmatch(r"[0-9a-f]{40}",sha):
         raise ValueError("release corpus gate requires an exact commit")
     endpoint="actions/workflows/corpus.yml/runs?"
     weekly=api("GET",repository,endpoint+"event=schedule&branch=main&per_page=1")["workflow_runs"]
-    if weekly and weekly[0]["status"]=="completed" and weekly[0]["conclusion"]=="success":
+    if (weekly and weekly[0]["status"]=="completed" and weekly[0]["conclusion"]=="success"
+            and unchanged(weekly[0].get("head_sha"), sha)):
         return weekly[0]["id"]
     dispatch=api("GET",repository,endpoint+"event=workflow_dispatch&head_sha="+sha+"&per_page=100")["workflow_runs"]
     for run in dispatch:
         if run["head_sha"]==sha and run["status"]=="completed" and run["conclusion"]=="success":
             return run["id"]
-    raise ValueError("corpus gate refused: latest weekly must pass with only clean/upstream classifications, or dispatch the full corpus on this release commit")
+    raise ValueError("corpus gate refused: latest weekly must cover this commit with no watched-path changes and pass, or dispatch the full corpus on this release commit")
 
 
 def main():

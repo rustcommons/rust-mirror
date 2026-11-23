@@ -4164,8 +4164,22 @@
       "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [
+          "full"
+        ],
+        "name": "tokio",
+        "version": "1.54.1"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "tokio-full",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

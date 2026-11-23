@@ -1039,8 +1039,20 @@
       "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "ndk-sys",
+        "version": "0.6.0+11769913"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "ndk-sys-declared",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

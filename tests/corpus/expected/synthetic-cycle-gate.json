@@ -17,8 +17,20 @@
     "status": "refused",
     "version_union": []
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "synthetic-cycle-gate",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

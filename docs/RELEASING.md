@@ -313,7 +313,9 @@ ordering/recovery evidence above remains unchanged.
 ## Before merge and publication
 
 The [tracked crate corpus](CORPUS.md) is a release gate: the latest weekly must
-pass with only clean/upstream-classified differences, or a full workflow_dispatch
+pass with only clean/upstream-classified differences and cover the release commit
+(exact commit or no changes under the corpus workflow watched paths since that
+weekly), or a full workflow_dispatch
 on the exact release head must pass. Inspect its JSON/Markdown artifacts and every
 upstream delta; do not waive regressions, missing cases, infrastructure failures
 or Cargo mismatches. `gate` enforces this on tag runs using `corpus.py release-check`.

@@ -373,8 +373,23 @@
       "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [
+        "sys-new@1.0.0",
+        "wrapper@1.1.0"
+      ],
+      "profile": {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "synthetic-links-backtrack",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

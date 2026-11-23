@@ -5061,8 +5061,18 @@
       "Git/path/workspace sources require independent client provisioning; they are not mirrored."
     ]
   },
+  "oracle_native_only": [
+    {
+      "native_only": [],
+      "profile": {
+        "name": "lock-ripgrep-15-1-0",
+        "version": "af60c2de9d85e7f3d81c78601669468cf02dabab"
+      }
+    }
+  ],
   "schema": 1,
   "source": {
+    "cargo_baseline_run": 45112301249,
     "case": "lock-ripgrep-15-1-0",
     "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
   }

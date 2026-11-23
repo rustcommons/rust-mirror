@@ -58,7 +58,8 @@ Native frozen-plan `show` must round-trip its saved data. The events adapter's
 optional null fields are normalized to TOML's omitted-field representation; false,
 zero, empty arrays and every non-null field remain significant.
 
-Version overfetch is the native-only set divided by the Cargo set. `known_archive_bytes`
+Version overfetch is the native-only set divided by the Cargo set. CI fails any
+new per-root native-only version beyond its reviewed baseline allowance. `known_archive_bytes`
 and `unknown_archives` explicitly distinguish known lengths from missing estimates.
 Sparse index records do not provide archive lengths; this suite deliberately makes
 no CDN HEAD/GET calls, so current byte estimates can be zero-known/all-unknown and
@@ -77,12 +78,22 @@ metadata changed concurrently.
 - **Our regression:** current output differs on frozen inputs, output changes with
   unchanged inputs, a named edge-case expectation breaks, or an unexplained refusal
   appears. Missing expected cases fail rather than teaching the runner new behavior.
-- **Upstream (report, not fail):** frozen control passes, Cargo conformance passes,
-  and an explicit input diff demonstrates only new versions/indexes, yank changes,
-  nonidentity backfills or formatting changes. A new refusal is excused only when
-  a declared root itself demonstrably became yanked. An unrelated new version
-  cannot excuse it. Mutated/removed existing checksum/dependency/feature/links/schema
-  identities fail conservatively; they are never silently accepted as a backfill.
+- **Upstream (report, not fail):** the frozen control and Cargo conformance pass,
+  and the input diff explains the output. Every added, removed or changed selected
+  version (including per-root membership, features and reasons) must belong to a
+  crate with a new version, yank or identity change in its own index. A change to
+  another crate, formatting, or nonidentity backfill cannot excuse resolver changes.
+  Exact new line bytes/nonidentity provenance can be reported separately when they
+  match upstream; they never excuse selection changes or invented output. Existing
+  identity mutation/removal remains a conservative hard failure. A new refusal
+  still requires a demonstrably yanked declared root as well as explained selections.
+- **Over-selection regression:** each CI root's native-only version set is compared
+  with its committed `oracle_native_only` allowance. Any new extra version fails,
+  even when Cargo remains a subset and upstream metadata changed. Allowances come
+  from the reviewed full run 45112301249, not the current live output; proposals
+  preserve them. All live cases have zero extras. Four synthetic cases intentionally
+  retain finite alternate-version coverage (2/2/2/1 extras), recorded explicitly.
+  Missing allowances fail CI. Local runs without Cargo cannot qualify this guard.
 - **Conformance mismatch:** Cargo/full/filtered coverage, refusal or locked checksum
   results disagree, regardless of concurrent upstream changes. Always fail.
 - **Infrastructure failure:** a timeout, missing output or transport/format error
@@ -128,13 +139,22 @@ Review Agent reviews this suite and later intentional behavior changes before me
 PRs; Dependabot PRs skip it. Only the weekly tracking job has `issues: write`.
 It opens or updates one issue titled **Crate corpus report** when something changed
 or failed, reopens that same issue after a later change, and closes it when clean.
-Duplicate existing tracking titles cause a refusal rather than another issue.
+Discovery queries the dedicated `rust-mirror-corpus` label and creator
+`github-actions[bot]`, following all pages; the label is created if absent. Updates
+and closure additionally require the exact bot author, label and managed marker,
+and exclude PRs. Human-created lookalikes, including the same title/marker, are
+never edited or closed. Multiple owned matches refuse rather than creating another
+issue; title alone is never ownership.
 Manual dispatch and PR jobs never write issues. There is no automatic baseline PR
 or merge; the tracking issue points to report/proposal artifacts.
 
 Before a release, the latest weekly run must have succeeded with every difference
 clean or classified upstream, or a full dispatch on the exact release commit must
-pass. The tag release gate enforces this through:
+pass. A weekly qualifies only on the release commit itself or when no watched
+path changed from its ancestor commit to the release commit. The gate reads the
+actual PR path filters in `corpus.yml` and uses local Git ancestry/path comparison,
+without the API changed-file limit. Relevant changes, absent history or an
+unsupported filter spelling require an exact-head dispatch. The tag gate uses:
 
 ```sh
 python3 scripts/corpus.py release-check --repository rustcommons/rust-mirror --sha FULL_COMMIT_SHA

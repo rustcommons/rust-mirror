@@ -669,7 +669,8 @@ require 100/100-root, 186-version frozen replay, explicit classified live diffs,
 no archive downloads and tested native/Cargo conformance. Keep the corpus green;
 ranking refreshes and baseline changes are reviewed PRs, never auto-merged.
 Only the weekly tracking-issue job may write issues. Before release require a
-clean/latest-upstream-only weekly or a passing full dispatch on the release head.
+clean/latest-upstream-only weekly covering the release commit with unchanged
+corpus-watched paths, or a passing full dispatch on the exact release head.
 Follow [CORPUS.md](docs/CORPUS.md). No new dependencies/version bump/publication
 are authorized by this task. The Repository Review Agent reviews before merge;
 report green PR and PR/full-dispatch run IDs, then stop. Never merge/mainpush or
