@@ -1,0 +1,910 @@
+{
+  "status": "dependency assessment; feature incomplete, not qualified for merge",
+  "date": "2026-11-23",
+  "pgp": "0.21.1",
+  "default_features": false,
+  "features": [],
+  "base_commit": "8d3a15c55e10c69f134d04c5cfa5800ca460922c",
+  "added_or_changed_versions": [
+    {
+      "name": "aead",
+      "version": "0.5.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "aes",
+      "version": "0.8.4",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "aes-gcm",
+      "version": "0.10.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "aes-kw",
+      "version": "0.2.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "argon2",
+      "version": "0.5.3",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "base16ct",
+      "version": "0.2.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "base64ct",
+      "version": "1.8.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.85",
+      "new_name": true
+    },
+    {
+      "name": "bitfields",
+      "version": "1.0.3",
+      "license": "MIT",
+      "rust_version": "1.83.0",
+      "new_name": true
+    },
+    {
+      "name": "bitfields-impl",
+      "version": "1.0.3",
+      "license": "MIT",
+      "rust_version": "1.83.0",
+      "new_name": true
+    },
+    {
+      "name": "bitvec",
+      "version": "1.1.1",
+      "license": "MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "blake2",
+      "version": "0.10.6",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "block-buffer",
+      "version": "0.10.4",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": false
+    },
+    {
+      "name": "block-padding",
+      "version": "0.3.3",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "blowfish",
+      "version": "0.9.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "buffer-redux",
+      "version": "1.1.0",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.71",
+      "new_name": true
+    },
+    {
+      "name": "byteorder",
+      "version": "1.5.0",
+      "license": "Unlicense OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "bytes",
+      "version": "1.12.2",
+      "license": "MIT",
+      "rust_version": "1.57",
+      "new_name": true
+    },
+    {
+      "name": "camellia",
+      "version": "0.1.0",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "cast5",
+      "version": "0.11.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "cfb-mode",
+      "version": "0.8.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "cipher",
+      "version": "0.4.4",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "cmac",
+      "version": "0.7.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "const-oid",
+      "version": "0.9.6",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.57",
+      "new_name": false
+    },
+    {
+      "name": "convert_case",
+      "version": "0.10.0",
+      "license": "MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "cpufeatures",
+      "version": "0.2.17",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": false
+    },
+    {
+      "name": "crc24",
+      "version": "0.1.6",
+      "license": "MIT/Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "crypto-bigint",
+      "version": "0.5.5",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "crypto-common",
+      "version": "0.1.7",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": false
+    },
+    {
+      "name": "ctr",
+      "version": "0.9.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "curve25519-dalek",
+      "version": "4.1.3",
+      "license": "BSD-3-Clause",
+      "rust_version": "1.60.0",
+      "new_name": true
+    },
+    {
+      "name": "curve25519-dalek-derive",
+      "version": "0.1.1",
+      "license": "MIT/Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "cx448",
+      "version": "0.1.1",
+      "license": "BSD-3-Clause",
+      "rust_version": "1.83",
+      "new_name": true
+    },
+    {
+      "name": "darling",
+      "version": "0.20.11",
+      "license": "MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "darling_core",
+      "version": "0.20.11",
+      "license": "MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "darling_macro",
+      "version": "0.20.11",
+      "license": "MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "dbl",
+      "version": "0.3.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "der",
+      "version": "0.7.10",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "derive_builder",
+      "version": "0.20.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "derive_builder_core",
+      "version": "0.20.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "derive_builder_macro",
+      "version": "0.20.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "derive_more",
+      "version": "2.1.1",
+      "license": "MIT",
+      "rust_version": "1.81.0",
+      "new_name": true
+    },
+    {
+      "name": "derive_more-impl",
+      "version": "2.1.1",
+      "license": "MIT",
+      "rust_version": "1.81.0",
+      "new_name": true
+    },
+    {
+      "name": "des",
+      "version": "0.8.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "digest",
+      "version": "0.10.7",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": false
+    },
+    {
+      "name": "dsa",
+      "version": "0.6.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "eax",
+      "version": "0.5.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "ecdsa",
+      "version": "0.16.9",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "ed25519",
+      "version": "2.2.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "ed25519-dalek",
+      "version": "2.2.0",
+      "license": "BSD-3-Clause",
+      "rust_version": "1.81",
+      "new_name": true
+    },
+    {
+      "name": "elliptic-curve",
+      "version": "0.13.8",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "ff",
+      "version": "0.13.1",
+      "license": "MIT/Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "fiat-crypto",
+      "version": "0.2.9",
+      "license": "MIT OR Apache-2.0 OR BSD-1-Clause",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "fnv",
+      "version": "1.0.7",
+      "license": "Apache-2.0 / MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "funty",
+      "version": "2.0.0",
+      "license": "MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "generic-array",
+      "version": "0.14.7",
+      "license": "MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "ghash",
+      "version": "0.5.1",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "group",
+      "version": "0.13.0",
+      "license": "MIT/Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "heck",
+      "version": "0.5.0",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "hkdf",
+      "version": "0.12.4",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "hmac",
+      "version": "0.12.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "idea",
+      "version": "0.5.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "ident_case",
+      "version": "1.0.1",
+      "license": "MIT/Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "inout",
+      "version": "0.1.4",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "k256",
+      "version": "0.13.4",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "keccak",
+      "version": "0.1.6",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "libm",
+      "version": "0.2.16",
+      "license": "MIT",
+      "rust_version": "1.63",
+      "new_name": true
+    },
+    {
+      "name": "libz-rs-sys",
+      "version": "0.5.5",
+      "license": "Zlib",
+      "rust_version": "1.75",
+      "new_name": true
+    },
+    {
+      "name": "md-5",
+      "version": "0.10.6",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "memchr",
+      "version": "2.8.3",
+      "license": "Unlicense OR MIT",
+      "rust_version": "1.61",
+      "new_name": false
+    },
+    {
+      "name": "nom",
+      "version": "8.0.0",
+      "license": "MIT",
+      "rust_version": "1.65.0",
+      "new_name": false
+    },
+    {
+      "name": "num-bigint-dig",
+      "version": "0.8.6",
+      "license": "MIT/Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "num-iter",
+      "version": "0.1.46",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.31",
+      "new_name": true
+    },
+    {
+      "name": "num_enum",
+      "version": "0.7.6",
+      "license": "BSD-3-Clause OR MIT OR Apache-2.0",
+      "rust_version": "1.70.0",
+      "new_name": true
+    },
+    {
+      "name": "num_enum_derive",
+      "version": "0.7.6",
+      "license": "BSD-3-Clause OR MIT OR Apache-2.0",
+      "rust_version": "1.70.0",
+      "new_name": true
+    },
+    {
+      "name": "ocb3",
+      "version": "0.1.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "opaque-debug",
+      "version": "0.3.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "p256",
+      "version": "0.13.2",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "p384",
+      "version": "0.13.1",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "p521",
+      "version": "0.13.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "password-hash",
+      "version": "0.5.0",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "pem-rfc7468",
+      "version": "0.7.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "pgp",
+      "version": "0.21.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.88",
+      "new_name": true
+    },
+    {
+      "name": "pkcs1",
+      "version": "0.7.5",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "pkcs8",
+      "version": "0.10.2",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "polyval",
+      "version": "0.6.2",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "ppv-lite86",
+      "version": "0.2.21",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.61",
+      "new_name": true
+    },
+    {
+      "name": "primeorder",
+      "version": "0.13.6",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "quote",
+      "version": "1.0.47",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.71",
+      "new_name": false
+    },
+    {
+      "name": "radium",
+      "version": "0.7.0",
+      "license": "MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "rand",
+      "version": "0.8.8",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "rand_chacha",
+      "version": "0.3.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "rand_core",
+      "version": "0.6.4",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "replace_with",
+      "version": "0.1.8",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "rfc6979",
+      "version": "0.4.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.61",
+      "new_name": true
+    },
+    {
+      "name": "ripemd",
+      "version": "0.1.3",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "rsa",
+      "version": "0.9.10",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "rustc_version",
+      "version": "0.4.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.32",
+      "new_name": true
+    },
+    {
+      "name": "rustversion",
+      "version": "1.0.23",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.31",
+      "new_name": true
+    },
+    {
+      "name": "sec1",
+      "version": "0.7.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "serdect",
+      "version": "0.2.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "serdect",
+      "version": "0.3.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.70",
+      "new_name": true
+    },
+    {
+      "name": "sha1",
+      "version": "0.10.7",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "sha1-checked",
+      "version": "0.10.0",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.72",
+      "new_name": true
+    },
+    {
+      "name": "sha2",
+      "version": "0.10.9",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": false
+    },
+    {
+      "name": "sha3",
+      "version": "0.10.9",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "signature",
+      "version": "2.2.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "snafu",
+      "version": "0.9.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "snafu-derive",
+      "version": "0.9.2",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "spin",
+      "version": "0.9.9",
+      "license": "MIT",
+      "rust_version": "1.38",
+      "new_name": true
+    },
+    {
+      "name": "spki",
+      "version": "0.7.3",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.65",
+      "new_name": true
+    },
+    {
+      "name": "strsim",
+      "version": "0.11.1",
+      "license": "MIT",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "syn",
+      "version": "2.0.119",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.71",
+      "new_name": false
+    },
+    {
+      "name": "tap",
+      "version": "1.0.1",
+      "license": "MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "twofish",
+      "version": "0.7.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "unicode-segmentation",
+      "version": "1.13.3",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.85.0",
+      "new_name": true
+    },
+    {
+      "name": "unicode-xid",
+      "version": "0.2.6",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.17",
+      "new_name": true
+    },
+    {
+      "name": "universal-hash",
+      "version": "0.5.1",
+      "license": "MIT OR Apache-2.0",
+      "rust_version": "1.56",
+      "new_name": true
+    },
+    {
+      "name": "version_check",
+      "version": "0.9.5",
+      "license": "MIT/Apache-2.0",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "wyz",
+      "version": "0.5.1",
+      "license": "MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "x25519-dalek",
+      "version": "2.0.1",
+      "license": "BSD-3-Clause",
+      "rust_version": "1.60",
+      "new_name": true
+    },
+    {
+      "name": "zerocopy",
+      "version": "0.8.64",
+      "license": "BSD-2-Clause OR Apache-2.0 OR MIT",
+      "rust_version": "1.56.0",
+      "new_name": true
+    },
+    {
+      "name": "zerocopy-derive",
+      "version": "0.8.64",
+      "license": "BSD-2-Clause OR Apache-2.0 OR MIT",
+      "rust_version": null,
+      "new_name": true
+    },
+    {
+      "name": "zeroize_derive",
+      "version": "1.5.0",
+      "license": "Apache-2.0 OR MIT",
+      "rust_version": "1.85",
+      "new_name": true
+    },
+    {
+      "name": "zlib-rs",
+      "version": "0.5.5",
+      "license": "Zlib",
+      "rust_version": "1.75",
+      "new_name": true
+    }
+  ],
+  "cargo_deny": {
+    "version": "0.20.2",
+    "exit": 1,
+    "advisories": "failed",
+    "bans": "ok",
+    "licenses": "ok",
+    "sources": "ok",
+    "findings": [
+      {
+        "id": "RUSTSEC-2023-0071",
+        "crate": "rsa",
+        "version": "0.9.10",
+        "patched": ">=0.10.0",
+        "constraint": "pgp requires ^0.9.10"
+      },
+      {
+        "id": "RUSTSEC-2026-0387",
+        "crate": "crypto-bigint",
+        "version": "0.5.5",
+        "patched": ">=0.7.6 (select a non-yanked patched version)",
+        "constraint": "cx448/elliptic-curve require ^0.5.5"
+      }
+    ]
+  },
+  "msrv_build": "cargo +1.90.0 check --lib -j 2: passed",
+  "key_fingerprint": "108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE",
+  "key_armor_sha256": "e54b09a439647e006b4831eec9785cbaaf3e07ab371c3a6ee6a68e1bdb9fbc6b",
+  "official_sources": [
+    "https://static.rust-lang.org/rust-key.gpg.ascii",
+    "https://raw.githubusercontent.com/rust-lang/rustup/bb60b1e89cc01a682dd16f2854329030938d3fe3/src/rust-key.pgp.ascii",
+    "https://raw.githubusercontent.com/rust-lang/prev.rust-lang.org/3c8d24f62264c5dd1bd8cb4acc29c2fa2bbc678e/rust-key.gpg.ascii"
+  ]
+}

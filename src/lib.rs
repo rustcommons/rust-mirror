@@ -11,6 +11,7 @@ pub mod publish;
 pub use error::{error_kind, Error, ErrorKind};
 mod resume;
 pub mod selection;
+pub mod signatures;
 pub use resume::Transfer;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ErrorKind {
+    /// OpenPGP manifest authentication or pinned-key policy refused the input.
+    Signature,
     /// A new-output operation found an existing output.
     OutputExists,
     /// Saved progress does not match the requested frozen identity.

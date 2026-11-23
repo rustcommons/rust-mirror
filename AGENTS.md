@@ -659,6 +659,32 @@ checked eight provenance subjects, all six SBOM bindings and bundle/store equali
 Preserve the gate refusal and immutable source/assets; the later inherited `url`
 advisory seen in maintenance is not waived by successful publication.
 
+## OpenPGP manifest verification and 0.7.0 authorization
+
+Owner authorization, 2026-11-22: implement default-on independent OpenPGP
+verification of Rust channel manifests, then prepare 0.7.0 in a separate release
+PR after the feature PR and Repository Review Agent review. The owner approves
+one new direct dependency, `pgp` (rPGP, MIT OR Apache-2.0), and a pinned-key trust
+policy. Disable unnecessary default features, retain MSRV 1.90, enumerate new
+transitive crates/licenses and keep cargo-deny green without new license or
+advisory exceptions; ask before adding any other direct dependency or license
+exception.
+
+Compile in the official release certificate and pin primary fingerprint
+`108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE`, checked against at least two official
+sources. Refreshed certificates may retain that primary identity; a different
+primary requires a new release. Verify each manifest before trusting component
+hashes; retain original manifest/.asc bytes. Refuse missing/invalid/wrong-signer
+or expired/revoked-at-signing keys with typed/event errors. An explicit
+`--allow-unsigned-manifest`/configuration opt-out for unsigned historical data
+must appear in previews, frozen plans and inventories, never silently apply.
+Verify replay/old-cache/assembly/publication boundaries, document migration and
+public API/schema breaks, and fuzz key/signature parsers. Never invoke gpg or a
+keyserver. The first PR contains the feature and docs with no version bump;
+report its green full dry run and stop for review. The later 0.7.0 release PR
+separately updates version/notes/locks after merge. Never push main, merge, tag,
+add tool attribution or poll CI in a loop.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
