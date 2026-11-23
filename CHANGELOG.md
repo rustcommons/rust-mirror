@@ -4,6 +4,10 @@
 
 ### Repository
 
+- Track versioned top-crate, tricky and real-lock regression corpora with frozen
+  replay, explicit upstream/regression classification, CI-only Cargo conformance,
+  weekly reports and a corpus release gate; refreshes require reviewed PRs.
+
 - Record the OpenPGP dependency/key approvals and preserved prototype; integration
   waits for an rPGP release that clears both dependency advisories without exceptions.
 - Contain offline-proof uploads within the served directory and reject symlinked

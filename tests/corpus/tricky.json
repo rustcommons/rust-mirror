@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "created_at": "2026-11-23",
+  "source": {
+    "fixture": "scripts/crates_phase0_fixtures.py",
+    "index": "https://index.crates.io/",
+    "collision_fixture": "tests/fixtures/ndk-sys-20261114.index"
+  },
+  "cases": [
+    {
+      "id": "synthetic-feature-intersection",
+      "synthetic": "feature-intersection",
+      "reason": "Frozen native/Cargo edge case: feature-intersection.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-prerelease-intersection",
+      "synthetic": "prerelease-intersection",
+      "reason": "Frozen native/Cargo edge case: prerelease-intersection.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-links-backtrack",
+      "synthetic": "links-backtrack",
+      "reason": "Unique links identity must force parent backtracking.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-cycle-gate",
+      "synthetic": "cycle-gate",
+      "reason": "Frozen native/Cargo edge case: cycle-gate.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-pin-forces-older",
+      "synthetic": "pin-forces-older",
+      "reason": "Frozen native/Cargo edge case: pin-forces-older.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-exact-conflict",
+      "synthetic": "exact-conflict",
+      "reason": "Frozen native/Cargo edge case: exact-conflict.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-weak-lock-only",
+      "synthetic": "weak-lock-only",
+      "reason": "Frozen native/Cargo edge case: weak-lock-only.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-weak-disabled",
+      "synthetic": "weak-disabled",
+      "reason": "Frozen native/Cargo edge case: weak-disabled.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-renamed-strong-v2",
+      "synthetic": "renamed-strong-v2",
+      "reason": "Renamed deps and features2 dep: activation must retain exact semantics.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-targets-build-dev",
+      "synthetic": "targets-build-dev",
+      "reason": "Target-gated build edges stay included; dependency dev edges stay excluded.",
+      "fast": true
+    },
+    {
+      "id": "synthetic-yanked-pin",
+      "synthetic": "yanked-pin",
+      "reason": "New manual roots must not select a yanked version.",
+      "fast": true
+    },
+    {
+      "id": "reqwest-declared",
+      "roots": [
+        {
+          "name": "reqwest",
+          "version": "0.12.24",
+          "features": [],
+          "default_features": true
+        }
+      ],
+      "reason": "Defaults and TLS feature unification across target-gated dependencies.",
+      "fast": false
+    },
+    {
+      "id": "tokio-full",
+      "roots": [
+        {
+          "name": "tokio",
+          "version": "1.54.1",
+          "features": [
+            "full"
+          ],
+          "default_features": true
+        }
+      ],
+      "reason": "Full feature unification, optional and target-gated edges.",
+      "fast": true
+    },
+    {
+      "id": "windows-sys-declared",
+      "roots": [
+        {
+          "name": "windows-sys",
+          "version": "0.61.2",
+          "features": [
+            "Win32_Foundation"
+          ],
+          "default_features": true
+        }
+      ],
+      "reason": "Windows target graph and declared API feature closure.",
+      "fast": false
+    },
+    {
+      "id": "ndk-sys-declared",
+      "roots": [
+        {
+          "name": "ndk-sys",
+          "version": "0.6.0+11769913",
+          "features": [],
+          "default_features": true
+        }
+      ],
+      "reason": "Historical build-metadata collisions must remain warnings when unselected.",
+      "fast": true
+    }
+  ],
+  "ci_guards": [
+    {
+      "test": "upstream_backfill_warns_and_serves_new_bytes_without_rewriting_proofs",
+      "reason": "Serve new nonidentity bytes while preserving historical cohort proofs."
+    },
+    {
+      "test": "retained_features2_drift_is_an_identity_refusal_for_valid_v2_records",
+      "reason": "features2 is identity; never erase it during backfill comparison."
+    },
+    {
+      "test": "successive_generations_preserve_closures_bytes_and_separate_yank_observations",
+      "reason": "Immutable output closure and yank observations survive generation retention."
+    }
+  ]
+}

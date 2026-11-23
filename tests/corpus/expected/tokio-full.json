@@ -1,0 +1,4172 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_line_sha256": {
+      "bitflags@2.13.2": "01142108ed6dc81d2d9eb10a54bb12fca2948c18d5cebd308c71748c8c9a7489",
+      "bytes@1.12.2": "0f8cee52f22757223577bb8d5785c84cc9580b861fceabffe5d0421141c9362a",
+      "cfg-if@1.0.5": "f550e8d5946ee852b8f07725532772c7e6b2d4b5c15990738c83b8a6222fdea3",
+      "errno@0.3.15": "23915257a7ef880a2b66f419700d148de87612be853fe385e7c1bb86bfc5d42a",
+      "libc@0.2.191": "d236f292a83b0d9953a6bd811533acc994ef8c39bb5a705cb85e1d5f93fd6171",
+      "lock_api@0.4.14": "231a9ba51c8dbbddef00829e153a8be8013d5527ec8de9178a1d327163262641",
+      "mio@1.2.5": "38bd313184d97136ab6094c6931c75f660cf1655bf8c96b908c56518132448d6",
+      "parking_lot@0.12.5": "3745bc6ee4fd4ede78d601fa671200807614b4dd13586585c7596f09d701f483",
+      "parking_lot_core@0.9.12": "42ef8a5792de8d4d8187bd6c69ef1f08fa68653d652c76604dbb92478e48af36",
+      "pin-project-lite@0.2.18": "1da89c6c2326455f56ce0665e575519980b5ee4e60f9880eb92476ce689fcdd8",
+      "proc-macro2@1.0.107": "8a59650e19a615bee5ce7c0e9aab30f6b6aa3c3d86fbb88cde865fde9458480f",
+      "quote@1.0.47": "fcb27cbd471a5bcb4766aac9ea557e5c7358802de8ba4652d46cee7d653f09e8",
+      "redox_syscall@0.5.18": "e02f5bbeea7846b76117eebb4275711a15e73ea2d0188adf99e4ea535e1bacd1",
+      "scopeguard@1.2.0": "01e7bdbbbcce9eb8e061366b6ac3cf7874af2f94a109d1de7265b600f495bc69",
+      "signal-hook-registry@1.4.8": "9215b77e7f9615135afe028a0afb1142733768a0f5f1596668a6bb0bc4a5cee2",
+      "smallvec@1.16.6": "d00d1065f53cc92ce232deb1d538ccf77b769cc8488be69dcb1d290a725b09fb",
+      "socket2@0.6.5": "1bb1b937535578597ccfaa5b7e298c472ccfc762a6af0780a5d96323a3c4fc86",
+      "syn@3.0.10": "e5e62c634c3f0bcb443e2c5e5975c92fc9fb78a8b7f854f924719579efcc3bc1",
+      "tokio-macros@2.7.2": "9ed69a3f296c6179ce9cc0d635fe6c1a7f1c42be30c3ec7bd0f04be141a22b75",
+      "tokio@1.54.1": "87b09e7187b0247a4ad13231d559077a43908452c675c6665d3c9894b3a0c21b",
+      "unicode-ident@1.0.27": "2568bf9220c0000a7c0fdbea9061c758f01604af2dd14507d018cde60d93eb63",
+      "wasi@0.11.1+wasi-snapshot-preview1": "c5dd8f0f03c0dce0baf2d7bde29515be85520a089f531a05ce3c9e13982b1000",
+      "windows-link@0.2.1": "c5124554114d200f2e551951a932844a089a37bcf0b56e95fd3d6abf21fba1f1",
+      "windows-sys@0.61.2": "71a3125049c805f3c9498bfc8ad5e050fdc413df916b98fb9cad213ee548366e"
+    },
+    "index_warnings": [],
+    "known_archive_bytes": 0,
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": true,
+        "features": [
+          "full"
+        ],
+        "name": "tokio",
+        "version": "1.54.1"
+      }
+    ],
+    "roots": [
+      {
+        "profile": {
+          "default_features": true,
+          "features": [
+            "full"
+          ],
+          "name": "tokio",
+          "version": "1.54.1"
+        },
+        "resolved_versions": [
+          "bitflags@2.13.2",
+          "bytes@1.12.2",
+          "cfg-if@1.0.5",
+          "errno@0.3.15",
+          "libc@0.2.191",
+          "lock_api@0.4.14",
+          "mio@1.2.5",
+          "parking_lot@0.12.5",
+          "parking_lot_core@0.9.12",
+          "pin-project-lite@0.2.18",
+          "proc-macro2@1.0.107",
+          "quote@1.0.47",
+          "redox_syscall@0.5.18",
+          "scopeguard@1.2.0",
+          "signal-hook-registry@1.4.8",
+          "smallvec@1.16.6",
+          "socket2@0.6.5",
+          "syn@3.0.10",
+          "tokio-macros@2.7.2",
+          "tokio@1.54.1",
+          "unicode-ident@1.0.27",
+          "wasi@0.11.1+wasi-snapshot-preview1",
+          "windows-link@0.2.1",
+          "windows-sys@0.61.2"
+        ]
+      }
+    ],
+    "selected_rows": {
+      "bitflags@2.13.2": {
+        "cksum": "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "arbitrary",
+            "optional": true,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "arbitrary",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "bytemuck",
+            "optional": true,
+            "req": "^1.12",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "bytemuck",
+            "optional": false,
+            "req": "^1.12.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_core",
+            "optional": true,
+            "req": "^1.0.228",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "serde_lib",
+            "optional": false,
+            "package": "serde",
+            "req": "^1.0.103",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_test",
+            "optional": false,
+            "req": "^1.0.19",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "trybuild",
+            "optional": false,
+            "req": "^1.0.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "zerocopy",
+            "optional": false,
+            "req": "^0.8",
+            "target": null
+          }
+        ],
+        "features": {
+          "example_generated": [],
+          "serde": [
+            "serde_core"
+          ],
+          "std": []
+        },
+        "name": "bitflags",
+        "pubtime": "2026-09-10T01:11:38Z",
+        "rust_version": "1.56.0",
+        "vers": "2.13.2",
+        "yanked": false
+      },
+      "bytes@1.12.2": {
+        "cksum": "776dfebd015e2d8732c684a2c71003674ccb49457b539b9e82151ba38e96dd7c",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [
+              "require-cas"
+            ],
+            "kind": "normal",
+            "name": "extra-platforms",
+            "optional": true,
+            "package": "portable-atomic",
+            "req": "^1.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "loom",
+            "optional": false,
+            "req": "^0.7",
+            "target": "cfg(loom)"
+          },
+          {
+            "default_features": false,
+            "features": [
+              "alloc"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": true,
+            "req": "^1.0.70",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_test",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": []
+        },
+        "name": "bytes",
+        "pubtime": "2026-11-17T20:58:59Z",
+        "rust_version": "1.57",
+        "vers": "1.12.2",
+        "yanked": false
+      },
+      "cfg-if@1.0.5": {
+        "cksum": "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "rustc-dep-of-std": [
+            "core"
+          ]
+        },
+        "name": "cfg-if",
+        "pubtime": "2026-09-16T17:36:11Z",
+        "rust_version": "1.32",
+        "vers": "1.0.5",
+        "yanked": false
+      },
+      "errno@0.3.15": {
+        "cksum": "e35d6e78f4cebb90e51d543db8fe41528851d6deeef6ef21ebd4bfdc1e784776",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2",
+            "target": "cfg(target_os=\"hermit\")"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2",
+            "target": "cfg(target_os=\"wasi\")"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_System_Diagnostics_Debug"
+            ],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": false,
+            "req": ">=0.52, <0.62",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "libc/std"
+          ]
+        },
+        "name": "errno",
+        "pubtime": "2026-11-12T09:54:35Z",
+        "rust_version": "1.56",
+        "vers": "0.3.15",
+        "yanked": false
+      },
+      "libc@0.2.191": {
+        "cksum": "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "rustc-std-workspace-core",
+            "optional": true,
+            "req": "^1.0.1",
+            "target": null
+          }
+        ],
+        "features": {
+          "align": [],
+          "const-extern-fn": [],
+          "default": [
+            "std"
+          ],
+          "extra_traits": [],
+          "rustc-dep-of-std": [
+            "align",
+            "rustc-std-workspace-core"
+          ],
+          "std": [],
+          "use_std": [
+            "std"
+          ]
+        },
+        "name": "libc",
+        "pubtime": "2026-10-16T22:56:46Z",
+        "rust_version": "1.65",
+        "vers": "0.2.191",
+        "yanked": false
+      },
+      "lock_api@0.4.14": {
+        "cksum": "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "owning_ref",
+            "optional": true,
+            "req": "^0.4.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "scopeguard",
+            "optional": false,
+            "req": "^1.1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde",
+            "optional": true,
+            "req": "^1.0.126",
+            "target": null
+          }
+        ],
+        "features": {
+          "arc_lock": [],
+          "atomic_usize": [],
+          "default": [
+            "atomic_usize"
+          ],
+          "nightly": []
+        },
+        "name": "lock_api",
+        "pubtime": "2025-10-03T23:33:12Z",
+        "rust_version": "1.71.0",
+        "vers": "0.4.14",
+        "yanked": false
+      },
+      "mio@1.2.5": {
+        "cksum": "20521a903f02b0a573cd6840e9d0a5a0cc043d361fe924092cd70f8556cc9c4a",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "env_logger",
+            "optional": false,
+            "req": "^0.11",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.190",
+            "target": "cfg(any(unix, target_os = \"hermit\", target_os = \"wasi\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "log",
+            "optional": true,
+            "req": "^0.4.8",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.9",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "wasi",
+            "optional": false,
+            "req": "^0.11.0",
+            "target": "cfg(target_os = \"wasi\")"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "Wdk_Foundation",
+              "Wdk_Storage_FileSystem",
+              "Wdk_System_IO",
+              "Win32_Foundation",
+              "Win32_Networking_WinSock",
+              "Win32_Storage_FileSystem",
+              "Win32_Security",
+              "Win32_System_IO",
+              "Win32_System_WindowsProgramming"
+            ],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": false,
+            "req": "^0.61",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {
+          "default": [
+            "log"
+          ],
+          "net": [],
+          "os-ext": [
+            "os-poll",
+            "windows-sys/Win32_System_Pipes",
+            "windows-sys/Win32_Security"
+          ],
+          "os-poll": []
+        },
+        "name": "mio",
+        "pubtime": "2026-11-13T17:07:23Z",
+        "rust_version": "1.71",
+        "vers": "1.2.5",
+        "yanked": false
+      },
+      "parking_lot@0.12.5": {
+        "cksum": "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "bincode",
+            "optional": false,
+            "req": "^1.3.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "lock_api",
+            "optional": false,
+            "req": "^0.4.14",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "parking_lot_core",
+            "optional": false,
+            "req": "^0.9.12",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.8.3",
+            "target": null
+          }
+        ],
+        "features": {
+          "arc_lock": [
+            "lock_api/arc_lock"
+          ],
+          "deadlock_detection": [
+            "parking_lot_core/deadlock_detection"
+          ],
+          "default": [],
+          "hardware-lock-elision": [],
+          "nightly": [
+            "parking_lot_core/nightly",
+            "lock_api/nightly"
+          ],
+          "owning_ref": [
+            "lock_api/owning_ref"
+          ],
+          "send_guard": [],
+          "serde": [
+            "lock_api/serde"
+          ]
+        },
+        "name": "parking_lot",
+        "pubtime": "2025-10-03T23:34:14Z",
+        "rust_version": "1.71",
+        "vers": "0.12.5",
+        "yanked": false
+      },
+      "parking_lot_core@0.9.12": {
+        "cksum": "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "backtrace",
+            "optional": true,
+            "req": "^0.3.60",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "cfg-if",
+            "optional": false,
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.95",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "petgraph",
+            "optional": true,
+            "req": "^0.6.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "redox_syscall",
+            "optional": false,
+            "req": "^0.5",
+            "target": "cfg(target_os = \"redox\")"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "smallvec",
+            "optional": false,
+            "req": "^1.6.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "windows-link",
+            "optional": false,
+            "req": "^0.2.0",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {
+          "deadlock_detection": [
+            "petgraph",
+            "backtrace"
+          ],
+          "nightly": []
+        },
+        "name": "parking_lot_core",
+        "pubtime": "2025-10-03T23:33:43Z",
+        "rust_version": "1.71.0",
+        "vers": "0.9.12",
+        "yanked": false
+      },
+      "pin-project-lite@0.2.18": {
+        "cksum": "c938015719552d665fd0553b90d96cd7ff58e83e4c061ca99e6bb78865a72752",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "static_assertions",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "pin-project-lite",
+        "pubtime": "2026-11-19T16:48:32Z",
+        "rust_version": "1.37",
+        "vers": "0.2.18",
+        "yanked": false
+      },
+      "proc-macro2@1.0.107": {
+        "cksum": "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "flate2",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rayon",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tar",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "unicode-ident",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "proc-macro"
+          ],
+          "nightly": [],
+          "proc-macro": [],
+          "span-locations": []
+        },
+        "name": "proc-macro2",
+        "pubtime": "2026-07-19T00:18:25Z",
+        "rust_version": "1.71",
+        "vers": "1.0.107",
+        "yanked": false
+      },
+      "quote@1.0.47": {
+        "cksum": "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.80",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "diff"
+            ],
+            "kind": "dev",
+            "name": "trybuild",
+            "optional": false,
+            "req": "^1.0.108",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "proc-macro"
+          ],
+          "proc-macro": [
+            "proc-macro2/proc-macro"
+          ]
+        },
+        "name": "quote",
+        "pubtime": "2026-07-19T00:16:57Z",
+        "rust_version": "1.71",
+        "vers": "1.0.47",
+        "yanked": false
+      },
+      "redox_syscall@0.5.18": {
+        "cksum": "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "bitflags",
+            "optional": false,
+            "req": "^2.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "loom",
+            "optional": false,
+            "req": "^0.7",
+            "target": "cfg(loom)"
+          }
+        ],
+        "features": {
+          "default": [
+            "userspace"
+          ],
+          "rustc-dep-of-std": [
+            "core",
+            "bitflags/rustc-dep-of-std"
+          ],
+          "std": [],
+          "userspace": []
+        },
+        "name": "redox_syscall",
+        "pubtime": "2025-10-04T14:57:04Z",
+        "vers": "0.5.18",
+        "yanked": false
+      },
+      "scopeguard@1.2.0": {
+        "cksum": "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49",
+        "deps": [],
+        "features": {
+          "default": [
+            "use_std"
+          ],
+          "use_std": []
+        },
+        "name": "scopeguard",
+        "pubtime": "2023-07-17T13:47:53Z",
+        "vers": "1.2.0",
+        "yanked": false
+      },
+      "signal-hook-registry@1.4.8": {
+        "cksum": "c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "errno",
+            "optional": false,
+            "req": ">=0.2, <0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "signal-hook",
+            "optional": false,
+            "req": "~0.3",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "signal-hook-registry",
+        "pubtime": "2025-12-25T17:35:43Z",
+        "rust_version": "1.26",
+        "vers": "1.4.8",
+        "yanked": false
+      },
+      "smallvec@1.16.6": {
+        "cksum": "3244542535d5de959d90ec55d1b5ff0fd2bb7b1310223907d5f11932847f7b59",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "arbitrary",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "bincode",
+            "optional": true,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "bincode1",
+            "optional": false,
+            "package": "bincode",
+            "req": "^1.0.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "malloc_size_of",
+            "optional": true,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "unty",
+            "optional": true,
+            "req": "^0.0.4",
+            "target": null
+          }
+        ],
+        "features": {
+          "const_generics": [],
+          "const_new": [
+            "const_generics"
+          ],
+          "drain_filter": [],
+          "drain_keep_rest": [
+            "drain_filter"
+          ],
+          "impl_bincode": [
+            "bincode",
+            "unty"
+          ],
+          "may_dangle": [],
+          "specialization": [],
+          "union": [],
+          "write": []
+        },
+        "name": "smallvec",
+        "pubtime": "2026-11-18T08:09:40Z",
+        "vers": "1.16.6",
+        "yanked": false
+      },
+      "socket2@0.6.5": {
+        "cksum": "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.172",
+            "target": "cfg(any(unix, target_os = \"wasi\"))"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_Networking_WinSock",
+              "Win32_System_IO",
+              "Win32_System_Threading",
+              "Win32_System_WindowsProgramming"
+            ],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": false,
+            "req": ">=0.60, <0.62",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {
+          "all": []
+        },
+        "name": "socket2",
+        "pubtime": "2026-07-13T19:45:58Z",
+        "rust_version": "1.70",
+        "vers": "0.6.5",
+        "yanked": false
+      },
+      "syn@3.0.10": {
+        "cksum": "4ae9ccbea3a7b0b09443036490c8f34a8b1b760fd345e5c0dae0aac718faea79",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "anyhow",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "automod",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "flate2",
+            "optional": false,
+            "req": "^1",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "insta",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.91",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": true,
+            "req": "^1.0.35",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rayon",
+            "optional": false,
+            "req": "^1",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "ref-cast",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "blocking"
+            ],
+            "kind": "dev",
+            "name": "reqwest",
+            "optional": false,
+            "req": "^0.13",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "syn-test-suite",
+            "optional": false,
+            "req": "^0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tar",
+            "optional": false,
+            "req": "^0.4.16",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "termcolor",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "unicode-ident",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "walkdir",
+            "optional": false,
+            "req": "^2.3.2",
+            "target": "cfg(not(miri))"
+          }
+        ],
+        "features": {
+          "clone-impls": [],
+          "derive": [],
+          "extra-traits": [],
+          "fold": [],
+          "full": [],
+          "parsing": [],
+          "test": [
+            "syn-test-suite/all-features"
+          ],
+          "visit": [],
+          "visit-mut": []
+        },
+        "features2": {
+          "default": [
+            "derive",
+            "parsing",
+            "printing",
+            "clone-impls",
+            "proc-macro"
+          ],
+          "printing": [
+            "dep:quote"
+          ],
+          "proc-macro": [
+            "proc-macro2/proc-macro",
+            "quote?/proc-macro"
+          ]
+        },
+        "name": "syn",
+        "pubtime": "2026-11-09T05:53:12Z",
+        "rust_version": "1.71",
+        "v": 2,
+        "vers": "3.0.10",
+        "yanked": false
+      },
+      "tokio-macros@2.7.2": {
+        "cksum": "78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.60",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "full"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^3.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "full",
+              "test-util"
+            ],
+            "kind": "dev",
+            "name": "tokio",
+            "optional": false,
+            "req": "^1.0.0",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "tokio-macros",
+        "pubtime": "2026-07-29T13:15:27Z",
+        "rust_version": "1.71",
+        "vers": "2.7.2",
+        "yanked": false
+      },
+      "tokio@1.54.1": {
+        "cksum": "b52fd3255258d26fac7264ab5a76b53c13367136dc011d3d6ad4f8ed070396a3",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "async-stream",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "backtrace",
+            "optional": true,
+            "req": "^0.3.58",
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "backtrace",
+            "optional": false,
+            "req": "^0.3.58",
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "bytes",
+            "optional": true,
+            "req": "^1.2.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "async-await"
+            ],
+            "kind": "dev",
+            "name": "futures",
+            "optional": false,
+            "req": "^0.3.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "futures-concurrency",
+            "optional": false,
+            "req": "^7.6.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "futures-test",
+            "optional": false,
+            "req": "^0.3.31",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "io-uring",
+            "optional": true,
+            "req": "^0.7.11",
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": true,
+            "req": "^0.2.168",
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": true,
+            "req": "^0.2.168",
+            "target": "cfg(target_os = \"wasi\")"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": true,
+            "req": "^0.2.168",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.168",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "futures",
+              "checkpoint"
+            ],
+            "kind": "dev",
+            "name": "loom",
+            "optional": false,
+            "req": "^0.7",
+            "target": "cfg(loom)"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "mio",
+            "optional": true,
+            "req": "^1.2.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "os-poll",
+              "os-ext"
+            ],
+            "kind": "normal",
+            "name": "mio",
+            "optional": true,
+            "req": "^1.2.0",
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "tokio"
+            ],
+            "kind": "dev",
+            "name": "mio-aio",
+            "optional": false,
+            "req": "^2",
+            "target": "cfg(target_os = \"freebsd\")"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "mockall",
+            "optional": false,
+            "req": "^0.13.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "aio",
+              "fs",
+              "socket"
+            ],
+            "kind": "dev",
+            "name": "nix",
+            "optional": false,
+            "req": "^0.31.0",
+            "target": "cfg(all(unix, not(target_os = \"emscripten\")))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "parking_lot",
+            "optional": true,
+            "req": "^0.12.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "pin-project-lite",
+            "optional": false,
+            "req": "^0.2.11",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "proptest",
+            "optional": false,
+            "req": "^1",
+            "target": "cfg(not(target_family = \"wasm\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.9",
+            "target": "cfg(not(all(target_family = \"wasm\", target_os = \"unknown\")))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "signal-hook-registry",
+            "optional": true,
+            "req": "^1.1.1",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "slab",
+            "optional": true,
+            "req": "^0.4.9",
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "all"
+            ],
+            "kind": "normal",
+            "name": "socket2",
+            "optional": true,
+            "req": "^0.6.3",
+            "target": "cfg(any(not(target_family = \"wasm\"), target_os = \"emscripten\", all(target_os = \"wasi\", not(target_env = \"p1\"))))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "socket2",
+            "optional": false,
+            "req": "^0.6.0",
+            "target": "cfg(not(target_family = \"wasm\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempfile",
+            "optional": false,
+            "req": "^3.1.0",
+            "target": "cfg(any(not(target_family = \"wasm\"), target_os = \"emscripten\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "tokio-macros",
+            "optional": true,
+            "req": "~2.7.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tokio-stream",
+            "optional": false,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tokio-test",
+            "optional": false,
+            "req": "^0.4.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "kind": "normal",
+            "name": "tracing",
+            "optional": true,
+            "req": "^0.1.29",
+            "target": "cfg(tokio_unstable)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tracing-mock",
+            "optional": false,
+            "req": "=0.1.0-beta.1",
+            "target": "cfg(all(tokio_unstable, target_has_atomic = \"64\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "wasm-bindgen-test",
+            "optional": false,
+            "req": "^0.3.0",
+            "target": "cfg(all(target_family = \"wasm\", target_os = \"unknown\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": true,
+            "req": "^0.61",
+            "target": "cfg(windows)"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_Security_Authorization"
+            ],
+            "kind": "dev",
+            "name": "windows-sys",
+            "optional": false,
+            "req": "^0.61",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {
+          "default": [],
+          "fs": [],
+          "full": [
+            "fs",
+            "io-util",
+            "io-std",
+            "macros",
+            "net",
+            "parking_lot",
+            "process",
+            "rt",
+            "rt-multi-thread",
+            "signal",
+            "sync",
+            "time"
+          ],
+          "io-std": [],
+          "io-util": [
+            "bytes"
+          ],
+          "macros": [
+            "tokio-macros"
+          ],
+          "net": [
+            "libc",
+            "mio/os-poll",
+            "mio/os-ext",
+            "mio/net",
+            "socket2",
+            "windows-sys/Win32_Foundation",
+            "windows-sys/Win32_Security",
+            "windows-sys/Win32_Storage_FileSystem",
+            "windows-sys/Win32_System_Pipes",
+            "windows-sys/Win32_System_SystemServices"
+          ],
+          "process": [
+            "bytes",
+            "libc",
+            "mio/os-poll",
+            "mio/os-ext",
+            "mio/net",
+            "signal-hook-registry",
+            "windows-sys/Win32_Foundation",
+            "windows-sys/Win32_System_Threading",
+            "windows-sys/Win32_System_WindowsProgramming"
+          ],
+          "rt": [],
+          "rt-multi-thread": [
+            "rt"
+          ],
+          "schedule-latency": [],
+          "signal": [
+            "libc",
+            "mio/os-poll",
+            "mio/net",
+            "mio/os-ext",
+            "signal-hook-registry",
+            "windows-sys/Win32_Foundation",
+            "windows-sys/Win32_System_Console"
+          ],
+          "sync": [],
+          "test-util": [
+            "rt",
+            "sync",
+            "time"
+          ],
+          "time": []
+        },
+        "features2": {
+          "io-uring": [
+            "dep:io-uring",
+            "libc",
+            "mio/os-poll",
+            "mio/os-ext",
+            "dep:slab"
+          ],
+          "taskdump": [
+            "dep:backtrace"
+          ]
+        },
+        "name": "tokio",
+        "pubtime": "2026-10-21T21:05:43Z",
+        "rust_version": "1.85",
+        "v": 2,
+        "vers": "1.54.1",
+        "yanked": false
+      },
+      "unicode-ident@1.0.27": {
+        "cksum": "a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "criterion",
+            "optional": false,
+            "req": "^0.8",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "fst",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.10",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "roaring",
+            "optional": false,
+            "req": "^0.11",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "ucd-trie",
+            "optional": false,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "unicode-xid",
+            "optional": false,
+            "req": "^0.2.6",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "unicode-ident",
+        "pubtime": "2026-10-12T04:20:27Z",
+        "rust_version": "1.71",
+        "vers": "1.0.27",
+        "yanked": false
+      },
+      "wasi@0.11.1+wasi-snapshot-preview1": {
+        "cksum": "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "rustc-std-workspace-alloc",
+            "optional": true,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "rustc-dep-of-std": [
+            "core",
+            "rustc-std-workspace-alloc"
+          ],
+          "std": []
+        },
+        "name": "wasi",
+        "pubtime": "2025-06-10T14:23:45Z",
+        "vers": "0.11.1+wasi-snapshot-preview1",
+        "yanked": false
+      },
+      "windows-link@0.2.1": {
+        "cksum": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+        "deps": [],
+        "features": {},
+        "name": "windows-link",
+        "pubtime": "2025-10-06T17:35:08Z",
+        "rust_version": "1.71",
+        "vers": "0.2.1",
+        "yanked": false
+      },
+      "windows-sys@0.61.2": {
+        "cksum": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "windows-link",
+            "optional": false,
+            "req": "^0.2.1",
+            "target": null
+          }
+        ],
+        "features": {
+          "Wdk": [
+            "Win32_Foundation"
+          ],
+          "Wdk_Devices": [
+            "Wdk"
+          ],
+          "Wdk_Devices_Bluetooth": [
+            "Wdk_Devices"
+          ],
+          "Wdk_Devices_HumanInterfaceDevice": [
+            "Wdk_Devices"
+          ],
+          "Wdk_Foundation": [
+            "Wdk"
+          ],
+          "Wdk_Graphics": [
+            "Wdk"
+          ],
+          "Wdk_Graphics_Direct3D": [
+            "Wdk_Graphics"
+          ],
+          "Wdk_NetworkManagement": [
+            "Wdk"
+          ],
+          "Wdk_NetworkManagement_Ndis": [
+            "Wdk_NetworkManagement"
+          ],
+          "Wdk_NetworkManagement_WindowsFilteringPlatform": [
+            "Wdk_NetworkManagement"
+          ],
+          "Wdk_Storage": [
+            "Wdk"
+          ],
+          "Wdk_Storage_FileSystem": [
+            "Wdk_Storage"
+          ],
+          "Wdk_Storage_FileSystem_Minifilters": [
+            "Wdk_Storage_FileSystem"
+          ],
+          "Wdk_System": [
+            "Wdk"
+          ],
+          "Wdk_System_IO": [
+            "Wdk_System"
+          ],
+          "Wdk_System_Memory": [
+            "Wdk_System"
+          ],
+          "Wdk_System_OfflineRegistry": [
+            "Wdk_System"
+          ],
+          "Wdk_System_Registry": [
+            "Wdk_System"
+          ],
+          "Wdk_System_SystemInformation": [
+            "Wdk_System"
+          ],
+          "Wdk_System_SystemServices": [
+            "Wdk_System"
+          ],
+          "Wdk_System_Threading": [
+            "Wdk_System"
+          ],
+          "Win32": [
+            "Win32_Foundation"
+          ],
+          "Win32_Data": [
+            "Win32"
+          ],
+          "Win32_Data_HtmlHelp": [
+            "Win32_Data"
+          ],
+          "Win32_Data_RightsManagement": [
+            "Win32_Data"
+          ],
+          "Win32_Devices": [
+            "Win32"
+          ],
+          "Win32_Devices_AllJoyn": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Beep": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_BiometricFramework": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Bluetooth": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Cdrom": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Communication": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_DeviceAndDriverInstallation": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_DeviceQuery": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Display": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Dvd": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Enumeration": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Enumeration_Pnp": [
+            "Win32_Devices_Enumeration"
+          ],
+          "Win32_Devices_Fax": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_HumanInterfaceDevice": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Nfc": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Nfp": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_PortableDevices": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Properties": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Pwm": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Sensors": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_SerialCommunication": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Tapi": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Usb": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_WebServicesOnDevices": [
+            "Win32_Devices"
+          ],
+          "Win32_Foundation": [
+            "Win32"
+          ],
+          "Win32_Gaming": [
+            "Win32"
+          ],
+          "Win32_Globalization": [
+            "Win32"
+          ],
+          "Win32_Graphics": [
+            "Win32"
+          ],
+          "Win32_Graphics_Dwm": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Gdi": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_GdiPlus": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Hlsl": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_OpenGL": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Printing": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Printing_PrintTicket": [
+            "Win32_Graphics_Printing"
+          ],
+          "Win32_Management": [
+            "Win32"
+          ],
+          "Win32_Management_MobileDeviceManagementRegistration": [
+            "Win32_Management"
+          ],
+          "Win32_Media": [
+            "Win32"
+          ],
+          "Win32_Media_Audio": [
+            "Win32_Media"
+          ],
+          "Win32_Media_DxMediaObjects": [
+            "Win32_Media"
+          ],
+          "Win32_Media_KernelStreaming": [
+            "Win32_Media"
+          ],
+          "Win32_Media_Multimedia": [
+            "Win32_Media"
+          ],
+          "Win32_Media_Streaming": [
+            "Win32_Media"
+          ],
+          "Win32_Media_WindowsMediaFormat": [
+            "Win32_Media"
+          ],
+          "Win32_NetworkManagement": [
+            "Win32"
+          ],
+          "Win32_NetworkManagement_Dhcp": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Dns": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_InternetConnectionWizard": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_IpHelper": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Multicast": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Ndis": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetBios": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetManagement": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetShell": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetworkDiagnosticsFramework": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_P2P": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_QoS": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Rras": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Snmp": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WNet": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WebDav": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WiFi": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsConnectionManager": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsFilteringPlatform": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsFirewall": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsNetworkVirtualization": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_Networking": [
+            "Win32"
+          ],
+          "Win32_Networking_ActiveDirectory": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_Clustering": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_HttpServer": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_Ldap": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WebSocket": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WinHttp": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WinInet": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WinSock": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WindowsWebServices": [
+            "Win32_Networking"
+          ],
+          "Win32_Security": [
+            "Win32"
+          ],
+          "Win32_Security_AppLocker": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Authentication": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Authentication_Identity": [
+            "Win32_Security_Authentication"
+          ],
+          "Win32_Security_Authorization": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Credentials": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Cryptography": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Cryptography_Catalog": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_Cryptography_Certificates": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_Cryptography_Sip": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_Cryptography_UI": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_DiagnosticDataQuery": [
+            "Win32_Security"
+          ],
+          "Win32_Security_DirectoryServices": [
+            "Win32_Security"
+          ],
+          "Win32_Security_EnterpriseData": [
+            "Win32_Security"
+          ],
+          "Win32_Security_ExtensibleAuthenticationProtocol": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Isolation": [
+            "Win32_Security"
+          ],
+          "Win32_Security_LicenseProtection": [
+            "Win32_Security"
+          ],
+          "Win32_Security_NetworkAccessProtection": [
+            "Win32_Security"
+          ],
+          "Win32_Security_WinTrust": [
+            "Win32_Security"
+          ],
+          "Win32_Security_WinWlx": [
+            "Win32_Security"
+          ],
+          "Win32_Storage": [
+            "Win32"
+          ],
+          "Win32_Storage_Cabinets": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_CloudFilters": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Compression": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_DistributedFileSystem": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_FileHistory": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_FileSystem": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Imapi": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_IndexServer": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_InstallableFileSystems": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_IscsiDisc": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Jet": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Nvme": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_OfflineFiles": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_OperationRecorder": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Packaging": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Packaging_Appx": [
+            "Win32_Storage_Packaging"
+          ],
+          "Win32_Storage_ProjectedFileSystem": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_StructuredStorage": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Vhd": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Xps": [
+            "Win32_Storage"
+          ],
+          "Win32_System": [
+            "Win32"
+          ],
+          "Win32_System_AddressBook": [
+            "Win32_System"
+          ],
+          "Win32_System_Antimalware": [
+            "Win32_System"
+          ],
+          "Win32_System_ApplicationInstallationAndServicing": [
+            "Win32_System"
+          ],
+          "Win32_System_ApplicationVerifier": [
+            "Win32_System"
+          ],
+          "Win32_System_ClrHosting": [
+            "Win32_System"
+          ],
+          "Win32_System_Com": [
+            "Win32_System"
+          ],
+          "Win32_System_Com_Marshal": [
+            "Win32_System_Com"
+          ],
+          "Win32_System_Com_StructuredStorage": [
+            "Win32_System_Com"
+          ],
+          "Win32_System_Com_Urlmon": [
+            "Win32_System_Com"
+          ],
+          "Win32_System_ComponentServices": [
+            "Win32_System"
+          ],
+          "Win32_System_Console": [
+            "Win32_System"
+          ],
+          "Win32_System_CorrelationVector": [
+            "Win32_System"
+          ],
+          "Win32_System_DataExchange": [
+            "Win32_System"
+          ],
+          "Win32_System_DeploymentServices": [
+            "Win32_System"
+          ],
+          "Win32_System_DeveloperLicensing": [
+            "Win32_System"
+          ],
+          "Win32_System_Diagnostics": [
+            "Win32_System"
+          ],
+          "Win32_System_Diagnostics_Ceip": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_Debug": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_Debug_Extensions": [
+            "Win32_System_Diagnostics_Debug"
+          ],
+          "Win32_System_Diagnostics_Etw": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_ProcessSnapshotting": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_ToolHelp": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_TraceLogging": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_DistributedTransactionCoordinator": [
+            "Win32_System"
+          ],
+          "Win32_System_Environment": [
+            "Win32_System"
+          ],
+          "Win32_System_ErrorReporting": [
+            "Win32_System"
+          ],
+          "Win32_System_EventCollector": [
+            "Win32_System"
+          ],
+          "Win32_System_EventLog": [
+            "Win32_System"
+          ],
+          "Win32_System_EventNotificationService": [
+            "Win32_System"
+          ],
+          "Win32_System_GroupPolicy": [
+            "Win32_System"
+          ],
+          "Win32_System_HostCompute": [
+            "Win32_System"
+          ],
+          "Win32_System_HostComputeNetwork": [
+            "Win32_System"
+          ],
+          "Win32_System_HostComputeSystem": [
+            "Win32_System"
+          ],
+          "Win32_System_Hypervisor": [
+            "Win32_System"
+          ],
+          "Win32_System_IO": [
+            "Win32_System"
+          ],
+          "Win32_System_Iis": [
+            "Win32_System"
+          ],
+          "Win32_System_Ioctl": [
+            "Win32_System"
+          ],
+          "Win32_System_JobObjects": [
+            "Win32_System"
+          ],
+          "Win32_System_Js": [
+            "Win32_System"
+          ],
+          "Win32_System_Kernel": [
+            "Win32_System"
+          ],
+          "Win32_System_LibraryLoader": [
+            "Win32_System"
+          ],
+          "Win32_System_Mailslots": [
+            "Win32_System"
+          ],
+          "Win32_System_Mapi": [
+            "Win32_System"
+          ],
+          "Win32_System_Memory": [
+            "Win32_System"
+          ],
+          "Win32_System_Memory_NonVolatile": [
+            "Win32_System_Memory"
+          ],
+          "Win32_System_MessageQueuing": [
+            "Win32_System"
+          ],
+          "Win32_System_MixedReality": [
+            "Win32_System"
+          ],
+          "Win32_System_Ole": [
+            "Win32_System"
+          ],
+          "Win32_System_PasswordManagement": [
+            "Win32_System"
+          ],
+          "Win32_System_Performance": [
+            "Win32_System"
+          ],
+          "Win32_System_Performance_HardwareCounterProfiling": [
+            "Win32_System_Performance"
+          ],
+          "Win32_System_Pipes": [
+            "Win32_System"
+          ],
+          "Win32_System_Power": [
+            "Win32_System"
+          ],
+          "Win32_System_ProcessStatus": [
+            "Win32_System"
+          ],
+          "Win32_System_Recovery": [
+            "Win32_System"
+          ],
+          "Win32_System_Registry": [
+            "Win32_System"
+          ],
+          "Win32_System_RemoteDesktop": [
+            "Win32_System"
+          ],
+          "Win32_System_RemoteManagement": [
+            "Win32_System"
+          ],
+          "Win32_System_RestartManager": [
+            "Win32_System"
+          ],
+          "Win32_System_Restore": [
+            "Win32_System"
+          ],
+          "Win32_System_Rpc": [
+            "Win32_System"
+          ],
+          "Win32_System_Search": [
+            "Win32_System"
+          ],
+          "Win32_System_Search_Common": [
+            "Win32_System_Search"
+          ],
+          "Win32_System_SecurityCenter": [
+            "Win32_System"
+          ],
+          "Win32_System_Services": [
+            "Win32_System"
+          ],
+          "Win32_System_SetupAndMigration": [
+            "Win32_System"
+          ],
+          "Win32_System_Shutdown": [
+            "Win32_System"
+          ],
+          "Win32_System_StationsAndDesktops": [
+            "Win32_System"
+          ],
+          "Win32_System_SubsystemForLinux": [
+            "Win32_System"
+          ],
+          "Win32_System_SystemInformation": [
+            "Win32_System"
+          ],
+          "Win32_System_SystemServices": [
+            "Win32_System"
+          ],
+          "Win32_System_Threading": [
+            "Win32_System"
+          ],
+          "Win32_System_Time": [
+            "Win32_System"
+          ],
+          "Win32_System_TpmBaseServices": [
+            "Win32_System"
+          ],
+          "Win32_System_UserAccessLogging": [
+            "Win32_System"
+          ],
+          "Win32_System_Variant": [
+            "Win32_System"
+          ],
+          "Win32_System_VirtualDosMachines": [
+            "Win32_System"
+          ],
+          "Win32_System_WindowsProgramming": [
+            "Win32_System"
+          ],
+          "Win32_System_Wmi": [
+            "Win32_System"
+          ],
+          "Win32_UI": [
+            "Win32"
+          ],
+          "Win32_UI_Accessibility": [
+            "Win32_UI"
+          ],
+          "Win32_UI_ColorSystem": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Controls": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Controls_Dialogs": [
+            "Win32_UI_Controls"
+          ],
+          "Win32_UI_HiDpi": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Input": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Input_Ime": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_KeyboardAndMouse": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_Pointer": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_Touch": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_XboxController": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_InteractionContext": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Magnification": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Shell": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Shell_Common": [
+            "Win32_UI_Shell"
+          ],
+          "Win32_UI_Shell_PropertiesSystem": [
+            "Win32_UI_Shell"
+          ],
+          "Win32_UI_TabletPC": [
+            "Win32_UI"
+          ],
+          "Win32_UI_TextServices": [
+            "Win32_UI"
+          ],
+          "Win32_UI_WindowsAndMessaging": [
+            "Win32_UI"
+          ],
+          "Win32_Web": [
+            "Win32"
+          ],
+          "Win32_Web_InternetExplorer": [
+            "Win32_Web"
+          ],
+          "default": [],
+          "docs": []
+        },
+        "name": "windows-sys",
+        "pubtime": "2025-10-06T19:18:30Z",
+        "rust_version": "1.71",
+        "vers": "0.61.2",
+        "yanked": false
+      }
+    },
+    "status": "ok",
+    "unknown_archives": 24,
+    "version_details": {
+      "bitflags@2.13.2": {
+        "cksum": "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "bitflags",
+        "primary_reason": {
+          "alias": "bitflags",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "redox_syscall@0.5.18",
+          "requirement": "^2.4",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "bitflags",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "redox_syscall@0.5.18",
+            "requirement": "^2.4",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "bitflags",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "redox_syscall@0.5.18",
+            "requirement": "^2.4",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 63,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "2.13.2",
+        "yanked": false
+      },
+      "bytes@1.12.2": {
+        "cksum": "776dfebd015e2d8732c684a2c71003674ccb49457b539b9e82151ba38e96dd7c",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "bytes",
+        "primary_reason": {
+          "alias": "bytes",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "^1.2.1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "bytes",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.2.1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "bytes",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.2.1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 59,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.12.2",
+        "yanked": false
+      },
+      "cfg-if@1.0.5": {
+        "cksum": "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "cfg-if",
+        "primary_reason": {
+          "alias": "cfg-if",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "parking_lot_core@0.9.12",
+          "requirement": "^1.0.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "cfg-if",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^1.0.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "cfg-if",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^1.0.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 16,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.5",
+        "yanked": false
+      },
+      "errno@0.3.15": {
+        "cksum": "e35d6e78f4cebb90e51d543db8fe41528851d6deeef6ef21ebd4bfdc1e784776",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "errno",
+        "primary_reason": {
+          "alias": "errno",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "signal-hook-registry@1.4.8",
+          "requirement": ">=0.2, <0.4",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "errno",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "signal-hook-registry@1.4.8",
+            "requirement": ">=0.2, <0.4",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "errno",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "signal-hook-registry@1.4.8",
+            "requirement": ">=0.2, <0.4",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 33,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.3.15",
+        "yanked": false
+      },
+      "libc@0.2.191": {
+        "cksum": "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "libc",
+        "primary_reason": {
+          "alias": "libc",
+          "conservative": true,
+          "default_features": false,
+          "features": [
+            "std"
+          ],
+          "lock_only": false,
+          "parent": "errno@0.3.15",
+          "requirement": "^0.2",
+          "root": 0,
+          "target": "cfg(target_os=\"hermit\")"
+        },
+        "reasons": [
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "lock_only": false,
+            "parent": "errno@0.3.15",
+            "requirement": "^0.2",
+            "root": 0,
+            "target": "cfg(target_os=\"hermit\")"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "lock_only": false,
+            "parent": "errno@0.3.15",
+            "requirement": "^0.2",
+            "root": 0,
+            "target": "cfg(target_os=\"wasi\")"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "lock_only": false,
+            "parent": "errno@0.3.15",
+            "requirement": "^0.2",
+            "root": 0,
+            "target": "cfg(unix)"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "mio@1.2.5",
+            "requirement": "^0.2.190",
+            "root": 0,
+            "target": "cfg(any(unix, target_os = \"hermit\", target_os = \"wasi\"))"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^0.2.95",
+            "root": 0,
+            "target": "cfg(unix)"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "signal-hook-registry@1.4.8",
+            "requirement": "^0.2",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "socket2@0.6.5",
+            "requirement": "^0.2.172",
+            "root": 0,
+            "target": "cfg(any(unix, target_os = \"wasi\"))"
+          },
+          {
+            "alias": "libc",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "std"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.2.168",
+            "root": 0,
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.2.168",
+            "root": 0,
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.2.168",
+            "root": 0,
+            "target": "cfg(target_os = \"wasi\")"
+          },
+          {
+            "alias": "libc",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.2.168",
+            "root": 0,
+            "target": "cfg(unix)"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 208,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.2.191",
+        "yanked": false
+      },
+      "lock_api@0.4.14": {
+        "cksum": "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "lock_api",
+        "primary_reason": {
+          "alias": "lock_api",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "parking_lot@0.12.5",
+          "requirement": "^0.4.14",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "lock_api",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot@0.12.5",
+            "requirement": "^0.4.14",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "lock_api",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot@0.12.5",
+            "requirement": "^0.4.14",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 26,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.4.14",
+        "yanked": false
+      },
+      "mio@1.2.5": {
+        "cksum": "20521a903f02b0a573cd6840e9d0a5a0cc043d361fe924092cd70f8556cc9c4a",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "mio",
+        "primary_reason": {
+          "alias": "mio",
+          "conservative": false,
+          "default_features": false,
+          "features": [
+            "net",
+            "os-ext",
+            "os-poll"
+          ],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "^1.2.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "mio",
+            "conservative": false,
+            "default_features": false,
+            "features": [
+              "net",
+              "os-ext",
+              "os-poll"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.2.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "mio",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "net",
+              "os-ext",
+              "os-poll"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.2.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "mio",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "net",
+              "os-ext",
+              "os-poll"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.2.0",
+            "root": 0,
+            "target": "cfg(all(tokio_unstable, target_os = \"linux\"))"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 81,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.2.5",
+        "yanked": false
+      },
+      "parking_lot@0.12.5": {
+        "cksum": "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "parking_lot",
+        "primary_reason": {
+          "alias": "parking_lot",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "^0.12.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "parking_lot",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.12.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "parking_lot",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.12.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 57,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.12.5",
+        "yanked": false
+      },
+      "parking_lot_core@0.9.12": {
+        "cksum": "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "parking_lot_core",
+        "primary_reason": {
+          "alias": "parking_lot_core",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "parking_lot@0.12.5",
+          "requirement": "^0.9.12",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "parking_lot_core",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot@0.12.5",
+            "requirement": "^0.9.12",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "parking_lot_core",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot@0.12.5",
+            "requirement": "^0.9.12",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 52,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.9.12",
+        "yanked": false
+      },
+      "pin-project-lite@0.2.18": {
+        "cksum": "c938015719552d665fd0553b90d96cd7ff58e83e4c061ca99e6bb78865a72752",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "pin-project-lite",
+        "primary_reason": {
+          "alias": "pin-project-lite",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "^0.2.11",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "pin-project-lite",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.2.11",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "pin-project-lite",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.2.11",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 31,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.2.18",
+        "yanked": false
+      },
+      "proc-macro2@1.0.107": {
+        "cksum": "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "proc-macro2",
+        "primary_reason": {
+          "alias": "proc-macro2",
+          "conservative": true,
+          "default_features": false,
+          "features": [
+            "proc-macro"
+          ],
+          "lock_only": false,
+          "parent": "quote@1.0.47",
+          "requirement": "^1.0.80",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "proc-macro2",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "proc-macro"
+            ],
+            "lock_only": false,
+            "parent": "quote@1.0.47",
+            "requirement": "^1.0.80",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "proc-macro2",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "proc-macro"
+            ],
+            "lock_only": false,
+            "parent": "syn@3.0.10",
+            "requirement": "^1.0.91",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "proc-macro2",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "proc-macro"
+            ],
+            "lock_only": false,
+            "parent": "tokio-macros@2.7.2",
+            "requirement": "^1.0.60",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "proc-macro2",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio-macros@2.7.2",
+            "requirement": "^1.0.60",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 162,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.107",
+        "yanked": false
+      },
+      "quote@1.0.47": {
+        "cksum": "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "quote",
+        "primary_reason": {
+          "alias": "quote",
+          "conservative": true,
+          "default_features": false,
+          "features": [
+            "proc-macro"
+          ],
+          "lock_only": false,
+          "parent": "syn@3.0.10",
+          "requirement": "^1.0.35",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "quote",
+            "conservative": true,
+            "default_features": false,
+            "features": [
+              "proc-macro"
+            ],
+            "lock_only": false,
+            "parent": "syn@3.0.10",
+            "requirement": "^1.0.35",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "quote",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "proc-macro"
+            ],
+            "lock_only": false,
+            "parent": "tokio-macros@2.7.2",
+            "requirement": "^1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "quote",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio-macros@2.7.2",
+            "requirement": "^1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 94,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.47",
+        "yanked": false
+      },
+      "redox_syscall@0.5.18": {
+        "cksum": "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "redox_syscall",
+        "primary_reason": {
+          "alias": "redox_syscall",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "parking_lot_core@0.9.12",
+          "requirement": "^0.5",
+          "root": 0,
+          "target": "cfg(target_os = \"redox\")"
+        },
+        "reasons": [
+          {
+            "alias": "redox_syscall",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^0.5",
+            "root": 0,
+            "target": "cfg(target_os = \"redox\")"
+          },
+          {
+            "alias": "redox_syscall",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^0.5",
+            "root": 0,
+            "target": "cfg(target_os = \"redox\")"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 100,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.5.18",
+        "yanked": false
+      },
+      "scopeguard@1.2.0": {
+        "cksum": "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "scopeguard",
+        "primary_reason": {
+          "alias": "scopeguard",
+          "conservative": false,
+          "default_features": false,
+          "features": [],
+          "lock_only": false,
+          "parent": "lock_api@0.4.14",
+          "requirement": "^1.1.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "scopeguard",
+            "conservative": false,
+            "default_features": false,
+            "features": [],
+            "lock_only": false,
+            "parent": "lock_api@0.4.14",
+            "requirement": "^1.1.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "scopeguard",
+            "conservative": true,
+            "default_features": false,
+            "features": [],
+            "lock_only": false,
+            "parent": "lock_api@0.4.14",
+            "requirement": "^1.1.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 10,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.2.0",
+        "yanked": false
+      },
+      "signal-hook-registry@1.4.8": {
+        "cksum": "c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "signal-hook-registry",
+        "primary_reason": {
+          "alias": "signal-hook-registry",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "^1.1.1",
+          "root": 0,
+          "target": "cfg(unix)"
+        },
+        "reasons": [
+          {
+            "alias": "signal-hook-registry",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.1.1",
+            "root": 0,
+            "target": "cfg(unix)"
+          },
+          {
+            "alias": "signal-hook-registry",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^1.1.1",
+            "root": 0,
+            "target": "cfg(unix)"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 16,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.4.8",
+        "yanked": false
+      },
+      "smallvec@1.16.6": {
+        "cksum": "3244542535d5de959d90ec55d1b5ff0fd2bb7b1310223907d5f11932847f7b59",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "smallvec",
+        "primary_reason": {
+          "alias": "smallvec",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "parking_lot_core@0.9.12",
+          "requirement": "^1.6.1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "smallvec",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^1.6.1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "smallvec",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^1.6.1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 89,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.16.6",
+        "yanked": false
+      },
+      "socket2@0.6.5": {
+        "cksum": "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "socket2",
+        "primary_reason": {
+          "alias": "socket2",
+          "conservative": false,
+          "default_features": true,
+          "features": [
+            "all"
+          ],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "^0.6.3",
+          "root": 0,
+          "target": "cfg(any(not(target_family = \"wasm\"), target_os = \"emscripten\", all(target_os = \"wasi\", not(target_env = \"p1\"))))"
+        },
+        "reasons": [
+          {
+            "alias": "socket2",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "all"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.6.3",
+            "root": 0,
+            "target": "cfg(any(not(target_family = \"wasm\"), target_os = \"emscripten\", all(target_os = \"wasi\", not(target_env = \"p1\"))))"
+          },
+          {
+            "alias": "socket2",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "all"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.6.3",
+            "root": 0,
+            "target": "cfg(any(not(target_family = \"wasm\"), target_os = \"emscripten\", all(target_os = \"wasi\", not(target_env = \"p1\"))))"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 58,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.6.5",
+        "yanked": false
+      },
+      "syn@3.0.10": {
+        "cksum": "4ae9ccbea3a7b0b09443036490c8f34a8b1b760fd345e5c0dae0aac718faea79",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "syn",
+        "primary_reason": {
+          "alias": "syn",
+          "conservative": false,
+          "default_features": true,
+          "features": [
+            "full"
+          ],
+          "lock_only": false,
+          "parent": "tokio-macros@2.7.2",
+          "requirement": "^3.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "syn",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "full"
+            ],
+            "lock_only": false,
+            "parent": "tokio-macros@2.7.2",
+            "requirement": "^3.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "syn",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "full"
+            ],
+            "lock_only": false,
+            "parent": "tokio-macros@2.7.2",
+            "requirement": "^3.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 362,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "3.0.10",
+        "yanked": false
+      },
+      "tokio-macros@2.7.2": {
+        "cksum": "78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "tokio-macros",
+        "primary_reason": {
+          "alias": "tokio-macros",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "tokio@1.54.1",
+          "requirement": "~2.7.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "tokio-macros",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "~2.7.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "tokio-macros",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "~2.7.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 40,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "2.7.2",
+        "yanked": false
+      },
+      "tokio@1.54.1": {
+        "cksum": "b52fd3255258d26fac7264ab5a76b53c13367136dc011d3d6ad4f8ed070396a3",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "tokio",
+        "primary_reason": {
+          "alias": "tokio",
+          "conservative": false,
+          "default_features": true,
+          "features": [
+            "full"
+          ],
+          "lock_only": false,
+          "parent": null,
+          "requirement": "=1.54.1",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "tokio",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "full"
+            ],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.54.1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "tokio",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "full"
+            ],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.54.1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [
+          "r0000"
+        ],
+        "source_ordinal": 200,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.54.1",
+        "yanked": false
+      },
+      "unicode-ident@1.0.27": {
+        "cksum": "a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "unicode-ident",
+        "primary_reason": {
+          "alias": "unicode-ident",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "proc-macro2@1.0.107",
+          "requirement": "^1.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "unicode-ident",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "proc-macro2@1.0.107",
+            "requirement": "^1.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "unicode-ident",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "proc-macro2@1.0.107",
+            "requirement": "^1.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "unicode-ident",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "syn@3.0.10",
+            "requirement": "^1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 28,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.27",
+        "yanked": false
+      },
+      "wasi@0.11.1+wasi-snapshot-preview1": {
+        "cksum": "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "wasi",
+        "primary_reason": {
+          "alias": "wasi",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "mio@1.2.5",
+          "requirement": "^0.11.0",
+          "root": 0,
+          "target": "cfg(target_os = \"wasi\")"
+        },
+        "reasons": [
+          {
+            "alias": "wasi",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "mio@1.2.5",
+            "requirement": "^0.11.0",
+            "root": 0,
+            "target": "cfg(target_os = \"wasi\")"
+          },
+          {
+            "alias": "wasi",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "mio@1.2.5",
+            "requirement": "^0.11.0",
+            "root": 0,
+            "target": "cfg(target_os = \"wasi\")"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 21,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.11.1+wasi-snapshot-preview1",
+        "yanked": false
+      },
+      "windows-link@0.2.1": {
+        "cksum": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "windows-link",
+        "primary_reason": {
+          "alias": "windows-link",
+          "conservative": true,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "parking_lot_core@0.9.12",
+          "requirement": "^0.2.0",
+          "root": 0,
+          "target": "cfg(windows)"
+        },
+        "reasons": [
+          {
+            "alias": "windows-link",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "parking_lot_core@0.9.12",
+            "requirement": "^0.2.0",
+            "root": 0,
+            "target": "cfg(windows)"
+          },
+          {
+            "alias": "windows-link",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "windows-sys@0.61.2",
+            "requirement": "^0.2.1",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "windows-link",
+            "conservative": true,
+            "default_features": false,
+            "features": [],
+            "lock_only": false,
+            "parent": "windows-sys@0.61.2",
+            "requirement": "^0.2.1",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 6,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.2.1",
+        "yanked": false
+      },
+      "windows-sys@0.61.2": {
+        "cksum": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "windows-sys",
+        "primary_reason": {
+          "alias": "windows-sys",
+          "conservative": true,
+          "default_features": true,
+          "features": [
+            "Win32_Foundation",
+            "Win32_System_Diagnostics_Debug"
+          ],
+          "lock_only": false,
+          "parent": "errno@0.3.15",
+          "requirement": ">=0.52, <0.62",
+          "root": 0,
+          "target": "cfg(windows)"
+        },
+        "reasons": [
+          {
+            "alias": "windows-sys",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_System_Diagnostics_Debug"
+            ],
+            "lock_only": false,
+            "parent": "errno@0.3.15",
+            "requirement": ">=0.52, <0.62",
+            "root": 0,
+            "target": "cfg(windows)"
+          },
+          {
+            "alias": "windows-sys",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "Wdk_Foundation",
+              "Wdk_Storage_FileSystem",
+              "Wdk_System_IO",
+              "Win32_Foundation",
+              "Win32_Networking_WinSock",
+              "Win32_Security",
+              "Win32_Storage_FileSystem",
+              "Win32_System_IO",
+              "Win32_System_Pipes",
+              "Win32_System_WindowsProgramming"
+            ],
+            "lock_only": false,
+            "parent": "mio@1.2.5",
+            "requirement": "^0.61",
+            "root": 0,
+            "target": "cfg(windows)"
+          },
+          {
+            "alias": "windows-sys",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_Networking_WinSock",
+              "Win32_System_IO",
+              "Win32_System_Threading",
+              "Win32_System_WindowsProgramming"
+            ],
+            "lock_only": false,
+            "parent": "socket2@0.6.5",
+            "requirement": ">=0.60, <0.62",
+            "root": 0,
+            "target": "cfg(windows)"
+          },
+          {
+            "alias": "windows-sys",
+            "conservative": false,
+            "default_features": true,
+            "features": [
+              "Wdk_Foundation",
+              "Wdk_Storage_FileSystem",
+              "Wdk_System_IO",
+              "Win32_Foundation",
+              "Win32_Networking_WinSock",
+              "Win32_Security",
+              "Win32_Storage_FileSystem",
+              "Win32_System_Console",
+              "Win32_System_Diagnostics_Debug",
+              "Win32_System_IO",
+              "Win32_System_Pipes",
+              "Win32_System_SystemServices",
+              "Win32_System_Threading",
+              "Win32_System_WindowsProgramming"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.61",
+            "root": 0,
+            "target": "cfg(windows)"
+          },
+          {
+            "alias": "windows-sys",
+            "conservative": true,
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_Security",
+              "Win32_Storage_FileSystem",
+              "Win32_System_Console",
+              "Win32_System_Pipes",
+              "Win32_System_SystemServices",
+              "Win32_System_Threading",
+              "Win32_System_WindowsProgramming"
+            ],
+            "lock_only": false,
+            "parent": "tokio@1.54.1",
+            "requirement": "^0.61",
+            "root": 0,
+            "target": "cfg(windows)"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 22,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "0.61.2",
+        "yanked": false
+      }
+    },
+    "version_union": [
+      "bitflags@2.13.2",
+      "bytes@1.12.2",
+      "cfg-if@1.0.5",
+      "errno@0.3.15",
+      "libc@0.2.191",
+      "lock_api@0.4.14",
+      "mio@1.2.5",
+      "parking_lot@0.12.5",
+      "parking_lot_core@0.9.12",
+      "pin-project-lite@0.2.18",
+      "proc-macro2@1.0.107",
+      "quote@1.0.47",
+      "redox_syscall@0.5.18",
+      "scopeguard@1.2.0",
+      "signal-hook-registry@1.4.8",
+      "smallvec@1.16.6",
+      "socket2@0.6.5",
+      "syn@3.0.10",
+      "tokio-macros@2.7.2",
+      "tokio@1.54.1",
+      "unicode-ident@1.0.27",
+      "wasi@0.11.1+wasi-snapshot-preview1",
+      "windows-link@0.2.1",
+      "windows-sys@0.61.2"
+    ],
+    "warnings": [
+      "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+      "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+    ]
+  },
+  "schema": 1,
+  "source": {
+    "case": "tokio-full",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}

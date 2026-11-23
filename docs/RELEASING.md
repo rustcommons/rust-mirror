@@ -312,6 +312,15 @@ ordering/recovery evidence above remains unchanged.
 
 ## Before merge and publication
 
+The [tracked crate corpus](CORPUS.md) is a release gate: the latest weekly must
+pass with only clean/upstream-classified differences, or a full workflow_dispatch
+on the exact release head must pass. Inspect its JSON/Markdown artifacts and every
+upstream delta; do not waive regressions, missing cases, infrastructure failures
+or Cargo mismatches. `gate` enforces this on tag runs using `corpus.py release-check`.
+A stale successful weekly does not override a newer failed/incomplete weekly;
+use the exact-head dispatch alternative. Corpus baseline updates require review.
+
+
 1. Update the changelog, versioned notes, user guide, complete CLI reference and
    stable ROM-REQ trace together. Audit every command/option against the source,
    including defaults, outputs, local/remote effects and recovery.

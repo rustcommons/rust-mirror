@@ -1,0 +1,5069 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_line_sha256": {
+      "aho-corasick@1.1.3": "940331c5bbcdcab1f194767871cd815acc2105d111083849cc36dc8a38d046e9",
+      "anyhow@1.0.100": "6fe739769e2c7fad3d84dd9c72134dbf0e913dbaf439405719b0bb51690daf48",
+      "arbitrary@1.4.2": "ff2e6e3f4b8e02b6df1bcce212a189533acf76f4b149ddc97487e3e356c7a273",
+      "bstr@1.12.0": "be8f04b85a19c8ba435caa5745d8d5b33cfad83eb6bebb84ccd4ecdbfe2a1b2e",
+      "cc@1.2.41": "91b4521e92375179aa3d43983772863120108a26b2c9272abcc14c27f87fcca9",
+      "cfg-if@1.0.4": "806a4d31eeafa8c154a2414bfa081d959b91a31882ab2b4db6fb6d1fa62646f2",
+      "crossbeam-channel@0.5.15": "2c93e3ae04cd45981c2be4de617eb67ad1961b66ad2ce5684f04734d8a8797ff",
+      "crossbeam-deque@0.8.6": "fd9f516d9ad0bc66596b38e67466e217725a099d3b6194c0c5fdb97ffe27889c",
+      "crossbeam-epoch@0.9.18": "2d7d41ee1ebf18a0182a393f5331b096e99999cbb3b2a8ddc9196058979dfd34",
+      "crossbeam-utils@0.8.21": "933aaef359e7ce541a6f91f791f2db43a339df57d411afced2be32cc8b29902f",
+      "derive_arbitrary@1.4.2": "2dd8d3de5d84076fff07e110e33fe21a042d31f19985d98c1e01680142dda517",
+      "encoding_rs@0.8.35": "22e1c938887e8d773b76312f96fd5fcc1e6aa480d82708f12a421bb8583215a9",
+      "encoding_rs_io@0.1.7": "d0d61f394d1c16b18892c4bcf7ab8049bb386d81368aa0a2fcf3df200705979c",
+      "find-msvc-tools@0.1.4": "08759787d80e2fbaef217c9994102365b9c11ea4639520c541e29efb93da1cbb",
+      "getrandom@0.3.4": "ae0f47cc61979af4702ea1fe9e7c9679c557a9dc0c15ad01f3291e0209031b5a",
+      "glob@0.3.3": "211a359ce9b120f51902c1395f7d9321957ca7ab38f16fbd8b8ee3d10e429d47",
+      "itoa@1.0.15": "4a8c0b2ab13ae118579d5e5f428d49c222409eefe852d19c840202eb4e2cbbcf",
+      "jobserver@0.1.34": "6ccbcd141d7cff7f38e465c5ef587597367a549ba79b0323aabfe9b61b4232bd",
+      "lexopt@0.3.1": "1b4e50ea843af398245d754b719daf4743b625d053b88aa3e82d39d871a52dc8",
+      "libc@0.2.177": "288dfedfa29a482d2494428d7b07b578dba19461b8cf3acf63be312d314e2a9a",
+      "log@0.4.28": "0b9b4269a487a0641970ac587d5a5daac17f3357d96779dbd3d3c9c98fdc2a6a",
+      "memchr@2.7.6": "d722cc158dfa42a2d0ea38953d4518b990f372013cb3dacc10c9a7c3e69dee7d",
+      "memmap2@0.9.9": "b983096489dfed128f831ef19d25f80b93b1972e9aa698ab533aec042baba43a",
+      "pcre2-sys@0.2.10": "0fcc837d076ed21d7169da17c0fc6db6239df48acc70d8864cd5ed69692ed583",
+      "pcre2@0.2.11": "79e9b250d53c433c2592118644dfa02b0a4da0a0b221c2ee17a99bae26b7e145",
+      "pkg-config@0.3.32": "775b74bf1441ada2c05d74f74b2801a4ce95c5a1ef8d304da157879d0d39effe",
+      "proc-macro2@1.0.101": "425343cb6e008a54976238cc36f1ff4bad20f4e1b1f4bf03f7e82fbd0b24eaee",
+      "quote@1.0.41": "c3fe9e104f85e6290d13bb15e76b92748309642122b91fc93cf7384c0ec7c23a",
+      "r-efi@5.3.0": "4a2035656965ce7937e4cfca77320d41a2636621b3518781c1dd9ed582b4ccf6",
+      "regex-automata@0.4.13": "df784d3243ee555ddea6533a42c8f1a441229f03b9c73ca5bcdbe01c5afc154a",
+      "regex-syntax@0.8.8": "e6f843296091466dc7b2042af3a6ff7fa57d737ead8dda95b4500c8ea45cc025",
+      "regex@1.12.2": "6695fc994b3b28246c933bd0347985c816345508beb547caccb5a172573dc8fa",
+      "ryu@1.0.20": "3e6aac929e80803a42944ce0246301824390acb1fdb33bb032e5a4d7783147d7",
+      "same-file@1.0.6": "ea5f758d0fdc3ccf50ba01adcd9d5b9b886982baba7212152d397709c317ee3d",
+      "serde@1.0.228": "ae5cf380e9728204a5cd568fec5710542f20a048dfc6f0fe995207a04a6c7661",
+      "serde_core@1.0.228": "f077cdd9c1f5ad0fc26d7b122d96b4b6d3b79f16ac00ee9b477b5f984dae7e71",
+      "serde_derive@1.0.228": "41af887644a535797455f0eb5e423c06b6f3acba998889e883af4bfe872ec154",
+      "serde_json@1.0.145": "76d4922a7786ef9758dab90a4a8b5479f348e799beacaae88967b36db9f91835",
+      "shlex@1.3.0": "835473153453ebff9233f9dcfbc0bd047ddc11205b4875d38e5f45b7c2614c6b",
+      "syn@2.0.107": "4f95d9c8e0146cd9aa90baf4267687fdf89695c2cb7f3504d009a2e355fc1238",
+      "termcolor@1.4.1": "70d8ca5740a6f659aab0d1848ef8298f8694c283585461ea7256db387383fc2b",
+      "textwrap@0.16.2": "bbbcd4d8f89f8db41cc3f110d8783ef4201ed19435bb024fa504d7067c305ced",
+      "tikv-jemalloc-sys@0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7": "26a757e0495ee5abc4b5b7877033bb09cfd98c84ef7441b856e164754d59560a",
+      "tikv-jemallocator@0.6.1": "7cac855ed76d1d50c8da90ba4da5d1d2844e0b1651957882f506abb9578c5dd5",
+      "unicode-ident@1.0.20": "f9084a019f477cb110ca1e195c26772770702999e2f0d48894806592cf67e2fd",
+      "walkdir@2.5.0": "38f8c9a31c7e84e0df05cc1736c714e9e5191a4e5f5ffb9b07b908cf49297657",
+      "wasip2@1.0.1+wasi-0.2.4": "34370fd57a96e4034fb8571572394cfd66a958e3fa1e6ca95612f0edde13b994",
+      "winapi-util@0.1.11": "94264d9017ae2bfe6afa2561740acd049c58f5a78d4ada77a42d00c3d0c26a6d",
+      "windows-link@0.2.1": "c5124554114d200f2e551951a932844a089a37bcf0b56e95fd3d6abf21fba1f1",
+      "windows-sys@0.61.2": "71a3125049c805f3c9498bfc8ad5e050fdc413df916b98fb9cad213ee548366e",
+      "wit-bindgen@0.46.0": "11b6ff9d209c0957c5e29766346cbccfbb09223d2ca423b06b8001e801ef06d1"
+    },
+    "index_warnings": [],
+    "known_archive_bytes": 0,
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": false,
+        "features": [],
+        "name": "lock-ripgrep-15-1-0",
+        "version": "af60c2de9d85e7f3d81c78601669468cf02dabab"
+      }
+    ],
+    "roots": [
+      {
+        "profile": {
+          "default_features": false,
+          "features": [],
+          "name": "lock-ripgrep-15-1-0",
+          "version": "af60c2de9d85e7f3d81c78601669468cf02dabab"
+        },
+        "resolved_versions": [
+          "aho-corasick@1.1.3",
+          "anyhow@1.0.100",
+          "arbitrary@1.4.2",
+          "bstr@1.12.0",
+          "cc@1.2.41",
+          "cfg-if@1.0.4",
+          "crossbeam-channel@0.5.15",
+          "crossbeam-deque@0.8.6",
+          "crossbeam-epoch@0.9.18",
+          "crossbeam-utils@0.8.21",
+          "derive_arbitrary@1.4.2",
+          "encoding_rs@0.8.35",
+          "encoding_rs_io@0.1.7",
+          "find-msvc-tools@0.1.4",
+          "getrandom@0.3.4",
+          "glob@0.3.3",
+          "itoa@1.0.15",
+          "jobserver@0.1.34",
+          "lexopt@0.3.1",
+          "libc@0.2.177",
+          "log@0.4.28",
+          "memchr@2.7.6",
+          "memmap2@0.9.9",
+          "pcre2-sys@0.2.10",
+          "pcre2@0.2.11",
+          "pkg-config@0.3.32",
+          "proc-macro2@1.0.101",
+          "quote@1.0.41",
+          "r-efi@5.3.0",
+          "regex-automata@0.4.13",
+          "regex-syntax@0.8.8",
+          "regex@1.12.2",
+          "ryu@1.0.20",
+          "same-file@1.0.6",
+          "serde@1.0.228",
+          "serde_core@1.0.228",
+          "serde_derive@1.0.228",
+          "serde_json@1.0.145",
+          "shlex@1.3.0",
+          "syn@2.0.107",
+          "termcolor@1.4.1",
+          "textwrap@0.16.2",
+          "tikv-jemalloc-sys@0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7",
+          "tikv-jemallocator@0.6.1",
+          "unicode-ident@1.0.20",
+          "walkdir@2.5.0",
+          "wasip2@1.0.1+wasi-0.2.4",
+          "winapi-util@0.1.11",
+          "windows-link@0.2.1",
+          "windows-sys@0.61.2",
+          "wit-bindgen@0.46.0"
+        ]
+      }
+    ],
+    "selected_rows": {
+      "aho-corasick@1.1.3": {
+        "cksum": "8e60d3430d3a69478ad0993f19238d2df97c507009a52b3c10addcd7f6bcb916",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "log",
+            "optional": true,
+            "req": "^0.4.17",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "memchr",
+            "optional": true,
+            "req": "^2.4.0",
+            "target": null
+          }
+        ],
+        "features": {},
+        "features2": {
+          "default": [
+            "std",
+            "perf-literal"
+          ],
+          "logging": [
+            "dep:log"
+          ],
+          "perf-literal": [
+            "dep:memchr"
+          ],
+          "std": [
+            "memchr?/std"
+          ]
+        },
+        "name": "aho-corasick",
+        "pubtime": "2024-03-20T00:06:10Z",
+        "rust_version": "1.60.0",
+        "v": 2,
+        "vers": "1.1.3",
+        "yanked": false
+      },
+      "anyhow@1.0.100": {
+        "cksum": "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "backtrace",
+            "optional": true,
+            "req": "^0.3.51",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "futures",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1.0.6",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "full"
+            ],
+            "kind": "dev",
+            "name": "syn",
+            "optional": false,
+            "req": "^2.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "thiserror",
+            "optional": false,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "diff"
+            ],
+            "kind": "dev",
+            "name": "trybuild",
+            "optional": false,
+            "req": "^1.0.108",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": []
+        },
+        "name": "anyhow",
+        "pubtime": "2025-09-19T14:21:43Z",
+        "rust_version": "1.39",
+        "vers": "1.0.100",
+        "yanked": false
+      },
+      "arbitrary@1.4.2": {
+        "cksum": "c3d036a3c4ab069c7b410a2ce876bd74808d2d0888a82667669f8e783a898bf1",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "derive_arbitrary",
+            "optional": true,
+            "req": "~1.4.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "exhaustigen",
+            "optional": false,
+            "req": "^0.1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "derive": [
+            "derive_arbitrary"
+          ]
+        },
+        "name": "arbitrary",
+        "pubtime": "2025-08-14T18:20:10Z",
+        "rust_version": "1.63.0",
+        "vers": "1.4.2",
+        "yanked": false
+      },
+      "bstr@1.12.0": {
+        "cksum": "234113d19d0d7d613b40e86fb654acf958910802bcceab913a4f9e7cda03b1a4",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "memchr",
+            "optional": false,
+            "req": "^2.7.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "quickcheck",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "dfa-search"
+            ],
+            "kind": "normal",
+            "name": "regex-automata",
+            "optional": true,
+            "req": "^0.4.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde",
+            "optional": true,
+            "req": "^1.0.85",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "ucd-parse",
+            "optional": false,
+            "req": "^0.1.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "unicode-segmentation",
+            "optional": false,
+            "req": "^1.2.1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "features2": {
+          "alloc": [
+            "memchr/alloc",
+            "serde?/alloc"
+          ],
+          "default": [
+            "std",
+            "unicode"
+          ],
+          "serde": [
+            "dep:serde"
+          ],
+          "std": [
+            "alloc",
+            "memchr/std",
+            "serde?/std"
+          ],
+          "unicode": [
+            "dep:regex-automata"
+          ]
+        },
+        "name": "bstr",
+        "pubtime": "2025-04-08T16:37:00Z",
+        "rust_version": "1.73",
+        "v": 2,
+        "vers": "1.12.0",
+        "yanked": false
+      },
+      "cc@1.2.41": {
+        "cksum": "ac9fe6cdbb24b6ade63616c0a0688e45bb56732262c158df3c0c4bea4ca47cb7",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "find-msvc-tools",
+            "optional": false,
+            "req": "^0.1.4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "jobserver",
+            "optional": true,
+            "req": "^0.1.30",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": true,
+            "req": "^0.2.62",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "shlex",
+            "optional": false,
+            "req": "^1.3.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempfile",
+            "optional": false,
+            "req": "^3",
+            "target": null
+          }
+        ],
+        "features": {
+          "jobserver": []
+        },
+        "features2": {
+          "parallel": [
+            "dep:libc",
+            "dep:jobserver"
+          ]
+        },
+        "name": "cc",
+        "pubtime": "2025-10-10T08:55:24Z",
+        "rust_version": "1.63",
+        "v": 2,
+        "vers": "1.2.41",
+        "yanked": false
+      },
+      "cfg-if@1.0.4": {
+        "cksum": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "rustc-dep-of-std": [
+            "core"
+          ]
+        },
+        "name": "cfg-if",
+        "pubtime": "2025-10-15T08:12:46Z",
+        "rust_version": "1.32",
+        "vers": "1.0.4",
+        "yanked": false
+      },
+      "crossbeam-channel@0.5.15": {
+        "cksum": "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "crossbeam-utils",
+            "optional": false,
+            "req": "^0.8.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "num_cpus",
+            "optional": false,
+            "req": "^1.13.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.8",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "signal-hook",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "crossbeam-utils/std"
+          ]
+        },
+        "name": "crossbeam-channel",
+        "pubtime": "2025-04-08T21:27:41Z",
+        "rust_version": "1.60",
+        "vers": "0.5.15",
+        "yanked": false
+      },
+      "crossbeam-deque@0.8.6": {
+        "cksum": "9dd111b7b7f7d55b72c0a6ae361660ee5853c9af73f70c3c2ef6858b950e2e51",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "crossbeam-epoch",
+            "optional": false,
+            "req": "^0.9.17",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "crossbeam-utils",
+            "optional": false,
+            "req": "^0.8.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.8",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "crossbeam-epoch/std",
+            "crossbeam-utils/std"
+          ]
+        },
+        "name": "crossbeam-deque",
+        "pubtime": "2024-12-15T15:29:28Z",
+        "rust_version": "1.61",
+        "vers": "0.8.6",
+        "yanked": false
+      },
+      "crossbeam-epoch@0.9.18": {
+        "cksum": "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "crossbeam-utils",
+            "optional": false,
+            "req": "^0.8.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "loom-crate",
+            "optional": true,
+            "package": "loom",
+            "req": "^0.7.1",
+            "target": "cfg(crossbeam_loom)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.8",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "default": [
+            "std"
+          ],
+          "loom": [
+            "loom-crate",
+            "crossbeam-utils/loom"
+          ],
+          "nightly": [
+            "crossbeam-utils/nightly"
+          ],
+          "std": [
+            "alloc",
+            "crossbeam-utils/std"
+          ]
+        },
+        "name": "crossbeam-epoch",
+        "pubtime": "2024-01-08T12:56:47Z",
+        "rust_version": "1.61",
+        "vers": "0.9.18",
+        "yanked": false
+      },
+      "crossbeam-utils@0.8.21": {
+        "cksum": "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "loom",
+            "optional": true,
+            "req": "^0.7.1",
+            "target": "cfg(crossbeam_loom)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.8",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "nightly": [],
+          "std": []
+        },
+        "name": "crossbeam-utils",
+        "pubtime": "2024-12-15T15:26:01Z",
+        "rust_version": "1.60",
+        "vers": "0.8.21",
+        "yanked": false
+      },
+      "derive_arbitrary@1.4.2": {
+        "cksum": "1e567bd82dcff979e4b03460c307b3cdc9e96fde3d73bed1496d2bc75d9dd62a",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive",
+              "parsing",
+              "extra-traits"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^2",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "derive_arbitrary",
+        "pubtime": "2025-08-14T18:20:00Z",
+        "rust_version": "1.63.0",
+        "vers": "1.4.2",
+        "yanked": false
+      },
+      "encoding_rs@0.8.35": {
+        "cksum": "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "any_all_workaround",
+            "optional": true,
+            "req": "^0.1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "bincode",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "cfg-if",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde",
+            "optional": true,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_derive",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "default": [
+            "alloc"
+          ],
+          "fast-big5-hanzi-encode": [],
+          "fast-gb-hanzi-encode": [],
+          "fast-hangul-encode": [],
+          "fast-hanja-encode": [],
+          "fast-kanji-encode": [],
+          "fast-legacy-encode": [
+            "fast-hangul-encode",
+            "fast-hanja-encode",
+            "fast-kanji-encode",
+            "fast-gb-hanzi-encode",
+            "fast-big5-hanzi-encode"
+          ],
+          "less-slow-big5-hanzi-encode": [],
+          "less-slow-gb-hanzi-encode": [],
+          "less-slow-kanji-encode": [],
+          "simd-accel": [
+            "any_all_workaround"
+          ]
+        },
+        "name": "encoding_rs",
+        "pubtime": "2024-10-24T09:22:44Z",
+        "rust_version": "1.36",
+        "vers": "0.8.35",
+        "yanked": false
+      },
+      "encoding_rs_io@0.1.7": {
+        "cksum": "1cc3c5651fb62ab8aa3103998dade57efdd028544bd300516baa31840c252a83",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "encoding_rs",
+            "optional": false,
+            "req": "^0.8",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "encoding_rs_io",
+        "pubtime": "2020-02-07T13:38:43Z",
+        "vers": "0.1.7",
+        "yanked": false
+      },
+      "find-msvc-tools@0.1.4": {
+        "cksum": "52051878f80a721bb68ebfbc930e07b65ba72f2da88968ea5c06fd6ca3d3a127",
+        "deps": [],
+        "features": {},
+        "name": "find-msvc-tools",
+        "pubtime": "2025-10-10T08:55:16Z",
+        "rust_version": "1.63",
+        "vers": "0.1.4",
+        "yanked": false
+      },
+      "getrandom@0.3.4": {
+        "cksum": "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "cfg-if",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "js-sys",
+            "optional": true,
+            "req": "^0.3.77",
+            "target": "cfg(all(target_arch = \"wasm32\", any(target_os = \"unknown\", target_os = \"none\"), target_feature = \"atomics\"))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), not(any(all(target_os = \"linux\", target_env = \"\"), getrandom_backend = \"custom\", getrandom_backend = \"linux_raw\", getrandom_backend = \"rdrand\", getrandom_backend = \"rndr\"))))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(any(target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"hurd\", target_os = \"illumos\", target_os = \"cygwin\", all(target_os = \"horizon\", target_arch = \"arm\")))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(any(target_os = \"haiku\", target_os = \"redox\", target_os = \"nto\", target_os = \"aix\"))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(any(target_os = \"ios\", target_os = \"visionos\", target_os = \"watchos\", target_os = \"tvos\"))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(any(target_os = \"macos\", target_os = \"openbsd\", target_os = \"vita\", target_os = \"emscripten\"))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(target_os = \"netbsd\")"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(target_os = \"solaris\")"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.154",
+            "target": "cfg(target_os = \"vxworks\")"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "r-efi",
+            "optional": false,
+            "req": "^5.1",
+            "target": "cfg(all(target_os = \"uefi\", getrandom_backend = \"efi_rng\"))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "wasip2",
+            "optional": false,
+            "req": "^1",
+            "target": "cfg(all(target_arch = \"wasm32\", target_os = \"wasi\", target_env = \"p2\"))"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "wasm-bindgen",
+            "optional": true,
+            "req": "^0.2.98",
+            "target": "cfg(all(target_arch = \"wasm32\", any(target_os = \"unknown\", target_os = \"none\")))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "wasm-bindgen-test",
+            "optional": false,
+            "req": "^0.3",
+            "target": "cfg(all(target_arch = \"wasm32\", any(target_os = \"unknown\", target_os = \"none\")))"
+          }
+        ],
+        "features": {
+          "std": []
+        },
+        "features2": {
+          "wasm_js": [
+            "dep:wasm-bindgen",
+            "dep:js-sys"
+          ]
+        },
+        "name": "getrandom",
+        "pubtime": "2025-10-14T17:47:36Z",
+        "rust_version": "1.63",
+        "v": 2,
+        "vers": "0.3.4",
+        "yanked": false
+      },
+      "glob@0.3.3": {
+        "cksum": "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempdir",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "glob",
+        "pubtime": "2025-08-11T09:47:13Z",
+        "rust_version": "1.63.0",
+        "vers": "0.3.3",
+        "yanked": false
+      },
+      "itoa@1.0.15": {
+        "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "no-panic",
+            "optional": true,
+            "req": "^0.1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "itoa",
+        "pubtime": "2025-03-03T23:42:45Z",
+        "rust_version": "1.36",
+        "vers": "1.0.15",
+        "yanked": false
+      },
+      "jobserver@0.1.34": {
+        "cksum": "9afb3de4395d6b3e67a780b6de64b51c978ecf11cb9a462c66be7d4ca9039d33",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "std"
+            ],
+            "kind": "normal",
+            "name": "getrandom",
+            "optional": false,
+            "req": "^0.3.2",
+            "target": "cfg(windows)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.171",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "fs"
+            ],
+            "kind": "dev",
+            "name": "nix",
+            "optional": false,
+            "req": "^0.28.0",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempfile",
+            "optional": false,
+            "req": "^3.10.1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "jobserver",
+        "pubtime": "2025-08-23T22:28:04Z",
+        "rust_version": "1.63",
+        "vers": "0.1.34",
+        "yanked": false
+      },
+      "lexopt@0.3.1": {
+        "cksum": "9fa0e2a1fcbe2f6be6c42e342259976206b383122fc152e872795338b5a3f3a7",
+        "deps": [],
+        "features": {},
+        "name": "lexopt",
+        "pubtime": "2025-03-31T12:41:49Z",
+        "vers": "0.3.1",
+        "yanked": false
+      },
+      "libc@0.2.177": {
+        "cksum": "2874a2af47a2325c2001a6e6fad9b16a53b802102b528163885171cf92b15976",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "rustc-std-workspace-core",
+            "optional": true,
+            "req": "^1.0.1",
+            "target": null
+          }
+        ],
+        "features": {
+          "align": [],
+          "const-extern-fn": [],
+          "default": [
+            "std"
+          ],
+          "extra_traits": [],
+          "rustc-dep-of-std": [
+            "align",
+            "rustc-std-workspace-core"
+          ],
+          "std": [],
+          "use_std": [
+            "std"
+          ]
+        },
+        "name": "libc",
+        "pubtime": "2025-10-09T14:06:09Z",
+        "rust_version": "1.63",
+        "vers": "0.2.177",
+        "yanked": false
+      },
+      "log@0.4.28": {
+        "cksum": "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.63",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde",
+            "optional": true,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_test",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "sval",
+            "optional": true,
+            "req": "^2.14.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "sval",
+            "optional": false,
+            "req": "^2.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "sval_derive",
+            "optional": false,
+            "req": "^2.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "sval_ref",
+            "optional": true,
+            "req": "^2.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "inline-i128"
+            ],
+            "kind": "normal",
+            "name": "value-bag",
+            "optional": true,
+            "req": "^1.7",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "test"
+            ],
+            "kind": "dev",
+            "name": "value-bag",
+            "optional": false,
+            "req": "^1.7",
+            "target": null
+          }
+        ],
+        "features": {
+          "kv": [],
+          "kv_serde": [
+            "kv_std",
+            "value-bag/serde",
+            "serde"
+          ],
+          "kv_std": [
+            "std",
+            "kv",
+            "value-bag/error"
+          ],
+          "kv_sval": [
+            "kv",
+            "value-bag/sval",
+            "sval",
+            "sval_ref"
+          ],
+          "kv_unstable": [
+            "kv",
+            "value-bag"
+          ],
+          "kv_unstable_serde": [
+            "kv_serde",
+            "kv_unstable_std"
+          ],
+          "kv_unstable_std": [
+            "kv_std",
+            "kv_unstable"
+          ],
+          "kv_unstable_sval": [
+            "kv_sval",
+            "kv_unstable"
+          ],
+          "max_level_debug": [],
+          "max_level_error": [],
+          "max_level_info": [],
+          "max_level_off": [],
+          "max_level_trace": [],
+          "max_level_warn": [],
+          "release_max_level_debug": [],
+          "release_max_level_error": [],
+          "release_max_level_info": [],
+          "release_max_level_off": [],
+          "release_max_level_trace": [],
+          "release_max_level_warn": [],
+          "std": []
+        },
+        "name": "log",
+        "pubtime": "2025-09-03T20:08:08Z",
+        "rust_version": "1.61.0",
+        "vers": "0.4.28",
+        "yanked": false
+      },
+      "memchr@2.7.6": {
+        "cksum": "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "log",
+            "optional": true,
+            "req": "^0.4.20",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "quickcheck",
+            "optional": false,
+            "req": "^1.0.3",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "default": [
+            "std"
+          ],
+          "libc": [],
+          "rustc-dep-of-std": [
+            "core"
+          ],
+          "std": [
+            "alloc"
+          ],
+          "use_std": [
+            "std"
+          ]
+        },
+        "features2": {
+          "logging": [
+            "dep:log"
+          ]
+        },
+        "name": "memchr",
+        "pubtime": "2025-09-25T12:47:49Z",
+        "rust_version": "1.61",
+        "v": 2,
+        "vers": "2.7.6",
+        "yanked": false
+      },
+      "memmap2@0.9.9": {
+        "cksum": "744133e4a0e0a658e1374cf3bf8e415c4052a15a111acd372764c55b4177d490",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.151",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "owning_ref",
+            "optional": false,
+            "req": "^0.4.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "stable_deref_trait",
+            "optional": true,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempfile",
+            "optional": false,
+            "req": "^3",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "memmap2",
+        "pubtime": "2025-10-21T14:47:43Z",
+        "rust_version": "1.63",
+        "vers": "0.9.9",
+        "yanked": false
+      },
+      "pcre2-sys@0.2.10": {
+        "cksum": "18b9073c1a2549bd409bf4a32c94d903bb1a09bf845bc306ae148897fa0760a4",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "parallel"
+            ],
+            "kind": "build",
+            "name": "cc",
+            "optional": false,
+            "req": "^1.0.73",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.146",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "pkg-config",
+            "optional": false,
+            "req": "^0.3.27",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "pcre2-sys",
+        "pubtime": "2025-09-21T15:28:41Z",
+        "vers": "0.2.10",
+        "yanked": false
+      },
+      "pcre2@0.2.11": {
+        "cksum": "9e970b0fcce0c7ee6ef662744ff711f21ccd6f11b7cf03cd187a80e89797fc67",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.146",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "log",
+            "optional": false,
+            "req": "^0.4.19",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "pcre2-sys",
+            "optional": false,
+            "req": "^0.2.10",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "pcre2",
+        "pubtime": "2025-09-25T18:28:09Z",
+        "vers": "0.2.11",
+        "yanked": false
+      },
+      "pkg-config@0.3.32": {
+        "cksum": "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "lazy_static",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "pkg-config",
+        "pubtime": "2025-03-03T10:04:55Z",
+        "rust_version": "1.31",
+        "vers": "0.3.32",
+        "yanked": false
+      },
+      "proc-macro2@1.0.101": {
+        "cksum": "89ae43fd86e4158d6db51ad8e2b80f313af9cc74f5c0e03ccb87de09998732de",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "flate2",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rayon",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tar",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "unicode-ident",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "proc-macro"
+          ],
+          "nightly": [],
+          "proc-macro": [],
+          "span-locations": []
+        },
+        "name": "proc-macro2",
+        "pubtime": "2025-08-16T20:10:39Z",
+        "rust_version": "1.56",
+        "vers": "1.0.101",
+        "yanked": false
+      },
+      "quote@1.0.41": {
+        "cksum": "ce25767e7b499d1b604768e7cde645d14cc8584231ea6b295e9c9eb22c02e1d1",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.80",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "diff"
+            ],
+            "kind": "dev",
+            "name": "trybuild",
+            "optional": false,
+            "req": "^1.0.108",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "proc-macro"
+          ],
+          "proc-macro": [
+            "proc-macro2/proc-macro"
+          ]
+        },
+        "name": "quote",
+        "pubtime": "2025-09-29T01:09:34Z",
+        "rust_version": "1.60",
+        "vers": "1.0.41",
+        "yanked": false
+      },
+      "r-efi@5.3.0": {
+        "cksum": "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "efiapi": [],
+          "examples": [
+            "native"
+          ],
+          "native": [],
+          "rustc-dep-of-std": [
+            "core"
+          ]
+        },
+        "name": "r-efi",
+        "pubtime": "2025-06-17T09:12:38Z",
+        "rust_version": "1.68",
+        "vers": "5.3.0",
+        "yanked": false
+      },
+      "regex-automata@0.4.13": {
+        "cksum": "5276caf25ac86c8d810222b3dbb938e512c55c6831a10f3e6ed1c93b84041f1c",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "aho-corasick",
+            "optional": true,
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "anyhow",
+            "optional": false,
+            "req": "^1.0.69",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "kind": "dev",
+            "name": "bstr",
+            "optional": false,
+            "req": "^1.3.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "atty",
+              "humantime",
+              "termcolor"
+            ],
+            "kind": "dev",
+            "name": "env_logger",
+            "optional": false,
+            "req": "^0.9.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "log",
+            "optional": true,
+            "req": "^0.4.14",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "memchr",
+            "optional": true,
+            "req": "^2.6.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "quickcheck",
+            "optional": false,
+            "req": "^1.0.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "regex-syntax",
+            "optional": true,
+            "req": "^0.8.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "regex-test",
+            "optional": false,
+            "req": "^0.1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "dfa": [
+            "dfa-build",
+            "dfa-search",
+            "dfa-onepass"
+          ],
+          "dfa-build": [
+            "nfa-thompson",
+            "dfa-search"
+          ],
+          "dfa-onepass": [
+            "nfa-thompson"
+          ],
+          "dfa-search": [],
+          "hybrid": [
+            "alloc",
+            "nfa-thompson"
+          ],
+          "nfa": [
+            "nfa-thompson",
+            "nfa-pikevm",
+            "nfa-backtrack"
+          ],
+          "nfa-backtrack": [
+            "nfa-thompson"
+          ],
+          "nfa-pikevm": [
+            "nfa-thompson"
+          ],
+          "nfa-thompson": [
+            "alloc"
+          ],
+          "perf-inline": [],
+          "unicode-word-boundary": []
+        },
+        "features2": {
+          "default": [
+            "std",
+            "syntax",
+            "perf",
+            "unicode",
+            "meta",
+            "nfa",
+            "dfa",
+            "hybrid"
+          ],
+          "internal-instrument": [
+            "internal-instrument-pikevm"
+          ],
+          "internal-instrument-pikevm": [
+            "logging",
+            "std"
+          ],
+          "logging": [
+            "dep:log",
+            "aho-corasick?/logging",
+            "memchr?/logging"
+          ],
+          "meta": [
+            "syntax",
+            "nfa-pikevm"
+          ],
+          "perf": [
+            "perf-inline",
+            "perf-literal"
+          ],
+          "perf-literal": [
+            "perf-literal-substring",
+            "perf-literal-multisubstring"
+          ],
+          "perf-literal-multisubstring": [
+            "dep:aho-corasick"
+          ],
+          "perf-literal-substring": [
+            "aho-corasick?/perf-literal",
+            "dep:memchr"
+          ],
+          "std": [
+            "regex-syntax?/std",
+            "memchr?/std",
+            "aho-corasick?/std",
+            "alloc"
+          ],
+          "syntax": [
+            "dep:regex-syntax",
+            "alloc"
+          ],
+          "unicode": [
+            "unicode-age",
+            "unicode-bool",
+            "unicode-case",
+            "unicode-gencat",
+            "unicode-perl",
+            "unicode-script",
+            "unicode-segment",
+            "unicode-word-boundary",
+            "regex-syntax?/unicode"
+          ],
+          "unicode-age": [
+            "regex-syntax?/unicode-age"
+          ],
+          "unicode-bool": [
+            "regex-syntax?/unicode-bool"
+          ],
+          "unicode-case": [
+            "regex-syntax?/unicode-case"
+          ],
+          "unicode-gencat": [
+            "regex-syntax?/unicode-gencat"
+          ],
+          "unicode-perl": [
+            "regex-syntax?/unicode-perl"
+          ],
+          "unicode-script": [
+            "regex-syntax?/unicode-script"
+          ],
+          "unicode-segment": [
+            "regex-syntax?/unicode-segment"
+          ]
+        },
+        "name": "regex-automata",
+        "pubtime": "2025-10-13T14:38:27Z",
+        "rust_version": "1.65",
+        "v": 2,
+        "vers": "0.4.13",
+        "yanked": false
+      },
+      "regex-syntax@0.8.8": {
+        "cksum": "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "normal",
+            "name": "arbitrary",
+            "optional": true,
+            "req": "^1.3.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std",
+            "unicode"
+          ],
+          "std": [],
+          "unicode": [
+            "unicode-age",
+            "unicode-bool",
+            "unicode-case",
+            "unicode-gencat",
+            "unicode-perl",
+            "unicode-script",
+            "unicode-segment"
+          ],
+          "unicode-age": [],
+          "unicode-bool": [],
+          "unicode-case": [],
+          "unicode-gencat": [],
+          "unicode-perl": [],
+          "unicode-script": [],
+          "unicode-segment": []
+        },
+        "features2": {
+          "arbitrary": [
+            "dep:arbitrary"
+          ]
+        },
+        "name": "regex-syntax",
+        "pubtime": "2025-10-13T14:38:17Z",
+        "rust_version": "1.65",
+        "v": 2,
+        "vers": "0.8.8",
+        "yanked": false
+      },
+      "regex@1.12.2": {
+        "cksum": "843bc0191f75f3e22651ae5f1e72939ab2f72a4bc30fa80a066bd66edefc24d4",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "aho-corasick",
+            "optional": true,
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "anyhow",
+            "optional": false,
+            "req": "^1.0.69",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "atty",
+              "humantime",
+              "termcolor"
+            ],
+            "kind": "dev",
+            "name": "env_logger",
+            "optional": false,
+            "req": "^0.9.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "memchr",
+            "optional": true,
+            "req": "^2.6.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "quickcheck",
+            "optional": false,
+            "req": "^1.0.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "alloc",
+              "syntax",
+              "meta",
+              "nfa-pikevm"
+            ],
+            "kind": "normal",
+            "name": "regex-automata",
+            "optional": false,
+            "req": "^0.4.12",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "regex-syntax",
+            "optional": false,
+            "req": "^0.8.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "regex-test",
+            "optional": false,
+            "req": "^0.1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "pattern": [],
+          "perf-backtrack": [
+            "regex-automata/nfa-backtrack"
+          ],
+          "perf-cache": [],
+          "perf-dfa": [
+            "regex-automata/hybrid"
+          ],
+          "perf-dfa-full": [
+            "regex-automata/dfa-build",
+            "regex-automata/dfa-search"
+          ],
+          "perf-inline": [
+            "regex-automata/perf-inline"
+          ],
+          "perf-onepass": [
+            "regex-automata/dfa-onepass"
+          ],
+          "unicode": [
+            "unicode-age",
+            "unicode-bool",
+            "unicode-case",
+            "unicode-gencat",
+            "unicode-perl",
+            "unicode-script",
+            "unicode-segment",
+            "regex-automata/unicode",
+            "regex-syntax/unicode"
+          ],
+          "unicode-age": [
+            "regex-automata/unicode-age",
+            "regex-syntax/unicode-age"
+          ],
+          "unicode-bool": [
+            "regex-automata/unicode-bool",
+            "regex-syntax/unicode-bool"
+          ],
+          "unicode-case": [
+            "regex-automata/unicode-case",
+            "regex-syntax/unicode-case"
+          ],
+          "unicode-gencat": [
+            "regex-automata/unicode-gencat",
+            "regex-syntax/unicode-gencat"
+          ],
+          "unicode-perl": [
+            "regex-automata/unicode-perl",
+            "regex-automata/unicode-word-boundary",
+            "regex-syntax/unicode-perl"
+          ],
+          "unicode-script": [
+            "regex-automata/unicode-script",
+            "regex-syntax/unicode-script"
+          ],
+          "unicode-segment": [
+            "regex-automata/unicode-segment",
+            "regex-syntax/unicode-segment"
+          ],
+          "unstable": [
+            "pattern"
+          ]
+        },
+        "features2": {
+          "default": [
+            "std",
+            "perf",
+            "unicode",
+            "regex-syntax/default"
+          ],
+          "logging": [
+            "aho-corasick?/logging",
+            "memchr?/logging",
+            "regex-automata/logging"
+          ],
+          "perf": [
+            "perf-cache",
+            "perf-dfa",
+            "perf-onepass",
+            "perf-backtrack",
+            "perf-inline",
+            "perf-literal"
+          ],
+          "perf-literal": [
+            "dep:aho-corasick",
+            "dep:memchr",
+            "regex-automata/perf-literal"
+          ],
+          "std": [
+            "aho-corasick?/std",
+            "memchr?/std",
+            "regex-automata/std",
+            "regex-syntax/std"
+          ],
+          "use_std": [
+            "std"
+          ]
+        },
+        "name": "regex",
+        "pubtime": "2025-10-13T14:38:36Z",
+        "rust_version": "1.65",
+        "v": 2,
+        "vers": "1.12.2",
+        "yanked": false
+      },
+      "ryu@1.0.20": {
+        "cksum": "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "no-panic",
+            "optional": true,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "num_cpus",
+            "optional": false,
+            "req": "^1.8",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.9",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand_xorshift",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          }
+        ],
+        "features": {
+          "small": []
+        },
+        "name": "ryu",
+        "pubtime": "2025-03-04T00:13:50Z",
+        "rust_version": "1.36",
+        "vers": "1.0.20",
+        "yanked": false
+      },
+      "same-file@1.0.6": {
+        "cksum": "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "winapi-util",
+            "optional": false,
+            "req": "^0.1.1",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {},
+        "name": "same-file",
+        "pubtime": "2020-01-11T17:02:30Z",
+        "vers": "1.0.6",
+        "yanked": false
+      },
+      "serde@1.0.228": {
+        "cksum": "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [
+              "result"
+            ],
+            "kind": "normal",
+            "name": "serde_core",
+            "optional": false,
+            "req": "=1.0.228",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_derive",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [
+            "serde_core/alloc"
+          ],
+          "default": [
+            "std"
+          ],
+          "derive": [
+            "serde_derive"
+          ],
+          "rc": [
+            "serde_core/rc"
+          ],
+          "std": [
+            "serde_core/std"
+          ],
+          "unstable": [
+            "serde_core/unstable"
+          ]
+        },
+        "name": "serde",
+        "pubtime": "2025-09-27T16:51:35Z",
+        "rust_version": "1.56",
+        "vers": "1.0.228",
+        "yanked": false
+      },
+      "serde_core@1.0.228": {
+        "cksum": "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_derive",
+            "optional": false,
+            "req": "=1.0.228",
+            "target": "cfg(any())"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_derive",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "default": [
+            "std",
+            "result"
+          ],
+          "rc": [],
+          "result": [],
+          "std": [],
+          "unstable": []
+        },
+        "name": "serde_core",
+        "pubtime": "2025-09-27T16:51:25Z",
+        "rust_version": "1.56",
+        "vers": "1.0.228",
+        "yanked": false
+      },
+      "serde_derive@1.0.228": {
+        "cksum": "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [
+              "proc-macro"
+            ],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.74",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "proc-macro"
+            ],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0.35",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "clone-impls",
+              "derive",
+              "parsing",
+              "printing",
+              "proc-macro"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^2.0.81",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [],
+          "deserialize_in_place": []
+        },
+        "name": "serde_derive",
+        "pubtime": "2025-09-27T16:51:16Z",
+        "rust_version": "1.61",
+        "vers": "1.0.228",
+        "yanked": false
+      },
+      "serde_json@1.0.145": {
+        "cksum": "402a6f66d8c709116cf22f558eab210f5a50187f702eb4d7e5ef38d9a7f1c79c",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "automod",
+            "optional": false,
+            "req": "^1.0.11",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "indexmap",
+            "optional": true,
+            "req": "^2.2.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "indoc",
+            "optional": false,
+            "req": "^2.0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "itoa",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "memchr",
+            "optional": false,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "ref-cast",
+            "optional": false,
+            "req": "^1.0.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1.0.13",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "ryu",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.220",
+            "target": "cfg(any())"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.194",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_bytes",
+            "optional": false,
+            "req": "^0.11.10",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_core",
+            "optional": false,
+            "req": "^1.0.220",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_derive",
+            "optional": false,
+            "req": "^1.0.166",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_stacker",
+            "optional": false,
+            "req": "^0.1.8",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "diff"
+            ],
+            "kind": "dev",
+            "name": "trybuild",
+            "optional": false,
+            "req": "^1.0.108",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [
+            "serde_core/alloc"
+          ],
+          "arbitrary_precision": [],
+          "default": [
+            "std"
+          ],
+          "float_roundtrip": [],
+          "preserve_order": [
+            "indexmap",
+            "std"
+          ],
+          "raw_value": [],
+          "std": [
+            "memchr/std",
+            "serde_core/std"
+          ],
+          "unbounded_depth": []
+        },
+        "name": "serde_json",
+        "pubtime": "2025-09-14T15:56:02Z",
+        "rust_version": "1.61",
+        "vers": "1.0.145",
+        "yanked": false
+      },
+      "shlex@1.3.0": {
+        "cksum": "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64",
+        "deps": [],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": []
+        },
+        "name": "shlex",
+        "pubtime": "2024-01-22T05:15:15Z",
+        "rust_version": "1.46.0",
+        "vers": "1.3.0",
+        "yanked": false
+      },
+      "syn@2.0.107": {
+        "cksum": "2a26dbd934e5451d21ef060c018dae56fc073894c5a7896f882928a76e6d081b",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "anyhow",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "automod",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "flate2",
+            "optional": false,
+            "req": "^1",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "insta",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.91",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": true,
+            "req": "^1.0.35",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rayon",
+            "optional": false,
+            "req": "^1",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "ref-cast",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "blocking"
+            ],
+            "kind": "dev",
+            "name": "reqwest",
+            "optional": false,
+            "req": "^0.12",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rustversion",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "syn-test-suite",
+            "optional": false,
+            "req": "^0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tar",
+            "optional": false,
+            "req": "^0.4.16",
+            "target": "cfg(not(miri))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "termcolor",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "unicode-ident",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "walkdir",
+            "optional": false,
+            "req": "^2.3.2",
+            "target": "cfg(not(miri))"
+          }
+        ],
+        "features": {
+          "clone-impls": [],
+          "derive": [],
+          "extra-traits": [],
+          "fold": [],
+          "full": [],
+          "parsing": [],
+          "test": [
+            "syn-test-suite/all-features"
+          ],
+          "visit": [],
+          "visit-mut": []
+        },
+        "features2": {
+          "default": [
+            "derive",
+            "parsing",
+            "printing",
+            "clone-impls",
+            "proc-macro"
+          ],
+          "printing": [
+            "dep:quote"
+          ],
+          "proc-macro": [
+            "proc-macro2/proc-macro",
+            "quote?/proc-macro"
+          ]
+        },
+        "name": "syn",
+        "pubtime": "2025-10-18T16:03:46Z",
+        "rust_version": "1.68",
+        "v": 2,
+        "vers": "2.0.107",
+        "yanked": false
+      },
+      "termcolor@1.4.1": {
+        "cksum": "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "winapi-util",
+            "optional": false,
+            "req": "^0.1.3",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {},
+        "name": "termcolor",
+        "pubtime": "2024-01-10T12:40:32Z",
+        "vers": "1.4.1",
+        "yanked": false
+      },
+      "textwrap@0.16.2": {
+        "cksum": "c13547615a44dc9c452a8a534638acdf07120d4b6847c8178705da06306a3057",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "embed_en-us"
+            ],
+            "kind": "normal",
+            "name": "hyphenation",
+            "optional": true,
+            "req": "^0.8.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "smawk",
+            "optional": true,
+            "req": "^0.3.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "terminal_size",
+            "optional": true,
+            "req": "^0.4.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "termion",
+            "optional": false,
+            "req": "^4.0.2",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "unic-emoji-char",
+            "optional": false,
+            "req": "^0.9.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "unicode-linebreak",
+            "optional": true,
+            "req": "^0.1.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "unicode-width",
+            "optional": true,
+            "req": "^0.2.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "version-sync",
+            "optional": false,
+            "req": "^0.9.5",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "unicode-linebreak",
+            "unicode-width",
+            "smawk"
+          ]
+        },
+        "name": "textwrap",
+        "pubtime": "2025-03-03T17:01:53Z",
+        "rust_version": "1.70",
+        "vers": "0.16.2",
+        "yanked": false
+      },
+      "tikv-jemalloc-sys@0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7": {
+        "cksum": "cd8aa5b2ab86a2cefa406d889139c162cbb230092f7d1d7cbc1716405d852a3b",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "cc",
+            "optional": false,
+            "req": "^1.0.13",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.8",
+            "target": null
+          }
+        ],
+        "features": {
+          "background_threads": [
+            "background_threads_runtime_support"
+          ],
+          "background_threads_runtime_support": [],
+          "debug": [],
+          "default": [
+            "background_threads_runtime_support"
+          ],
+          "disable_cache_oblivious": [],
+          "disable_initial_exec_tls": [],
+          "override_allocator_on_supported_platforms": [
+            "unprefixed_malloc_on_supported_platforms"
+          ],
+          "profiling": [],
+          "stats": [],
+          "unprefixed_malloc_on_supported_platforms": []
+        },
+        "links": "jemalloc",
+        "name": "tikv-jemalloc-sys",
+        "pubtime": "2025-10-16T17:25:57Z",
+        "rust_version": "1.71.0",
+        "vers": "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7",
+        "yanked": false
+      },
+      "tikv-jemallocator@0.6.1": {
+        "cksum": "0359b4327f954e0567e69fb191cf1436617748813819c94b8cd4a431422d053a",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2.8",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "paste",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tikv-jemalloc-ctl",
+            "optional": false,
+            "req": "^0.6.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "tikv-jemalloc-sys",
+            "optional": false,
+            "req": "^0.6.1",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc_trait": [],
+          "background_threads": [
+            "tikv-jemalloc-sys/background_threads"
+          ],
+          "background_threads_runtime_support": [
+            "tikv-jemalloc-sys/background_threads_runtime_support"
+          ],
+          "debug": [
+            "tikv-jemalloc-sys/debug"
+          ],
+          "default": [
+            "background_threads_runtime_support"
+          ],
+          "disable_cache_oblivious": [
+            "tikv-jemalloc-sys/disable_cache_oblivious"
+          ],
+          "disable_initial_exec_tls": [
+            "tikv-jemalloc-sys/disable_initial_exec_tls"
+          ],
+          "override_allocator_on_supported_platforms": [
+            "unprefixed_malloc_on_supported_platforms",
+            "tikv-jemalloc-sys/override_allocator_on_supported_platforms"
+          ],
+          "profiling": [
+            "tikv-jemalloc-sys/profiling"
+          ],
+          "stats": [
+            "tikv-jemalloc-sys/stats"
+          ],
+          "unprefixed_malloc_on_supported_platforms": [
+            "tikv-jemalloc-sys/unprefixed_malloc_on_supported_platforms"
+          ]
+        },
+        "name": "tikv-jemallocator",
+        "pubtime": "2025-10-16T17:33:32Z",
+        "vers": "0.6.1",
+        "yanked": false
+      },
+      "unicode-ident@1.0.20": {
+        "cksum": "462eeb75aeb73aea900253ce739c8e18a67423fadf006037cd3ff27e82748a06",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "criterion",
+            "optional": false,
+            "req": "^0.7",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "fst",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.9",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "roaring",
+            "optional": false,
+            "req": "^0.11",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "ucd-trie",
+            "optional": false,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "unicode-xid",
+            "optional": false,
+            "req": "^0.2.6",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "unicode-ident",
+        "pubtime": "2025-10-21T06:32:36Z",
+        "rust_version": "1.31",
+        "vers": "1.0.20",
+        "yanked": false
+      },
+      "walkdir@2.5.0": {
+        "cksum": "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "same-file",
+            "optional": false,
+            "req": "^1.0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "winapi-util",
+            "optional": false,
+            "req": "^0.1.1",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {},
+        "name": "walkdir",
+        "pubtime": "2024-03-01T17:55:09Z",
+        "vers": "2.5.0",
+        "yanked": false
+      },
+      "wasip2@1.0.1+wasi-0.2.4": {
+        "cksum": "0562428422c63773dad2c345a1882263bbf4d65cf3f42e90921f787ef5ad58e7",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "alloc",
+            "optional": true,
+            "package": "rustc-std-workspace-alloc",
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "wit-bindgen",
+            "optional": false,
+            "req": "^0.46.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "bitflags": [
+            "wit-bindgen/bitflags"
+          ],
+          "default": [
+            "std",
+            "bitflags"
+          ],
+          "rustc-dep-of-std": [
+            "core",
+            "alloc",
+            "wit-bindgen/rustc-dep-of-std"
+          ],
+          "std": []
+        },
+        "name": "wasip2",
+        "pubtime": "2025-09-15T14:21:35Z",
+        "rust_version": "1.82.0",
+        "vers": "1.0.1+wasi-0.2.4",
+        "yanked": false
+      },
+      "winapi-util@0.1.11": {
+        "cksum": "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_Storage_FileSystem",
+              "Win32_System_Console",
+              "Win32_System_SystemInformation"
+            ],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": false,
+            "req": ">=0.48.0, <=0.61",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {},
+        "name": "winapi-util",
+        "pubtime": "2025-09-07T12:24:31Z",
+        "vers": "0.1.11",
+        "yanked": false
+      },
+      "windows-link@0.2.1": {
+        "cksum": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+        "deps": [],
+        "features": {},
+        "name": "windows-link",
+        "pubtime": "2025-10-06T17:35:08Z",
+        "rust_version": "1.71",
+        "vers": "0.2.1",
+        "yanked": false
+      },
+      "windows-sys@0.61.2": {
+        "cksum": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "windows-link",
+            "optional": false,
+            "req": "^0.2.1",
+            "target": null
+          }
+        ],
+        "features": {
+          "Wdk": [
+            "Win32_Foundation"
+          ],
+          "Wdk_Devices": [
+            "Wdk"
+          ],
+          "Wdk_Devices_Bluetooth": [
+            "Wdk_Devices"
+          ],
+          "Wdk_Devices_HumanInterfaceDevice": [
+            "Wdk_Devices"
+          ],
+          "Wdk_Foundation": [
+            "Wdk"
+          ],
+          "Wdk_Graphics": [
+            "Wdk"
+          ],
+          "Wdk_Graphics_Direct3D": [
+            "Wdk_Graphics"
+          ],
+          "Wdk_NetworkManagement": [
+            "Wdk"
+          ],
+          "Wdk_NetworkManagement_Ndis": [
+            "Wdk_NetworkManagement"
+          ],
+          "Wdk_NetworkManagement_WindowsFilteringPlatform": [
+            "Wdk_NetworkManagement"
+          ],
+          "Wdk_Storage": [
+            "Wdk"
+          ],
+          "Wdk_Storage_FileSystem": [
+            "Wdk_Storage"
+          ],
+          "Wdk_Storage_FileSystem_Minifilters": [
+            "Wdk_Storage_FileSystem"
+          ],
+          "Wdk_System": [
+            "Wdk"
+          ],
+          "Wdk_System_IO": [
+            "Wdk_System"
+          ],
+          "Wdk_System_Memory": [
+            "Wdk_System"
+          ],
+          "Wdk_System_OfflineRegistry": [
+            "Wdk_System"
+          ],
+          "Wdk_System_Registry": [
+            "Wdk_System"
+          ],
+          "Wdk_System_SystemInformation": [
+            "Wdk_System"
+          ],
+          "Wdk_System_SystemServices": [
+            "Wdk_System"
+          ],
+          "Wdk_System_Threading": [
+            "Wdk_System"
+          ],
+          "Win32": [
+            "Win32_Foundation"
+          ],
+          "Win32_Data": [
+            "Win32"
+          ],
+          "Win32_Data_HtmlHelp": [
+            "Win32_Data"
+          ],
+          "Win32_Data_RightsManagement": [
+            "Win32_Data"
+          ],
+          "Win32_Devices": [
+            "Win32"
+          ],
+          "Win32_Devices_AllJoyn": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Beep": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_BiometricFramework": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Bluetooth": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Cdrom": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Communication": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_DeviceAndDriverInstallation": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_DeviceQuery": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Display": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Dvd": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Enumeration": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Enumeration_Pnp": [
+            "Win32_Devices_Enumeration"
+          ],
+          "Win32_Devices_Fax": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_HumanInterfaceDevice": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Nfc": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Nfp": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_PortableDevices": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Properties": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Pwm": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Sensors": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_SerialCommunication": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Tapi": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_Usb": [
+            "Win32_Devices"
+          ],
+          "Win32_Devices_WebServicesOnDevices": [
+            "Win32_Devices"
+          ],
+          "Win32_Foundation": [
+            "Win32"
+          ],
+          "Win32_Gaming": [
+            "Win32"
+          ],
+          "Win32_Globalization": [
+            "Win32"
+          ],
+          "Win32_Graphics": [
+            "Win32"
+          ],
+          "Win32_Graphics_Dwm": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Gdi": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_GdiPlus": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Hlsl": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_OpenGL": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Printing": [
+            "Win32_Graphics"
+          ],
+          "Win32_Graphics_Printing_PrintTicket": [
+            "Win32_Graphics_Printing"
+          ],
+          "Win32_Management": [
+            "Win32"
+          ],
+          "Win32_Management_MobileDeviceManagementRegistration": [
+            "Win32_Management"
+          ],
+          "Win32_Media": [
+            "Win32"
+          ],
+          "Win32_Media_Audio": [
+            "Win32_Media"
+          ],
+          "Win32_Media_DxMediaObjects": [
+            "Win32_Media"
+          ],
+          "Win32_Media_KernelStreaming": [
+            "Win32_Media"
+          ],
+          "Win32_Media_Multimedia": [
+            "Win32_Media"
+          ],
+          "Win32_Media_Streaming": [
+            "Win32_Media"
+          ],
+          "Win32_Media_WindowsMediaFormat": [
+            "Win32_Media"
+          ],
+          "Win32_NetworkManagement": [
+            "Win32"
+          ],
+          "Win32_NetworkManagement_Dhcp": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Dns": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_InternetConnectionWizard": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_IpHelper": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Multicast": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Ndis": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetBios": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetManagement": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetShell": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_NetworkDiagnosticsFramework": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_P2P": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_QoS": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Rras": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_Snmp": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WNet": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WebDav": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WiFi": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsConnectionManager": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsFilteringPlatform": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsFirewall": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_NetworkManagement_WindowsNetworkVirtualization": [
+            "Win32_NetworkManagement"
+          ],
+          "Win32_Networking": [
+            "Win32"
+          ],
+          "Win32_Networking_ActiveDirectory": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_Clustering": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_HttpServer": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_Ldap": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WebSocket": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WinHttp": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WinInet": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WinSock": [
+            "Win32_Networking"
+          ],
+          "Win32_Networking_WindowsWebServices": [
+            "Win32_Networking"
+          ],
+          "Win32_Security": [
+            "Win32"
+          ],
+          "Win32_Security_AppLocker": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Authentication": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Authentication_Identity": [
+            "Win32_Security_Authentication"
+          ],
+          "Win32_Security_Authorization": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Credentials": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Cryptography": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Cryptography_Catalog": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_Cryptography_Certificates": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_Cryptography_Sip": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_Cryptography_UI": [
+            "Win32_Security_Cryptography"
+          ],
+          "Win32_Security_DiagnosticDataQuery": [
+            "Win32_Security"
+          ],
+          "Win32_Security_DirectoryServices": [
+            "Win32_Security"
+          ],
+          "Win32_Security_EnterpriseData": [
+            "Win32_Security"
+          ],
+          "Win32_Security_ExtensibleAuthenticationProtocol": [
+            "Win32_Security"
+          ],
+          "Win32_Security_Isolation": [
+            "Win32_Security"
+          ],
+          "Win32_Security_LicenseProtection": [
+            "Win32_Security"
+          ],
+          "Win32_Security_NetworkAccessProtection": [
+            "Win32_Security"
+          ],
+          "Win32_Security_WinTrust": [
+            "Win32_Security"
+          ],
+          "Win32_Security_WinWlx": [
+            "Win32_Security"
+          ],
+          "Win32_Storage": [
+            "Win32"
+          ],
+          "Win32_Storage_Cabinets": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_CloudFilters": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Compression": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_DistributedFileSystem": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_FileHistory": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_FileSystem": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Imapi": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_IndexServer": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_InstallableFileSystems": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_IscsiDisc": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Jet": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Nvme": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_OfflineFiles": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_OperationRecorder": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Packaging": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Packaging_Appx": [
+            "Win32_Storage_Packaging"
+          ],
+          "Win32_Storage_ProjectedFileSystem": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_StructuredStorage": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Vhd": [
+            "Win32_Storage"
+          ],
+          "Win32_Storage_Xps": [
+            "Win32_Storage"
+          ],
+          "Win32_System": [
+            "Win32"
+          ],
+          "Win32_System_AddressBook": [
+            "Win32_System"
+          ],
+          "Win32_System_Antimalware": [
+            "Win32_System"
+          ],
+          "Win32_System_ApplicationInstallationAndServicing": [
+            "Win32_System"
+          ],
+          "Win32_System_ApplicationVerifier": [
+            "Win32_System"
+          ],
+          "Win32_System_ClrHosting": [
+            "Win32_System"
+          ],
+          "Win32_System_Com": [
+            "Win32_System"
+          ],
+          "Win32_System_Com_Marshal": [
+            "Win32_System_Com"
+          ],
+          "Win32_System_Com_StructuredStorage": [
+            "Win32_System_Com"
+          ],
+          "Win32_System_Com_Urlmon": [
+            "Win32_System_Com"
+          ],
+          "Win32_System_ComponentServices": [
+            "Win32_System"
+          ],
+          "Win32_System_Console": [
+            "Win32_System"
+          ],
+          "Win32_System_CorrelationVector": [
+            "Win32_System"
+          ],
+          "Win32_System_DataExchange": [
+            "Win32_System"
+          ],
+          "Win32_System_DeploymentServices": [
+            "Win32_System"
+          ],
+          "Win32_System_DeveloperLicensing": [
+            "Win32_System"
+          ],
+          "Win32_System_Diagnostics": [
+            "Win32_System"
+          ],
+          "Win32_System_Diagnostics_Ceip": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_Debug": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_Debug_Extensions": [
+            "Win32_System_Diagnostics_Debug"
+          ],
+          "Win32_System_Diagnostics_Etw": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_ProcessSnapshotting": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_ToolHelp": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_Diagnostics_TraceLogging": [
+            "Win32_System_Diagnostics"
+          ],
+          "Win32_System_DistributedTransactionCoordinator": [
+            "Win32_System"
+          ],
+          "Win32_System_Environment": [
+            "Win32_System"
+          ],
+          "Win32_System_ErrorReporting": [
+            "Win32_System"
+          ],
+          "Win32_System_EventCollector": [
+            "Win32_System"
+          ],
+          "Win32_System_EventLog": [
+            "Win32_System"
+          ],
+          "Win32_System_EventNotificationService": [
+            "Win32_System"
+          ],
+          "Win32_System_GroupPolicy": [
+            "Win32_System"
+          ],
+          "Win32_System_HostCompute": [
+            "Win32_System"
+          ],
+          "Win32_System_HostComputeNetwork": [
+            "Win32_System"
+          ],
+          "Win32_System_HostComputeSystem": [
+            "Win32_System"
+          ],
+          "Win32_System_Hypervisor": [
+            "Win32_System"
+          ],
+          "Win32_System_IO": [
+            "Win32_System"
+          ],
+          "Win32_System_Iis": [
+            "Win32_System"
+          ],
+          "Win32_System_Ioctl": [
+            "Win32_System"
+          ],
+          "Win32_System_JobObjects": [
+            "Win32_System"
+          ],
+          "Win32_System_Js": [
+            "Win32_System"
+          ],
+          "Win32_System_Kernel": [
+            "Win32_System"
+          ],
+          "Win32_System_LibraryLoader": [
+            "Win32_System"
+          ],
+          "Win32_System_Mailslots": [
+            "Win32_System"
+          ],
+          "Win32_System_Mapi": [
+            "Win32_System"
+          ],
+          "Win32_System_Memory": [
+            "Win32_System"
+          ],
+          "Win32_System_Memory_NonVolatile": [
+            "Win32_System_Memory"
+          ],
+          "Win32_System_MessageQueuing": [
+            "Win32_System"
+          ],
+          "Win32_System_MixedReality": [
+            "Win32_System"
+          ],
+          "Win32_System_Ole": [
+            "Win32_System"
+          ],
+          "Win32_System_PasswordManagement": [
+            "Win32_System"
+          ],
+          "Win32_System_Performance": [
+            "Win32_System"
+          ],
+          "Win32_System_Performance_HardwareCounterProfiling": [
+            "Win32_System_Performance"
+          ],
+          "Win32_System_Pipes": [
+            "Win32_System"
+          ],
+          "Win32_System_Power": [
+            "Win32_System"
+          ],
+          "Win32_System_ProcessStatus": [
+            "Win32_System"
+          ],
+          "Win32_System_Recovery": [
+            "Win32_System"
+          ],
+          "Win32_System_Registry": [
+            "Win32_System"
+          ],
+          "Win32_System_RemoteDesktop": [
+            "Win32_System"
+          ],
+          "Win32_System_RemoteManagement": [
+            "Win32_System"
+          ],
+          "Win32_System_RestartManager": [
+            "Win32_System"
+          ],
+          "Win32_System_Restore": [
+            "Win32_System"
+          ],
+          "Win32_System_Rpc": [
+            "Win32_System"
+          ],
+          "Win32_System_Search": [
+            "Win32_System"
+          ],
+          "Win32_System_Search_Common": [
+            "Win32_System_Search"
+          ],
+          "Win32_System_SecurityCenter": [
+            "Win32_System"
+          ],
+          "Win32_System_Services": [
+            "Win32_System"
+          ],
+          "Win32_System_SetupAndMigration": [
+            "Win32_System"
+          ],
+          "Win32_System_Shutdown": [
+            "Win32_System"
+          ],
+          "Win32_System_StationsAndDesktops": [
+            "Win32_System"
+          ],
+          "Win32_System_SubsystemForLinux": [
+            "Win32_System"
+          ],
+          "Win32_System_SystemInformation": [
+            "Win32_System"
+          ],
+          "Win32_System_SystemServices": [
+            "Win32_System"
+          ],
+          "Win32_System_Threading": [
+            "Win32_System"
+          ],
+          "Win32_System_Time": [
+            "Win32_System"
+          ],
+          "Win32_System_TpmBaseServices": [
+            "Win32_System"
+          ],
+          "Win32_System_UserAccessLogging": [
+            "Win32_System"
+          ],
+          "Win32_System_Variant": [
+            "Win32_System"
+          ],
+          "Win32_System_VirtualDosMachines": [
+            "Win32_System"
+          ],
+          "Win32_System_WindowsProgramming": [
+            "Win32_System"
+          ],
+          "Win32_System_Wmi": [
+            "Win32_System"
+          ],
+          "Win32_UI": [
+            "Win32"
+          ],
+          "Win32_UI_Accessibility": [
+            "Win32_UI"
+          ],
+          "Win32_UI_ColorSystem": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Controls": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Controls_Dialogs": [
+            "Win32_UI_Controls"
+          ],
+          "Win32_UI_HiDpi": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Input": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Input_Ime": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_KeyboardAndMouse": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_Pointer": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_Touch": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_Input_XboxController": [
+            "Win32_UI_Input"
+          ],
+          "Win32_UI_InteractionContext": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Magnification": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Shell": [
+            "Win32_UI"
+          ],
+          "Win32_UI_Shell_Common": [
+            "Win32_UI_Shell"
+          ],
+          "Win32_UI_Shell_PropertiesSystem": [
+            "Win32_UI_Shell"
+          ],
+          "Win32_UI_TabletPC": [
+            "Win32_UI"
+          ],
+          "Win32_UI_TextServices": [
+            "Win32_UI"
+          ],
+          "Win32_UI_WindowsAndMessaging": [
+            "Win32_UI"
+          ],
+          "Win32_Web": [
+            "Win32"
+          ],
+          "Win32_Web_InternetExplorer": [
+            "Win32_Web"
+          ],
+          "default": [],
+          "docs": []
+        },
+        "name": "windows-sys",
+        "pubtime": "2025-10-06T19:18:30Z",
+        "rust_version": "1.71",
+        "vers": "0.61.2",
+        "yanked": false
+      },
+      "wit-bindgen@0.46.0": {
+        "cksum": "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "alloc",
+            "optional": true,
+            "package": "rustc-std-workspace-alloc",
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "bitflags",
+            "optional": true,
+            "req": "^2.3.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "core",
+            "optional": true,
+            "package": "rustc-std-workspace-core",
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "futures",
+            "optional": true,
+            "req": "^0.3.30",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "once_cell",
+            "optional": true,
+            "req": "^1.19.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "wit-bindgen-rust-macro",
+            "optional": true,
+            "req": "^0.46.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "realloc": [],
+          "std": []
+        },
+        "features2": {
+          "async": [
+            "macros",
+            "std",
+            "dep:futures",
+            "dep:once_cell",
+            "wit-bindgen-rust-macro/async"
+          ],
+          "bitflags": [
+            "dep:bitflags"
+          ],
+          "default": [
+            "macros",
+            "realloc",
+            "async",
+            "std",
+            "bitflags"
+          ],
+          "macros": [
+            "dep:wit-bindgen-rust-macro"
+          ],
+          "rustc-dep-of-std": [
+            "dep:core",
+            "dep:alloc"
+          ]
+        },
+        "name": "wit-bindgen",
+        "pubtime": "2025-09-10T17:55:11Z",
+        "rust_version": "1.82.0",
+        "v": 2,
+        "vers": "0.46.0",
+        "yanked": false
+      }
+    },
+    "status": "ok",
+    "unknown_archives": 51,
+    "version_details": {
+      "aho-corasick@1.1.3": {
+        "cksum": "8e60d3430d3a69478ad0993f19238d2df97c507009a52b3c10addcd7f6bcb916",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "aho-corasick",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 60,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.1.3",
+        "yanked": false
+      },
+      "anyhow@1.0.100": {
+        "cksum": "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "anyhow",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 101,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.100",
+        "yanked": false
+      },
+      "arbitrary@1.4.2": {
+        "cksum": "c3d036a3c4ab069c7b410a2ce876bd74808d2d0888a82667669f8e783a898bf1",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "arbitrary",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 37,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.4.2",
+        "yanked": false
+      },
+      "bstr@1.12.0": {
+        "cksum": "234113d19d0d7d613b40e86fb654acf958910802bcceab913a4f9e7cda03b1a4",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "bstr",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 47,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.12.0",
+        "yanked": false
+      },
+      "cc@1.2.41": {
+        "cksum": "ac9fe6cdbb24b6ade63616c0a0688e45bb56732262c158df3c0c4bea4ca47cb7",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "cc",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 187,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.2.41",
+        "yanked": false
+      },
+      "cfg-if@1.0.4": {
+        "cksum": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "cfg-if",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 15,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.4",
+        "yanked": false
+      },
+      "crossbeam-channel@0.5.15": {
+        "cksum": "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "crossbeam-channel",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 41,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.5.15",
+        "yanked": false
+      },
+      "crossbeam-deque@0.8.6": {
+        "cksum": "9dd111b7b7f7d55b72c0a6ae361660ee5853c9af73f70c3c2ef6858b950e2e51",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "crossbeam-deque",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 25,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.8.6",
+        "yanked": false
+      },
+      "crossbeam-epoch@0.9.18": {
+        "cksum": "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "crossbeam-epoch",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 37,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.9.18",
+        "yanked": false
+      },
+      "crossbeam-utils@0.8.21": {
+        "cksum": "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "crossbeam-utils",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 41,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.8.21",
+        "yanked": false
+      },
+      "derive_arbitrary@1.4.2": {
+        "cksum": "1e567bd82dcff979e4b03460c307b3cdc9e96fde3d73bed1496d2bc75d9dd62a",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "derive_arbitrary",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 32,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.4.2",
+        "yanked": false
+      },
+      "encoding_rs@0.8.35": {
+        "cksum": "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "encoding_rs",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 61,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.8.35",
+        "yanked": false
+      },
+      "encoding_rs_io@0.1.7": {
+        "cksum": "1cc3c5651fb62ab8aa3103998dade57efdd028544bd300516baa31840c252a83",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "encoding_rs_io",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 7,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.1.7",
+        "yanked": false
+      },
+      "find-msvc-tools@0.1.4": {
+        "cksum": "52051878f80a721bb68ebfbc930e07b65ba72f2da88968ea5c06fd6ca3d3a127",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "find-msvc-tools",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 4,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.1.4",
+        "yanked": false
+      },
+      "getrandom@0.3.4": {
+        "cksum": "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "getrandom",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 40,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.3.4",
+        "yanked": false
+      },
+      "glob@0.3.3": {
+        "cksum": "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "glob",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 28,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.3.3",
+        "yanked": false
+      },
+      "itoa@1.0.15": {
+        "cksum": "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "itoa",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 33,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.15",
+        "yanked": false
+      },
+      "jobserver@0.1.34": {
+        "cksum": "9afb3de4395d6b3e67a780b6de64b51c978ecf11cb9a462c66be7d4ca9039d33",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "jobserver",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 34,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.1.34",
+        "yanked": false
+      },
+      "lexopt@0.3.1": {
+        "cksum": "9fa0e2a1fcbe2f6be6c42e342259976206b383122fc152e872795338b5a3f3a7",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "lexopt",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 4,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.3.1",
+        "yanked": false
+      },
+      "libc@0.2.177": {
+        "cksum": "2874a2af47a2325c2001a6e6fad9b16a53b802102b528163885171cf92b15976",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "libc",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 190,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.2.177",
+        "yanked": false
+      },
+      "log@0.4.28": {
+        "cksum": "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "log",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 57,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.4.28",
+        "yanked": false
+      },
+      "memchr@2.7.6": {
+        "cksum": "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "memchr",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 42,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "2.7.6",
+        "yanked": false
+      },
+      "memmap2@0.9.9": {
+        "cksum": "744133e4a0e0a658e1374cf3bf8e415c4052a15a111acd372764c55b4177d490",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "memmap2",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 33,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.9.9",
+        "yanked": false
+      },
+      "pcre2-sys@0.2.10": {
+        "cksum": "18b9073c1a2549bd409bf4a32c94d903bb1a09bf845bc306ae148897fa0760a4",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "pcre2-sys",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 12,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.2.10",
+        "yanked": false
+      },
+      "pcre2@0.2.11": {
+        "cksum": "9e970b0fcce0c7ee6ef662744ff711f21ccd6f11b7cf03cd187a80e89797fc67",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "pcre2",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 13,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.2.11",
+        "yanked": false
+      },
+      "pkg-config@0.3.32": {
+        "cksum": "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "pkg-config",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 44,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.3.32",
+        "yanked": false
+      },
+      "proc-macro2@1.0.101": {
+        "cksum": "89ae43fd86e4158d6db51ad8e2b80f313af9cc74f5c0e03ccb87de09998732de",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "proc-macro2",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 156,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.101",
+        "yanked": false
+      },
+      "quote@1.0.41": {
+        "cksum": "ce25767e7b499d1b604768e7cde645d14cc8584231ea6b295e9c9eb22c02e1d1",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "quote",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 88,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.41",
+        "yanked": false
+      },
+      "r-efi@5.3.0": {
+        "cksum": "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "r-efi",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 18,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "5.3.0",
+        "yanked": false
+      },
+      "regex-automata@0.4.13": {
+        "cksum": "5276caf25ac86c8d810222b3dbb938e512c55c6831a10f3e6ed1c93b84041f1c",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "regex-automata",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 36,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.4.13",
+        "yanked": false
+      },
+      "regex-syntax@0.8.8": {
+        "cksum": "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "regex-syntax",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 75,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.8.8",
+        "yanked": false
+      },
+      "regex@1.12.2": {
+        "cksum": "843bc0191f75f3e22651ae5f1e72939ab2f72a4bc30fa80a066bd66edefc24d4",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "regex",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 164,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.12.2",
+        "yanked": false
+      },
+      "ryu@1.0.20": {
+        "cksum": "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "ryu",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 31,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.20",
+        "yanked": false
+      },
+      "same-file@1.0.6": {
+        "cksum": "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "same-file",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 10,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.6",
+        "yanked": false
+      },
+      "serde@1.0.228": {
+        "cksum": "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "serde",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 314,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.228",
+        "yanked": false
+      },
+      "serde_core@1.0.228": {
+        "cksum": "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "serde_core",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 8,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.228",
+        "yanked": false
+      },
+      "serde_derive@1.0.228": {
+        "cksum": "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "serde_derive",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 269,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.228",
+        "yanked": false
+      },
+      "serde_json@1.0.145": {
+        "cksum": "402a6f66d8c709116cf22f558eab210f5a50187f702eb4d7e5ef38d9a7f1c79c",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "serde_json",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 176,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.145",
+        "yanked": false
+      },
+      "shlex@1.3.0": {
+        "cksum": "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "shlex",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 6,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.3.0",
+        "yanked": false
+      },
+      "syn@2.0.107": {
+        "cksum": "2a26dbd934e5451d21ef060c018dae56fc073894c5a7896f882928a76e6d081b",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "syn",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 339,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "2.0.107",
+        "yanked": false
+      },
+      "termcolor@1.4.1": {
+        "cksum": "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "termcolor",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 23,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.4.1",
+        "yanked": false
+      },
+      "textwrap@0.16.2": {
+        "cksum": "c13547615a44dc9c452a8a534638acdf07120d4b6847c8178705da06306a3057",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "textwrap",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 26,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.16.2",
+        "yanked": false
+      },
+      "tikv-jemalloc-sys@0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7": {
+        "cksum": "cd8aa5b2ab86a2cefa406d889139c162cbb230092f7d1d7cbc1716405d852a3b",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "tikv-jemalloc-sys",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 10,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7",
+        "yanked": false
+      },
+      "tikv-jemallocator@0.6.1": {
+        "cksum": "0359b4327f954e0567e69fb191cf1436617748813819c94b8cd4a431422d053a",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "tikv-jemallocator",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 6,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.6.1",
+        "yanked": false
+      },
+      "unicode-ident@1.0.20": {
+        "cksum": "462eeb75aeb73aea900253ce739c8e18a67423fadf006037cd3ff27e82748a06",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "unicode-ident",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 21,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.20",
+        "yanked": false
+      },
+      "walkdir@2.5.0": {
+        "cksum": "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "walkdir",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 39,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "2.5.0",
+        "yanked": false
+      },
+      "wasip2@1.0.1+wasi-0.2.4": {
+        "cksum": "0562428422c63773dad2c345a1882263bbf4d65cf3f42e90921f787ef5ad58e7",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "wasip2",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 1,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "1.0.1+wasi-0.2.4",
+        "yanked": false
+      },
+      "winapi-util@0.1.11": {
+        "cksum": "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "winapi-util",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 11,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.1.11",
+        "yanked": false
+      },
+      "windows-link@0.2.1": {
+        "cksum": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "windows-link",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 6,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.2.1",
+        "yanked": false
+      },
+      "windows-sys@0.61.2": {
+        "cksum": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "windows-sys",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 22,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.61.2",
+        "yanked": false
+      },
+      "wit-bindgen@0.46.0": {
+        "cksum": "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59",
+        "expected_bytes": null,
+        "lock_only": true,
+        "name": "wit-bindgen",
+        "primary_reason": null,
+        "reasons": [],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 51,
+        "sources": [
+          {
+            "digest": "658928bef2455826a883322110547971bb4cf20302cbc79d554149dae27e18a8",
+            "kind": "lock",
+            "name": "ripgrep-15.1.0"
+          }
+        ],
+        "version": "0.46.0",
+        "yanked": false
+      }
+    },
+    "version_union": [
+      "aho-corasick@1.1.3",
+      "anyhow@1.0.100",
+      "arbitrary@1.4.2",
+      "bstr@1.12.0",
+      "cc@1.2.41",
+      "cfg-if@1.0.4",
+      "crossbeam-channel@0.5.15",
+      "crossbeam-deque@0.8.6",
+      "crossbeam-epoch@0.9.18",
+      "crossbeam-utils@0.8.21",
+      "derive_arbitrary@1.4.2",
+      "encoding_rs@0.8.35",
+      "encoding_rs_io@0.1.7",
+      "find-msvc-tools@0.1.4",
+      "getrandom@0.3.4",
+      "glob@0.3.3",
+      "itoa@1.0.15",
+      "jobserver@0.1.34",
+      "lexopt@0.3.1",
+      "libc@0.2.177",
+      "log@0.4.28",
+      "memchr@2.7.6",
+      "memmap2@0.9.9",
+      "pcre2-sys@0.2.10",
+      "pcre2@0.2.11",
+      "pkg-config@0.3.32",
+      "proc-macro2@1.0.101",
+      "quote@1.0.41",
+      "r-efi@5.3.0",
+      "regex-automata@0.4.13",
+      "regex-syntax@0.8.8",
+      "regex@1.12.2",
+      "ryu@1.0.20",
+      "same-file@1.0.6",
+      "serde@1.0.228",
+      "serde_core@1.0.228",
+      "serde_derive@1.0.228",
+      "serde_json@1.0.145",
+      "shlex@1.3.0",
+      "syn@2.0.107",
+      "termcolor@1.4.1",
+      "textwrap@0.16.2",
+      "tikv-jemalloc-sys@0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7",
+      "tikv-jemallocator@0.6.1",
+      "unicode-ident@1.0.20",
+      "walkdir@2.5.0",
+      "wasip2@1.0.1+wasi-0.2.4",
+      "winapi-util@0.1.11",
+      "windows-link@0.2.1",
+      "windows-sys@0.61.2",
+      "wit-bindgen@0.46.0"
+    ],
+    "warnings": [
+      "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative.",
+      "Imported locks include every exact registry package (including dev/targets); features are not inferred and lock closure is not expanded.",
+      "Git/path/workspace sources require independent client provisioning; they are not mirrored."
+    ]
+  },
+  "schema": 1,
+  "source": {
+    "case": "lock-ripgrep-15-1-0",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}

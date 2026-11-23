@@ -1,0 +1,198 @@
+{
+  "created_at": "2026-11-23",
+  "expected": {
+    "index_line_sha256": {
+      "root@1.0.0": "66f034dd0d4c2618471065a5050f817981072219fec48cf38163013681e7737f",
+      "windows-build@1.0.0": "1f3b3fabd80653916a705c8773bf0c541b7af6543fb83172634d305712f60e2d"
+    },
+    "index_warnings": [],
+    "known_archive_bytes": 0,
+    "metadata_warnings": [],
+    "profiles": [
+      {
+        "default_features": true,
+        "features": [],
+        "name": "root",
+        "version": "1.0.0"
+      }
+    ],
+    "roots": [
+      {
+        "profile": {
+          "default_features": true,
+          "features": [],
+          "name": "root",
+          "version": "1.0.0"
+        },
+        "resolved_versions": [
+          "root@1.0.0",
+          "windows-build@1.0.0"
+        ]
+      }
+    ],
+    "selected_rows": {
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "windows-build",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": "cfg(windows)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "unused-dev",
+            "optional": false,
+            "registry": null,
+            "req": "1",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "root",
+        "vers": "1.0.0",
+        "yanked": false
+      },
+      "windows-build@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "deps": [],
+        "features": {},
+        "name": "windows-build",
+        "vers": "1.0.0",
+        "yanked": false
+      }
+    },
+    "status": "ok",
+    "unknown_archives": 2,
+    "version_details": {
+      "root@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "root",
+        "primary_reason": {
+          "alias": "root",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": null,
+          "requirement": "=1.0.0",
+          "root": 0,
+          "target": null
+        },
+        "reasons": [
+          {
+            "alias": "root",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          },
+          {
+            "alias": "root",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": null,
+            "requirement": "=1.0.0",
+            "root": 0,
+            "target": null
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [
+          "r0000"
+        ],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      },
+      "windows-build@1.0.0": {
+        "cksum": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_bytes": null,
+        "lock_only": false,
+        "name": "windows-build",
+        "primary_reason": {
+          "alias": "windows-build",
+          "conservative": false,
+          "default_features": true,
+          "features": [],
+          "lock_only": false,
+          "parent": "root@1.0.0",
+          "requirement": "1",
+          "root": 0,
+          "target": "cfg(windows)"
+        },
+        "reasons": [
+          {
+            "alias": "windows-build",
+            "conservative": false,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": "cfg(windows)"
+          },
+          {
+            "alias": "windows-build",
+            "conservative": true,
+            "default_features": true,
+            "features": [],
+            "lock_only": false,
+            "parent": "root@1.0.0",
+            "requirement": "1",
+            "root": 0,
+            "target": "cfg(windows)"
+          }
+        ],
+        "retained_from_previous": false,
+        "root_aliases": [],
+        "source_ordinal": 0,
+        "sources": [
+          {
+            "digest": null,
+            "kind": "manual",
+            "name": "r0000"
+          }
+        ],
+        "version": "1.0.0",
+        "yanked": false
+      }
+    },
+    "version_union": [
+      "root@1.0.0",
+      "windows-build@1.0.0"
+    ],
+    "warnings": [
+      "Declared features with all-platform normal/build lock coverage; build success is not implied.",
+      "HEAD sizes are estimates; actual stream/final-generation budgets remain authoritative."
+    ]
+  },
+  "schema": 1,
+  "source": {
+    "case": "synthetic-targets-build-dev",
+    "product_commit": "da8671fb4b658ac3ddab9a4abeda827c36525a6f"
+  }
+}

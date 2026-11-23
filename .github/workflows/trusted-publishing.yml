@@ -69,6 +69,11 @@ jobs:
         run: |
           python3 scripts/release-gate.py --event "$EVENT" --ref-name "$REF_NAME" \
             --sha "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY"
+      - name: Require a qualified weekly corpus or full dispatch on the release commit
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/corpus.py release-check --repository "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA"
       - name: Require the immutable reviewed main source and one expected crate
         env:
           EVENT: ${{ github.event_name }}

@@ -659,6 +659,22 @@ checked eight provenance subjects, all six SBOM bindings and bundle/store equali
 Preserve the gate refusal and immutable source/assets; the later inherited `url`
 advisory seen in maintenance is not waived by successful publication.
 
+## Tracked crate corpus maintenance
+
+Owner authorization, 2026-11-23: maintain the versioned top-crates, tricky and
+pinned real-lock corpus under `tests/corpus`, with stdlib `scripts/corpus.py` and
+weekly/dispatch/PR CI. Cargo remains a CI oracle only, never a product runtime
+dependency. Keep frozen `tests/fixtures/crates-top100-20261113.json` unchanged;
+require 100/100-root, 186-version frozen replay, explicit classified live diffs,
+no archive downloads and tested native/Cargo conformance. Keep the corpus green;
+ranking refreshes and baseline changes are reviewed PRs, never auto-merged.
+Only the weekly tracking-issue job may write issues. Before release require a
+clean/latest-upstream-only weekly or a passing full dispatch on the release head.
+Follow [CORPUS.md](docs/CORPUS.md). No new dependencies/version bump/publication
+are authorized by this task. The Repository Review Agent reviews before merge;
+report green PR and PR/full-dispatch run IDs, then stop. Never merge/mainpush or
+poll CI in a loop.
+
 ## OpenPGP manifest verification and 0.7.0 authorization
 
 Owner authorization, 2026-11-22: implement default-on independent OpenPGP
