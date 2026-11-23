@@ -4,6 +4,8 @@
 
 ### Repository
 
+- Record the OpenPGP dependency/key approvals and preserved prototype; integration
+  waits for an rPGP release that clears both dependency advisories without exceptions.
 - Contain offline-proof uploads within the served directory and reject symlinked
   parents, with regression tests; require TLS 1.2 or newer in the test servers.
 - Record the completed 0.6.1 publication and first real phase 2 pipeline run,
