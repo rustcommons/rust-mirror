@@ -145,3 +145,18 @@ only the exact-head dispatch alternative can clear it. See the
 [release checklist](RELEASING.md#before-merge-and-publication). No new dependency,
 version bump, software release or production registry/Nexus operation is part of
 maintaining this suite.
+
+## Initial qualification, 2026-11-23
+
+[Fast PR run 45112299093](https://github.com/rustcommons/rust-mirror/actions/runs/45112299093)
+passed all 16 cases. [Full branch dispatch 45112301249](https://github.com/rustcommons/rust-mirror/actions/runs/45112301249)
+on implementation commit `9c8277b23492937a4928e47068f2447abb0eaf50` passed all
+21 cases, 219 Cargo profiles and three native guards. Both reports were clean,
+with no upstream differences or archive requests. Each top-100 corpus reproduced
+100/100 roots and matching native/Cargo 186-version unions. The frozen union also
+matched every version identity in the original retained qualification artifact.
+All four lock projections preserved their 55/153/51/125 registry identities and
+checksums. Reports are attached to [PR #84](https://github.com/rustcommons/rust-mirror/pull/84);
+artifact retention is 30 days, while inputs and expected results remain committed.
+This is bounded metadata-resolution evidence, not archive integrity, compilation,
+project build, arbitrary feature completeness or perpetual upstream compatibility.
