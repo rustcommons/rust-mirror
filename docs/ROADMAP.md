@@ -1,10 +1,35 @@
 # Roadmap
 
-Updated 2026-11-21 (standard release pipeline); crate items reflect owner decisions dated 2026-11-12. This is future work, not a release promise or a description of
+Updated 2026-11-23 (OpenPGP dependency gate); crate items reflect owner decisions dated 2026-11-12. This is future work, not a release promise or a description of
 implemented functionality. Current behavior is in the [user guide](USER-GUIDE.md),
 [network contract](NETWORK.md), [retention contract](RETENTION.md) and
 [requirements index](REQUIREMENTS.md). The owner-approved lock-import iteration shipped in 0.5.0 on 2026-11-13;
 [publication evidence](evals/2026-11-13-publication-0.5.0.md) identifies its bounded scope.
+
+## OpenPGP manifest verification: blocked on upstream dependencies
+
+OpenPGP manifest verification: implemented on branch
+[feat/openpgp-manifests](https://github.com/rustcommons/rust-mirror/tree/feat/openpgp-manifests);
+blocked until rPGP depends on rsa >= 0.10 and crypto-bigint >= 0.7.6; resume by
+updating pgp, confirming cargo-deny is clean with no exceptions, then opening the
+feature PR.
+
+The branch currently contains a verification prototype and dependency assessment,
+not completed product integration. Plan/inventory, opt-out, migration, negative
+and fuzz tests, documentation and full qualification remain unfinished. Main's
+existing toolchain behavior is unchanged. Owner decision, 2026-11-22, option B:
+NO advisory exceptions; the `pgp` dependency and pinned-key approvals still stand.
+Wait for a released compatible graph, then recheck MSRV 1.90, licenses and the
+full resolved graph as well as both named advisories. Never select a yanked fix.
+
+Existing upstream tracker: [rPGP PR #573, Adopt RustCrypto new releases](https://github.com/rpgp/rpgp/pull/573)
+(open when checked 2026-11-23; its inspected diff proposes rsa 0.10 and
+crypto-bigint 0.7.11). [Issue #257](https://github.com/rpgp/rpgp/issues/257) tracks
+the RSA advisory. No upstream issue or PR was opened. See the
+[dependency/key assessment](evals/2026-11-23-openpgp-dependency-assessment.md) and
+[owner authorization](../AGENTS.md#openpgp-manifest-verification-and-070-authorization).
+The preserved branch has no feature PR; 0.7.0 preparation remains separate after
+feature review and merge.
 
 ## Curated crate mirroring: proposed phases
 

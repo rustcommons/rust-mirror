@@ -659,6 +659,48 @@ checked eight provenance subjects, all six SBOM bindings and bundle/store equali
 Preserve the gate refusal and immutable source/assets; the later inherited `url`
 advisory seen in maintenance is not waived by successful publication.
 
+## OpenPGP manifest verification and 0.7.0 authorization
+
+Owner authorization, 2026-11-22: implement default-on independent OpenPGP
+verification of Rust channel manifests, then prepare 0.7.0 in a separate release
+PR after the feature PR and Repository Review Agent review. The owner approves
+one new direct dependency, `pgp` (rPGP, MIT OR Apache-2.0), and a pinned-key trust
+policy. Disable unnecessary default features, retain MSRV 1.90, enumerate new
+transitive crates/licenses and keep cargo-deny green without new license or
+advisory exceptions; ask before adding any other direct dependency or license
+exception.
+
+Compile in the official release certificate and pin primary fingerprint
+`108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE`, checked against at least two official
+sources. Refreshed certificates may retain that primary identity; a different
+primary requires a new release. Verify each manifest before trusting component
+hashes; retain original manifest/.asc bytes. Refuse missing/invalid/wrong-signer
+or expired/revoked-at-signing keys with typed/event errors. An explicit
+`--allow-unsigned-manifest`/configuration opt-out for unsigned historical data
+must appear in previews, frozen plans and inventories, never silently apply.
+Verify replay/old-cache/assembly/publication boundaries, document migration and
+public API/schema breaks, and fuzz key/signature parsers. Never invoke gpg or a
+keyserver. The first PR contains the feature and docs with no version bump;
+report its green full dry run and stop for review. The later 0.7.0 release PR
+separately updates version/notes/locks after merge. Never push main, merge, tag,
+add tool attribution or poll CI in a loop.
+
+Trust-anchor cross-check, 2026-11-23: the expected primary fingerprint and
+identical 5,326-byte armor were independently checked at three official sources:
+[the distribution key](https://static.rust-lang.org/rust-key.gpg.ascii),
+[Rustup 1.25.1's embedded copy](https://raw.githubusercontent.com/rust-lang/rustup/bb60b1e89cc01a682dd16f2854329030938d3fe3/src/rust-key.pgp.ascii), and
+[the archived Rust website copy](https://raw.githubusercontent.com/rust-lang/prev.rust-lang.org/3c8d24f62264c5dd1bd8cb4acc29c2fa2bbc678e/rust-key.gpg.ascii).
+See the [dependency assessment](docs/evals/2026-11-23-openpgp-dependency-assessment.md).
+
+Owner decision, 2026-11-22, option B: grant NO advisory exceptions. The `pgp`
+dependency and pinned-key approvals remain in force, but integration is blocked
+until a released rPGP graph clears RUSTSEC-2023-0071 (`rsa` >=0.10) and
+RUSTSEC-2026-0387 (`crypto-bigint` >=0.7.6, using a non-yanked release).
+Preserve the prototype on `feat/openpgp-manifests` without a PR. Resume by updating
+`pgp`, confirming cargo-deny is clean with no exceptions and MSRV 1.90/licenses
+still hold, finishing integration/qualification, then opening the feature PR.
+No version bump or 0.7.0 release PR while the dependency gate remains blocked.
+
 ## User-facing documentation
 
 The owner authorized docs-only 0.1.1 publication on 2026-11-11. Keep README and docs.rs concise: purpose/install/short quick start and links to
