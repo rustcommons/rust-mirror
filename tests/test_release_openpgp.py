@@ -155,6 +155,8 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         publish=text.split('\n  publish:',1)[1].split('\n  github-release:',1)[0]
         self.assertLess(publish.index('scripts/release_openpgp.py sign'),publish.index('uses: rust-lang/crates-io-auth-action'))
         self.assertNotIn('uses: dtolnay/', publish)
+        self.assertNotIn('uses: actions/setup-python', publish)
+        self.assertIn('python3 scripts/release_openpgp.py sign', publish)
         self.assertLess(publish.index('scripts/release_openpgp.py sign'), publish.index('rustup toolchain install 1.90.0'))
         self.assertLess(publish.index('rustup toolchain install 1.90.0'), publish.index('cargo package '))
         before_sign = publish.split('      - name: Sign SHA256SUMS', 1)[0]
@@ -217,6 +219,9 @@ class ReleaseOpenPGPTests(unittest.TestCase):
 
     def test_expired_sibling_does_not_reject_nonexpiring_new_signer(self):
         home, primary, old, command = self.temporal_key()
+        old_signature = self.folder / 'old-signature.asc'
+        command('--local-user', old+'!', '--armor', '--detach-sign',
+                '--output', old_signature, self.manifest, timestamp='1577836860')
         command('--quick-add-key', primary, 'rsa2048', 'sign', '0', timestamp='1578009600')
         rows = pgp.gpg(home, '--with-colons', '--fingerprint', '--list-keys').stdout.decode().splitlines()
         new = [r.split(':')[9] for r in rows if r.startswith('fpr:')][-1]
@@ -228,6 +233,11 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         self.assertIn(b'[GNUPG:] GOODSIG ', status.stdout)
         self.assertNotIn(b'[GNUPG:] EXPKEYSIG ', status.stdout)
         self.assertEqual(pgp._verify_loaded(self.verify_home, self.manifest, self.signature, primary)['signing_fingerprint'], new)
+        old_status = pgp.gpg(self.verify_home, '--status-fd', '1', '--verify', old_signature, self.manifest)
+        self.assertIn(b'[GNUPG:] EXPKEYSIG ', old_status.stdout)
+        old_proof = pgp._verify_loaded(self.verify_home, self.manifest, old_signature, primary)
+        self.assertEqual(old_proof['signing_fingerprint'], old)
+        self.assertEqual(old_proof['signature_created'], 1577836860)
 
     def test_revoked_signing_subkey_is_refused(self):
         home, primary, subkey, command = self.temporal_key(expiry='0')

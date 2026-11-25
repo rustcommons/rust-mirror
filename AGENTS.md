@@ -674,7 +674,8 @@ Releases after published v0.6.1 require **ten** assets: the existing nine plus
 The seven SHA256SUMS entries and eight Sigstore subjects stay unchanged; the
 post-approval detached signature authenticates SHA256SUMS and is not itself an
 SLSA build artifact. In `publish`, before runner-rustup toolchain setup, packaging/comparison or token
-minting/publishing, use preinstalled GnuPG to sign in a private temporary home,
+minting/publishing, use preinstalled python3/GnuPG without setup-python or a
+community toolchain action to sign in a private temporary home,
 pass the passphrase only on stdin, verify in a separate public-only pinned home,
 kill both agents and delete both homes. Failure stops publishing. No Rust compiles
 in that job. Retried approved jobs still sign/verify when the crate already exists;

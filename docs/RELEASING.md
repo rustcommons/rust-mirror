@@ -32,7 +32,8 @@ the primary offline and provisions only the signing subkey and passphrase as
 or artifacts. The public copy was fetched from the spec branch on 2026-11-25;
 its primary identity is tested with an isolated GnuPG import.
 
-The publish job uses Ubuntu 24.04's preinstalled GnuPG, two mode-700 temporary
+The publish job uses Ubuntu 24.04's preinstalled python3 and GnuPG (no
+setup-python action), two mode-700 temporary
 homes and passphrase-fd 0. It signs before runner-rustup toolchain setup, byte
 comparison and auth/publish, even if the registry version already exists. A separate home imports only the
 committed public key. Following [standard #26](https://github.com/rustcommons/.github/pull/26)
@@ -42,7 +43,9 @@ Require exactly one GOODSIG (or EXPKEYSIG) and one VALIDSIG whose last field is
 the pinned primary. Only EXPKEYSIG triggers expiry validation: its VALIDSIG creation
 timestamp must precede the signing key's expiry from the imported certificate.
 This preserves historical signatures after routine rotation. KEYEXPIRED alone may
-refer to an expired sibling and does not trigger that check. Both agents are stopped
+refer to an expired sibling and does not trigger that check. Rotation tests verify
+both the old pre-expiry signature and the new non-expiring signature against the
+same refreshed certificate. Both agents are stopped
 and both homes removed on success/failure. Only the armored detached signature
 is uploaded for github-release. No community action runs before signing secrets
 are used and cleaned up; toolchain setup uses the runner's own rustup afterward.

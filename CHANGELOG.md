@@ -9,7 +9,8 @@
   verification, isolated keyrings, safe retries and throwaway-key CI proofs.
   Refuse revoked signatures; accept expired signing keys only for signatures
   made before expiry, without rejecting good signatures because a sibling expired.
-  Use runner rustup only after signing-secret cleanup. Earlier release layouts
+  Use preinstalled python3 without setup-python and runner rustup only after
+  signing-secret cleanup; verify both signatures across subkey rotation. Earlier release layouts
   and their verification remain unchanged.
 
 - Include results and scenario context in sync test assertion failures to help
