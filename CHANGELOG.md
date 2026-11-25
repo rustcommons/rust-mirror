@@ -7,7 +7,10 @@
 - Sign release SHA256SUMS with the environment-protected Rust Commons OpenPGP
   key before publishing; add SHA256SUMS.asc after 0.6.1 with pinned-primary
   verification, isolated keyrings, safe retries and throwaway-key CI proofs.
-  Earlier release layouts and their verification remain unchanged.
+  Refuse revoked signatures; accept expired signing keys only for signatures
+  made before expiry, without rejecting good signatures because a sibling expired.
+  Use runner rustup only after signing-secret cleanup. Earlier release layouts
+  and their verification remain unchanged.
 
 - Include results and scenario context in sync test assertion failures to help
   diagnose the intermittent incomplete-assembly resume failure tracked in

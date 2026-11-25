@@ -33,12 +33,20 @@ or artifacts. The public copy was fetched from the spec branch on 2026-11-25;
 its primary identity is tested with an isolated GnuPG import.
 
 The publish job uses Ubuntu 24.04's preinstalled GnuPG, two mode-700 temporary
-homes and passphrase-fd 0. It signs after byte comparison and before auth/publish,
-even if the registry version already exists. A separate home imports only the
-committed public key; return status and exactly one VALIDSIG must identify the
-pinned primary, including when the signer is a subkey. Both agents are stopped
+homes and passphrase-fd 0. It signs before runner-rustup toolchain setup, byte
+comparison and auth/publish, even if the registry version already exists. A separate home imports only the
+committed public key. Following [standard #26](https://github.com/rustcommons/.github/pull/26)
+and [#27](https://github.com/rustcommons/.github/pull/27), refuse REVKEYSIG,
+KEYREVOKED, BADSIG, ERRSIG, EXPSIG and NO_PUBKEY even alongside VALIDSIG.
+Require exactly one GOODSIG (or EXPKEYSIG) and one VALIDSIG whose last field is
+the pinned primary. Only EXPKEYSIG triggers expiry validation: its VALIDSIG creation
+timestamp must precede the signing key's expiry from the imported certificate.
+This preserves historical signatures after routine rotation. KEYEXPIRED alone may
+refer to an expired sibling and does not trigger that check. Both agents are stopped
 and both homes removed on success/failure. Only the armored detached signature
-is uploaded for github-release. No crate/dependency code compiles in this job.
+is uploaded for github-release. No community action runs before signing secrets
+are used and cleaned up; toolchain setup uses the runner's own rustup afterward.
+No crate/dependency code compiles in this job.
 
 A retry generates and verifies a fresh signature, then re-verifies and retains
 this run's first signature artifact if present. This avoids timestamp-dependent
@@ -104,10 +112,12 @@ signs and publishes the crate and all binaries. The flow is:
 6. **Owner approval, then publish.** The job rechecks any existing publication against
    the exact tag payload and skips a version crates.io already has. **Nothing compiles
    in the publish job**: it holds `id-token: write` and the crates-io environment, so
-   no crate or dependency code (build scripts, proc macros) may run there. It runs
+   no crate or dependency code (build scripts, proc macros) may run there. First
+   it signs/verifies SHA256SUMS and cleans up the signing homes, as described above.
+   It then installs Rust with the runner's rustup and runs
    `cargo package --locked --no-verify` (packaging only; the build job already built
    the packaged source) and `cmp`s the result with the attested `.crate`. Only then
-   does it sign/verify SHA256SUMS as described above and crates-io-auth-action mint the short-lived token, and only the final step,
+   does crates-io-auth-action mint the short-lived token, and only the final step,
    `cargo publish --locked --no-verify`, receives it.
 7. **Automatic GitHub release.** `github-release` re-stages the bundle (subjects equal
    the eight signed files), requires every attached DSSE envelope to equal GitHub's

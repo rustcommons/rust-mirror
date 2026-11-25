@@ -154,6 +154,12 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         text=(Path(pgp.__file__).resolve().parents[1]/'.github/workflows/trusted-publishing.yml').read_text()
         publish=text.split('\n  publish:',1)[1].split('\n  github-release:',1)[0]
         self.assertLess(publish.index('scripts/release_openpgp.py sign'),publish.index('uses: rust-lang/crates-io-auth-action'))
+        self.assertNotIn('uses: dtolnay/', publish)
+        self.assertLess(publish.index('scripts/release_openpgp.py sign'), publish.index('rustup toolchain install 1.90.0'))
+        self.assertLess(publish.index('rustup toolchain install 1.90.0'), publish.index('cargo package '))
+        before_sign = publish.split('      - name: Sign SHA256SUMS', 1)[0]
+        self.assertTrue(all(line.strip().startswith('- uses: actions/') or line.strip().startswith('uses: actions/')
+                            for line in before_sign.splitlines() if 'uses:' in line))
         signing=publish.split('      - name: Sign SHA256SUMS',1)[1].split('      - name:',1)[0]
         self.assertNotIn('        if:',signing)
         self.assertIn('mktemp -d',signing)
@@ -179,11 +185,72 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             pgp.check_all(self.manifest,['payload.crate'])
 
+    def temporal_key(self, expiry='1d'):
+        """A non-expiring primary and a signing subkey that expired in 2020."""
+        home = self.stack.enter_context(pgp.temporary_home())
+        def command(*args, timestamp='1577836800', data=b'\n'):
+            result = pgp.gpg(home, '--faked-system-time', timestamp,
+                             '--pinentry-mode', 'loopback', '--passphrase-fd', '0',
+                             *args, data=data)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            return result.stdout
+        command('--quick-generate-key', 'Rotation fixture <rotation@example.invalid>', 'rsa2048', 'cert', '0')
+        primary = pgp.primary_fingerprints(home)[0]
+        command('--quick-add-key', primary, 'rsa2048', 'sign', expiry)
+        rows = pgp.gpg(home, '--with-colons', '--fingerprint', '--list-keys').stdout.decode().splitlines()
+        subkey = [r.split(':')[9] for r in rows if r.startswith('fpr:')][1]
+        return home, primary, subkey, command
+
+    def test_expired_signer_before_expiry_is_accepted(self):
+        home, primary, subkey, command = self.temporal_key()
+        command('--local-user', subkey+'!', '--armor', '--detach-sign',
+                '--output', self.signature, self.manifest, timestamp='1577836860')
+        pgp.import_key(self.verify_home, command('--armor', '--export', primary))
+        status = pgp.gpg(self.verify_home, '--status-fd', '1', '--verify', self.signature, self.manifest)
+        self.assertIn(b'[GNUPG:] EXPKEYSIG ', status.stdout)
+        proof = pgp._verify_loaded(self.verify_home, self.manifest, self.signature, primary)
+        self.assertEqual(proof['signature_created'], 1577836860)
+        # Boundary and unknown-expiry refusals exercise the status policy directly.
+        for expiries in ({}, {subkey: 1577836860}, {subkey: 1577836859}):
+            with self.assertRaises(ValueError):
+                pgp.valid_signature(status.stdout, status.returncode, primary, expiries)
+
+    def test_expired_sibling_does_not_reject_nonexpiring_new_signer(self):
+        home, primary, old, command = self.temporal_key()
+        command('--quick-add-key', primary, 'rsa2048', 'sign', '0', timestamp='1578009600')
+        rows = pgp.gpg(home, '--with-colons', '--fingerprint', '--list-keys').stdout.decode().splitlines()
+        new = [r.split(':')[9] for r in rows if r.startswith('fpr:')][-1]
+        self.assertNotEqual(old, new)
+        pgp._detach_sign(home, self.manifest, self.signature, new, '')
+        pgp.import_key(self.verify_home, command('--armor', '--export', primary, timestamp='1578009600'))
+        status = pgp.gpg(self.verify_home, '--status-fd', '1', '--verify', self.signature, self.manifest)
+        self.assertIn(b'[GNUPG:] KEYEXPIRED ', status.stdout)
+        self.assertIn(b'[GNUPG:] GOODSIG ', status.stdout)
+        self.assertNotIn(b'[GNUPG:] EXPKEYSIG ', status.stdout)
+        self.assertEqual(pgp._verify_loaded(self.verify_home, self.manifest, self.signature, primary)['signing_fingerprint'], new)
+
+    def test_revoked_signing_subkey_is_refused(self):
+        home, primary, subkey, command = self.temporal_key(expiry='0')
+        command('--local-user', subkey+'!', '--armor', '--detach-sign',
+                '--output', self.signature, self.manifest, timestamp='1577836860')
+        # Revoke the selected subkey with a generated, unprotected test primary.
+        result = pgp.gpg(home, '--faked-system-time', '1577836920',
+                         '--command-fd', '0', '--edit-key', primary,
+                         data=b'key 1\nrevkey\ny\n0\n\ny\nsave\n')
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        pgp.import_key(self.verify_home, command('--armor', '--export', primary, timestamp='1577836920'))
+        status = pgp.gpg(self.verify_home, '--status-fd', '1', '--verify', self.signature, self.manifest)
+        self.assertIn(b'[GNUPG:] REVKEYSIG ', status.stdout)
+        self.assertIn(b'[GNUPG:] VALIDSIG ', status.stdout)
+        with self.assertRaisesRegex(ValueError, 'verification failed'):
+            pgp._verify_loaded(self.verify_home, self.manifest, self.signature, primary)
+
     def test_validsig_requires_primary_identity_single_signature_and_success(self):
-        valid = f'[GNUPG:] VALIDSIG {self.subkey} 2026-11-25 1 0 4 0 1 10 00 {self.primary}\n'.encode()
+        valid = f'[GNUPG:] GOODSIG test fixture\n[GNUPG:] VALIDSIG {self.subkey} 2026-11-25 1 0 4 0 1 10 00 {self.primary}\n'.encode()
         self.assertEqual(pgp.valid_signature(valid,0,self.primary)['primary_fingerprint'],self.primary)
         for status, code in [(valid,1),(valid+valid,0),(b'[GNUPG:] GOODSIG anything\n',0),
-                             (valid+b'[GNUPG:] BADSIG x\n',0)]:
+                             *[(valid+f'[GNUPG:] {bad} x\n'.encode(),0) for bad in ('BADSIG','REVKEYSIG','KEYREVOKED','EXPSIG','ERRSIG','NO_PUBKEY')],
+                             (valid+b'[GNUPG:] GOODSIG duplicate\n',0)]:
             with self.subTest(status=status,code=code), self.assertRaises(ValueError):
                 pgp.valid_signature(status,code,self.primary)
 

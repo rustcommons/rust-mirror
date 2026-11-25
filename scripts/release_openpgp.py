@@ -116,16 +116,23 @@ def pinned_key(home):
             'verification home must contain only the committed public key')
 
 
-def valid_signature(status, returncode, primary):
+def valid_signature(status, returncode, primary, expiries=None):
     rows = [line.removeprefix('[GNUPG:] ').split() for line in status.decode('utf-8').splitlines() if line.startswith('[GNUPG:] ')]
-    bad = {'BADSIG','ERRSIG','NO_PUBKEY','REVKEYSIG','FAILURE','NODATA'}
+    bad = {'REVKEYSIG','KEYREVOKED','BADSIG','ERRSIG','EXPSIG','NO_PUBKEY','FAILURE','NODATA'}
     signatures = [r for r in rows if r and r[0] == 'VALIDSIG']
-    require(returncode == 0 and not any(r and r[0] in bad for r in rows) and len(signatures) == 1,
+    good = [r for r in rows if r and r[0] in ('GOODSIG', 'EXPKEYSIG')]
+    require(returncode == 0 and not any(r and r[0] in bad for r in rows) and len(signatures) == 1 and len(good) == 1,
             'OpenPGP signature verification failed')
     row = signatures[0]
-    require(len(row) in (10,11) and re.fullmatch('[0-9A-F]{40}', row[1]), 'malformed GnuPG VALIDSIG')
-    actual_primary = row[10] if len(row) == 11 else row[1]
+    require(len(row) == 11 and re.fullmatch('[0-9A-F]{40}', row[1]) and row[3].isdigit(), 'malformed GnuPG VALIDSIG')
+    actual_primary = row[-1]
     require(actual_primary == primary, 'OpenPGP signature primary fingerprint mismatch')
+    # KEYEXPIRED can describe an unrelated sibling subkey. Only EXPKEYSIG
+    # identifies expiry of the key that actually made this signature (standard #27).
+    if good[0][0] == 'EXPKEYSIG':
+        expiry = (expiries or {}).get(row[1], 0)
+        require(expiry > 0 and int(row[3]) < expiry,
+                'OpenPGP signature made with an expired key or unknown expiry')
     return dict(primary_fingerprint=actual_primary, signing_fingerprint=row[1], signature_created=int(row[3]))
 
 
@@ -133,7 +140,16 @@ def _verify_loaded(home, manifest, signature, primary):
     require(signature.is_file() and not signature.is_symlink() and 0 < signature.stat().st_size <= MAX_SIGNATURE,
             'missing, linked or oversized OpenPGP signature')
     result = gpg(home, '--status-fd', '1', '--verify', signature.resolve(), manifest.resolve())
-    return valid_signature(result.stdout, result.returncode, primary)
+    listing = gpg(home, '--with-colons', '--fingerprint', '--list-keys')
+    require(listing.returncode == 0, 'GnuPG key listing failed')
+    expiries, expiry = {}, 0
+    for line in listing.stdout.decode('utf-8').splitlines():
+        fields = line.split(':')
+        if fields[0] in ('pub', 'sub'):
+            expiry = int(fields[6]) if fields[6].isdigit() else 0
+        elif fields[0] == 'fpr':
+            expiries[fields[9]] = expiry
+    return valid_signature(result.stdout, result.returncode, primary, expiries)
 
 
 def verify(manifest, signature):

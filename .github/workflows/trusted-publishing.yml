@@ -148,7 +148,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
@@ -163,29 +162,6 @@ jobs:
       - name: Recheck after owner approval; refuse a concurrent publication
         id: registry
         run: python3 scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
-      # Nothing compiles in this job: it holds id-token: write and the crates-io
-      # environment, so no crate or dependency code (build scripts, proc macros) may
-      # run here. --no-verify packages without building; the build job already built
-      # the packaged source, and `cmp` checks the bytes against the attested file.
-      - name: Package and compare release crates (no build, no token)
-        id: pending
-        if: steps.registry.outputs.published == 'false'
-        run: |
-          set -euo pipefail
-          pending=()
-          for crate in $(jq -r '.[]' <<<"$CRATES"); do
-            status=$(curl -s -o /dev/null -w '%{http_code}' -A 'rustcommons-release' \
-              "https://crates.io/api/v1/crates/$crate/$VERSION")
-            if [ "$status" = 200 ]; then
-              echo "$crate $VERSION is already on crates.io; skipping."
-              continue
-            fi
-            # Publish only bytes identical to the checksummed, attested file.
-            cargo package --locked --no-verify -p "$crate"
-            cmp "target/package/$crate-$VERSION.crate" "$RUNNER_TEMP/dist/$crate-$VERSION.crate"
-            pending+=("$crate")
-          done
-          echo "crates=${pending[*]}" >> "$GITHUB_OUTPUT"
       # Preserve the first signature's bytes on retries: detached signatures include
       # their creation time, while GitHub release assets must never be replaced.
       - name: Recover this run's prior signature artifact, if present
@@ -226,6 +202,35 @@ jobs:
           name: release-openpgp-signature
           path: ${{ runner.temp }}/dist/SHA256SUMS.asc
           if-no-files-found: error
+      # Signing secrets and agents are gone before toolchain setup or community code.
+      - name: Install the pinned toolchain using the runner's rustup
+        if: steps.registry.outputs.published == 'false'
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          rustup default 1.90.0
+      # Nothing compiles in this job: it holds id-token: write and the crates-io
+      # environment, so no crate or dependency code (build scripts, proc macros) may
+      # run here. --no-verify packages without building; the build job already built
+      # the packaged source, and `cmp` checks the bytes against the attested file.
+      - name: Package and compare release crates (no build, no token)
+        id: pending
+        if: steps.registry.outputs.published == 'false'
+        run: |
+          set -euo pipefail
+          pending=()
+          for crate in $(jq -r '.[]' <<<"$CRATES"); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -A 'rustcommons-release' \
+              "https://crates.io/api/v1/crates/$crate/$VERSION")
+            if [ "$status" = 200 ]; then
+              echo "$crate $VERSION is already on crates.io; skipping."
+              continue
+            fi
+            # Publish only bytes identical to the checksummed, attested file.
+            cargo package --locked --no-verify -p "$crate"
+            cmp "target/package/$crate-$VERSION.crate" "$RUNNER_TEMP/dist/$crate-$VERSION.crate"
+            pending+=("$crate")
+          done
+          echo "crates=${pending[*]}" >> "$GITHUB_OUTPUT"
       - uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
         if: steps.registry.outputs.published == 'false' && steps.pending.outputs.crates != ''
         id: auth

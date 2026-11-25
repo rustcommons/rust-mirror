@@ -673,7 +673,7 @@ Releases after published v0.6.1 require **ten** assets: the existing nine plus
 `SHA256SUMS.asc`. All earlier layouts stay exact, without retrofitted signatures.
 The seven SHA256SUMS entries and eight Sigstore subjects stay unchanged; the
 post-approval detached signature authenticates SHA256SUMS and is not itself an
-SLSA build artifact. In `publish`, after packaging/comparison but before token
+SLSA build artifact. In `publish`, before runner-rustup toolchain setup, packaging/comparison or token
 minting/publishing, use preinstalled GnuPG to sign in a private temporary home,
 pass the passphrase only on stdin, verify in a separate public-only pinned home,
 kill both agents and delete both homes. Failure stops publishing. No Rust compiles
@@ -681,7 +681,10 @@ in that job. Retried approved jobs still sign/verify when the crate already exis
 reuse only a verified prior signature for the same manifest to preserve asset bytes.
 
 Keep the draft-first, exact-layout, never-replace uploader. Public verification
-requires pinned-primary VALIDSIG and sha256sum checks of every payload for new
+refuses revoked/bad signatures and requires one good signature and one pinned-primary
+VALIDSIG. Only EXPKEYSIG triggers the signing-key expiry check: accept a historical
+signature only before that key expired; KEYEXPIRED from a sibling does not trigger it.
+Require sha256sum checks of every payload for new
 releases, as well as existing Sigstore/source/SBOM checks. Exercise shared signing
 and verification primitives with throwaway keys in PR CI; no production trust
 parameter or test bypass. No new action/dependency, version bump, tag or publication
