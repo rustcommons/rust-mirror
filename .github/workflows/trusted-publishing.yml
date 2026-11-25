@@ -205,10 +205,10 @@ jobs:
           sign_home=''
           verify_home=''
           cleanup() {
-            for home in "$sign_home" "$verify_home"; do
-              if [ -n "$home" ]; then
-                gpgconf --homedir "$home" --kill gpg-agent || true
-                rm -rf -- "$home"
+            for pgp_home in "$sign_home" "$verify_home"; do
+              if [ -n "$pgp_home" ]; then
+                gpgconf --homedir "$pgp_home" --kill gpg-agent || true
+                rm -rf -- "$pgp_home"
               fi
             done
           }
