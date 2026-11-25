@@ -144,6 +144,48 @@ From the next release after 0.6.0, the release also attaches the crate
 archives and the SBOM. The steps below are unchanged; the crate verifies like any
 other file.
 
+### OpenPGP checksums after 0.6.1
+
+Releases **after v0.6.1** additionally require `SHA256SUMS.asc`. Use GnuPG and
+check the Rust Commons primary fingerprint:
+
+```text
+B281C3010A76A11737B4D066C7396F6EA7647CC6
+```
+
+Download all release files into a new directory and obtain
+[release-signing-key.asc](../.github/release-signing-key.asc) from the reviewed
+source commit for that release. Confirm the full fingerprint before importing;
+a key from an arbitrary keyserver or download is not a trust anchor. In a Unix
+shell (also Git Bash with GnuPG/coreutils available on Windows):
+
+```sh
+# Set tag and commit to the reviewed release above 0.6.1; this creates a new directory.
+set -eu
+gh release download "$tag" --repo rustcommons/rust-mirror --dir verified-release
+gh api "repos/rustcommons/rust-mirror/contents/.github/release-signing-key.asc?ref=$commit" \
+  -H 'Accept: application/vnd.github.raw+json' > release-signing-key.asc
+GNUPGHOME=$(mktemp -d)
+export GNUPGHOME
+chmod 700 "$GNUPGHOME"
+trap 'gpgconf --kill gpg-agent || true; rm -rf -- "$GNUPGHOME"' EXIT
+fingerprint=$(gpg --batch --with-colons --show-keys release-signing-key.asc | awk -F: '$1=="pub" {p=1} $1=="sub" {p=0} $1=="fpr" && p {print $10; p=0}')
+test "$fingerprint" = B281C3010A76A11737B4D066C7396F6EA7647CC6
+gpg --batch --import release-signing-key.asc
+cd verified-release
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum --check SHA256SUMS
+```
+
+Stop on any command failure (`set -eu` in a script). The temporary keyring holds
+only that certificate. The signing subkey's fingerprint may differ from the pinned
+primary; the repository verifier parses VALIDSIG's primary identity explicitly.
+These checksum signatures supplement the exact-source Sigstore/SBOM checks above.
+All seven payloads must be present to check every line. The detached signature is
+not a checksum entry or an SLSA build subject; it is authenticated by OpenPGP.
+The bundle remains independently authenticated as below. Historical v0.6.1 and
+earlier downloads keep their original verification flow and have no `.asc` retrofit.
+
 ### Offline verification with the attached provenance bundle (v0.6.0 and later)
 
 Releases from v0.6.0 (the first) also attach `rust-mirror-VERSION.intoto.jsonl`: JSON Lines,

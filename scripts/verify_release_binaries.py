@@ -8,10 +8,19 @@ from pathlib import Path
 import subprocess
 import re
 import release_binaries as release
+import release_openpgp as openpgp
 
 
 def command(args, env=None):
     return subprocess.check_output([str(a) for a in args], text=True, encoding='utf-8', env=env)
+
+
+def verify_openpgp(downloads, profile):
+    if not profile['signature']:
+        return None
+    proof = openpgp.verify(downloads / 'SHA256SUMS', downloads / profile['signature'])
+    openpgp.check_all(downloads / 'SHA256SUMS', profile['summed'])
+    return proof
 
 
 def main():
@@ -38,11 +47,15 @@ def main():
     release.require(len(lines) == len(names) and all(re.fullmatch(r'[0-9a-f]{64}  [A-Za-z0-9_.-]+', line) for line in lines), 'invalid checksum manifest')
     checksums = dict(line.split('  ')[::-1] for line in lines)
     release.require(len(checksums) == len(names) and list(checksums) == names, 'checksum names/order/duplicates mismatch')
+    signature_proof = verify_openpgp(downloads, profile)
     attestations = {}
     for name in sorted(assets):
         path = downloads / name; actual = release.digest(path.read_bytes())
         release.require(assets[name]['digest'] == 'sha256:' + actual, 'GitHub asset digest mismatch')
         if name == bundle: continue
+        if name == profile['signature']:
+            attestations[name] = dict(sha256=actual, **signature_proof)
+            continue
         if name != 'SHA256SUMS': release.require(checksums[name] == actual, 'archive checksum mismatch')
         proof = command(['gh', 'attestation', 'verify', path, *policy, '--predicate-type', 'https://slsa.dev/provenance/v1', '--format', 'json'])
         result = json.loads(proof); release.require(bool(result), 'empty attestation verification')
@@ -102,7 +115,7 @@ def main():
         else:
             release.validate_static_linux(headers, dynamic, file_info, ldd_text)
             linkage = dict(file=file_info, ldd=ldd_text, no_interpreter_or_needed=True)
-    report = {'tag': args.tag, 'source': expected['commit'], 'release_url': live['html_url'], 'assets': attestations, 'checksums_match': True, 'notes_unchanged': True, 'target': args.target, 'downloaded_archive': chosen, 'binary_sha256': release.digest(binary.read_bytes()), 'human_version': human, 'events': events, 'linkage': linkage, 'read_only': True}
+    report = {'tag': args.tag, 'source': expected['commit'], 'release_url': live['html_url'], 'assets': attestations, 'checksums_match': True, 'openpgp': signature_proof, 'notes_unchanged': True, 'target': args.target, 'downloaded_archive': chosen, 'binary_sha256': release.digest(binary.read_bytes()), 'human_version': human, 'events': events, 'linkage': linkage, 'read_only': True}
     (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(report, indent=2))
 

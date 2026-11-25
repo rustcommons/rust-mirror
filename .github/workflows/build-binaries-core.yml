@@ -321,7 +321,7 @@ jobs:
           extra=()
           if [[ "$CANDIDATE" == true ]]; then extra+=(--candidate); fi
           python scripts/release_binaries.py collect --root . --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT" --artifacts binary-artifacts --output release-assets --artifact-prefix "$ARTIFACT_PREFIX" --sbom "$RUNNER_TEMP/crate-sbom/release.cdx.json" --crate "$RUNNER_TEMP/crate-sbom/rust-mirror-${RELEASE_TAG#v}.crate" "${extra[@]}"
-      - name: Stage an unsigned placeholder bundle on a copy (dry-run check of the exact upload set)
+      - name: Check the build payload and placeholder bundle on a copy (OpenPGP is tested with throwaway keys)
         if: ${{ !inputs.attest }}
         run: |
           set -euo pipefail

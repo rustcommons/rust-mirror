@@ -91,14 +91,14 @@ and stages ONE bundle `rust-mirror-<version>.intoto.jsonl`; a build-binaries.yml
 signature therefore proves this qualified build produced the bytes (GitHub's SLSA
 Build L3 reusable-workflow pattern). PR and dispatch dry runs build everything with
 publish=false and never sign (skipped for dependabot[bot]).
-Building and signing finish BEFORE the owner's crates-io approval, so approval timing
+Building and Sigstore signing finish BEFORE the owner's crates-io approval, so approval timing
 no longer matters and there is no release wait or recovery dispatch. Only that
 approval lets `publish` run (it `cmp`s the repackaged .crate with the attested one).
 `github-release` then checks the bundle against GitHub's store and the SBOM bindings,
 creates a DRAFT release from the committed notes (or resumes a draft left by a killed
 run, found through the releases list), refuses any existing release whose tag, title,
 body or draft/prerelease state is not exactly ours, uploads only missing assets,
-checks all nine and only then publishes it. It never replaces an existing asset.
+checks the versioned asset set (nine through 0.6.1, ten later) and only then publishes it. It never replaces an existing asset.
 Write the notes in final form before tagging and never create the release by hand. `verify` checks
 crates.io, the exact tag payload, docs.rs and a clean install, verifies every asset's
 attestation against build-binaries.yml at the tag commit, and executes the public
@@ -659,6 +659,40 @@ checked eight provenance subjects, all six SBOM bindings and bundle/store equali
 Preserve the gate refusal and immutable source/assets; the later inherited `url`
 advisory seen in maintenance is not waived by successful publication.
 
+## OpenPGP release checksum authorization
+
+Owner authorization, 2026-11-25: follow [standard pipeline PR #24](https://github.com/rustcommons/.github/pull/24)
+(commit `efa2d77c43e6847b1fd8443b30b88572c82ffd39`). Commit the Rust Commons
+public release certificate at `.github/release-signing-key.asc` and pin primary
+fingerprint `B281C3010A76A11737B4D066C7396F6EA7647CC6`. The owner keeps the
+certify-only primary offline; `crates-io` holds `RELEASE_SIGNING_KEY` (signing
+subkey `248DFD639B75D1EFF2A87289D7C7DE7BBCCF35EC`) and
+`RELEASE_SIGNING_PASSPHRASE`. Only the signing step receives these secrets.
+
+Releases after published v0.6.1 require **ten** assets: the existing nine plus
+`SHA256SUMS.asc`. All earlier layouts stay exact, without retrofitted signatures.
+The seven SHA256SUMS entries and eight Sigstore subjects stay unchanged; the
+post-approval detached signature authenticates SHA256SUMS and is not itself an
+SLSA build artifact. In `publish`, before runner-rustup toolchain setup, packaging/comparison or token
+minting/publishing, use preinstalled python3/GnuPG without setup-python or a
+community toolchain action to sign in a private temporary home,
+pass the passphrase only on stdin, verify in a separate public-only pinned home,
+kill both agents and delete both homes. Failure stops publishing. No Rust compiles
+in that job. Retried approved jobs still sign/verify when the crate already exists;
+reuse only a verified prior signature for the same manifest to preserve asset bytes.
+
+Keep the draft-first, exact-layout, never-replace uploader. Public verification
+refuses revoked/bad signatures and requires one good signature and one pinned-primary
+VALIDSIG. Only EXPKEYSIG triggers the signing-key expiry check: accept a historical
+signature only before that key expired; KEYEXPIRED from a sibling does not trigger it.
+Require sha256sum checks of every payload for new
+releases, as well as existing Sigstore/source/SBOM checks. Exercise shared signing
+and verification primitives with throwaway keys in PR CI; no production trust
+parameter or test bypass. No new action/dependency, version bump, tag or publication
+is authorized. Report a green PR/dry-run ID and stop; never merge or push main.
+This GnuPG use is release automation only; native toolchain-manifest verification
+below remains blocked on the approved rPGP dependency graph.
+
 ## Tracked crate corpus maintenance
 
 Owner authorization, 2026-11-23: maintain the versioned top-crates, tricky and
@@ -758,7 +792,7 @@ Preserve dated qualification history and explicitly carry only applicable eviden
 - **Updating `CHANGELOG.md` is critical.** It is the source the release notes are written from, and the release gate refuses to publish without a dated `## [X.Y.Z] - YYYY-MM-DD` entry and `docs/releases/vX.Y.Z.md`. Add an `Unreleased` entry in the same PR as each noteworthy change, never later; a release PR only dates and moves those entries.
 - For a repository that ships versioned software, maintain a root `CHANGELOG.md` with an `Unreleased` section and dated, user-facing entries for shipped versions. Record noteworthy changes and their user impact as work is completed; do not substitute a roadmap, Git tag, CI log or validation report for a changelog.
 - Before publishing a version, commit its release notes under `docs/releases/vX.Y.Z.md` and link them, the changelog, and the maintained release policy. Explain changes, upgrade or dependency impact, validation and known limits; distinguish software changes from documentation-only releases.
-- A software release is not complete until its immutable source tag, applicable registry archives, GitHub Release notes, changelog, documentation, and required verification agree. GitHub Releases document the release. The owner authorized on 2026-11-21 that the release pipeline attaches the published `.crate` file, the CycloneDX SBOM, SHA256SUMS and the provenance bundle; with the binary archives authorized on 2026-11-15, releases after 0.6.0 carry exactly: `rust-mirror-<version>.crate`, the five archives, `rust-mirror-<version>.cdx.json`, `SHA256SUMS` and `rust-mirror-<version>.intoto.jsonl`. Attach no other distribution artifacts without further authorization.
+- A software release is not complete until its immutable source tag, applicable registry archives, GitHub Release notes, changelog, documentation, and required verification agree. GitHub Releases document the release. The owner authorized on 2026-11-21 that the release pipeline attaches the published `.crate` file, the CycloneDX SBOM, SHA256SUMS and the provenance bundle; with the binary archives authorized on 2026-11-15, releases after 0.6.0 carry exactly: `rust-mirror-<version>.crate`, the five archives, `rust-mirror-<version>.cdx.json`, `SHA256SUMS` and `rust-mirror-<version>.intoto.jsonl`. The owner amendment of 2026-11-25 above adds `SHA256SUMS.asc` after 0.6.1; attach no other distribution artifacts without further authorization.
 - Run the repository's release-documentation CI check before routine merges and release completion. For its first installation, review local checker/syntax evidence, register the workflow on the default branch, and require a green run before completing bootstrap or publishing notes. Verify the live GitHub Release and its tag, text and links after publication; a successful crate upload or tag alone is insufficient.
 - When backfilling history, reconstruct facts from existing tags, registry records and source/evidence. Preserve original source identities, distinguish original release dates from documentation backfill dates, and state unavailable historical validation. Never fabricate checks, move tags, republish versions, or imply that repository edits change immutable published archives.
 - For an organization profile, placeholder or project with no shipped version, record release verification as not applicable until its first authorized release. Do not invent versions, features, changelog history or GitHub Releases to satisfy this convention.

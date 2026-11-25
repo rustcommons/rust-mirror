@@ -18,6 +18,9 @@ on:
       - 'scripts/release-gate.py'
       - 'scripts/check-release-docs.py'
       - 'scripts/release_binaries.py'
+      - 'scripts/release_openpgp.py'
+      - '.github/release-signing-key.asc'
+      - 'tests/test_release_openpgp.py'
       - 'scripts/release_sbom.py'
       - 'scripts/release_gnu.py'
       - 'scripts/glibc_measure.py'
@@ -95,6 +98,8 @@ jobs:
           assert len(metadata['workspace_members']) == 1 and [p['name'] for p in metadata['packages']] == ['rust-mirror'], 'expected exactly the rust-mirror crate'
           print(f'Source {head} and the single rust-mirror crate match {tag}.')
           PY
+      - name: Test the pinned public key and signing/verification with throwaway keys
+        run: python3 -m unittest discover -s tests -p test_release_openpgp.py
 
   build:
     name: Build
@@ -127,7 +132,8 @@ jobs:
     if: needs.gate.outputs.publish == 'true' && github.repository == 'rustcommons/rust-mirror'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    # The owner's approval click. Everything is built and signed before it.
+    # The owner's approval click. Build provenance is ready; OpenPGP signing
+    # uses this environment's secrets only after approval, before publishing.
     environment: crates-io
     permissions:
       contents: read
@@ -137,15 +143,12 @@ jobs:
       CRATES: ${{ needs.gate.outputs.crates }}
       RELEASE_TAG: ${{ github.ref_name }}
       CARGO_BUILD_JOBS: 2
+    # Use preinstalled python3 and GnuPG; no setup action before signing secrets.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@547f64eaa184fd62768e02b77019e5408713ca53 # 1.90.0
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: '3.12'
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ needs.build.outputs.artifact-name }}
@@ -157,6 +160,52 @@ jobs:
       - name: Recheck after owner approval; refuse a concurrent publication
         id: registry
         run: python3 scripts/verify_registry_release.py --tag "$RELEASE_TAG" --allow-missing --github-output "$GITHUB_OUTPUT"
+      # Preserve the first signature's bytes on retries: detached signatures include
+      # their creation time, while GitHub release assets must never be replaced.
+      - name: Recover this run's prior signature artifact, if present
+        if: github.run_attempt > 1
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-openpgp-signature
+          path: ${{ runner.temp }}/prior-signature
+      - name: Sign SHA256SUMS and verify against the pinned public key
+        id: openpgp
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+          RELEASE_SIGNING_PASSPHRASE: ${{ secrets.RELEASE_SIGNING_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          sign_home=''
+          verify_home=''
+          cleanup() {
+            for pgp_home in "$sign_home" "$verify_home"; do
+              if [ -n "$pgp_home" ]; then
+                gpgconf --homedir "$pgp_home" --kill gpg-agent || true
+                rm -rf -- "$pgp_home"
+              fi
+            done
+          }
+          trap cleanup EXIT
+          sign_home=$(mktemp -d)
+          verify_home=$(mktemp -d)
+          chmod 700 "$sign_home" "$verify_home"
+          python3 scripts/release_openpgp.py sign --manifest "$RUNNER_TEMP/dist/SHA256SUMS" \
+            --sign-home "$sign_home" --verify-home "$verify_home" \
+            --previous "$RUNNER_TEMP/prior-signature/SHA256SUMS.asc" --github-output "$GITHUB_OUTPUT"
+      - name: Save the verified signature before minting a publishing token
+        if: steps.openpgp.outputs.reused != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-openpgp-signature
+          path: ${{ runner.temp }}/dist/SHA256SUMS.asc
+          if-no-files-found: error
+      # Signing secrets and agents are gone before toolchain setup or community code.
+      - name: Install the pinned toolchain using the runner's rustup
+        if: steps.registry.outputs.published == 'false'
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          rustup default 1.90.0
       # Nothing compiles in this job: it holds id-token: write and the crates-io
       # environment, so no crate or dependency code (build scripts, proc macros) may
       # run here. --no-verify packages without building; the build job already built
@@ -224,6 +273,10 @@ jobs:
         with:
           name: release-provenance
           path: ${{ runner.temp }}/provenance
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-openpgp-signature
+          path: ${{ runner.temp }}/dist
       - name: Stage the exact asset set (bundle subjects equal the signed files)
         run: |
           python3 scripts/release_binaries.py stage --root . --tag "$RELEASE_TAG" --commit "$GITHUB_SHA" \
