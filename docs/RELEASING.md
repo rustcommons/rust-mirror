@@ -18,6 +18,52 @@ environment's owner approval and its short-lived OIDC token. Do not upload crate
 workstation, create/restore a long-lived Cargo token or use a manual fallback.
 Each version still needs owner authorization and all qualification/verification gates.
 
+### OpenPGP checksums after 0.6.1
+
+Owner-approved 2026-11-25 under the [standard signing spec](https://github.com/rustcommons/.github/pull/24):
+releases after v0.6.1 attach `SHA256SUMS.asc`, making ten assets. The committed
+[public key](../.github/release-signing-key.asc) has primary fingerprint
+`B281C3010A76A11737B4D066C7396F6EA7647CC6`. Its certify-only RSA-4096 primary
+expires 2031-11-24; the signing-only RSA-4096 subkey
+`248DFD639B75D1EFF2A87289D7C7DE7BBCCF35EC` expires 2028-11-24. The owner retains
+the primary offline and provisions only the signing subkey and passphrase as
+`crates-io` environment secrets `RELEASE_SIGNING_KEY` and
+`RELEASE_SIGNING_PASSPHRASE`. Never log/export these to another step, argv, files
+or artifacts. The public copy was fetched from the spec branch on 2026-11-25;
+its primary identity is tested with an isolated GnuPG import.
+
+The publish job uses Ubuntu 24.04's preinstalled GnuPG, two mode-700 temporary
+homes and passphrase-fd 0. It signs after byte comparison and before auth/publish,
+even if the registry version already exists. A separate home imports only the
+committed public key; return status and exactly one VALIDSIG must identify the
+pinned primary, including when the signer is a subkey. Both agents are stopped
+and both homes removed on success/failure. Only the armored detached signature
+is uploaded for github-release. No crate/dependency code compiles in this job.
+
+A retry generates and verifies a fresh signature, then re-verifies and retains
+this run's first signature artifact if present. This avoids timestamp-dependent
+byte changes to an existing GitHub asset. Missing/corrupt or different-manifest
+prior signatures are never trusted or overwritten. Re-run the failed release
+job for a partial draft; the existing prohibition on rebuilding a partial release
+still applies. A failed first artifact upload stops before token minting.
+
+The uploader verifies the signature before release writes and preserves the
+exact asset layout and per-asset digest/state checks. New public verifiers check
+GnuPG with the committed key and `sha256sum --check --strict` for every listed
+asset before extracting/running a binary. The seven checksum entries and eight
+Sigstore subjects remain unchanged: neither the detached signature nor the bundle
+is inside SHA256SUMS; the post-build OpenPGP file has no SLSA build attestation.
+The signature and bundle are authenticated by their own signatures. Published
+v0.6.1 and earlier retain their original layouts/checks and require no GnuPG.
+See [installation verification](INSTALL.md#openpgp-checksums-after-061).
+
+PR/dispatch runs cannot access the real environment secrets or sign with this
+key. Their release gate tests the committed primary pin and the same GnuPG signing,
+status-parser, separate-home and checksum primitives with throwaway key material.
+Production commands expose no alternate key/fingerprint or test mode. This proves
+local/CI mechanics, not the correctness of the owner's secret provisioning or an
+actual approved release; that evidence must be recorded after the next release.
+
 ### Standard release pipeline
 
 Owner approval, 2026-11-21: [trusted-publishing.yml](../.github/workflows/trusted-publishing.yml)
@@ -61,13 +107,13 @@ signs and publishes the crate and all binaries. The flow is:
    no crate or dependency code (build scripts, proc macros) may run there. It runs
    `cargo package --locked --no-verify` (packaging only; the build job already built
    the packaged source) and `cmp`s the result with the attested `.crate`. Only then
-   does crates-io-auth-action mint the short-lived token, and only the final step,
+   does it sign/verify SHA256SUMS as described above and crates-io-auth-action mint the short-lived token, and only the final step,
    `cargo publish --locked --no-verify`, receives it.
 7. **Automatic GitHub release.** `github-release` re-stages the bundle (subjects equal
    the eight signed files), requires every attached DSSE envelope to equal GitHub's
    stored attestation and the SBOM attestation of every archive and the crate to
    carry this exact SBOM. It then creates `vX.Y.Z` as a **draft** from the committed
-   notes, uploads all nine assets, re-reads and checks them, and only then publishes
+   notes, uploads the exact versioned asset set (ten after 0.6.1), re-reads and checks it, and only then publishes
    the release (`draft: false`, latest). **The maintainer no longer creates the
    GitHub Release by hand.**
 
@@ -75,8 +121,8 @@ signs and publishes the crate and all binaries. The flow is:
    so the job finds the draft through the releases list. Before adding anything to an
    existing release (draft or published) it refuses unless the tag, title, body (equal
    to the committed notes) and draft/prerelease state are exactly as expected and every
-   existing asset is one of the nine with identical bytes. It uploads only missing
-   assets, checks all nine, then publishes. A published release is never modified: a
+   existing asset belongs to that version's exact layout with identical bytes. It uploads only missing
+   assets, checks the entire set, then publishes. A published release is never modified: a
    complete one makes the re-run a no-op, an incomplete one is refused for a decision.
    Two releases for one tag are refused. Never delete or replace an asset to pass.
 

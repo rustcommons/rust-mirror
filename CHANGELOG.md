@@ -4,6 +4,11 @@
 
 ### Repository
 
+- Sign release SHA256SUMS with the environment-protected Rust Commons OpenPGP
+  key before publishing; add SHA256SUMS.asc after 0.6.1 with pinned-primary
+  verification, isolated keyrings, safe retries and throwaway-key CI proofs.
+  Earlier release layouts and their verification remain unchanged.
+
 - Include results and scenario context in sync test assertion failures to help
   diagnose the intermittent incomplete-assembly resume failure tracked in
   [#85](https://github.com/rustcommons/rust-mirror/issues/85); behavior is unchanged.

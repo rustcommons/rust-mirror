@@ -209,7 +209,7 @@ class ReleaseBinariesTests(unittest.TestCase):
             release.staged_assets(self.record, self.root)
         (self.root / 'SHA256SUMS').write_text(manifest)
         names = release.staged_assets(self.record, self.root)
-        self.assertEqual(len(names), len(release.TARGETS) + 4)
+        self.assertEqual(len(names), len(release.TARGETS) + 5)
         self.assertIn('rust-mirror-1.2.3.crate', names)
         self.assertIn('rust-mirror-1.2.3.crate', manifest)
 
@@ -219,10 +219,11 @@ class ReleaseBinariesTests(unittest.TestCase):
             (self.root / name).write_bytes(name.encode())
         manifest = ''.join(f'{release.digest(name.encode())}  {name}\n' for name in names)
         (self.root / 'SHA256SUMS').write_text(manifest)
+        (self.root / 'SHA256SUMS.asc').write_bytes(b'signature layout fixture')
         return manifest
 
     def subjects(self):
-        return {p.name: release.digest(p.read_bytes()) for p in self.root.iterdir() if not p.name.endswith('.intoto.jsonl')}
+        return {p.name: release.digest(p.read_bytes()) for p in self.root.iterdir() if not p.name.endswith('.intoto.jsonl') and p.name != 'SHA256SUMS.asc'}
 
     @staticmethod
     def bundle(subjects, predicate=release.SLSA_PROVENANCE, sig='c2ln'):
@@ -297,7 +298,7 @@ class ReleaseBinariesTests(unittest.TestCase):
         self.write_assets()
         subjects = self.subjects()
         bundle = self.root.parent / 'attached.jsonl'; bundle.write_text(self.bundle_line(subjects))
-        assets = sorted(self.root.iterdir())
+        assets = [p for p in sorted(self.root.iterdir()) if p.name != 'SHA256SUMS.asc']
         for stored_sig, ok in (('c2ln', True), ('b3RoZXI=', False)):
             calls = []
             def run(args, check, cwd=None, stdout=None):
@@ -390,11 +391,46 @@ class ReleaseBinariesTests(unittest.TestCase):
                 self.assertEqual(profile['signed'], sorted(summed) + ['SHA256SUMS'])
                 bundle = {'0.6.0', '0.6.1', '0.7.0'} >= {version} and f'rust-mirror-{version}.intoto.jsonl'
                 self.assertEqual(profile['bundle'], bundle or None)
-                self.assertEqual(profile['assets'], set(summed) | {'SHA256SUMS'} | ({bundle} if bundle else set()))
+                self.assertEqual(profile['assets'], set(summed) | {'SHA256SUMS'} | ({bundle} if bundle else set()) | ({'SHA256SUMS.asc'} if version == '0.7.0' else set()))
         self.assertEqual(release.published_profile('0.6.1', [])['summed'], release.build_summed_assets('0.6.1'))
         self.assertEqual(len(release.published_profile('0.6.1', [])['assets']), 9)
         self.assertFalse(release.has_single_profile('0.6.0'))
         self.assertTrue(release.has_single_profile('0.6.1'))
+
+    def test_openpgp_is_required_only_after_current_latest_v061(self):
+        for v in ('0.5.4','0.6.0','0.6.1','0.6.1-rc.1'):
+            self.assertFalse(release.has_openpgp_signature(v))
+            self.assertNotIn('SHA256SUMS.asc',release.published_profile(v,[])['assets'])
+        for v in ('0.6.2-rc.1','0.6.2','0.7.0','1.0.0'):
+            profile=release.published_profile(v,[])
+            self.assertIn('SHA256SUMS.asc',profile['assets'])
+            self.assertNotIn('SHA256SUMS.asc',profile['summed'])
+            self.assertNotIn('SHA256SUMS.asc',profile['signed'])
+            self.assertEqual(len(profile['assets']),10)
+        self.write_assets()
+        (self.root/release.provenance_name('1.2.3')).write_text(self.bundle_line(self.subjects()))
+        (self.root/'SHA256SUMS.asc').unlink()
+        with self.assertRaisesRegex(ValueError,'missing'):
+            release.staged_assets(self.record,self.root)
+        # Tag builds and candidates stage provenance before environment approval.
+        # The publishing command still requires the full versioned profile.
+        self.assertEqual(len(release.staged_assets(self.record,self.root,signature_required=False)),9)
+
+    def test_publication_signature_failure_precedes_attestations_and_writes(self):
+        self.write_assets()
+        (self.root/release.provenance_name('1.2.3')).write_text(self.bundle_line(self.subjects()))
+        argv=['helper','release','--root',str(self.root),'--tag','v1.2.3',
+              '--commit',self.record['commit'],'--assets',str(self.root)]
+        with patch.object(release,'record',return_value=self.record), patch.object(release,'remote_commit',return_value=self.record['commit']), \
+             patch.object(release.openpgp,'verify',side_effect=ValueError('bad signature')), \
+             patch.object(release,'verify_attached_provenance') as attest, patch.object(release,'publish_release') as publish, \
+             patch.object(sys,'argv',argv):
+            with self.assertRaisesRegex(ValueError,'bad signature'):
+                release.main()
+            attest.assert_not_called();publish.assert_not_called()
+        with patch.object(sys,'argv',argv+['--candidate']), patch('sys.stderr',new=io.StringIO()), self.assertRaises(SystemExit) as error:
+            release.main()
+        self.assertEqual(error.exception.code,2)
 
     def test_recorded_live_releases_match_their_published_profiles(self):
         evals = Path(__file__).resolve().parents[1] / 'docs/evals'
@@ -403,6 +439,8 @@ class ReleaseBinariesTests(unittest.TestCase):
         live = {tag: set(v054['previous_releases_unchanged'][tag]['assets']) for tag in ('v0.5.1', 'v0.5.2')}
         live['v0.5.4'] = set(v054['release']['assets'])
         live['v0.6.0'] = set(v060['assets'])
+        v061 = json.loads((evals / 'publication-0.6.1.json').read_text())
+        live['v0.6.1'] = {a['name'] for a in v061['independent_audit']['assets']}
         for tag, names in live.items():
             with self.subTest(tag=tag):
                 self.assertEqual(release.published_profile(tag[1:], names)['assets'], names)
@@ -463,7 +501,7 @@ class ReleaseBinariesTests(unittest.TestCase):
 
     def release_folder(self):
         folder = self.root / 'dist'; folder.mkdir()
-        for name in release.build_summed_assets('1.2.3') + ['SHA256SUMS', release.provenance_name('1.2.3')]:
+        for name in release.build_summed_assets('1.2.3') + ['SHA256SUMS', 'SHA256SUMS.asc', release.provenance_name('1.2.3')]:
             (folder / name).write_bytes(name.encode())
         return folder
 
@@ -479,8 +517,8 @@ class ReleaseBinariesTests(unittest.TestCase):
         published = release.publish_release(self.releasable(), folder, fake)
         methods = [m for m, _ in fake.writes]
         self.assertEqual(methods[0], 'POST'); self.assertEqual(methods[-1], 'PATCH')
-        self.assertEqual(methods.count('POST'), 1 + 9)
-        self.assertFalse(published['draft']); self.assertEqual(len(published['assets']), 9)
+        self.assertEqual(methods.count('POST'), 1 + 10)
+        self.assertFalse(published['draft']); self.assertEqual(len(published['assets']), 10)
 
     def test_killed_run_draft_is_resumed_with_only_missing_assets(self):
         folder = self.release_folder(); names = sorted(p.name for p in folder.iterdir())
@@ -565,7 +603,7 @@ class ReleaseBinariesTests(unittest.TestCase):
         for others, latest in (([], 'true'), ([dict(id=50, tag_name='v2.0.0', name='x', body='', draft=False, prerelease=False, html_url='', assets=[])], 'false')):
             with self.subTest(latest=latest):
                 folder = self.root / ('dist-' + latest); folder.mkdir()
-                for name in release.build_summed_assets('1.2.3') + ['SHA256SUMS', release.provenance_name('1.2.3')]:
+                for name in release.build_summed_assets('1.2.3') + ['SHA256SUMS', 'SHA256SUMS.asc', release.provenance_name('1.2.3')]:
                     (folder / name).write_bytes(name.encode())
                 fake = self.FakeGitHub(self, others)
                 release.publish_release(self.releasable(), folder, fake)

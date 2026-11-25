@@ -25,6 +25,7 @@ import time
 import tomllib
 import urllib.request
 import zipfile
+import release_openpgp as openpgp
 
 REPO = 'rustcommons/rust-mirror'
 TOOLCHAIN = '1.90.0'
@@ -35,6 +36,7 @@ MAX_ARCHIVE = 128 * 1024 * 1024
 MAX_PROVENANCE = 4 * 1024 * 1024
 SLSA_PROVENANCE = 'https://slsa.dev/provenance/v1'
 FIRST_PROVENANCE_ASSET = (0, 5, 5)
+OPENPGP_AFTER_VERSION = (0, 6, 1)
 
 
 def require(ok, message):
@@ -133,6 +135,11 @@ def has_single_profile(version):
     return tuple(int(n) for n in re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version).groups()) > (0, 6, 0)
 
 
+def has_openpgp_signature(version):
+    """0.6.1 and earlier keep their immutable asset/verification profiles."""
+    return tuple(int(n) for n in re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version).groups()) > OPENPGP_AFTER_VERSION
+
+
 def build_summed_assets(version):
     """Files every new build checksums: the .crate, all five archives and the SBOM."""
     return sorted([asset_name(version, t) for t in TARGETS] + [sbom_name(version), crate_name(version)])
@@ -148,8 +155,9 @@ def published_profile(version, live_names):
         summed.append(crate_name(version))
     summed = sorted(summed)
     bundle = provenance_name(version) if has_provenance_asset(version) else None
-    return dict(summed=summed, signed=summed + ['SHA256SUMS'], bundle=bundle,
-                assets=set(summed) | {'SHA256SUMS'} | ({bundle} if bundle else set()))
+    signature = openpgp.SIGNATURE if has_openpgp_signature(version) else None
+    return dict(summed=summed, signed=summed + ['SHA256SUMS'], bundle=bundle, signature=signature,
+                assets=set(summed) | {'SHA256SUMS'} | ({bundle} if bundle else set()) | ({signature} if signature else set()))
 
 
 def audit_crate(source, commit, crate):
@@ -593,7 +601,7 @@ def collect(root, r, artifacts, output, sbom=None, artifact_prefix="", crate=Non
     return sums
 
 
-def staged_assets(r, output, provenance=None):
+def staged_assets(r, output, provenance=None, signature_required=True):
     """Check the exact upload set: SHA256SUMS covers the .crate, archives and SBOM; the bundle covers those and SHA256SUMS."""
     summed = build_summed_assets(r['version'])
     signed = summed + ['SHA256SUMS']
@@ -603,7 +611,7 @@ def staged_assets(r, output, provenance=None):
         subjects = {n: digest((output / n).read_bytes()) for n in signed}
         # Binary write: LF-only JSON Lines on every platform (no text-mode CRLF translation).
         (output / bundle).write_bytes(provenance_jsonl(provenance.read_bytes(), subjects).encode('utf-8'))
-    expected = sorted(signed + [bundle])
+    expected = sorted(signed + [bundle] + ([openpgp.SIGNATURE] if has_openpgp_signature(r['version']) and (signature_required or (output / openpgp.SIGNATURE).exists()) else []))
     require(sorted(p.name for p in output.iterdir()) == expected, 'unexpected or missing release asset')
     sums = ''.join(f'{digest((output / n).read_bytes())}  {n}\n' for n in summed)
     require((output / 'SHA256SUMS').read_text() == sums, 'checksum manifest mismatch')
@@ -645,16 +653,18 @@ def main():
     require(r['commit'] == args.commit, 'tag changed since build preparation')
     if args.command == 'release':
         require(remote_commit(args.root, args.tag) == r['commit'], 'live tag moved')
-        names = sorted(p.name for p in args.assets.iterdir())
-        require(names == sorted(build_summed_assets(r['version']) + ['SHA256SUMS', provenance_name(r['version'])]), 'unexpected or missing release asset')
+        names = staged_assets(r, args.assets)
+        if has_openpgp_signature(r['version']):
+            openpgp.verify(args.assets / 'SHA256SUMS', args.assets / openpgp.SIGNATURE)
+            openpgp.check_all(args.assets / 'SHA256SUMS', build_summed_assets(r['version']))
         policy = attestation_policy(r)
         bundle = args.assets / provenance_name(r['version'])
-        verify_attached_provenance([args.assets / n for n in names if n != bundle.name], bundle, policy, Path(tempfile.mkdtemp(prefix='rust-mirror-store-')))
+        verify_attached_provenance([args.assets / n for n in build_summed_assets(r['version']) + ['SHA256SUMS']], bundle, policy, Path(tempfile.mkdtemp(prefix='rust-mirror-store-')))
         verify_sbom_bindings([args.assets / n for n in names if n.endswith(('.zip', '.tar.gz', '.crate'))], args.assets / sbom_name(r['version']), policy)
         publish_release(r, args.assets)
         return
     if args.command == 'collect': print(collect(args.root, r, args.artifacts, args.output, args.sbom, args.artifact_prefix, args.crate)); return
-    print('\n'.join(staged_assets(r, args.output, args.provenance)))
+    print('\n'.join(staged_assets(r, args.output, args.provenance, signature_required=False)))
 
 if __name__ == '__main__':
     try: main()
