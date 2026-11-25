@@ -3,7 +3,7 @@
 import argparse
 import contextlib
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import re
 import shutil
 import subprocess
@@ -41,14 +41,32 @@ def environment():
              'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN')} | {'LC_ALL':'C'}
 
 
+def _msys_path(value):
+    path = PureWindowsPath(value)
+    require(bool(re.fullmatch(r'[A-Za-z]:', path.drive)), 'MSYS GnuPG requires a local absolute drive path')
+    return '/' + path.drive[0].lower() + '/' + '/'.join(path.parts[1:])
+
+
+def path_argument(path, executable):
+    absolute = Path(path).resolve()
+    # Git's MSYS GnuPG uses /c/... even when launched by native Python. Gpg4win
+    # and Unix GnuPG retain their native path syntax; no extra tool is installed.
+    if os.name == 'nt' and '/usr/bin/' in PureWindowsPath(executable).as_posix().lower():
+        return _msys_path(str(absolute))
+    return str(absolute)
+
+
 def gpg(home, *args, data=None):
-    return subprocess.run([tool('gpg'), '--no-options', '--homedir', str(home), '--batch', '--no-tty',
-        '--no-auto-key-retrieve', '--auto-key-locate', 'clear', *args], input=data,
+    executable = tool('gpg')
+    arguments = [path_argument(a, executable) if isinstance(a, Path) else a for a in args]
+    return subprocess.run([executable, '--no-options', '--homedir', path_argument(home, executable), '--batch', '--no-tty',
+        '--no-auto-key-retrieve', '--auto-key-locate', 'clear', *arguments], input=data,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment(), timeout=120)
 
 
 def kill_agent(home):
-    subprocess.run([tool('gpgconf'), '--homedir', str(home), '--kill', 'gpg-agent'],
+    executable = tool('gpgconf')
+    subprocess.run([executable, '--homedir', path_argument(home, executable), '--kill', 'gpg-agent'],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=environment(), timeout=15)
 
 
@@ -114,7 +132,7 @@ def valid_signature(status, returncode, primary):
 def _verify_loaded(home, manifest, signature, primary):
     require(signature.is_file() and not signature.is_symlink() and 0 < signature.stat().st_size <= MAX_SIGNATURE,
             'missing, linked or oversized OpenPGP signature')
-    result = gpg(home, '--status-fd', '1', '--verify', str(signature.resolve()), str(manifest.resolve()))
+    result = gpg(home, '--status-fd', '1', '--verify', signature.resolve(), manifest.resolve())
     return valid_signature(result.stdout, result.returncode, primary)
 
 
@@ -129,7 +147,7 @@ def _detach_sign(home, manifest, destination, subkey, passphrase):
     # Private primitive shared with ephemeral-key tests. No CLI exposes its key argument.
     require('\n' not in passphrase and '\r' not in passphrase, 'signing passphrase must be one line')
     result = gpg(home, '--pinentry-mode', 'loopback', '--passphrase-fd', '0', '--local-user', subkey + '!',
-                 '--armor', '--detach-sign', '--output', str(destination.resolve()), str(manifest.resolve()),
+                 '--armor', '--detach-sign', '--output', destination.resolve(), manifest.resolve(),
                  data=(passphrase + '\n').encode())
     require(result.returncode == 0, 'OpenPGP checksum signing failed')
 

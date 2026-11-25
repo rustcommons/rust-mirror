@@ -51,6 +51,12 @@ class ReleaseOpenPGPTests(unittest.TestCase):
     def sign(self):
         pgp._detach_sign(self.sign_home, self.manifest, self.signature, self.subkey, self.passphrase)
 
+    def test_git_for_windows_drive_paths_use_msys_namespace(self):
+        self.assertEqual(pgp._msys_path(r'C:\Users\runner\key home'),'/c/Users/runner/key home')
+        self.assertEqual(pgp._msys_path('D:/a/repo/SHA256SUMS.asc'),'/d/a/repo/SHA256SUMS.asc')
+        with self.assertRaises(ValueError):
+            pgp._msys_path(r'\\server\share\key')
+
     def test_committed_key_primary_fingerprint_is_pinned(self):
         self.assertEqual(pgp.PRIMARY_FINGERPRINT, 'B281C3010A76A11737B4D066C7396F6EA7647CC6')
         with pgp.temporary_home() as home:
