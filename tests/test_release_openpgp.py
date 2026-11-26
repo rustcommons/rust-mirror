@@ -191,7 +191,9 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         """A non-expiring primary and a signing subkey that expired in 2020."""
         home = self.stack.enter_context(pgp.temporary_home())
         def command(*args, timestamp='1577836800', data=b'\n'):
-            result = pgp.gpg(home, '--faked-system-time', timestamp,
+            # '!' freezes GnuPG's fake clock; otherwise slow key generation can
+            # advance it before the next command restarts at the earlier instant.
+            result = pgp.gpg(home, '--faked-system-time', timestamp+'!',
                              '--pinentry-mode', 'loopback', '--passphrase-fd', '0',
                              *args, data=data)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
@@ -202,6 +204,16 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         rows = pgp.gpg(home, '--with-colons', '--fingerprint', '--list-keys').stdout.decode().splitlines()
         subkey = [r.split(':')[9] for r in rows if r.startswith('fpr:')][1]
         return home, primary, subkey, command
+
+    def test_temporal_key_generation_uses_a_frozen_clock(self):
+        with patch.object(pgp, 'gpg', wraps=pgp.gpg) as run:
+            home, _, _, _ = self.temporal_key(expiry='0')
+        clocks = [args[args.index('--faked-system-time')+1]
+                  for args, _ in run.call_args_list if '--faked-system-time' in args]
+        self.assertEqual(clocks, ['1577836800!', '1577836800!'])
+        listing = pgp.gpg(home, '--with-colons', '--list-keys').stdout.decode().splitlines()
+        self.assertEqual([r.split(':')[5] for r in listing if r.startswith(('pub:', 'sub:'))],
+                         ['1577836800', '1577836800'])
 
     def test_expired_signer_before_expiry_is_accepted(self):
         home, primary, subkey, command = self.temporal_key()
@@ -244,7 +256,7 @@ class ReleaseOpenPGPTests(unittest.TestCase):
         command('--local-user', subkey+'!', '--armor', '--detach-sign',
                 '--output', self.signature, self.manifest, timestamp='1577836860')
         # Revoke the selected subkey with a generated, unprotected test primary.
-        result = pgp.gpg(home, '--faked-system-time', '1577836920',
+        result = pgp.gpg(home, '--faked-system-time', '1577836920!',
                          '--command-fd', '0', '--edit-key', primary,
                          data=b'key 1\nrevkey\ny\n0\n\ny\nsave\n')
         self.assertEqual(result.returncode, 0, result.stderr.decode())

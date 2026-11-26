@@ -86,8 +86,13 @@ if stable/nightly has changed since. Start a fresh output for a newly resolved r
 Changed config, budget, previous identity, plans or unexpected workspace paths refuse.
 
 `.sync` holds private plans, selected snapshots and assembly progress behind an OS
-single-writer lock. Do not serve it. After a killed process the OS releases both
-sync and selection locks. Initial setup interrupted before its identity is complete
+single-writer lock. Do not serve it. All workspace and catalog locks explicitly
+unlock when returning, including errors, before closing their lock descriptors.
+The shared guard covers toolchain/crate fetch and sync, prune/generation locks,
+crate catalog writers, release-cache writers and retention shared probes.
+A transient fork-inherited descriptor cannot extend that completed operation's
+lock lifetime. After a killed process the OS releases its descriptors; a copy
+inherited by another process can retain the lock until it closes. Initial setup interrupted before its identity is complete
 may require a new output. Staging copy work can be rebuilt; payload progress remains
 available. Retained selected copies currently stay for revalidation/resume and cost
 additional disk space. There is no shared global cache or pruning.

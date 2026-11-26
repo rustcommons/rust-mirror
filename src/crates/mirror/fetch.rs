@@ -71,7 +71,7 @@ struct State {
 struct Session {
     root: PathBuf,
     state: Mutex<State>,
-    _lock: File,
+    _lock: crate::workspace_lock::WorkspaceLock,
 }
 fn regular(path: &Path) -> Result<Option<u64>> {
     match fs::symlink_metadata(path) {
@@ -157,12 +157,10 @@ impl Session {
             .create(true)
             .truncate(false)
             .open(lockpath)?;
-        lock.try_lock().map_err(|_| {
-            Error::new(
-                ErrorKind::Locked,
-                "another crate writer owns this workspace",
-            )
-        })?;
+        let lock = crate::workspace_lock::WorkspaceLock::acquire(
+            lock,
+            "another crate writer owns this workspace",
+        )?;
         let saved = options.output.join("plan.json");
         if regular(&saved)?.is_some() {
             if FrozenPlan::load(&saved)?.plan_id != plan.plan_id {
@@ -1053,6 +1051,37 @@ pub(crate) fn inspect_run_metadata(root: &Path, plan: &FrozenPlan) -> Result<boo
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn completed_crate_fetch_resumes_with_an_inherited_description() {
+        use crate::workspace_lock::test_support::{crate_fixture, inherit_during};
+        let (catalog, source) = crate_fixture();
+        let plan = super::super::plan(&catalog, &source, None, false).unwrap();
+        let approval = Approval {
+            plan_id: plan.plan_id.clone(),
+        };
+        let directory = tempfile::tempdir().unwrap();
+        let mut options = FetchOptions {
+            output: directory.path().join("run"),
+            resume: false,
+            previous: None,
+        };
+        let (completed, inherited) = inherit_during(|| fetch(&plan, &source, &options, &approval));
+        let completed = completed.expect("initial crate fetch completes");
+        assert_eq!(
+            inherited.len(),
+            1,
+            "retain the actual completed fetch's lock description"
+        );
+        assert!(completed.mirror.join("snapshot.toml").is_file());
+        options.resume = true;
+        let resumed = fetch(&plan, &source, &options, &approval)
+            .expect("completed crate fetch must release its lock before immediate resume");
+        assert_eq!(resumed.transferred_bytes, 0);
+        assert_eq!(resumed.mirror, completed.mirror);
+        drop(inherited);
+    }
+
     #[test]
     fn checkpoint_interval_has_exact_byte_and_time_boundaries() {
         assert!(!checkpoint_due(0, CHECKPOINT_INTERVAL));

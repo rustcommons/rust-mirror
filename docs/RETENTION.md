@@ -130,7 +130,9 @@ lengths, not physical reclaimed disk blocks (hardlinks, compression and open han
 can change actual savings).
 
 Preview reads and hashes all inputs; it creates no files/lock files and uses no
-network. Existing writer locks are probed transiently without blocking.
+network. Existing writer locks are probed transiently without blocking. Each successful
+shared probe of `.sync.lock`, `.fetch.lock` or `.crates.lock` explicitly unlocks
+before its handle closes, including if another process inherited a copy.
 It validates complete inventory/selected-artifact closure and refuses inputs belonging
 to locked, unknown or incomplete sync runs, as well as corruption,
 legacy schema 1, unrelated files or empty directories, duplicate/overlapping roots,
@@ -161,8 +163,12 @@ bounds and reconstructs all plan fields before deletion; deserialized data is ne
 trusted as authorization. Callers must bound transport/deserialization input size. Every apply reconstructs/recompares the plan before any unlink.
 
 Apply acquires persistent empty `.rust-mirror-prune.lock` files in all supplied
-roots' enclosing workspaces, plus any existing `.sync.lock`/`.fetch.lock`. Busy or
+roots' enclosing workspaces, plus any existing `.sync.lock`, `.fetch.lock` or
+`.crates.lock`. Busy or
 malformed locks refuse preflight. Lock files and enclosing workspaces are preserved.
+All workspace and catalog locks use a scoped guard that explicitly unlocks before
+close on return/error. Retention keeps the existing acquisition order and guard
+lifetimes through the deletion boundary; shared probes release at iteration end.
 These locks coordinate pruning and existing sync/fetch writers only; they do not
 coordinate HTTP readers, publishers, unrelated programs or hostile shared filesystems.
 Use trusted private local parents and exclusive maintenance; no NFS/shared-machine
