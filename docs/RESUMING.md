@@ -54,8 +54,10 @@ for a large mirror because existence alone does not prove integrity.
 
 ## Failure and filesystem boundaries
 
-- On return or error, the operation explicitly unlocks before closing its lock
-  descriptor, including when another process briefly inherited a copy. A killed
+- All workspace and catalog locks explicitly unlock on return or error before
+  closing their descriptors, including when another process briefly inherited a
+  copy. This covers toolchain/crate fetch and sync, prune/generation locks, crate
+  catalog writes, release-cache writes and retention's shared busy probes. A killed
   process only closes its own descriptors; inherited copies can retain a lock
   until they close. The lock file remains; its existence is not an active-lock
   indication. Never delete it while a fetch may be running.

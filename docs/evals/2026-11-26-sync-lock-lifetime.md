@@ -35,13 +35,14 @@ violation was observed.
 
 ## Fix and deterministic proof
 
-A private shared `WorkspaceLock` explicitly unlocks on drop before closing the
-file. Sync, forced sync and selected-download sessions retain it for the same
-ownership scope as before. Acquisition failures never construct a guard and do not
+The initial toolchain prototype used a private `WorkspaceLock` in the resume
+module. Owner review extended it to [the shared crate-internal module](../../src/workspace_lock.rs).
+All workspace and catalog locks now explicitly unlock on drop before closing the
+file, retaining their original ownership scope, field position and drop order. Acquisition failures never construct a guard and do not
 unlock another owner. Error exits after acquisition also release explicitly.
 Persistent lock markers and fail-fast contention refusal remain unchanged.
 
-Two Linux regressions retain a duplicate open description while the owner exits:
+The initial two Linux regressions retain a duplicate open description while the owner exits:
 
 - Sync refuses another writer while the owner lives, then reacquires immediately
   after the owner returns, with the duplicate still alive.
@@ -72,7 +73,7 @@ executable each time; every test invocation creates its own tempfile directory.
 The [machine-readable summary](sync-lock-lifetime-20261126.json) records all eight
 lane counts and the deterministic red/green controls. Baseline and fixed dispatches
 total 2,000 successful isolated invocations; no reproduction of the historical
-flake was observed. Local Linux/aarch64 Rust 1.90 qualification passed the full
+flake was observed. Initial toolchain-prototype local Linux/aarch64 Rust 1.90 qualification passed the full
 Rust suite, Clippy with warnings denied, rustdoc with warnings denied and all 146
 Python tests.
 
@@ -81,3 +82,54 @@ entirely from the fix PR. Keep #85 open: the historical error is unknown. Observ
 normal default-parallel CI for one further month, through 2026-12-26, unless a
 new diagnostic establishes the cause earlier. This bounded lock fix does not
 qualify hostile mutation, multi-machine/NFS locks, or power-loss behavior.
+
+
+## Whole-class review extension and acquisition audit
+
+The two stress dispatches above qualify the initial toolchain prototype; they do
+not substitute for the expanded regressions. Owner review requested coverage of
+all remaining workspace/catalog owners and shared retention probes. The production
+audit found these eight acquisition paths:
+
+| Path | Ownership |
+| --- | --- |
+| `src/resume.rs`: `Session::open` | Toolchain fetch/resume `.fetch.lock`. |
+| `src/selection/sync.rs`: `lock` | Toolchain sync/force `.sync.lock`. |
+| `src/crates/mirror/fetch.rs`: `Session::open` | Crates fetch/resume `.crates.lock`. |
+| `src/crates/mirror/sync.rs`: `sync` | New crate preview `.crates.lock`; approved/resumed sync delegates to fetch. |
+| `src/selection/retention.rs`: `lock_file` | Prune/generation `.rust-mirror-prune.lock` and existing sync/fetch/crates writer locks. |
+| `src/crates/catalog.rs`: `Catalog::write` | Catalog writer sidecar `PATH.lock`. |
+| `src/releases.rs`: `load` | Release-cache `.releases.lock` during refresh/fallback. |
+| `src/selection/retention/catalog.rs`: `busy` | Shared probes of `.sync.lock`, `.fetch.lock`, `.crates.lock`. |
+
+Every path uses `workspace_lock::WorkspaceLock`; only its exclusive/shared
+constructors call `File::try_lock` / `File::try_lock_shared`. Failed acquisition
+never constructs an owner and never calls unlock. Existing lock validation,
+nonblocking error kinds/messages, read-only probe handles, acquisition order,
+struct field positions and explicit catalog-writer drop point are preserved.
+The retained `Vec` of prune locks retains its original element/drop order.
+
+Run the deterministic Linux controls with
+`cargo test --locked --lib inherited_description -- --nocapture`.
+Nine tests retain actual acquired descriptions past return.
+They cover completed crates fetch followed by immediate resume, preview followed
+by approval, retention probe followed by actual approved crate sync, all three
+probe marker types, generation/prune lock reacquisition, catalog replacement,
+release-cache refresh, and the original toolchain normal/error returns. A
+thread-local test-only capture duplicates successful acquisitions; production
+builds contain no capture code. Copies remain alive during the next operation;
+there are no timing sleeps, retries or real forks in these controls.
+
+With only `WorkspaceLock::drop`'s unlock disabled (the old close-only behavior),
+all nine tests fail; restoring it passes all nine. Both requested end-to-end cases
+fail with `Locked: another crate writer owns this workspace` under close-only
+release. Live exclusive owners still block shared probes and competing writers.
+The [machine-readable summary](sync-lock-lifetime-20261126.json) keeps these
+expanded controls separate from the initial two-test proof and stress evidence.
+
+The audit also covers test fixtures: eight intentional raw file-lock owners in
+`tests/crates_catalog.rs`, `network.rs`, `resume.rs`, `retention.rs` and `sync.rs`
+now explicitly unlock before close. Other `.lock()` calls in `src` are standard
+mutex/condition-variable or stdin/stdout/stderr guards, not file locks; they do
+not share this close-only descriptor lifetime. No new dependency, unsafe code,
+public API or version change is introduced.

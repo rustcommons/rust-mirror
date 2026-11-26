@@ -196,6 +196,7 @@ fn competing_process_lock_and_missing_state_refuse() {
         .unwrap();
     held.try_lock().unwrap();
     assert!(fetch_resuming(&p, &out, &source(0, false)).is_err());
+    held.unlock().unwrap();
     drop(held);
     let state = out.join(".download/state.toml");
     std::fs::write(&state, b"schema=1").unwrap();

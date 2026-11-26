@@ -579,7 +579,7 @@ fn run_inner(
     output: &Path,
     resume: bool,
     source: &impl Source,
-    forced_guard: Option<crate::resume::WorkspaceLock>,
+    forced_guard: Option<crate::workspace_lock::WorkspaceLock>,
 ) -> Result<SyncResult> {
     let forced = forced_guard.is_some();
     crate::events::check()?;
@@ -920,7 +920,7 @@ fn run_inner(
     ))?;
     Ok(result)
 }
-fn lock(output: &Path) -> Result<crate::resume::WorkspaceLock> {
+fn lock(output: &Path) -> Result<crate::workspace_lock::WorkspaceLock> {
     let p = output.join(".sync.lock");
     if exists(&p)? {
         regular(&p, 0)?;
@@ -931,7 +931,7 @@ fn lock(output: &Path) -> Result<crate::resume::WorkspaceLock> {
         .create(true)
         .truncate(false)
         .open(p)?;
-    crate::resume::WorkspaceLock::acquire(
+    crate::workspace_lock::WorkspaceLock::acquire(
         f,
         "another sync owns this workspace, or file locking is unavailable",
     )

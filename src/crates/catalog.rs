@@ -622,9 +622,8 @@ impl Catalog {
             .read(true)
             .write(true)
             .open(&lockpath)?;
-        lock.try_lock().map_err(|_| {
-            crate::Error::new(crate::ErrorKind::Locked, "catalog has a competing writer")
-        })?;
+        let lock =
+            crate::workspace_lock::WorkspaceLock::acquire(lock, "catalog has a competing writer")?;
         let before = match fs::symlink_metadata(path) {
             Ok(m) => {
                 if !replace {
@@ -672,5 +671,24 @@ impl Catalog {
         }
         drop(lock);
         Ok(())
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod lock_lifetime_tests {
+    use crate::workspace_lock::test_support::{crate_fixture, inherit_during};
+
+    #[test]
+    fn catalog_save_releases_inherited_description_before_replace() {
+        let (catalog, _) = crate_fixture();
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("catalog.toml");
+        let (saved, inherited) = inherit_during(|| catalog.write(&path, false));
+        saved.unwrap();
+        assert_eq!(inherited.len(), 1);
+        catalog
+            .write(&path, true)
+            .expect("catalog save must release its lock before replacement");
+        drop(inherited);
     }
 }

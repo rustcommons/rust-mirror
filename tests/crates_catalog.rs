@@ -179,4 +179,5 @@ fn canonical_save_is_explicit_and_preserves_unrelated_or_concurrent_work() {
         rust_mirror::error_kind(error.as_ref()),
         rust_mirror::ErrorKind::Locked
     );
+    lock.unlock().unwrap();
 }

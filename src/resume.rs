@@ -1,4 +1,5 @@
 //! Private persistent downloads. A completed tree is assembled only from verified bytes.
+use crate::workspace_lock::WorkspaceLock;
 use crate::{
     selection::{Artifact, Plan},
     sha256, Result, Source, ARTIFACT_LIMIT, ORIGIN,
@@ -226,27 +227,6 @@ struct State {
     schema: u32,
     plan_sha256: String,
 }
-// Explicit unlock ends ownership even when another thread's fork temporarily
-// retains this open file description. Close-on-exec alone does not cover that gap.
-pub(crate) struct WorkspaceLock(File);
-impl WorkspaceLock {
-    pub(crate) fn acquire(file: File, message: &str) -> Result<Self> {
-        file.try_lock()
-            .map_err(|_| crate::Error::new(crate::ErrorKind::Locked, message))?;
-        Ok(Self(file))
-    }
-
-    #[cfg(all(test, target_os = "linux"))]
-    pub(crate) fn inherited_description(&self) -> io::Result<File> {
-        self.0.try_clone()
-    }
-}
-impl Drop for WorkspaceLock {
-    fn drop(&mut self) {
-        let _ = self.0.unlock();
-    }
-}
-
 pub(crate) struct Session {
     pub root: PathBuf,
     files: PathBuf,

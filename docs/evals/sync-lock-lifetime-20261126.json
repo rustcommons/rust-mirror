@@ -86,5 +86,38 @@
     "Isolated default-thread runs still execute only the filtered test, without process-spawning sibling tests.",
     "The historical CI assertion discarded its error; this record does not confirm the original cause.",
     "No qualification of NFS, hostile mutation or power-loss durability."
-  ]
+  ],
+  "expanded_lock_scope": {
+    "exclusive_paths": [
+      "toolchain fetch/resume",
+      "toolchain sync/force",
+      "crate fetch/resume",
+      "crate sync preview",
+      "prune/generation writers",
+      "crate catalog writer",
+      "release cache writer"
+    ],
+    "shared_paths": [
+      "retention probes: .sync.lock, .fetch.lock, .crates.lock"
+    ],
+    "close_only_guard_regressions": {
+      "passed": 0,
+      "failed": 9
+    },
+    "explicit_unlock_guard_regressions": {
+      "passed": 9,
+      "failed": 0
+    },
+    "test_filter": "inherited_description",
+    "capture": "Linux test-only thread-local duplicates retained after actual operation return",
+    "fixture_file_lock_sites": 8,
+    "preserved": [
+      "scope",
+      "field/drop order",
+      "acquisition order",
+      "nonblocking behavior",
+      "read-only probe handles",
+      "error kinds/messages"
+    ]
+  }
 }

@@ -204,8 +204,10 @@ pub fn load(
             .create(true)
             .truncate(false)
             .open(lockpath)?;
-        lock.try_lock()
-            .map_err(|_| Error::new(ErrorKind::Locked, "another process owns the release cache"))?;
+        let _lock = crate::workspace_lock::WorkspaceLock::acquire(
+            lock,
+            "another process owns the release cache",
+        )?;
         if path.try_exists()? {
             catalog(&read_cache(&path)?, true, None)?;
         }
@@ -250,4 +252,30 @@ pub fn load(
         temp.persist(&path)?;
         Ok(result)
     })
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod lock_lifetime_tests {
+    use super::*;
+    use crate::workspace_lock::test_support::inherit_during;
+
+    #[test]
+    fn cache_refresh_releases_inherited_description_before_next_refresh() {
+        struct Index;
+        impl Source for Index {
+            fn fetch(&self, _: &str, out: &mut dyn Write, _: u64) -> Result<()> {
+                out.write_all(b"static.rust-lang.org/dist/2025-09-18/channel-rust-1.90.0.toml\n")?;
+                Ok(())
+            }
+        }
+        let directory = tempfile::tempdir().unwrap();
+        let control = events::Control::default();
+        let (refreshed, inherited) =
+            inherit_during(|| load(&Index, directory.path(), CacheMode::Refresh, &control));
+        refreshed.unwrap();
+        assert_eq!(inherited.len(), 1);
+        load(&Index, directory.path(), CacheMode::Refresh, &control)
+            .expect("release cache refresh must explicitly release its writer");
+        drop(inherited);
+    }
 }

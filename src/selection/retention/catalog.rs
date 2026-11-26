@@ -129,9 +129,12 @@ fn busy(workspace: &Path, owned: &BTreeSet<PathBuf>) -> bool {
         let Ok(file) = File::open(&path) else {
             return true;
         };
-        if file.try_lock_shared().is_err() {
+        let Ok(_probe) = crate::workspace_lock::WorkspaceLock::acquire_shared(
+            file,
+            "workspace busy, or shared locking unavailable",
+        ) else {
             return true;
-        }
+        };
     }
     false
 }
@@ -682,4 +685,69 @@ fn private_path(path: &Path) -> bool {
             false
         }
     })
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod lock_lifetime_tests {
+    use super::*;
+    use crate::workspace_lock::{
+        test_support::{crate_fixture, inherit_during},
+        WorkspaceLock,
+    };
+
+    #[test]
+    fn retention_probe_releases_inherited_description_before_crate_sync() {
+        use crate::crates::mirror::{sync, Approval, SyncOptions, SyncReport};
+        let (catalog, source) = crate_fixture();
+        let directory = tempfile::tempdir().unwrap();
+        let options = SyncOptions {
+            output: directory.path().join("run"),
+            resume: false,
+            previous: None,
+            estimate_sizes: false,
+        };
+        let SyncReport::NeedsApproval { plan_id, .. } =
+            sync(&catalog, &source, &options, None).unwrap()
+        else {
+            panic!("new sync must require approval")
+        };
+        let (is_busy, inherited) = inherit_during(|| busy(&options.output, &BTreeSet::new()));
+        assert!(!is_busy);
+        assert_eq!(
+            inherited.len(),
+            1,
+            "retain the actual probe's shared lock description"
+        );
+        let completed = sync(&catalog, &source, &options, Some(&Approval { plan_id }))
+            .expect("retention's shared probe must not keep the next sync locked");
+        assert!(matches!(completed, SyncReport::Completed { .. }));
+        drop(inherited);
+    }
+
+    #[test]
+    fn retention_probe_releases_inherited_descriptions_for_all_three_markers() {
+        let directory = tempfile::tempdir().unwrap();
+        for name in [".sync.lock", ".fetch.lock", ".crates.lock"] {
+            let workspace = directory.path().join(name.trim_start_matches('.'));
+            fs::create_dir(&workspace).unwrap();
+            let path = workspace.join(name);
+            let owner =
+                WorkspaceLock::acquire(File::create_new(&path).unwrap(), "test owner").unwrap();
+            assert!(
+                busy(&workspace, &BTreeSet::new()),
+                "probe must refuse the live exclusive owner of {name}"
+            );
+            drop(owner);
+            let (is_busy, inherited) = inherit_during(|| busy(&workspace, &BTreeSet::new()));
+            assert!(!is_busy);
+            assert_eq!(inherited.len(), 1);
+            let next = WorkspaceLock::acquire(
+                File::options().read(true).write(true).open(&path).unwrap(),
+                "next writer",
+            )
+            .expect("shared probe must explicitly unlock before returning");
+            drop(next);
+            drop(inherited);
+        }
+    }
 }

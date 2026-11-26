@@ -204,6 +204,10 @@ frozen-plan identity for existing selected outputs. Never serve `.download` stat
 Rehash reusable files, check range offset/length/budgets before appending, verify
 whole-file hashes and copied assembly bytes, and never overwrite a completed tree.
 Keep the persistent lock file: OS locks, not file existence, determine ownership.
+Use the shared crate-internal `workspace_lock::WorkspaceLock` for every workspace
+and catalog file lock, including shared retention probes. Explicitly unlock before
+close on normal/error return; preserve guard scope, field order and acquisition
+order. File close alone can leave a fork-inherited description locked.
 
 Test ignored/malformed/truncated/oversized ranges, corrupt progress, different plans,
 unknown paths/links, competing writers and process termination on Linux/Windows.
