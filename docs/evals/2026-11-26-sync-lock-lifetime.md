@@ -62,11 +62,21 @@ exit code and duration. It compiles once per lane with Rust 1.90.0 and runs the 
 executable each time; every test invocation creates its own tempfile directory.
 
 - [Baseline dispatch 45842723872](https://github.com/rustcommons/rust-mirror/actions/runs/45842723872),
-  source `ecd62f85d54e20b0137c676767459ac5ddc23886`: Ubuntu both lanes passed
-  250/250; Windows results pending when this record was first written.
-- Fixed-source dispatch and final PR validation: pending.
+  source `ecd62f85d54e20b0137c676767459ac5ddc23886`: both lanes passed
+  250/250 on each OS (500 Ubuntu, 500 Windows; zero failures).
+- [Fixed-source dispatch 45843395105](https://github.com/rustcommons/rust-mirror/actions/runs/45843395105),
+  source `2a36e2c`: both lanes passed 250/250 on each OS (500 Ubuntu,
+  500 Windows; zero failures), and both Linux lock-lifetime regressions passed
+  in each Ubuntu lane. The fix PR carries identical Rust source/test bytes.
 
-The temporary workflow will be removed from the investigation branch and excluded
+The [machine-readable summary](sync-lock-lifetime-20261126.json) records all eight
+lane counts and the deterministic red/green controls. Baseline and fixed dispatches
+total 2,000 successful isolated invocations; no reproduction of the historical
+flake was observed. Local Linux/aarch64 Rust 1.90 qualification passed the full
+Rust suite, Clippy with warnings denied, rustdoc with warnings denied and all 146
+Python tests.
+
+The temporary workflow is removed from the investigation branch and excluded
 entirely from the fix PR. Keep #85 open: the historical error is unknown. Observe
 normal default-parallel CI for one further month, through 2026-12-26, unless a
 new diagnostic establishes the cause earlier. This bounded lock fix does not

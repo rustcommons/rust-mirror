@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "date": "2026-11-26",
+  "issue": 85,
+  "historical_cause_confirmed": false,
+  "confirmed_mechanism": "A duplicate or fork-inherited open file description can retain a Linux flock after close-only return; explicit unlock releases it before descriptor close.",
+  "baseline": {
+    "run": 45842723872,
+    "lanes": [
+      {
+        "os": "ubuntu-24.04",
+        "threads": "default",
+        "sha": "ecd62f85d54e20b0137c676767459ac5ddc23886",
+        "iterations": 250,
+        "failures": 0
+      },
+      {
+        "os": "ubuntu-24.04",
+        "threads": "single",
+        "sha": "ecd62f85d54e20b0137c676767459ac5ddc23886",
+        "iterations": 250,
+        "failures": 0
+      },
+      {
+        "os": "windows-2025",
+        "threads": "default",
+        "sha": "ecd62f85d54e20b0137c676767459ac5ddc23886",
+        "iterations": 250,
+        "failures": 0
+      },
+      {
+        "os": "windows-2025",
+        "threads": "single",
+        "sha": "ecd62f85d54e20b0137c676767459ac5ddc23886",
+        "iterations": 250,
+        "failures": 0
+      }
+    ]
+  },
+  "fixed": {
+    "run": 45843395105,
+    "lanes": [
+      {
+        "os": "ubuntu-24.04",
+        "threads": "default",
+        "sha": "2a36e2ccd46526a9c0e63591f70242d88f106d5c",
+        "iterations": 250,
+        "failures": 0
+      },
+      {
+        "os": "ubuntu-24.04",
+        "threads": "single",
+        "sha": "2a36e2ccd46526a9c0e63591f70242d88f106d5c",
+        "iterations": 250,
+        "failures": 0
+      },
+      {
+        "os": "windows-2025",
+        "threads": "default",
+        "sha": "2a36e2ccd46526a9c0e63591f70242d88f106d5c",
+        "iterations": 250,
+        "failures": 0
+      },
+      {
+        "os": "windows-2025",
+        "threads": "single",
+        "sha": "2a36e2ccd46526a9c0e63591f70242d88f106d5c",
+        "iterations": 250,
+        "failures": 0
+      }
+    ]
+  },
+  "deterministic": {
+    "platform": "Linux",
+    "unchanged_sync_factory_probe": "fails with ErrorKind::Locked",
+    "close_only_guard_regressions": {
+      "passed": 0,
+      "failed": 2
+    },
+    "explicit_unlock_guard_regressions": {
+      "passed": 2,
+      "failed": 0
+    }
+  },
+  "limitations": [
+    "Isolated default-thread runs still execute only the filtered test, without process-spawning sibling tests.",
+    "The historical CI assertion discarded its error; this record does not confirm the original cause.",
+    "No qualification of NFS, hostile mutation or power-loss durability."
+  ]
+}
