@@ -12,6 +12,9 @@
 
 ### Repository
 
+- Freeze throwaway GnuPG test clocks so slow key generation cannot make the
+  next simulated signing step run backwards in time.
+
 - Sign release SHA256SUMS with the environment-protected Rust Commons OpenPGP
   key before publishing; add SHA256SUMS.asc after 0.6.1 with pinned-primary
   verification, isolated keyrings, safe retries and throwaway-key CI proofs.
