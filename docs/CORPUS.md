@@ -89,7 +89,9 @@ metadata changed concurrently.
   Markdown summary. No baseline update is required solely for these explanations.
   The exclusion is an explicit field list: selected versions, checksums, served
   index rows/byte hashes, other resolver state and per-root membership remain
-  checked. Root membership is compared **within each root**, so another root's
+  checked. Version/checksum summaries must agree with their served index records;
+  a new upstream version and Cargo agreement cannot excuse an inconsistent
+  checksum or a served line for a different selected version. Root membership is compared **within each root**, so another root's
   provenance or membership changes cannot mark an unchanged shared root as changed.
   Only a root whose own selection changes needs new causal/Cargo evidence; when
   explanations change alongside a real selection change, every rule below still

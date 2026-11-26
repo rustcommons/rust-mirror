@@ -164,6 +164,25 @@ def meaningful_crates(old, new):
     return names
 
 
+def selected_identities_match(value):
+    """Version/checksum summaries must describe the records actually served."""
+    if "selected_rows" not in value:
+        return True
+    rows = value["selected_rows"]
+    if set(rows) != set(value.get("version_union", [])):
+        return False
+    if "index_line_sha256" in value and set(value["index_line_sha256"]) != set(rows):
+        return False
+    for identity, row in rows.items():
+        if identity != row.get("name", "") + "@" + row.get("vers", ""):
+            return False
+        detail = value.get("version_details", {}).get(identity, {})
+        for field, index_field in (("name","name"), ("version","vers"), ("cksum","cksum"), ("yanked","yanked")):
+            if field in detail and detail[field] != row.get(index_field, False if index_field == "yanked" else None):
+                return False
+    return True
+
+
 def provenance_matches(value, inputs):
     """Changed line bytes must be exact upstream provenance, never invented output."""
     for identity, row in value.get("selected_rows", {}).items():
@@ -281,6 +300,8 @@ def classify_selection(expected, observed, replay, old_inputs, new_inputs, oracl
             return "regression", ["per-root Cargo over-selection grew", *growth]
     if expected is None:
         return "regression", ["missing reviewed expected result"]
+    if not selected_identities_match(observed) or not selected_identities_match(replay):
+        return "regression", ["selected versions/checksums disagree with served index records"]
     if replay != expected:
         return "regression", ["current binary differs on the exact frozen baseline inputs"]
     if observed == expected and old_inputs == new_inputs:

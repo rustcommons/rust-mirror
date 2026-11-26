@@ -142,6 +142,26 @@ class Classification(unittest.TestCase):
             with self.subTest(field=field):
                 self.assertEqual(self.classify(observed=observed,inputs=inputs), "regression")
 
+    def test_inconsistent_checksum_or_served_version_is_not_excused_by_cargo_and_new_index_version(self):
+        old = encoded()
+        self.expected.update(selected_rows={"x@1.0.0":json.loads(old)},
+            index_line_sha256={"x@1.0.0":corpus.digest(old)},
+            version_details={"x@1.0.0":dict(name="x",version="1.0.0",cksum="0"*64)})
+        new = encoded(vers="1.1.0")
+        proof = [dict(profile=self.expected["profiles"][0],native_only=[],
+                      cargo_versions=["x@1.0.0"],filtered_versions=["x@1.0.0"],ok=True)]
+        for field in ("checksum", "served_version"):
+            observed = copy.deepcopy(self.expected)
+            observed["version_details"]["x@1.0.0"]["reasons"] = ["new explanation"]
+            if field == "checksum":
+                observed["version_details"]["x@1.0.0"]["cksum"] = "1"*64
+            else:
+                observed["selected_rows"]["x@1.0.0"] = json.loads(new)
+                observed["index_line_sha256"]["x@1.0.0"] = corpus.digest(new)
+            with self.subTest(field=field):
+                self.assertEqual(corpus.classify(self.expected,observed,self.expected,self.old,
+                    {"1/x":old+new},True,proof,proof)[0], "regression")
+
     def test_reason_drift_cannot_hide_cargo_disagreement(self):
         observed = dict(self.expected, version_details={"x@1.0.0": {"reasons": ["new"]}})
         self.assertEqual(self.classify(observed=observed, oracle=False), "regression")
