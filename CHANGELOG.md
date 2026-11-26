@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Explicitly release all workspace and catalog locks on return or error: toolchain
+  and crate fetch/sync, prune/generation ownership, catalog writes, release-cache
+  writes and retention shared probes. A transient fork-inherited descriptor
+  cannot cause a false busy refusal after completion. Investigated under [#85](https://github.com/rustcommons/rust-mirror/issues/85);
+  the original intermittent failure has no diagnostic proving its cause.
+
 ### Repository
+
+- Freeze throwaway GnuPG test clocks so slow key generation cannot make the
+  next simulated signing step run backwards in time.
 
 - Sign release SHA256SUMS with the environment-protected Rust Commons OpenPGP
   key before publishing; add SHA256SUMS.asc after 0.6.1 with pinned-primary

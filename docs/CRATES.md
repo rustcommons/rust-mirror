@@ -204,6 +204,12 @@ paths, schema bounds, exact hashes and symlink absence before trusting its conte
 Do not promote a schema-3-looking marker containing arbitrary crate files.
 
 Private `.download` files, locks and frozen state stay outside the served `mirror/`.
+All workspace and catalog locks explicitly unlock before close on return or error.
+This includes `.crates.lock` for fetch/resume and sync previews, catalog writer
+sidecars and prune/generation locks. Retention shared probes also unlock before
+returning, so they cannot prolong a completed probe's ownership through an
+inherited descriptor. Lock files remain in place; a live owner still excludes
+competing writers.
 Use OS writer locks; rehash reusable/partial files, validate range offset/length,
 actual bytes and final SHA-256 against frozen `cksum`. A killed process leaves only
 private resumable work; never overwrite a completed generation. Whole final and

@@ -579,7 +579,7 @@ fn run_inner(
     output: &Path,
     resume: bool,
     source: &impl Source,
-    forced_guard: Option<File>,
+    forced_guard: Option<crate::workspace_lock::WorkspaceLock>,
 ) -> Result<SyncResult> {
     let forced = forced_guard.is_some();
     crate::events::check()?;
@@ -920,7 +920,7 @@ fn run_inner(
     ))?;
     Ok(result)
 }
-fn lock(output: &Path) -> Result<File> {
+fn lock(output: &Path) -> Result<crate::workspace_lock::WorkspaceLock> {
     let p = output.join(".sync.lock");
     if exists(&p)? {
         regular(&p, 0)?;
@@ -931,13 +931,10 @@ fn lock(output: &Path) -> Result<File> {
         .create(true)
         .truncate(false)
         .open(p)?;
-    f.try_lock().map_err(|_| {
-        crate::Error::new(
-            crate::ErrorKind::Locked,
-            "another sync owns this workspace, or file locking is unavailable",
-        )
-    })?;
-    Ok(f)
+    crate::workspace_lock::WorkspaceLock::acquire(
+        f,
+        "another sync owns this workspace, or file locking is unavailable",
+    )
 }
 
 /// Synchronize with an observer, independent heartbeat and cooperative cancellation.
@@ -966,4 +963,27 @@ pub fn run_forced_with_control(
     control.run("sync force", || {
         run_forced(config, previous, output, source)
     })
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod lock_lifetime_tests {
+    use super::*;
+
+    #[test]
+    fn returning_sync_lock_releases_it_even_with_an_inherited_description() {
+        let output = tempfile::tempdir().unwrap();
+        let owned = lock(output.path()).unwrap();
+        // dup and fork retain the same flock open file description. Keep that
+        // description alive to model a sibling thread between fork and exec.
+        let inherited = owned.inherited_description().unwrap();
+        match lock(output.path()) {
+            Err(error) => assert_eq!(crate::error_kind(error.as_ref()), crate::ErrorKind::Locked),
+            Ok(_) => panic!("live owner must exclude another writer"),
+        }
+        drop(owned);
+        let next = lock(output.path())
+            .expect("completed sync must unlock before closing its own descriptor");
+        drop(next);
+        drop(inherited);
+    }
 }

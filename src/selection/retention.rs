@@ -471,7 +471,7 @@ fn preview_inner(
     Ok(plan)
 }
 
-fn lock_file(path: &Path, create: bool) -> Result<File> {
+fn lock_file(path: &Path, create: bool) -> Result<crate::workspace_lock::WorkspaceLock> {
     match fs::symlink_metadata(path) {
         Ok(m) if m.is_file() && !m.file_type().is_symlink() && m.len() == 0 => (),
         Err(e) if create && e.kind() == std::io::ErrorKind::NotFound => (),
@@ -483,13 +483,10 @@ fn lock_file(path: &Path, create: bool) -> Result<File> {
         .create(create)
         .truncate(false)
         .open(path)?;
-    f.try_lock().map_err(|_| {
-        crate::Error::new(
-            crate::ErrorKind::Locked,
-            "generation workspace busy, or filesystem locking unavailable",
-        )
-    })?;
-    Ok(f)
+    crate::workspace_lock::WorkspaceLock::acquire(
+        f,
+        "generation workspace busy, or filesystem locking unavailable",
+    )
 }
 
 /// Apply exactly a previously inspected preview, with explicit deletion authority.
@@ -700,4 +697,37 @@ pub fn apply_with_control(
     control: &crate::events::Control,
 ) -> Result<ApplyReport> {
     control.run("prune apply", || apply(plan, allow_delete))
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod lock_lifetime_tests {
+    use super::*;
+    use crate::workspace_lock::test_support::inherit_during;
+
+    #[test]
+    fn generation_locks_release_inherited_descriptions_before_reacquisition() {
+        let directory = tempfile::tempdir().unwrap();
+        for name in [
+            ".rust-mirror-prune.lock",
+            ".sync.lock",
+            ".fetch.lock",
+            ".crates.lock",
+        ] {
+            let path = directory.path().join(name);
+            let ((), inherited) = inherit_during(|| {
+                let _owner = lock_file(&path, true).unwrap();
+                match lock_file(&path, false) {
+                    Err(error) => {
+                        assert_eq!(crate::error_kind(error.as_ref()), crate::ErrorKind::Locked)
+                    }
+                    Ok(_) => panic!("live generation owner must exclude a contender"),
+                }
+            });
+            assert_eq!(inherited.len(), 1);
+            let next = lock_file(&path, false)
+                .expect("generation operation must explicitly release its locks");
+            drop(next);
+            drop(inherited);
+        }
+    }
 }

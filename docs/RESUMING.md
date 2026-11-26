@@ -54,8 +54,13 @@ for a large mirror because existence alone does not prove integrity.
 
 ## Failure and filesystem boundaries
 
-- A killed process releases its OS lock. The lock file remains; its existence is
-  not an active-lock indication. Never delete it while a fetch may be running.
+- All workspace and catalog locks explicitly unlock on return or error before
+  closing their descriptors, including when another process briefly inherited a
+  copy. This covers toolchain/crate fetch and sync, prune/generation locks, crate
+  catalog writes, release-cache writes and retention's shared busy probes. A killed
+  process only closes its own descriptors; inherited copies can retain a lock
+  until they close. The lock file remains; its existence is not an active-lock
+  indication. Never delete it while a fetch may be running.
 - Network/disk errors can leave progress for retry. During initial workspace setup,
   an interruption can leave missing/malformed identity state; use a new output if
   the tool cannot validate it. It will not adopt an arbitrary old directory.

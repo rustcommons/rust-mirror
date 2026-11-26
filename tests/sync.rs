@@ -578,6 +578,7 @@ fn force_refuses_active_unmanaged_or_overlapping_runs_without_changes() {
     lock.try_lock().unwrap();
     run_forced(&cfg, None, &out, &source(0, false))
         .expect_err("force should refuse an actively locked run");
+    lock.unlock().unwrap();
     drop(lock);
     run_forced(&cfg, Some(&done.mirror), &out, &source(0, false))
         .expect_err("force should refuse reusing its own mirror as the previous generation");

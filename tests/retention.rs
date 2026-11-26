@@ -322,6 +322,7 @@ fn active_sync_fetch_and_prune_locks_refuse_then_allow_retry() {
         lock.try_lock().unwrap();
         assert!(apply(&plan, true).is_err());
         assert!(roots[1].exists());
+        lock.unlock().unwrap();
         drop(lock);
         if name == ".sync.lock" {
             fs::remove_file(path).unwrap();
@@ -772,6 +773,7 @@ fn directory_refuses_locked_unknown_and_missing_previous_runs() {
         .iter()
         .any(|r| r.state == RunState::Locked));
     assert!(preview_directory(&policy(), t.path(), &roots[0], DATE).is_err());
+    lock.unlock().unwrap();
     drop(lock);
     assert!(roots[1].exists());
 }
@@ -850,6 +852,7 @@ fn directory_apply_refuses_new_locks_and_changed_paused_state_before_deleting() 
         .unwrap();
     lock.try_lock().unwrap();
     assert!(apply(&plan, true).is_err());
+    lock.unlock().unwrap();
     drop(lock);
     assert!(roots[1].join("snapshot.toml").is_file());
     let state = waiting.join(".sync/state.toml");

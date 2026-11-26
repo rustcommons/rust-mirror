@@ -95,8 +95,8 @@ pub fn sync(
             .write(true)
             .create_new(true)
             .open(options.output.join(".crates.lock"))?;
-        lock.try_lock()
-            .map_err(|_| Error::new(ErrorKind::Locked, "crate workspace is locked"))?;
+        let _lock =
+            crate::workspace_lock::WorkspaceLock::acquire(lock, "crate workspace is locked")?;
         preview.save_new(&plan_path)?;
         events::stage("approval")?;
         return Ok(SyncReport::NeedsApproval {
@@ -170,4 +170,31 @@ pub fn sync_with_control(
     control: &events::Control,
 ) -> Result<SyncReport> {
     control.run("crates-sync", || sync(catalog, source, options, approval))
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod lock_lifetime_tests {
+    use super::*;
+    use crate::workspace_lock::test_support::{crate_fixture, inherit_during};
+
+    #[test]
+    fn preview_releases_inherited_description_before_approved_sync() {
+        let (catalog, source) = crate_fixture();
+        let directory = tempfile::tempdir().unwrap();
+        let options = SyncOptions {
+            output: directory.path().join("run"),
+            resume: false,
+            previous: None,
+            estimate_sizes: false,
+        };
+        let (preview, inherited) = inherit_during(|| sync(&catalog, &source, &options, None));
+        assert_eq!(inherited.len(), 1);
+        let SyncReport::NeedsApproval { plan_id, .. } = preview.unwrap() else {
+            panic!("new sync requires approval")
+        };
+        let completed = sync(&catalog, &source, &options, Some(&Approval { plan_id }))
+            .expect("saved preview must release its writer before approved sync");
+        assert!(matches!(completed, SyncReport::Completed { .. }));
+        drop(inherited);
+    }
 }

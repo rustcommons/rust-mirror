@@ -796,6 +796,7 @@ fn literal_exclusions_and_refresh_fallback_are_bounded() {
         rust_mirror::releases::load(&Index, &dir, rust_mirror::releases::CacheMode::Refresh, &c)
             .unwrap_err();
     assert_eq!(rust_mirror::error_kind(e.as_ref()), ErrorKind::Locked);
+    lock.unlock().unwrap();
     drop(lock);
     fs::write(dir.join("unrelated.txt"), "preserve me").unwrap();
     assert!(rust_mirror::releases::load(
