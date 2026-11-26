@@ -12,6 +12,12 @@
 
 ### Repository
 
+- Treat crate corpus inclusion reasons and other listed explanatory metadata as
+  informational while preserving selection, checksum, served-index and Cargo
+  checks, including `source_ordinal` because it controls served index-line order.
+  Compare shared dependency membership per root; fast CI also qualifies
+  every changed root with Cargo, keeping causal and over-selection guards intact.
+
 - Freeze throwaway GnuPG test clocks so slow key generation cannot make the
   next simulated signing step run backwards in time.
 
