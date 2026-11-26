@@ -20,8 +20,12 @@ python3 scripts/corpus.py run --binary target/debug/rust-mirror --output /tmp/co
 ```
 
 Use a new output directory. `--fast` keeps the two complete top-100 native plans,
-all synthetic cases, selected live cases and one lock project; CI samples eight
-Cargo root profiles per top-100 plan. Full weekly/manual CI checks all roots and
+all synthetic cases, selected live cases and one lock project. CI checks eight
+representative Cargo root profiles per top-100 plan **plus every root with a
+changed selection**. Additional roots keep their original indices so shared
+dependency provenance is matched to the correct root. This obtains the same N1
+Cargo evidence for real updates outside the sample, rather than waiving missing
+proof. Full weekly/manual CI checks all roots and
 all lock projects. CI adds `--oracle`, which refuses outside GitHub Actions.
 Local reports qualify planning only; they do not substitute for CI conformance.
 A likely upstream resolver change without Cargo proof fails as
@@ -76,13 +80,28 @@ wall time, observation timestamps and plan IDs, but include original index-line
 hashes and native provenance. This frozen control is mandatory even when upstream
 metadata changed concurrently.
 
-- **Clean:** frozen replay, expected output and live inputs/output agree.
-- **Our regression:** current output differs on frozen inputs, output changes with
+- **Clean:** frozen replay, expected selection and live inputs/selection agree.
+- **Explanatory metadata (informational):** `version_details.reasons`,
+  `primary_reason`, `sources`, `source_ordinal` and `root_aliases` explain why a
+  version was included. Changes only to these fields never fail, on live or frozen
+  replay inputs. They remain in the JSON native output and appear as informational
+  differences (including phase, version and changed fields), with counts in the
+  Markdown summary. No baseline update is required solely for these explanations.
+  The exclusion is an explicit field list: selected versions, checksums, served
+  index rows/byte hashes, other resolver state and per-root membership remain
+  checked. Root membership is compared **within each root**, so another root's
+  provenance or membership changes cannot mark an unchanged shared root as changed.
+  Only a root whose own selection changes needs new causal/Cargo evidence; when
+  explanations change alongside a real selection change, every rule below still
+  applies.
+- **Our regression:** current selection differs on frozen inputs, selection changes with
   unchanged inputs, a named edge-case expectation breaks, or an unexplained refusal
   appears. Missing expected cases fail rather than teaching the runner new behavior.
 - **Upstream (report, not fail):** frozen replay passes, and for every root whose
   resolved output changes, Cargo's selections equal the native selection exactly
-  both before (recorded in the expected baseline) and after (this run). At least
+  both before (recorded in the expected baseline) and after (this run). Selection
+  identity preserves each root's selected versions/checksums and exact served index
+  provenance; explanatory fields cannot hide checksum or byte changes. At least
   one crate in that root's old/new resolved closure must have a real index change:
   a new version, yank or identity-field change. The per-root over-selection guard
   must also pass. This permits transitive shifts: a new serde can pin a different

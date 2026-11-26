@@ -106,6 +106,46 @@ class Classification(unittest.TestCase):
         observed["index_line_sha256"]={"x@1.0.0":"invented"}
         self.assertEqual(self.classify(observed=observed,inputs={"1/x":after}),"regression")
 
+    def test_reason_only_changes_are_informational_with_unchanged_inputs(self):
+        self.expected["version_details"] = {"x@1.0.0": dict(reasons=["old"], primary_reason="old", sources=["a"], source_ordinal=1, root_aliases=["a"])}
+        observed = copy.deepcopy(self.expected)
+        observed["version_details"]["x@1.0.0"].update(reasons=["new"], primary_reason="new", sources=["b"], source_ordinal=2, root_aliases=["b"])
+        label, details = corpus.classify(self.expected, observed, self.expected, self.old, self.old)
+        self.assertEqual(label, "clean")
+        self.assertTrue(any(d.get("kind") == "informational" for d in details))
+
+    def test_reason_only_frozen_replay_drift_is_informational(self):
+        replay = dict(self.expected, version_details={"x@1.0.0": {"reasons": ["new explanation"]}})
+        label, details = corpus.classify(self.expected, replay, replay, self.old, self.old)
+        self.assertEqual(label, "clean")
+        self.assertEqual({d["phase"] for d in details}, {"live", "frozen_replay"})
+
+    def test_reason_drift_cannot_hide_selection_checksum_or_served_bytes_changes(self):
+        for mutation in [dict(version_union=[]),
+                         dict(version_details={"x@1.0.0": {"cksum": "1"*64, "reasons": ["new"]}}),
+                         dict(index_line_sha256={"x@1.0.0": "invented"})]:
+            with self.subTest(mutation=mutation):
+                self.assertEqual(self.classify(observed=dict(self.expected, **mutation)), "regression")
+
+    def test_reason_drift_cannot_hide_forged_provenance_during_real_upstream_change(self):
+        before = encoded()
+        self.expected.update(selected_rows={"x@1.0.0": json.loads(before)},
+                             index_line_sha256={"x@1.0.0": corpus.digest(before)})
+        inputs = {"1/x": before + encoded(vers="1.1.0")}
+        for field in ("cksum", "index_line_sha256"):
+            observed = copy.deepcopy(self.expected)
+            observed["version_details"] = {"x@1.0.0": {"reasons": ["new explanation"]}}
+            if field == "cksum":
+                observed["selected_rows"]["x@1.0.0"]["cksum"] = "1"*64
+            else:
+                observed["index_line_sha256"]["x@1.0.0"] = "invented"
+            with self.subTest(field=field):
+                self.assertEqual(self.classify(observed=observed,inputs=inputs), "regression")
+
+    def test_reason_drift_cannot_hide_cargo_disagreement(self):
+        observed = dict(self.expected, version_details={"x@1.0.0": {"reasons": ["new"]}})
+        self.assertEqual(self.classify(observed=observed, oracle=False), "regression")
+
     def test_missing_reviewed_baseline_fails(self):
         self.assertEqual(corpus.classify(None, self.expected, self.expected, self.old, self.old)[0], "regression")
 
@@ -167,6 +207,45 @@ class TransitiveUpstream(unittest.TestCase):
         self.new["3/s/syn"]=encoded(name="syn",vers="1.0.7",cksum="1"*64)+encoded(name="syn",vers="1.0.8")
         self.assertEqual(self.classify()[0],"regression")
 
+    def shared_unchanged_root(self):
+        profile = dict(name="syn", version="3.0.10", features=[], default_features=True)
+        shared = ["proc-macro2@1.0.0", "quote@1.0.0", "syn@3.0.10"]
+        for value in (self.before, self.after):
+            value["roots"][0]["resolved_versions"] = sorted(set(value["version_union"] + shared))
+            value["profiles"].append(profile)
+            value["roots"].append(dict(profile=profile, resolved_versions=shared))
+            value["version_union"] = sorted(set(value["version_union"] + shared))
+        for value, parent in ((self.before, "serde@1.0.0"), (self.after, "serde@1.0.1")):
+            value["version_details"] = {v:dict(reasons=[dict(root=0,parent=parent),dict(root=1,parent="syn@3.0.10")]) for v in shared[:2]}
+        for path, data in {"pr/oc/proc-macro2":encoded(name="proc-macro2"), "qu/ot/quote":encoded(name="quote")}.items():
+            self.old[path] = self.new[path] = data
+        self.old["3/s/syn"] += encoded(name="syn",vers="3.0.10")
+        self.new["3/s/syn"] = self.old["3/s/syn"]
+        for rows, value in ((self.baseline,self.before),(self.cargo,self.after)):
+            rows[0]["cargo_versions"] = value["roots"][0]["resolved_versions"]
+            rows[0]["filtered_versions"] = value["roots"][0]["resolved_versions"]
+            rows.append(dict(profile=profile,cargo_versions=shared,filtered_versions=shared,native_only=[],ok=True))
+
+    def test_shared_reasons_do_not_mark_unchanged_syn_root_as_changed(self):
+        self.shared_unchanged_root()
+        self.assertEqual(self.before["roots"][1], self.after["roots"][1])
+        self.assertEqual(self.classify()[0], "upstream")
+        self.assertTrue(any(isinstance(d,dict) and d.get("kind")=="informational" for d in self.classify()[1]))
+
+    def test_membership_changes_are_checked_only_for_the_changed_root(self):
+        self.shared_unchanged_root()
+        self.after["roots"][0]["resolved_versions"].remove("proc-macro2@1.0.0")
+        # Still selected by the unchanged syn root; the whole-corpus union keeps it.
+        self.assertIn("proc-macro2@1.0.0",self.after["version_union"])
+        self.assertEqual(self.classify()[0], "upstream")
+        unrelated = dict(self.old, **{"1/y": encoded(name="y")})
+        self.assertEqual(corpus.classify(self.before,self.after,self.before,self.old,unrelated,True,
+                                       self.baseline,self.cargo)[0], "regression")
+
+    def test_shared_reason_drift_still_needs_cargo_for_real_selection_change(self):
+        self.shared_unchanged_root()
+        self.assertEqual(self.classify(False)[0], "upstream_needs_review")
+
     def test_proposal_updates_cargo_proof_and_preserves_allowance(self):
         doc={"oracle_native_only":self.baseline}
         proposed=corpus.proposal_oracle(doc,self.cargo)
@@ -179,6 +258,51 @@ class TransitiveUpstream(unittest.TestCase):
                     dict(self.old,**{"se/rd/serde":self.old["se/rd/serde"].replace(b": ",b":")})]:
             self.assertEqual(corpus.classify(self.before,self.after,self.before,self.old,new,True,
                                            self.baseline,self.cargo)[0],"regression")
+
+
+class FastOracleEvidence(unittest.TestCase):
+    def setUp(self):
+        self.before = dict(status="ok", version_union=["a@1.0.0", "b@1.0.0", "c@1.0.0"],
+            roots=[dict(profile=dict(name=name,version="1.0.0"),resolved_versions=[name+"@1.0.0"]) for name in "abc"])
+        self.after = copy.deepcopy(self.before)
+
+    def test_changed_root_outside_sample_is_qualified_with_its_original_index(self):
+        self.after["version_union"].append("c@1.1.0")
+        self.after["roots"][2]["resolved_versions"] = ["c@1.1.0"]
+        self.assertEqual(corpus.fast_oracle_roots(self.before,self.after,limit=1),{0,2})
+
+    def test_membership_change_with_unchanged_union_gets_cargo_evidence(self):
+        self.after["roots"][2]["resolved_versions"].append("a@1.0.0")
+        self.assertEqual(corpus.fast_oracle_roots(self.before,self.after,limit=1),{0,2})
+
+    def test_reason_only_drift_does_not_expand_sample(self):
+        self.after["version_details"] = {"c@1.0.0":dict(reasons=["new explanation"])}
+        self.assertEqual(corpus.fast_oracle_roots(self.before,self.after,limit=1),{0})
+
+    def test_oracle_preserves_noncontiguous_original_root_indices(self):
+        profiles = [r["profile"] for r in self.before["roots"]]
+        plan = dict(roots=[dict(profile=p) for p in profiles],
+                    versions=[dict(name=name,version="1.0.0",index_line=encoded(name=name).decode(),
+                                   reasons=[dict(root=n)],expected_bytes=None) for n,name in enumerate("abc")],
+                    witnesses=[dict(versions=[name+"@1.0.0"]) for name in "abc"])
+        with tempfile.TemporaryDirectory() as directory:
+            work=Path(directory)
+            with patch.object(corpus,"native_case",return_value=(dict(status="ok",version_union=["c@1.0.0"]),None,{},0,None)) as native, \
+                 patch.object(corpus,"project"), patch.object(corpus,"cargo_environment",return_value={}), \
+                 patch.object(corpus.subprocess,"run",return_value=subprocess.CompletedProcess([],0,"","")), \
+                 patch.object(corpus,"lock_ids",return_value={"c@1.0.0"}):
+                ok,rows=corpus.oracle(dict(roots=profiles),plan,work,Mock(base="https://fixture.invalid"),Path("binary"),{2})
+            self.assertTrue(ok)
+            self.assertEqual(native.call_args.args[2],work/"native-root-2")
+            self.assertEqual([r["profile"]["name"] for r in rows],["c"])
+            self.assertEqual(rows[0]["cargo_versions"],["c@1.0.0"])
+            self.assertEqual(rows[0]["native_only"],[])
+            self.assertEqual(rows[0]["witness_versions"],["c@1.0.0"])
+
+    def test_missing_baseline_or_changed_profiles_qualify_every_root(self):
+        self.assertIsNone(corpus.fast_oracle_roots(None,self.after))
+        self.after["roots"][2]["profile"]["version"]="2.0.0"
+        self.assertIsNone(corpus.fast_oracle_roots(self.before,self.after))
 
 
 

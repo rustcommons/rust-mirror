@@ -4,6 +4,11 @@
 
 ### Repository
 
+- Treat crate corpus inclusion reasons and other listed explanatory metadata as
+  informational while preserving selection, checksum, served-index and Cargo
+  checks. Compare shared dependency membership per root; fast CI also qualifies
+  every changed root with Cargo, keeping causal and over-selection guards intact.
+
 - Sign release SHA256SUMS with the environment-protected Rust Commons OpenPGP
   key before publishing; add SHA256SUMS.asc after 0.6.1 with pinned-primary
   verification, isolated keyrings, safe retries and throwaway-key CI proofs.

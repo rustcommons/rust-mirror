@@ -24,6 +24,7 @@ from crates_phase0_fixtures import cases as synthetic_cases, dep, record
 REPO = Path(__file__).resolve().parents[1]
 CORPUS = REPO / "tests/corpus"
 IDENTITY = ("name", "vers", "cksum", "deps", "features", "features2", "links", "v")
+EXPLANATORY_VERSION_FIELDS = {"reasons", "primary_reason", "sources", "source_ordinal", "root_aliases"}
 
 
 
@@ -108,12 +109,37 @@ def upstream_delta(old, new):
     return True, details
 
 
-def selection_changes(before, after):
-    """Track identity, resolver state and per-root membership for every selection.
+def selection_view(value):
+    """Exclude only known explanations, preserving selection and served-byte evidence."""
+    if value is None:
+        return None
+    result = dict(value)
+    result["version_details"] = {}
+    for identity, detail in value.get("version_details", {}).items():
+        selected = {k:v for k,v in detail.items() if k not in EXPLANATORY_VERSION_FIELDS}
+        if selected:
+            result["version_details"][identity] = selected
+    return result
 
-    Raw line hashes/nonidentity fields are provenance, checked separately below;
-    they cannot explain a different resolver selection.
+
+def explanatory_changes(expected, observed, phase):
+    if expected is None or observed is None:
+        return []
+    before, after = expected.get("version_details", {}), observed.get("version_details", {})
+    changed = {identity:sorted(k for k in EXPLANATORY_VERSION_FIELDS
+                              if before.get(identity, {}).get(k) != after.get(identity, {}).get(k))
+               for identity in sorted(before.keys() | after.keys())}
+    changed = {identity:fields for identity,fields in changed.items() if fields}
+    return [dict(kind="informational", phase=phase, field="version_details", versions=changed)] if changed else []
+
+
+def selection_changes(before, after):
+    """Track selection identity/state; explanations cannot excuse or cause drift.
+
+    Root membership is compared within each root, not attributed to every root
+    sharing a dependency. Served-line provenance is checked separately below.
     """
+    before, after = selection_view(before), selection_view(after)
     def states(value):
         result = {}
         identities = set(value.get("version_union", [])) | set(value.get("selected_rows", {})) | set(value.get("version_details", {}))
@@ -121,8 +147,7 @@ def selection_changes(before, after):
         for identity in identities:
             row = value.get("selected_rows", {}).get(identity, {})
             result[identity] = dict(selected=identity in value.get("version_union", []), identity={k: row.get(k) for k in (*IDENTITY, "yanked")},
-                detail=value.get("version_details", {}).get(identity),
-                roots=[n for n, root in enumerate(value.get("roots", [])) if identity in root["resolved_versions"]])
+                detail=value.get("version_details", {}).get(identity))
         return result
     old, new = states(before), states(after)
     return {i for i in old.keys() | new.keys() if old.get(i) != new.get(i)}
@@ -191,6 +216,23 @@ def matching_oracle(rows, profile):
     return matches[0] if len(matches) == 1 else None
 
 
+def affected_versions(before, after, changed):
+    old, new = set(before["resolved_versions"]), set(after["resolved_versions"])
+    return (changed & (old | new)) | (old ^ new)
+
+
+def fast_oracle_roots(expected, observed, limit=8):
+    """Sample representative roots plus every root needing causal Cargo evidence."""
+    if expected is None:
+        return None
+    before, after = root_selections(expected), root_selections(observed)
+    if [r["profile"] for r in before] != [r["profile"] for r in after]:
+        return None
+    changed = selection_changes(expected, observed)
+    return {n for n,(a,b) in enumerate(zip(before,after,strict=True))
+            if n < limit or affected_versions(a,b,changed) or expected["status"] != observed["status"]}
+
+
 def root_upstream_evidence(expected, observed, changed, meaningful, before_oracle, after_oracle):
     before, after = root_selections(expected), root_selections(observed)
     if [r["profile"] for r in before] != [r["profile"] for r in after]:
@@ -200,9 +242,10 @@ def root_upstream_evidence(expected, observed, changed, meaningful, before_oracl
     for a, b in zip(before, after, strict=True):
         old, new = set(a["resolved_versions"]), set(b["resolved_versions"])
         closure = old | new
-        if not changed & closure and expected["status"] == observed["status"]:
+        affected = affected_versions(a,b,changed)
+        if not affected and expected["status"] == observed["status"]:
             continue
-        covered |= changed & closure
+        covered |= affected
         if not {v.split("@", 1)[0] for v in closure} & meaningful:
             return "regression", [dict(profile=a["profile"], reason="no real index change in this root's resolved closure")]
         prior = matching_oracle(before_oracle, a["profile"])
@@ -222,6 +265,14 @@ def root_upstream_evidence(expected, observed, changed, meaningful, before_oracl
 
 
 def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True, expected_oracle=None, observed_oracle=None):
+    information = (explanatory_changes(expected, observed, "live") +
+                   explanatory_changes(expected, replay, "frozen_replay"))
+    label, differences = classify_selection(selection_view(expected), selection_view(observed), selection_view(replay),
+        old_inputs, new_inputs, oracle_ok, expected_oracle, observed_oracle)
+    return label, [*differences, *information]
+
+
+def classify_selection(expected, observed, replay, old_inputs, new_inputs, oracle_ok, expected_oracle, observed_oracle):
     if not oracle_ok:
         return "regression", ["Cargo/native coverage, refusal or filtered-index check differs"]
     if observed_oracle is not None:
@@ -261,8 +312,8 @@ def classify(expected, observed, replay, old_inputs, new_inputs, oracle_ok=True,
             return "regression", ["new refusal is not explained by a declared-root yank", *details]
     if expected["status"] == "ok" and observed["status"] != "ok":
         return upstream_label, [*evidence, *details]
-    # Account for non-selection output too. Only exact provenance and named
-    # metadata warnings may vary without a meaningful selection change.
+    # Account for non-selection output too. Explanations were projected out;
+    # exact provenance and named upstream metadata warnings remain checked.
     handled = {"version_union", "roots", "version_details", "selected_rows", "index_line_sha256"}
     if changed:
         handled |= {"known_archive_bytes", "unknown_archives"}
@@ -378,7 +429,7 @@ def native_case(binary, case, work, fixture):
     return semantic, plan, dict(fixture.observed), elapsed, result.get("error")
 
 
-def oracle(case, plan, work, fixture, binary):
+def oracle(case, plan, work, fixture, binary, root_indices=None):
     """Real Cargo lock resolution; no compile, fetch or archive API is available."""
     fixture.filtered = {}
     if plan:
@@ -391,6 +442,8 @@ def oracle(case, plan, work, fixture, binary):
     reports = []
     all_ok = True
     for n, root in enumerate(roots):
+        if root_indices is not None and n not in root_indices:
+            continue
         choices = {}
         timings = {}
         per_root_ok = True
@@ -535,12 +588,10 @@ def run_suite(args):
                 prior_inputs = {p: (override if override is not None else baseline_inputs)[p] for p in replay_inputs} if expected else current_inputs
                 ok, cargo = True, []
                 if args.oracle:
-                    oracle_case = case
-                    if args.fast and plan and len(plan["roots"]) > 8:
-                        # Run only eight representative roots while keeping the full
-                        # native 100-root plan and version union in the report.
-                        plan = dict(plan, roots=plan["roots"][:8])
-                    ok, cargo = oracle(oracle_case, plan, work / case["id"] / "live", fixture, binary)
+                    # Keep original root indices: shared-version reasons refer to
+                    # them, including changed roots outside the representative eight.
+                    indices = fast_oracle_roots(expected, observed) if args.fast and plan and len(plan["roots"]) > 8 else None
+                    ok, cargo = oracle(case, plan, work / case["id"] / "live", fixture, binary, indices)
                 if fixture.archive_requests or fixture.errors:
                     raise ValueError("metadata-only transport violation: " + repr(fixture.archive_requests + fixture.errors))
                 if args.record:
@@ -601,9 +652,10 @@ def run_suite(args):
     dump(work / "report.json", report)
     text = ["# Crate corpus report", "", f"Commit: `{report['commit']}`", "",
             f"Result: {'FAIL' if failed else 'upstream differences' if changed else 'clean'}; Cargo oracle: {args.oracle}.", "",
-            "| Case | Classification | Versions |", "| --- | --- | --- |"]
+            "| Case | Classification | Versions | Explanatory changes (informational) |", "| --- | --- | --- | --- |"]
     for r in rows:
-        text.append(f"| {r['id']} | {r['classification']} | {len(r.get('native',{}).get('version_union',[]))} |")
+        information = sum(len(d.get("versions", {})) for d in r.get("differences", []) if isinstance(d, dict) and d.get("kind") == "informational")
+        text.append(f"| {r['id']} | {r['classification']} | {len(r.get('native',{}).get('version_union',[]))} | {information} |")
     text += ["", report["limits"], "", "Frozen 2026-11-13 control requires 100 roots and 186 versions.",
              "", "upstream_needs_review: likely upstream; confirm with a full run. This label fails qualification.",
              "", "Upstream differences have a proposed-baseline artifact; refreshes require a reviewed PR, never auto-merge."]
