@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Explicitly release toolchain sync and download workspace locks on return or
+  error, so a transient fork-inherited descriptor cannot cause a false busy
+  refusal on immediate resume. Investigated under [#85](https://github.com/rustcommons/rust-mirror/issues/85);
+  the original intermittent failure has no diagnostic proving its cause.
+
 ### Repository
 
 - Sign release SHA256SUMS with the environment-protected Rust Commons OpenPGP

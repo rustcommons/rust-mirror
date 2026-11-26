@@ -226,11 +226,32 @@ struct State {
     schema: u32,
     plan_sha256: String,
 }
+// Explicit unlock ends ownership even when another thread's fork temporarily
+// retains this open file description. Close-on-exec alone does not cover that gap.
+pub(crate) struct WorkspaceLock(File);
+impl WorkspaceLock {
+    pub(crate) fn acquire(file: File, message: &str) -> Result<Self> {
+        file.try_lock()
+            .map_err(|_| crate::Error::new(crate::ErrorKind::Locked, message))?;
+        Ok(Self(file))
+    }
+
+    #[cfg(all(test, target_os = "linux"))]
+    pub(crate) fn inherited_description(&self) -> io::Result<File> {
+        self.0.try_clone()
+    }
+}
+impl Drop for WorkspaceLock {
+    fn drop(&mut self) {
+        let _ = self.0.unlock();
+    }
+}
+
 pub(crate) struct Session {
     pub root: PathBuf,
     files: PathBuf,
     allowed: BTreeSet<PathBuf>,
-    _lock: File,
+    _lock: WorkspaceLock,
 }
 impl Session {
     pub fn open(output: &Path, plan: &Plan, resume: bool) -> Result<Self> {
@@ -267,12 +288,10 @@ impl Session {
             .create(true)
             .truncate(false)
             .open(lock)?;
-        lock.try_lock().map_err(|_| {
-            crate::Error::new(
-                crate::ErrorKind::Locked,
-                "another fetch owns this output, or filesystem locking is unavailable",
-            )
-        })?;
+        let lock = WorkspaceLock::acquire(
+            lock,
+            "another fetch owns this output, or filesystem locking is unavailable",
+        )?;
         let root = output.join(".download");
         let state = State {
             schema: 1,
@@ -448,6 +467,30 @@ fn eprintln_status(action: &str, a: &Artifact, n: u64) {
 mod tests {
     use super::*;
     use std::net::TcpListener;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn workspace_lock_releases_on_error_with_an_inherited_description() {
+        let folder = tempfile::tempdir().unwrap();
+        let path = folder.path().join(".fetch.lock");
+        let mut inherited = None;
+        let result: Result<()> = (|| {
+            let owned = WorkspaceLock::acquire(File::create_new(&path)?, "first acquisition")?;
+            inherited = Some(owned.inherited_description()?);
+            Err("simulate resume validation failure after lock acquisition".into())
+        })();
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "simulate resume validation failure after lock acquisition"
+        );
+        let next = WorkspaceLock::acquire(
+            File::options().read(true).write(true).open(&path).unwrap(),
+            "resume after validation failure",
+        )
+        .expect("failed operation must explicitly unlock while a fork copy remains alive");
+        drop(next);
+        drop(inherited);
+    }
     fn response(
         status: &str,
         headers: &str,
