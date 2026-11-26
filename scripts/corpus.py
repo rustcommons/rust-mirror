@@ -24,7 +24,7 @@ from crates_phase0_fixtures import cases as synthetic_cases, dep, record
 REPO = Path(__file__).resolve().parents[1]
 CORPUS = REPO / "tests/corpus"
 IDENTITY = ("name", "vers", "cksum", "deps", "features", "features2", "links", "v")
-EXPLANATORY_VERSION_FIELDS = {"reasons", "primary_reason", "sources", "source_ordinal", "root_aliases"}
+EXPLANATORY_VERSION_FIELDS = {"reasons", "primary_reason", "sources", "root_aliases"}
 
 
 

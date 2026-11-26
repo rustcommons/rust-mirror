@@ -109,10 +109,19 @@ class Classification(unittest.TestCase):
     def test_reason_only_changes_are_informational_with_unchanged_inputs(self):
         self.expected["version_details"] = {"x@1.0.0": dict(reasons=["old"], primary_reason="old", sources=["a"], source_ordinal=1, root_aliases=["a"])}
         observed = copy.deepcopy(self.expected)
-        observed["version_details"]["x@1.0.0"].update(reasons=["new"], primary_reason="new", sources=["b"], source_ordinal=2, root_aliases=["b"])
+        observed["version_details"]["x@1.0.0"].update(reasons=["new"], primary_reason="new", sources=["b"], root_aliases=["b"])
         label, details = corpus.classify(self.expected, observed, self.expected, self.old, self.old)
         self.assertEqual(label, "clean")
         self.assertTrue(any(d.get("kind") == "informational" for d in details))
+
+    def test_source_ordinal_only_drift_with_identical_inputs_is_regression(self):
+        self.expected["version_details"] = {"x@1.0.0": dict(source_ordinal=1)}
+        changed = copy.deepcopy(self.expected)
+        changed["version_details"]["x@1.0.0"]["source_ordinal"] = 2
+        for phase in ("live", "frozen_replay"):
+            observed, replay = (changed, self.expected) if phase == "live" else (self.expected, changed)
+            with self.subTest(phase=phase):
+                self.assertEqual(corpus.classify(self.expected,observed,replay,self.old,self.old)[0], "regression")
 
     def test_reason_only_frozen_replay_drift_is_informational(self):
         replay = dict(self.expected, version_details={"x@1.0.0": {"reasons": ["new explanation"]}})

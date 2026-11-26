@@ -82,14 +82,17 @@ metadata changed concurrently.
 
 - **Clean:** frozen replay, expected selection and live inputs/selection agree.
 - **Explanatory metadata (informational):** `version_details.reasons`,
-  `primary_reason`, `sources`, `source_ordinal` and `root_aliases` explain why a
+  `primary_reason`, `sources` and `root_aliases` explain why a
   version was included. Changes only to these fields never fail, on live or frozen
   replay inputs. They remain in the JSON native output and appear as informational
   differences (including phase, version and changed fields), with counts in the
   Markdown summary. No baseline update is required solely for these explanations.
   The exclusion is an explicit field list: selected versions, checksums, served
   index rows/byte hashes, other resolver state and per-root membership remain
-  checked. Version/checksum summaries must agree with their served index records;
+  checked. `source_ordinal` controls served index-line order and remains
+  integrity-significant; an ordinal-only change on identical live or frozen
+  inputs is a regression. Version/checksum summaries must agree with their served
+  index records;
   a new upstream version and Cargo agreement cannot excuse an inconsistent
   checksum or a served line for a different selected version. Root membership is compared **within each root**, so another root's
   provenance or membership changes cannot mark an unchanged shared root as changed.
